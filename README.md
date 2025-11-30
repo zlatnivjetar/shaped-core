@@ -8,7 +8,14 @@
 
 ## Other notes
 
-I believe a file in roomcloud-integration depends on Shaped_Pricing class. That class should remain, but also be stripped of any seasonal pricing logic, because Motopress handles that.
+1. I believe a file in roomcloud-integration depends on Shaped_Pricing class. That class should remain, but also be stripped of any seasonal pricing logic, because Motopress handles that.
+
+2. I will also add elementor-specific css folder inside /assets/css folder
+
+3. On staging I replaced production code with refactored. I have discovered the following issues:
+- CSS not working: search-calendar, search-form, all elemenor-specific
+- JS not working: checkout.js , language-switch-fade
+- When I complete the checkout through stripe, I do not get the email confirmation
 
 ## To-do (Claude code)
 1. Check the mentioned Shaped_Pricing class in refactored version to verify it is not blocking the Roomcloud plugin
