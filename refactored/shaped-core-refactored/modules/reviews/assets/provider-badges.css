@@ -1,0 +1,78 @@
+/**
+ * Review Provider Badge Styling
+ * Styling for OTA provider badges (Booking.com, Airbnb, etc.)
+ *
+ * @package Shaped_Core/Reviews
+ */
+
+/* Provider Badge Base Styles */
+.shaped-provider-badge,
+.prs-provider-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: -0.4px;
+    text-decoration: none;
+    transition: opacity 200ms ease;
+    white-space: nowrap;
+}
+
+.shaped-provider-badge:hover,
+.prs-provider-badge:hover {
+    opacity: 0.9;
+}
+
+@media (max-width: 767px) {
+    .shaped-provider-badge,
+    .prs-provider-badge {
+        font-size: 11px;
+        letter-spacing: 0;
+        padding: 3px 8px;
+    }
+}
+
+/* Provider-Specific Colors */
+.shaped-provider-badge[data-provider="booking"],
+.prs-provider-badge[data-provider="booking"] {
+    background-color: #003580;
+    color: #ffffff;
+}
+
+.shaped-provider-badge[data-provider="airbnb"],
+.prs-provider-badge[data-provider="airbnb"] {
+    background-color: #FF5A5F;
+    color: #ffffff;
+}
+
+.shaped-provider-badge[data-provider="tripadvisor"],
+.prs-provider-badge[data-provider="tripadvisor"] {
+    background-color: #00AF87;
+    color: #ffffff;
+}
+
+.shaped-provider-badge[data-provider="expedia"],
+.prs-provider-badge[data-provider="expedia"] {
+    background-color: #FFCB00;
+    color: #141310;
+}
+
+.shaped-provider-badge[data-provider="google"],
+.prs-provider-badge[data-provider="google"] {
+    background-color: #4285F4;
+    color: #ffffff;
+}
+
+.shaped-provider-badge[data-provider="hotels"],
+.prs-provider-badge[data-provider="hotels"] {
+    background-color: #D32F2F;
+    color: #ffffff;
+}
+
+/* Default provider (unknown) */
+.shaped-provider-badge:not([data-provider]),
+.prs-provider-badge:not([data-provider]) {
+    background-color: #666666;
+    color: #ffffff;
+}
