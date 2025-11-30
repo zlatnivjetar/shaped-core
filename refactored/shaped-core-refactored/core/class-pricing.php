@@ -1,20 +1,18 @@
 <?php
 /**
  * Shaped Pricing Module
- * 
+ *
  * Handles discount logic only. Base prices and seasonal rates come from MotoPress Rates.
- * 
+ *
  * @package Shaped_Core
  * @since 2.0.0
  */
-
-namespace Shaped\Core;
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class Pricing {
+class Shaped_Pricing {
 
     /**
      * Option keys
@@ -202,6 +200,13 @@ class Pricing {
     }
 
     /**
+     * Alias for backward compatibility
+     */
+    public static function get_discounts_config(): array {
+        return self::get_discounts();
+    }
+
+    /**
      * Localize config for JavaScript
      */
     public static function localize_config(): void {
@@ -225,25 +230,68 @@ class Pricing {
 
     /**
      * Calculate final amount with discount applied
-     * 
-     * @param float  $base_amount  Base price from MotoPress
-     * @param string $room_slug    Room type slug
-     * @return array ['final' => float, 'discount_percent' => int, 'saved' => float]
+     *
+     * Overloaded method that accepts either:
+     * - A booking object (backward compatibility)
+     * - float $base_amount and string $room_slug (new API)
+     *
+     * @param mixed $base_amount_or_booking  Either float (base price) or booking object
+     * @param string|null $room_slug         Room type slug (optional if booking object provided)
+     * @return array|float If booking object: returns float. If base_amount: returns array with details
      */
-    public static function calculate_final_amount(float $base_amount, string $room_slug): array {
+    public static function calculate_final_amount($base_amount_or_booking, ?string $room_slug = null) {
+        // Backward compatibility: if first arg is a booking object, extract data from it
+        if (is_object($base_amount_or_booking) && method_exists($base_amount_or_booking, 'getTotalPrice')) {
+            $booking = $base_amount_or_booking;
+            $base_amount = (float) $booking->getTotalPrice();
+
+            // Get room type slug from booking
+            $reserved_rooms = $booking->getReservedRooms();
+            if (empty($reserved_rooms)) {
+                return $base_amount; // No discount if no room found
+            }
+
+            $room = reset($reserved_rooms);
+            $room_type_id = $room->getRoomTypeId();
+
+            // Fix: MotoPress API sometimes returns 0, fallback to direct meta read
+            if (!$room_type_id || $room_type_id === 0) {
+                $room_type_id = get_post_meta($room->getId(), 'mphb_room_type_id', true);
+            }
+
+            if (!$room_type_id) {
+                return $base_amount; // No discount if room type not found
+            }
+
+            $room_type = MPHB()->getRoomTypeRepository()->findById($room_type_id);
+            if (!$room_type) {
+                return $base_amount; // No discount if room type not found
+            }
+
+            $room_slug = sanitize_title($room_type->getTitle());
+
+            // Calculate and return just the final amount (backward compat)
+            $discounts = self::get_discounts();
+            $discount_percent = isset($discounts[$room_slug]) ? intval($discounts[$room_slug]) : 0;
+            $discount_multiplier = (100 - $discount_percent) / 100;
+            return round($base_amount * $discount_multiplier, 2);
+        }
+
+        // New API: calculate with explicit base amount and room slug
+        $base_amount = (float) $base_amount_or_booking;
         $discounts = self::get_discounts();
-        
+
         // Normalize slug
         $slug = sanitize_title($room_slug);
-        
+
         // Get discount for this room type (default 0 if not found)
         $discount_percent = isset($discounts[$slug]) ? intval($discounts[$slug]) : 0;
-        
+
         // Calculate
         $discount_multiplier = (100 - $discount_percent) / 100;
         $final = round($base_amount * $discount_multiplier, 2);
         $saved = round($base_amount - $final, 2);
-        
+
         return [
             'final'            => $final,
             'discount_percent' => $discount_percent,
