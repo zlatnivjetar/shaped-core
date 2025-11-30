@@ -485,7 +485,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // =============== CHECKOUT: PRICE BREAKDOWN DISCOUNT ROW ======================
-    
+
     function addDiscountRow() {
         var discountPercent = document.querySelector('input[name="mphb_discount_percentage"]')?.value;
         if (!discountPercent || discountPercent == 0) return;
@@ -493,21 +493,19 @@ document.addEventListener('DOMContentLoaded', function() {
         var breakdown = document.querySelector('.mphb-price-breakdown');
         if (!breakdown) return;
 
-        // Remove existing discount row to prevent duplicates
-        var existingRow = breakdown.querySelector('.mphb-discount-row');
-        if (existingRow) {
-            existingRow.remove();
-        }
+        // Check if discount row already exists
+        if (breakdown.querySelector('.mphb-discount-row')) return;
 
-        var subtotalRow = breakdown.querySelector('.mphb-price-breakdown-subtotal:last-of-type');
+        var accommodationRow = breakdown.querySelector('.mphb-price-breakdown-accommodation-total');
+        var subtotalRow = breakdown.querySelector('.mphb-price-breakdown-subtotal');
 
-        if (subtotalRow) {
-            // Get the subtotal (includes accommodation + services)
-            var subtotalText = subtotalRow.querySelector('.mphb-table-price-column')?.textContent;
-            var subtotal = parseInt(subtotalText.replace(/[^0-9]/g, ''));
+        if (accommodationRow) {
+            // Get accommodation total (excludes services like breakfast)
+            var accommodationText = accommodationRow.querySelector('.mphb-table-price-column')?.textContent;
+            var accommodationTotal = parseInt(accommodationText.replace(/[^0-9]/g, ''));
 
-            // Calculate discount on TOTAL (including breakfast/services)
-            var discountAmount = Math.round(subtotal * (discountPercent / 100));
+            // Calculate discount ONLY on accommodation (not on services)
+            var discountAmount = Math.round(accommodationTotal * (discountPercent / 100));
 
             // Determine number of columns based on whether services exist
             var hasServices = breakdown.querySelectorAll('.mphb-price-breakdown-services').length > 0;
@@ -516,11 +514,28 @@ document.addEventListener('DOMContentLoaded', function() {
             var discountRow = document.createElement('tr');
             discountRow.className = 'mphb-discount-row';
             discountRow.innerHTML =
-                '<th colspan="' + colSpan + '" style="color: #4C9155;">Direct Booking Discount (' + discountPercent + '%):</th>' +
+                '<th colspan="' + colSpan + '">You\'re saving:</th>' +
                 '<th class="mphb-table-price-column" style="color: #4C9155;">-<span class="mphb-currency">€</span>' + discountAmount + '</th>';
 
-            // Insert after the subtotal row
-            subtotalRow.parentNode.insertBefore(discountRow, subtotalRow.nextSibling);
+            // Insert after the subtotal row if it exists, otherwise after accommodation
+            if (subtotalRow) {
+                subtotalRow.parentNode.insertBefore(discountRow, subtotalRow.nextSibling);
+            } else {
+                accommodationRow.parentNode.insertBefore(discountRow, accommodationRow.nextSibling);
+            }
+
+            // Update the total row to reflect the discount
+            var totalRow = breakdown.querySelector('.mphb-price-breakdown-total');
+            if (totalRow) {
+                var totalCell = totalRow.querySelector('.mphb-table-price-column');
+                if (totalCell) {
+                    var totalText = totalCell.textContent;
+                    var originalTotal = parseInt(totalText.replace(/[^0-9]/g, ''));
+                    var newTotal = originalTotal - discountAmount;
+
+                    totalCell.innerHTML = '<span class="mphb-price"><span class="mphb-currency">€</span>' + newTotal + '</span>';
+                }
+            }
 
             console.log('[Discount Row] Added with amount: €' + discountAmount);
         }

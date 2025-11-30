@@ -27,7 +27,7 @@ if (!defined('SHAPED_ENABLE_ROOMCLOUD')) {
     define('SHAPED_ENABLE_ROOMCLOUD', false);
 }
 if (!defined('SHAPED_ENABLE_REVIEWS')) {
-    define('SHAPED_ENABLE_REVIEWS', false);
+    define('SHAPED_ENABLE_REVIEWS', true);
 }
 
 // Stripe credentials - MUST be set in wp-config.php
