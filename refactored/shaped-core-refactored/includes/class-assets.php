@@ -63,6 +63,9 @@ class Shaped_Assets {
                 true
             );
         }
+
+        // ─── Modals (always load for modal links) ───
+        $this->enqueue_modal_assets();
     }
     
     /**
@@ -102,6 +105,32 @@ class Shaped_Assets {
         }
     }
     
+    /**
+     * Enqueue modal assets
+     */
+    private function enqueue_modal_assets(): void {
+        // Modal CSS
+        if (file_exists(SHAPED_DIR . 'assets/css/modals.css')) {
+            wp_enqueue_style(
+                'shaped-modals',
+                SHAPED_URL . 'assets/css/modals.css',
+                [],
+                SHAPED_VERSION
+            );
+        }
+
+        // Modal JS
+        if (file_exists(SHAPED_DIR . 'assets/js/modals.js')) {
+            wp_enqueue_script(
+                'shaped-modals',
+                SHAPED_URL . 'assets/js/modals.js',
+                ['jquery'],
+                SHAPED_VERSION,
+                true
+            );
+        }
+    }
+
     /**
      * Enqueue search results page assets
      */

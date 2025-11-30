@@ -21,10 +21,11 @@ class Shaped_Loader {
         'Shaped_Pricing'            => 'core/class-pricing.php',
         'Shaped_Payment_Processor'  => 'core/class-payment-processor.php',
         'Shaped_Booking_Manager'    => 'core/class-booking-manager.php',
-        
+
         // Include classes
         'Shaped_Assets'             => 'includes/class-assets.php',
-        
+        'Shaped_Admin'              => 'includes/class-admin.php',
+
         // Schema
         'Shaped_Schema_Markup'      => 'schema/class-markup.php',
     ];

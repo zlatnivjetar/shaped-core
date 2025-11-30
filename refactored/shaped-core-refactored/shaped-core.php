@@ -127,6 +127,8 @@ add_action('plugins_loaded', function() {
     new Shaped_Assets();
     new Shaped_Payment_Processor();
     new Shaped_Booking_Manager();
+    Shaped_Pricing::init();
+    Shaped_Admin::init();
     
     // Load email handlers (procedural)
     require_once SHAPED_DIR . 'core/email-handler.php';
@@ -138,6 +140,8 @@ add_action('plugins_loaded', function() {
     // ─── Shortcodes ───
     require_once SHAPED_DIR . 'shortcodes/room-details.php';
     require_once SHAPED_DIR . 'shortcodes/room-meta.php';
+    require_once SHAPED_DIR . 'shortcodes/class-provider-badge.php';
+    require_once SHAPED_DIR . 'shortcodes/class-modal-link.php';
     
     // ─── Schema Markup ───
     if (file_exists(SHAPED_DIR . 'schema/markup.php')) {
