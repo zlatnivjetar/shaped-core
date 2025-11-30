@@ -1,4 +1,4 @@
-/** ======= ELEMENTOR LOOP GRID + TAXONOMY FILTERS  ======= */
+/*==================================================== GUEST REVIEWS =================================================== */
 
 /* Taxonomy Filter Styling */
 .e-filter {
@@ -130,6 +130,7 @@
 
 .elementor-widget-taxonomy-filter .e-filter {
     margin-bottom: 1rem;
+	  border-radius: 8px;
 }
 
 .elementor-widget-taxonomy-filter .elementor-taxonomy-filter__item {
