@@ -1,0 +1,72 @@
+/**
+ * Shaped Pricing Admin Styles
+ */
+
+.shaped-pricing-wrap {
+    max-width: 800px;
+}
+
+.shaped-pricing-wrap h1 {
+    margin-bottom: 0.5rem;
+}
+
+.shaped-pricing-wrap > .description {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 1.5rem;
+}
+
+.shaped-pricing-table {
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.shaped-pricing-table th {
+    background: #f9f9f9;
+}
+
+.shaped-pricing-table td {
+    vertical-align: middle;
+}
+
+.shaped-pricing-table input[type="number"] {
+    width: 70px;
+    text-align: center;
+}
+
+.shaped-pricing-table .description {
+    color: #666;
+    margin-left: 8px;
+}
+
+.shaped-pricing-info {
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.shaped-pricing-info h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 15px;
+}
+
+.shaped-pricing-info h3:not(:first-child) {
+    margin-top: 1.5rem;
+}
+
+.shaped-pricing-info ol,
+.shaped-pricing-info ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.shaped-pricing-info li {
+    margin-bottom: 0.5rem;
+}
+
+.shaped-pricing-info p {
+    margin: 0 0 0.75rem;
+}
