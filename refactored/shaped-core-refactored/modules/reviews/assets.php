@@ -15,7 +15,28 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Enqueue frontend styles and scripts
+ * Enqueue external CSS file
+ */
+add_action('wp_enqueue_scripts', function() {
+    // Only load on pages with reviews
+    if (!is_singular(CPT::POST_TYPE) && !has_shortcode_on_page()) {
+        return;
+    }
+
+    // Enqueue external reviews CSS (Elementor-specific styling)
+    $css_file = dirname(__FILE__) . '/assets/reviews.css';
+    if (file_exists($css_file)) {
+        wp_enqueue_style(
+            'shaped-reviews',
+            plugin_dir_url(__FILE__) . 'assets/reviews.css',
+            [],
+            filemtime($css_file)
+        );
+    }
+});
+
+/**
+ * Enqueue inline styles and scripts
  */
 add_action('wp_head', function() {
     // Only load on pages with reviews

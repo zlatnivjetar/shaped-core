@@ -49,6 +49,32 @@ class Shaped_Pricing {
     }
 
     /**
+     * Fetch room types from MotoPress
+     * Returns array of room slugs and titles
+     */
+    public static function fetch_room_types(): array {
+        if (!function_exists('MPHB')) {
+            return [];
+        }
+
+        $room_types = [];
+        $posts = get_posts([
+            'post_type'      => 'mphb_room_type',
+            'posts_per_page' => -1,
+            'post_status'    => 'publish',
+            'orderby'        => 'title',
+            'order'          => 'ASC',
+        ]);
+
+        foreach ($posts as $post) {
+            $slug = sanitize_title($post->post_title);
+            $room_types[$slug] = $post->post_title;
+        }
+
+        return $room_types;
+    }
+
+    /**
      * Default discounts per room type (percentage)
      */
     public static function discount_defaults(): array {
@@ -65,13 +91,13 @@ class Shaped_Pricing {
      */
     public static function sanitize_discounts($input): array {
         $output = [];
-        $slugs = self::get_room_slugs();
-        
-        foreach ($slugs as $slug) {
+        $room_types = self::fetch_room_types();
+
+        foreach ($room_types as $slug => $title) {
             $val = isset($input[$slug]) ? intval($input[$slug]) : 0;
             $output[$slug] = max(0, min(100, $val)); // Clamp 0-100
         }
-        
+
         return $output;
     }
 
@@ -126,7 +152,19 @@ class Shaped_Pricing {
         }
 
         $discounts = get_option(self::OPT_DISCOUNTS, self::discount_defaults());
-        $slugs = self::get_room_slugs();
+        $room_types = self::fetch_room_types();
+
+        if (empty($room_types)) {
+            ?>
+            <div class="wrap">
+                <h1>Shaped Direct Booking Discounts</h1>
+                <div class="notice notice-warning">
+                    <p><strong>No room types found.</strong> Please create room types in MotoPress Hotel Booking first.</p>
+                </div>
+            </div>
+            <?php
+            return;
+        }
         ?>
         <div class="wrap shaped-pricing-wrap">
             <h1>Shaped Direct Booking Discounts</h1>
@@ -146,19 +184,18 @@ class Shaped_Pricing {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($slugs as $slug): 
-                            $label = ucwords(str_replace('-', ' ', $slug));
+                        <?php foreach ($room_types as $slug => $title):
                             $discount = isset($discounts[$slug]) ? intval($discounts[$slug]) : 0;
                         ?>
                         <tr>
-                            <td><strong><?php echo esc_html($label); ?></strong></td>
+                            <td><strong><?php echo esc_html($title); ?></strong></td>
                             <td>
-                                <input 
-                                    type="number" 
-                                    name="<?php echo esc_attr(self::OPT_DISCOUNTS); ?>[<?php echo esc_attr($slug); ?>]" 
-                                    value="<?php echo esc_attr($discount); ?>" 
-                                    min="0" 
-                                    max="100" 
+                                <input
+                                    type="number"
+                                    name="<?php echo esc_attr(self::OPT_DISCOUNTS); ?>[<?php echo esc_attr($slug); ?>]"
+                                    value="<?php echo esc_attr($discount); ?>"
+                                    min="0"
+                                    max="100"
                                     step="1"
                                     class="small-text"
                                 />
