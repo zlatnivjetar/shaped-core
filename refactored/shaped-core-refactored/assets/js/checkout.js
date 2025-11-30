@@ -390,29 +390,20 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateCheckoutPriceDisplay(discountPercent) {
         const totalPriceField = document.querySelector('.mphb-total-price-field');
         if (!totalPriceField) return;
-        
+
         const priceSpan = totalPriceField.querySelector('.mphb-price');
         if (!priceSpan) return;
-        
+
         // Skip if already showing discount
         if (totalPriceField.querySelector('.mphb-price-original')) return;
-        
+
         const priceText = priceSpan.textContent;
         const originalPrice = parseInt(priceText.replace(/[^0-9]/g, ''));
-        
-        // Get services total from price breakdown if available
-        let servicesTotal = 0;
-        const servicesRow = document.querySelector('.mphb-price-breakdown-services-total .mphb-table-price-column');
-        if (servicesRow) {
-            const servicesText = servicesRow.textContent;
-            servicesTotal = parseInt(servicesText.replace(/[^0-9]/g, '')) || 0;
-        }
-        
-        // Calculate discount only on accommodation (total - services)
-        const accommodationTotal = originalPrice - servicesTotal;
-        const discountAmount = Math.round(accommodationTotal * (discountPercent / 100));
+
+        // Calculate discount on TOTAL price (including breakfast/services)
+        const discountAmount = Math.round(originalPrice * (discountPercent / 100));
         const discountedTotal = originalPrice - discountAmount;
-        
+
         // Update display
         totalPriceField.innerHTML = `
             <span class="mphb-price-original" style="text-decoration: line-through; color: #999; font-weight: normal;">
@@ -422,7 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span class="mphb-currency">€</span>${discountedTotal}
             </span>
         `;
-        
+
         // Add discount badge
         const totalPriceOutput = document.querySelector('.mphb-total-price output');
         if (totalPriceOutput && !totalPriceOutput.querySelector('.discount-badge-checkout')) {
@@ -498,36 +489,33 @@ document.addEventListener('DOMContentLoaded', function() {
     function addDiscountRow() {
         var discountPercent = document.querySelector('input[name="mphb_discount_percentage"]')?.value;
         if (!discountPercent || discountPercent == 0) return;
-        
+
         var breakdown = document.querySelector('.mphb-price-breakdown');
         if (!breakdown || breakdown.querySelector('.mphb-discount-row')) return;
-        
-        var accommodationRow = breakdown.querySelector('.mphb-price-breakdown-accommodation-total:last-of-type');
+
         var subtotalRow = breakdown.querySelector('.mphb-price-breakdown-subtotal:last-of-type');
-        
-        if (accommodationRow) {
-            var accommodationText = accommodationRow.querySelector('.mphb-table-price-column')?.textContent;
-            var accommodationTotal = parseInt(accommodationText.replace(/[^0-9]/g, ''));
-            var discountAmount = Math.round(accommodationTotal * (discountPercent / 100));
-            
+
+        if (subtotalRow) {
+            // Get the subtotal (includes accommodation + services)
+            var subtotalText = subtotalRow.querySelector('.mphb-table-price-column')?.textContent;
+            var subtotal = parseInt(subtotalText.replace(/[^0-9]/g, ''));
+
+            // Calculate discount on TOTAL (including breakfast/services)
+            var discountAmount = Math.round(subtotal * (discountPercent / 100));
+
             // Determine number of columns based on whether services exist
             var hasServices = breakdown.querySelectorAll('.mphb-price-breakdown-services').length > 0;
             var colSpan = hasServices ? 2 : 1;
-            
+
             var discountRow = document.createElement('tr');
             discountRow.className = 'mphb-discount-row';
-            discountRow.innerHTML = 
-                '<th colspan="' + colSpan + '">You\'re saving:</th>' +
+            discountRow.innerHTML =
+                '<th colspan="' + colSpan + '">Direct Booking Discount (' + discountPercent + '%):</th>' +
                 '<th class="mphb-table-price-column" style="color: #4C9155;">-<span class="mphb-currency">€</span>' + discountAmount + '</th>';
-            
-            // Insert after the last subtotal row
-            if (subtotalRow) {
-                subtotalRow.parentNode.insertBefore(discountRow, subtotalRow.nextSibling);
-            } else {
-                // Fallback if no subtotal found
-                breakdown.querySelector('tbody').appendChild(discountRow);
-            }
-            
+
+            // Insert after the subtotal row
+            subtotalRow.parentNode.insertBefore(discountRow, subtotalRow.nextSibling);
+
             // Update the total to reflect the discount
             var totalRow = breakdown.querySelector('.mphb-price-breakdown-total');
             if (totalRow) {
@@ -535,7 +523,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 var totalText = totalCell.textContent;
                 var originalTotal = parseInt(totalText.replace(/[^0-9]/g, ''));
                 var newTotal = originalTotal - discountAmount;
-                
+
                 totalCell.innerHTML = '<span class="mphb-price"><span class="mphb-currency">€</span>' + newTotal + '</span>';
             }
         }

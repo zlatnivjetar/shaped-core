@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Enqueue external CSS file
+ * Enqueue external CSS files
  */
 add_action('wp_enqueue_scripts', function() {
     // Only load on pages with reviews
@@ -33,7 +33,18 @@ add_action('wp_enqueue_scripts', function() {
             filemtime($css_file)
         );
     }
-});
+
+    // Enqueue provider badge CSS
+    $badge_css = dirname(__FILE__) . '/assets/provider-badges.css';
+    if (file_exists($badge_css)) {
+        wp_enqueue_style(
+            'shaped-provider-badges',
+            plugin_dir_url(__FILE__) . 'assets/provider-badges.css',
+            [],
+            filemtime($badge_css)
+        );
+    }
+}, 10);
 
 /**
  * Enqueue inline styles and scripts

@@ -87,6 +87,25 @@ class Shaped_Assets {
 
         // ─── Modals (always load for modal links) ───
         $this->enqueue_modal_assets();
+
+        // ─── Elementor-specific CSS (guest reviews, gallery) ───
+        if (file_exists(SHAPED_DIR . 'assets/css/guest-reviews.css')) {
+            wp_enqueue_style(
+                'shaped-guest-reviews',
+                SHAPED_URL . 'assets/css/guest-reviews.css',
+                [],
+                SHAPED_VERSION
+            );
+        }
+
+        if (file_exists(SHAPED_DIR . 'assets/css/gallery-element.css')) {
+            wp_enqueue_style(
+                'shaped-gallery-element',
+                SHAPED_URL . 'assets/css/gallery-element.css',
+                [],
+                SHAPED_VERSION
+            );
+        }
     }
     
     /**
