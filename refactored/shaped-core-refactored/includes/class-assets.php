@@ -42,6 +42,27 @@ class Shaped_Assets {
             $this->enqueue_search_assets();
         }
         
+        // ─── Search Form & Calendar (on pages with search form) ───
+        if ($this->has_search_form()) {
+            if (file_exists(SHAPED_DIR . 'assets/css/search-form.css')) {
+                wp_enqueue_style(
+                    'shaped-search-form',
+                    SHAPED_URL . 'assets/css/search-form.css',
+                    [],
+                    SHAPED_VERSION
+                );
+            }
+
+            if (file_exists(SHAPED_DIR . 'assets/css/search-calendar.css')) {
+                wp_enqueue_style(
+                    'shaped-search-calendar',
+                    SHAPED_URL . 'assets/css/search-calendar.css',
+                    [],
+                    SHAPED_VERSION
+                );
+            }
+        }
+
         // ─── Home Page ───
         if (is_front_page() && file_exists(SHAPED_DIR . 'assets/js/home-room-cards.js')) {
             wp_enqueue_script(
@@ -144,7 +165,27 @@ class Shaped_Assets {
                 SHAPED_VERSION
             );
         }
-        
+
+        // Search form CSS
+        if (file_exists(SHAPED_DIR . 'assets/css/search-form.css')) {
+            wp_enqueue_style(
+                'shaped-search-form',
+                SHAPED_URL . 'assets/css/search-form.css',
+                [],
+                SHAPED_VERSION
+            );
+        }
+
+        // Search calendar CSS
+        if (file_exists(SHAPED_DIR . 'assets/css/search-calendar.css')) {
+            wp_enqueue_style(
+                'shaped-search-calendar',
+                SHAPED_URL . 'assets/css/search-calendar.css',
+                [],
+                SHAPED_VERSION
+            );
+        }
+
         // Checkout JS also handles search results pricing logic
         if (file_exists(SHAPED_DIR . 'assets/js/checkout.js')) {
             wp_enqueue_script(
@@ -155,7 +196,7 @@ class Shaped_Assets {
                 true
             );
         }
-        
+
         // Provider badge stars (for ratings display)
         if (file_exists(SHAPED_DIR . 'assets/js/provider-badge-stars.js')) {
             wp_enqueue_script(
@@ -220,6 +261,25 @@ class Shaped_Assets {
         return false;
     }
     
+    /**
+     * Check if current page has search form
+     */
+    private function has_search_form(): bool {
+        global $post;
+
+        // Check for MotoPress search shortcode
+        if ($post && has_shortcode($post->post_content, 'mphb_search')) {
+            return true;
+        }
+
+        // Home page usually has search form
+        if (is_front_page()) {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Check if a multilingual plugin is active
      */
