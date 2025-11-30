@@ -1,5 +1,10 @@
 /*==================================================== SEARCH FORM =================================================== */
-
+.search-form-wrapper {
+    display: flex;
+    width: 100%;
+    gap: 24px;
+    align-items: flex-end;
+}
 
 .mphb_sc_search-submit-button-wrapper input {
     height: 52px;
