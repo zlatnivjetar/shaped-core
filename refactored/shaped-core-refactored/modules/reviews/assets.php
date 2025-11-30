@@ -16,10 +16,11 @@ if (!defined('ABSPATH')) {
 
 /**
  * Enqueue external CSS files
+ * Load on all frontend pages for better compatibility
  */
 add_action('wp_enqueue_scripts', function() {
-    // Only load on pages with reviews
-    if (!is_singular(CPT::POST_TYPE) && !has_shortcode_on_page()) {
+    // Load on all frontend pages (not just review pages) to ensure Elementor loops work
+    if (is_admin()) {
         return;
     }
 
@@ -48,10 +49,11 @@ add_action('wp_enqueue_scripts', function() {
 
 /**
  * Enqueue inline JavaScript only
+ * Load on all frontend pages for better compatibility
  */
 add_action('wp_footer', function() {
-    // Only load on pages with reviews
-    if (!is_singular(CPT::POST_TYPE) && !has_shortcode_on_page()) {
+    // Load on all frontend pages to ensure Elementor loops work
+    if (is_admin()) {
         return;
     }
     ?>
