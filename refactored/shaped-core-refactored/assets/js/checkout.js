@@ -491,7 +491,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!discountPercent || discountPercent == 0) return;
 
         var breakdown = document.querySelector('.mphb-price-breakdown');
-        if (!breakdown || breakdown.querySelector('.mphb-discount-row')) return;
+        if (!breakdown) return;
+
+        // Remove existing discount row to prevent duplicates
+        var existingRow = breakdown.querySelector('.mphb-discount-row');
+        if (existingRow) {
+            existingRow.remove();
+        }
 
         var subtotalRow = breakdown.querySelector('.mphb-price-breakdown-subtotal:last-of-type');
 
@@ -510,22 +516,13 @@ document.addEventListener('DOMContentLoaded', function() {
             var discountRow = document.createElement('tr');
             discountRow.className = 'mphb-discount-row';
             discountRow.innerHTML =
-                '<th colspan="' + colSpan + '">Direct Booking Discount (' + discountPercent + '%):</th>' +
+                '<th colspan="' + colSpan + '" style="color: #4C9155;">Direct Booking Discount (' + discountPercent + '%):</th>' +
                 '<th class="mphb-table-price-column" style="color: #4C9155;">-<span class="mphb-currency">€</span>' + discountAmount + '</th>';
 
             // Insert after the subtotal row
             subtotalRow.parentNode.insertBefore(discountRow, subtotalRow.nextSibling);
 
-            // Update the total to reflect the discount
-            var totalRow = breakdown.querySelector('.mphb-price-breakdown-total');
-            if (totalRow) {
-                var totalCell = totalRow.querySelector('.mphb-table-price-column');
-                var totalText = totalCell.textContent;
-                var originalTotal = parseInt(totalText.replace(/[^0-9]/g, ''));
-                var newTotal = originalTotal - discountAmount;
-
-                totalCell.innerHTML = '<span class="mphb-price"><span class="mphb-currency">€</span>' + newTotal + '</span>';
-            }
+            console.log('[Discount Row] Added with amount: €' + discountAmount);
         }
     }
 
@@ -550,28 +547,48 @@ document.addEventListener('DOMContentLoaded', function() {
     // Mutation observer for checkout dynamic updates
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
-            if (mutation.target.classList && 
-                (mutation.target.classList.contains('mphb-total-price-field') || 
+            if (mutation.target.classList &&
+                (mutation.target.classList.contains('mphb-total-price-field') ||
                  mutation.target.classList.contains('mphb-price-breakdown'))) {
                 setTimeout(async () => {
                     await applyCheckoutDiscount();
+                    addDiscountRow(); // Re-add discount row after MotoPress updates
                 }, 50);
             }
         });
     });
-    
+
     const priceElements = document.querySelectorAll('.mphb-total-price, .mphb-checkout-form');
     priceElements.forEach(el => {
         observer.observe(el, { childList: true, subtree: true });
     });
 
-    // Monitor for price changes (payment note)
+    // More aggressive monitoring for MotoPress AJAX updates
     if (window.jQuery) {
         jQuery(document).ajaxComplete(function(event, xhr, settings) {
             if (settings.url && settings.url.includes('mphb_update_checkout_info')) {
+                console.log('[MotoPress] AJAX complete - re-adding discount row');
                 setTimeout(updatePaymentNote, 100);
-                setTimeout(addDiscountRow, 100);
+                setTimeout(addDiscountRow, 150);
+                setTimeout(addDiscountRow, 300); // Try again after 300ms in case MotoPress updates again
             }
+        });
+    }
+
+    // Also watch for any changes to the price breakdown table specifically
+    const breakdownObserver = new MutationObserver(function(mutations) {
+        const hasDiscountRow = document.querySelector('.mphb-discount-row');
+        if (!hasDiscountRow) {
+            console.log('[Discount Row] Not found - re-adding');
+            setTimeout(addDiscountRow, 100);
+        }
+    });
+
+    const breakdown = document.querySelector('.mphb-price-breakdown');
+    if (breakdown) {
+        breakdownObserver.observe(breakdown, {
+            childList: true,
+            subtree: true
         });
     }
 });
