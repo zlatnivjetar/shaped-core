@@ -1,0 +1,545 @@
+<?php
+/**
+ * Checkout Modal Templates
+ * Terms & Conditions and Privacy Policy modals for checkout page
+ *
+ * @package Shaped_Core
+ */
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Only load on checkout pages
+if (!is_page(['checkout', 'book', 'booking'])) {
+    global $post;
+    if (!$post || !has_shortcode($post->post_content, 'mphb_checkout')) {
+        return;
+    }
+}
+
+?>
+<!-- Checkout Modals -->
+<div id="terms-modal" class="mphb-modal" style="display:none;">
+    <div class="mphb-modal-content">
+        <span class="mphb-modal-close">&times;</span>
+        <h2 class="checkoutmodalheading">Booking Terms & Conditions</h2>
+        <div class="mphb-modal-body" id="terms-content">
+           <em>Effective Date: 09.09.2025</em>
+<h2>1. Agreement</h2>
+These Terms and Conditions constitute a legally binding agreement between Vigilo j.d.o.o, VAT ID: 10083013956, with registered address at Preluk 4, 51000, Rijeka, Hrvatska ("Preelook Apartments", "we", "us", "our") and the guest making the reservation ("Guest", "you", "your").
+
+By completing a booking, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.<br>
+<h2>2. Booking and Confirmation</h2>
+<h3>2.1 Reservation Process</h3>
+<ul>
+ 	<li>All reservations are subject to availability and confirmation</li>
+ 	<li>A binding contract exists upon receipt of booking confirmation via email</li>
+ 	<li>Minimum booking age: 18 years</li>
+ 	<li>Valid government-issued photo ID required at check-in</li>
+</ul>
+<h3>2.2 Booking Guarantee</h3>
+<ul>
+ 	<li>For bookings made more than 7 days before check-in: Payment card details securely saved at booking, charged 7 days before arrival</li>
+ 	<li>For bookings made within 7 days of check-in: Full payment required at time of booking</li>
+ 	<li>Payment processed via our secure payment processor (Stripe)</li>
+ 	<li>All rates quoted in EUR</li>
+ 	<li>Rates include VAT and tourist tax</li>
+</ul>
+<h3>2.3 Occupancy Limits</h3>
+<ul>
+ 	<li>Maximum occupancy per apartment type strictly enforced</li>
+ 	<li>Studio Apartment: Maximum 4 adults, 2 children</li>
+ 	<li>Double Room: Maximum 2 adults, 1 child</li>
+ 	<li>Children over 3 years of age are treated as adults for occupancy purposes</li>
+</ul>
+<h2>3. Cancellation and Refund Policy</h2>
+<h3>3.1 Guest Cancellations</h3>
+<ul>
+ 	<li>7 days or more before arrival: No charge, free cancellation</li>
+ 	<li>Less than 7 days before arrival: No refund available</li>
+ 	<li>No-show: No refund</li>
+ 	<li>For bookings made more than 7 days in advance, payment is processed 7 days before check-in</li>
+</ul>
+<h3>3.2 Property Cancellations</h3>
+<ul>
+ 	<li>Full refund provided if we cancel your reservation</li>
+ 	<li>Alternative accommodation offered when possible</li>
+ 	<li>Compensation limited to refund of amounts paid</li>
+</ul>
+<h2>4. Check-in and Check-out</h2>
+<h3>4.1 Arrival</h3>
+<ul>
+ 	<li>Check-in time: 16:00 to 22:00</li>
+ 	<li>Late check-in: Available with 48 hours prior notice</li>
+</ul>
+<h3>4.2 Departure</h3>
+<ul>
+ 	<li>Check-out time: 08:00 to 11:00</li>
+ 	<li>Failure to vacate by required time: Full day rate charged</li>
+</ul>
+<h2>5. Guest Responsibilities and Conduct</h2>
+<h3>5.1 Property Care</h3>
+<ul>
+ 	<li>Maintain apartment in good condition</li>
+ 	<li>Report damages immediately</li>
+ 	<li>Liable for damages beyond normal wear and tear</li>
+ 	<li>Security deposit: 100 EUR</li>
+</ul>
+<h3>5.2 House Rules</h3>
+<ul>
+ 	<li>Smoking: Prohibited in all indoor areas</li>
+ 	<li>Pets: Allowed up to 3kg</li>
+ 	<li>Parties/events: Not permitted</li>
+ 	<li>Quiet hours: 22:00 to 08:00</li>
+</ul>
+<h3>5.3 Prohibited Activities</h3>
+<ul>
+ 	<li>Illegal activities strictly prohibited</li>
+ 	<li>Commercial activities without written permission</li>
+ 	<li>Subletting or unauthorized occupancy</li>
+ 	<li>Disturbing other guests or neighbors</li>
+</ul>
+<h2>6. Liability and Indemnification</h2>
+<h3>6.1 Limitation of Liability</h3>
+<ul>
+ 	<li>Not responsible for loss, theft, or damage to personal property</li>
+ 	<li>Recommend using in-room safe for valuables</li>
+ 	<li>Maximum liability limited to accommodation cost</li>
+ 	<li>No liability for indirect, consequential, or punitive damages</li>
+</ul>
+<h3>6.2 Guest Indemnification</h3>
+<ul>
+ 	<li>You agree to indemnify and hold harmless Preelook Apartments from all claims, damages, losses, and expenses arising from your breach of these terms or negligent/wrongful acts</li>
+</ul>
+<h3>6.3 Insurance</h3>
+<ul>
+ 	<li>Guests advised to obtain appropriate travel insurance</li>
+ 	<li>Property insurance does not cover guest belongings</li>
+</ul>
+<h2>7. Privacy and Data Protection</h2>
+<h3>7.1 Data Collection</h3>
+<ul>
+ 	<li>Personal data collected and processed per applicable data protection laws</li>
+ 	<li>Data used for booking management, legal compliance, and service improvement</li>
+ 	<li>Marketing communications only with explicit consent</li>
+</ul>
+<h3>7.2 Data Sharing</h3>
+<ul>
+ 	<li>Shared with necessary service providers (payment processing, housekeeping)</li>
+ 	<li>Disclosed when required by law or authorities</li>
+ 	<li>Never sold to third parties</li>
+</ul>
+<h3>7.3 Data Retention</h3>
+<ul>
+ 	<li>Booking data retained for 12 months for legal and tax purposes</li>
+ 	<li>Right to request data access, correction, or deletion per GDPR</li>
+</ul>
+<h2>8. Force Majeure</h2>
+Neither party liable for failure to perform obligations due to circumstances beyond reasonable control, including but not limited to:
+<ul>
+ 	<li>Natural disasters, extreme weather</li>
+ 	<li>War, terrorism, civil unrest</li>
+ 	<li>Government actions, travel restrictions</li>
+ 	<li>Pandemic or epidemic</li>
+ 	<li>Utility failures beyond our control</li>
+</ul>
+<h2>9. Complaints and Disputes</h2>
+<h3>9.1 Complaint Procedure</h3>
+<ul>
+ 	<li>Report issues immediately to reception/management</li>
+ 	<li>Written complaints: info@test.preelook.com</li>
+ 	<li>Response within 72 hours</li>
+</ul>
+<h3>9.2 Applicable Law</h3>
+<ul>
+ 	<li>Governed by the laws of the Republic of Croatia</li>
+ 	<li>Disputes subject to exclusive jurisdiction of Municipal Court of Rijeka</li>
+</ul>
+<h3>9.3 Alternative Dispute Resolution</h3>
+<ul>
+ 	<li>Good faith attempt to resolve disputes before legal action</li>
+ 	<li>EU residents may use EU Online Dispute Resolution platform</li>
+</ul>
+<h2>10. Special Provisions</h2>
+<h3>10.1 Accessibility</h3>
+<ul>
+ 	<li><strong>[ACCESSIBILITY INFORMATION]</strong></li>
+ 	<li>Special requirements must be communicated at booking</li>
+</ul>
+<h3>10.2 Children</h3>
+<ul>
+ 	<li>Children under 18 must be supervised at all times</li>
+ 	<li>Baby cots available free upon request</li>
+</ul>
+<h3>10.3 Parking</h3>
+<ul>
+ 	<li>Free private parking provided for all guests</li>
+ 	<li>Not responsible for vehicle damage or theft</li>
+</ul>
+<h2>11. General Terms</h2>
+<h3>11.1 Entire Agreement</h3>
+<ul>
+ 	<li>These terms constitute the entire agreement</li>
+ 	<li>Supersede all prior agreements or understandings</li>
+</ul>
+<h3>11.2 Severability</h3>
+<ul>
+ 	<li>Invalid provisions shall not affect remaining terms</li>
+ 	<li>Invalid provisions replaced with enforceable alternatives</li>
+</ul>
+<h3>11.3 Amendments</h3>
+<ul>
+ 	<li>We reserve the right to modify these terms</li>
+ 	<li>Existing bookings governed by terms at time of booking</li>
+</ul>
+<h3>11.4 Contact Information</h3>
+<strong>Preelook Apartments</strong><br>
+Preluk 4, 51000, Rijeka, Hrvatska
+<br>
+Phone: +385 91 6125 689
+<br>
+Email: info@test.preelook.com
+<br>
+Website: test.preelook.com
+<h3>11.5 Emergency Contacts</h3>
+Emergency Services: 112<br>
+Property Emergency: +385 91 6125 689
+
+<hr />
+<br>
+<em>By completing your booking, you confirm that you have read, understood, and agree to these Terms and Conditions.</em>
+<br><br>
+<em>Last updated: 09.09.2025</em>
+        </div>
+    </div>
+</div>
+
+<div id="privacy-modal" class="mphb-modal" style="display:none;">
+    <div class="mphb-modal-content">
+        <span class="mphb-modal-close">&times;</span>
+        <h2 class="checkoutmodalheading">Privacy Policy</h2>
+        <div class="mphb-modal-body" id="privacy-content">
+            <strong>Effective Date:</strong> 09.09.2025 <br>
+<strong>Website:</strong> test.preelook.com <br>
+<strong>Legal Entity:</strong> Vigilo j.d.o.o <br>
+<strong>VAT:</strong> 10083013956 <br>
+<strong>Address:</strong> Preluk 4, 51000, Rijeka, Hrvatska <br>
+<strong>Email:</strong> info@test.preelook.com <br>
+<strong>Phone:</strong> +385 91 6125 689 <br><br>
+
+At Preelook Apartments, we value your privacy and are committed to protecting your personal data. This Privacy Policy explains what information we collect, why we need it, how we use it, who we share it with, and your rights under the General Data Protection Regulation (GDPR).
+
+<hr />
+
+<h2>1. Data Controller</h2>
+For GDPR purposes, the data controller is <strong>Vigilo j.d.o.o</strong>, located at <strong>Preluk 4, 51000, Rijeka, Hrvatska</strong>. You can contact us about privacy matters at <strong>info@test.preelook.com</strong>. <br><br>
+
+The Croatian Data Protection Authority (AZOP - Agencija za zaštitu osobnih podataka) supervises data protection compliance. You may contact AZOP if you believe your privacy rights have been violated: <a href="https://azop.hr/">azop.hr</a><br>
+
+<hr />
+
+<h2>2. Information We Collect</h2>
+<h3>2.1 Online Booking Information</h3>
+When you make a reservation through our website, we collect:
+<ul>
+ 	<li><strong>Contact details:</strong> Full name, email address, phone number</li>
+ 	<li><strong>Booking details:</strong> Check-in/out dates, accommodation type, number of guests (adults/children), special requests</li>
+ 	<li><strong>Billing information:</strong> ZIP/postal code (for payment processing)</li>
+</ul>
+<h3>2.2 Check-in Registration (eVisitor)</h3>
+Upon arrival at our property, Croatian law requires us to collect and register additional guest information in the eVisitor system:
+<ul>
+ 	<li>Full name, date and place of birth, citizenship, permanent address</li>
+ 	<li>ID document type and number, gender</li>
+ 	<li>Arrival/departure dates, sojourn tax exemptions (if applicable)</li>
+</ul>
+This data collection at check-in is mandatory under Croatian tourism regulations. <br><br>
+<h3>2.3 Payment Information</h3>
+We process payments through Stripe's secure hosted checkout. We never store your full card details on our servers. Stripe handles all payment data according to PCI DSS security standards. Learn more: <a href="https://stripe.com/privacy"><u>stripe.com/privacy</u></a> <br><br>
+<h3>2.4 Communications</h3>
+If you opt in, we collect:
+<ul>
+ 	<li>Email engagement data for service messages (booking confirmations, check-in instructions)</li>
+ 	<li>Marketing preferences for optional promotional communications</li>
+</ul>
+<h3>2.5 Website Analytics</h3>
+We use:
+<ul>
+ 	<li><strong>Essential cookies:</strong> Required for website functionality</li>
+ 	<li><strong>Analytics cookies:</strong> With your consent only, to improve our services and measure website performance</li>
+</ul>
+
+<hr />
+
+<h2>3. Legal Basis for Processing</h2>
+We process your data based on:
+<ul>
+ 	<li><strong>Contract (Article 6(1)(b) GDPR):</strong> To fulfill your booking, provide accommodation services, and manage your reservation</li>
+ 	<li><strong>Legal Obligation (Article 6(1)(c) GDPR):</strong> To comply with Croatian guest registration requirements (eVisitor), tax regulations, and accounting laws</li>
+ 	<li><strong>Legitimate Interests (Article 6(1)(f) GDPR):</strong> For service improvements, fraud prevention, and security (balanced against your rights)</li>
+ 	<li><strong>Consent (Article 6(1)(a) GDPR):</strong> For marketing communications and non-essential cookies</li>
+</ul>
+
+<hr />
+
+<h2>4. How We Use Your Data</h2>
+We use your information to:
+<ul>
+ 	<li>Process and manage your reservation</li>
+ 	<li>Send booking confirmations and pre-arrival information</li>
+ 	<li>Handle payments and refunds through our payment processor</li>
+ 	<li>Register guests with Croatian authorities as legally required (at check-in)</li>
+ 	<li>Provide customer support and respond to inquiries</li>
+ 	<li>With your consent: Send promotional offers and analyze website usage to improve our services</li>
+</ul>
+
+<hr />
+
+<h2>5. Data Sharing</h2>
+We never sell your personal data. We share information only when necessary to provide services or meet legal requirements:
+<h3>Service Providers</h3>
+<ul>
+ 	<li><strong>Website &amp; Booking System:</strong> WordPress with MotoPress Hotel Booking</li>
+ 	<li><strong>Payment Processing:</strong> Stripe Payments Europe Ltd. for secure payment handling</li>
+ 	<li><strong>Hosting:</strong> Hostinger</li>
+ 	<li><b>Analytics: </b>Google Analytics</li>
+</ul>
+<h3>Legal Requirements</h3>
+<ul>
+ 	<li>Croatian tourist authorities via eVisitor system (for check-in data)</li>
+ 	<li>Tax authorities for fiscal compliance</li>
+ 	<li>Law enforcement or courts when legally required</li>
+</ul>
+
+<hr />
+
+<h2>6. International Data Transfers</h2>
+Some service providers may process data outside the European Economic Area. Where this occurs, we ensure appropriate safeguards:
+<ul>
+ 	<li>EU-US Data Privacy Framework (for certified providers like Mailchimp)</li>
+ 	<li>Standard Contractual Clauses with supplementary measures</li>
+ 	<li>Adequacy decisions by the European Commission</li>
+</ul>
+
+<hr />
+
+<h2>7. Data Retention</h2>
+We retain your data for:
+<ul>
+ 	<li><strong>Guest registration records (eVisitor):</strong> 10 years (Croatian legal requirement)</li>
+ 	<li><strong>Financial records:</strong> 11 years (Croatian accounting regulations)</li>
+ 	<li><strong>Booking correspondence:</strong> 5 years for potential disputes</li>
+ 	<li><strong>Marketing data:</strong> Until you unsubscribe or after 24 months of inactivity</li>
+</ul>
+We delete or anonymize data when retention periods expire, unless longer retention is required by law.
+
+<hr />
+
+<h2>8. Your Privacy Rights</h2>
+Under GDPR, you have the right to:
+<ul>
+ 	<li><strong>Access</strong> your personal data we hold</li>
+ 	<li><strong>Rectify</strong> inaccurate information</li>
+ 	<li><strong>Erase</strong> your data (where legally permitted)</li>
+ 	<li><strong>Restrict</strong> processing in certain circumstances</li>
+ 	<li><strong>Data portability</strong> to transfer your data</li>
+ 	<li><strong>Object</strong> to certain types of processing</li>
+ 	<li><strong>Withdraw consent</strong> at any time (for consent-based processing)</li>
+ 	<li><strong>Lodge a complaint</strong> with AZOP</li>
+</ul>
+To exercise these rights, contact us at <strong>info@test.preelook.com</strong>. We'll respond within 30 days.
+
+<hr />
+
+<h2>9. Cookie Policy</h2>
+<h3>Essential Cookies</h3>
+Required for website operation (booking process, security, session management). These cannot be disabled.
+<h3>Optional Cookies</h3>
+Analytics and marketing cookies are only set after you provide consent. You can manage your preferences anytime via our cookie consent tool.
+
+<hr />
+
+<h2>10. Security Measures</h2>
+We protect your data through:
+<ul>
+ 	<li>SSL/TLS encryption across our entire website</li>
+ 	<li>Secure payment processing via PCI-compliant providers</li>
+ 	<li>Access controls limiting data access to authorized personnel</li>
+ 	<li>Regular security assessments and updates</li>
+</ul>
+
+<hr />
+
+<h2>11. Children's Privacy</h2>
+Our services are available to families traveling with children. For guests under 16 years old, bookings should be made by a parent or guardian. We collect children's data only as required for accommodation services and legal compliance.
+
+<hr />
+
+<h2>12. Third-Party Bookings</h2>
+If you book through an online travel agency (OTA), they act as an independent data controller. We receive only the information necessary to fulfill your reservation and meet legal obligations. OTA bookings are also subject to the OTA's privacy policy.
+
+<hr />
+
+<h2>13. Additional Information</h2>
+<h3>Data Protection Officer</h3>
+We are not required to appoint a DPO under GDPR. For privacy matters, please contact us at info@test.preelook.com.
+
+<hr />
+
+<h2>14. Updates to This Policy</h2>
+We may update this policy to reflect changes in law or our practices. Significant changes will be communicated via our website with an updated effective date.
+
+<hr />
+
+<h2>15. Contact Us</h2>
+For any privacy-related questions or to exercise your rights: <br>
+
+<strong>Vigilo j.d.o.o</strong> <br>
+<strong>Preluk 4, 51000, Rijeka, Hrvatska</strong> <br>
+<strong>Email:</strong> info@test.preelook.com <br>
+<strong>Phone:</strong> +385 91 6125 689 <br>
+
+<hr />
+<br>
+<em>This policy was last updated on 09.09.2025</em>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Checkout Modal Styling */
+.mphb-modal {
+    display: none;
+    position: fixed;
+    z-index: 999999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.75);
+}
+
+.mphb-modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.mphb-modal-close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0 10px;
+    line-height: 1;
+}
+
+.mphb-modal-close:hover,
+.mphb-modal-close:focus {
+    color: #000;
+}
+
+.checkoutmodalheading {
+    padding: 20px 30px;
+    margin: 0;
+    border-bottom: 1px solid #e5e5e5;
+}
+
+.mphb-modal-body {
+    padding: 30px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.mphb-modal-body h2 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+.mphb-modal-body h2:first-child {
+    margin-top: 0;
+}
+
+.mphb-modal-body ul {
+    margin-bottom: 1em;
+}
+
+@media (max-width: 768px) {
+    .mphb-modal-content {
+        width: 95%;
+        margin: 10px auto;
+        max-height: 95vh;
+    }
+
+    .checkoutmodalheading {
+        padding: 15px 20px;
+        font-size: 20px;
+    }
+
+    .mphb-modal-body {
+        padding: 20px;
+    }
+}
+</style>
+
+<script>
+// Checkout Modal Handlers
+document.addEventListener('DOMContentLoaded', function() {
+    const modalTriggers = document.querySelectorAll('.modal-trigger');
+    const modals = {
+        terms: document.getElementById('terms-modal'),
+        privacy: document.getElementById('privacy-modal')
+    };
+
+    // Prevent default link behavior and open modal
+    modalTriggers.forEach(trigger => {
+        trigger.addEventListener('click', function(e) {
+            e.preventDefault();
+            const modalType = this.dataset.modal;
+            const modal = modals[modalType];
+
+            if (modal) {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            }
+        });
+    });
+
+    // Close modal functionality
+    document.querySelectorAll('.mphb-modal-close').forEach(closeBtn => {
+        closeBtn.addEventListener('click', function() {
+            this.closest('.mphb-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+    });
+
+    // Close on outside click
+    window.addEventListener('click', function(e) {
+        if (e.target.classList.contains('mphb-modal')) {
+            e.target.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    });
+
+    // Close on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.mphb-modal').forEach(modal => {
+                if (modal.style.display === 'block') {
+                    modal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            });
+        }
+    });
+});
+</script>

@@ -196,6 +196,23 @@ add_filter('allowed_redirect_hosts', function(array $hosts) {
     return $hosts;
 });
 
+/**
+ * Load checkout modals template in footer
+ */
+add_action('wp_footer', function() {
+    // Only on checkout pages
+    if (is_page(['checkout', 'book', 'booking'])) {
+        require_once SHAPED_DIR . 'templates/checkout-modals.php';
+        return;
+    }
+
+    // Or pages with checkout shortcode
+    global $post;
+    if ($post && has_shortcode($post->post_content, 'mphb_checkout')) {
+        require_once SHAPED_DIR . 'templates/checkout-modals.php';
+    }
+}, 999);
+
 /* =========================================================================
  * ADMIN NOTICES
  * ========================================================================= */

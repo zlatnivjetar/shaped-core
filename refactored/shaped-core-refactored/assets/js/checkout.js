@@ -493,9 +493,6 @@ document.addEventListener('DOMContentLoaded', function() {
         var breakdown = document.querySelector('.mphb-price-breakdown');
         if (!breakdown) return;
 
-        // Check if discount row already exists
-        if (breakdown.querySelector('.mphb-discount-row')) return;
-
         var accommodationRow = breakdown.querySelector('.mphb-price-breakdown-accommodation-total');
         var subtotalRow = breakdown.querySelector('.mphb-price-breakdown-subtotal');
 
@@ -507,21 +504,40 @@ document.addEventListener('DOMContentLoaded', function() {
             // Calculate discount ONLY on accommodation (not on services)
             var discountAmount = Math.round(accommodationTotal * (discountPercent / 100));
 
+            // Check if discount row already exists
+            var existingDiscountRow = breakdown.querySelector('.mphb-discount-row');
+
             // Determine number of columns based on whether services exist
             var hasServices = breakdown.querySelectorAll('.mphb-price-breakdown-services').length > 0;
             var colSpan = hasServices ? 2 : 1;
 
-            var discountRow = document.createElement('tr');
-            discountRow.className = 'mphb-discount-row';
-            discountRow.innerHTML =
-                '<th colspan="' + colSpan + '">You\'re saving:</th>' +
-                '<th class="mphb-table-price-column" style="color: #4C9155;">-<span class="mphb-currency">€</span>' + discountAmount + '</th>';
-
-            // Insert after the subtotal row if it exists, otherwise after accommodation
-            if (subtotalRow) {
-                subtotalRow.parentNode.insertBefore(discountRow, subtotalRow.nextSibling);
+            if (existingDiscountRow) {
+                // Update existing row
+                var discountCell = existingDiscountRow.querySelector('.mphb-table-price-column');
+                if (discountCell) {
+                    discountCell.innerHTML = '<span class="mphb-currency">€</span>' + discountAmount;
+                }
+                // Update colspan if services were added/removed
+                var thElement = existingDiscountRow.querySelector('th[colspan]');
+                if (thElement) {
+                    thElement.setAttribute('colspan', colSpan);
+                }
+                console.log('[Discount Row] Updated with amount: €' + discountAmount);
             } else {
-                accommodationRow.parentNode.insertBefore(discountRow, accommodationRow.nextSibling);
+                // Create new discount row
+                var discountRow = document.createElement('tr');
+                discountRow.className = 'mphb-discount-row';
+                discountRow.innerHTML =
+                    '<th colspan="' + colSpan + '">You\'re saving:</th>' +
+                    '<th class="mphb-table-price-column" style="color: #4C9155;">-<span class="mphb-currency">€</span>' + discountAmount + '</th>';
+
+                // Insert after the subtotal row if it exists, otherwise after accommodation
+                if (subtotalRow) {
+                    subtotalRow.parentNode.insertBefore(discountRow, subtotalRow.nextSibling);
+                } else {
+                    accommodationRow.parentNode.insertBefore(discountRow, accommodationRow.nextSibling);
+                }
+                console.log('[Discount Row] Added with amount: €' + discountAmount);
             }
 
             // Update the total row to reflect the discount
@@ -537,7 +553,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
 
-            console.log('[Discount Row] Added with amount: €' + discountAmount);
+            // Update discount badge with new amount
+            updateDiscountBadge(discountAmount);
+        }
+    }
+
+    function updateDiscountBadge(discountAmount) {
+        var totalPriceOutput = document.querySelector('.mphb-total-price output');
+        if (!totalPriceOutput) return;
+
+        var badge = totalPriceOutput.querySelector('.discount-badge-checkout');
+        if (badge) {
+            badge.textContent = `You're saving €${discountAmount} today`;
         }
     }
 

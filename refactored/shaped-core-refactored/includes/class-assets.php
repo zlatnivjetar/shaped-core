@@ -286,8 +286,9 @@ class Shaped_Assets {
     private function has_search_form(): bool {
         global $post;
 
-        // Check for MotoPress search shortcode
-        if ($post && has_shortcode($post->post_content, 'mphb_search')) {
+        // Check for MotoPress search shortcodes
+        if ($post && (has_shortcode($post->post_content, 'mphb_search') ||
+                      has_shortcode($post->post_content, 'mphb_availability_search'))) {
             return true;
         }
 
