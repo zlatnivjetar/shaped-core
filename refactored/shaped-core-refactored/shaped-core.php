@@ -69,27 +69,29 @@ Shaped_Loader::register();
  * ========================================================================= */
 
 if (!function_exists('shaped_load_stripe_sdk')) {
-    /**
-     * Load Stripe PHP SDK
-     * SDK should be placed in /vendor/stripe-php/
-     */
     function shaped_load_stripe_sdk(): void {
         static $loaded = false;
         if ($loaded) return;
-        
-        // First check plugin's vendor folder
+
         $plugin_path = SHAPED_DIR . 'vendor/stripe-php/init.php';
-        
-        // Fallback to mu-plugins (legacy location)
-        $mu_path = WP_CONTENT_DIR . '/mu-plugins/stripe-php/init.php';
-        
-        // Allow filtering the path
-        $sdk_path = apply_filters('shaped/stripe_sdk_path', 
+        $mu_path     = WP_CONTENT_DIR . '/mu-plugins/stripe-php/init.php';
+
+        $sdk_path = apply_filters(
+            'shaped/stripe_sdk_path',
             file_exists($plugin_path) ? $plugin_path : $mu_path
         );
-        
+
         if (file_exists($sdk_path)) {
             require_once $sdk_path;
+
+            \Stripe\Stripe::setAppInfo(
+                "ShapedSystems",
+                SHAPED_VERSION,
+                "https://shapedsystems.com"
+            );
+            // (Optional but recommended: pin API version)
+            // \Stripe\Stripe::setApiVersion('2024-06-20');
+
             $loaded = true;
         } else {
             if (is_admin() && current_user_can('manage_options')) {
@@ -103,6 +105,7 @@ if (!function_exists('shaped_load_stripe_sdk')) {
         }
     }
 }
+
 
 /* =========================================================================
  * INITIALIZATION
