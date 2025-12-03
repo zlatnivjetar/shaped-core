@@ -626,14 +626,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        const badge = totalPriceOutput.querySelector('.discount-badge-checkout');
-        if (badge) {
-            console.log('[Discount Badge] Badge already exists');
-            return; // Badge exists, no need to recreate
-        }
-
-        // Badge is missing - calculate discount and recreate
-        console.log('[Discount Badge] Badge missing - recalculating');
+        // ALWAYS recalculate - don't return early if badge exists
+        // Calculate discount from breakdown
+        console.log('[Discount Badge] Recalculating discount amount');
         const breakdown = document.querySelector('.mphb-price-breakdown');
         if (!breakdown) {
             console.log('[Discount Badge] No price breakdown found');
@@ -650,7 +645,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const accommodationTotal = parseInt(accommodationText.replace(/[^0-9]/g, ''));
         const discountAmount = Math.round(accommodationTotal * (discountPercent / 100));
 
-        console.log('[Discount Badge] Recalculated discount:', discountAmount);
+        console.log('[Discount Badge] Calculated discount:', discountAmount, 'from accommodation:', accommodationTotal);
         updateDiscountBadge(discountAmount);
     }
 
