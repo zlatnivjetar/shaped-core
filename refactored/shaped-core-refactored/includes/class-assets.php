@@ -32,16 +32,14 @@ class Shaped_Assets {
             );
         }
 
-        // Language Switcher - load on all pages
-        if (file_exists(SHAPED_DIR . 'assets/js/language-switch-fade.js')) {
-            wp_enqueue_script(
-                'shaped-language-fade',
-                SHAPED_URL . 'assets/js/language-switch-fade.js',
-                ['jquery'],
-                SHAPED_VERSION,
-                true
-            );
-        }
+        // Language Switcher - force load on all pages with no dependencies
+        wp_enqueue_script(
+            'shaped-language-fade',
+            SHAPED_URL . 'assets/js/language-switch-fade.js',
+            [],  // No dependencies
+            SHAPED_VERSION,
+            true
+        );
         
         // ─── Checkout Page ───
         if ($this->is_checkout_page()) {

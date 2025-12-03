@@ -415,6 +415,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const discountAmount = Math.round(originalPrice * (discountPercent / 100));
         const discountedTotal = originalPrice - discountAmount;
 
+        console.log('[Discount Badge] Updating display - Original:', originalPrice, 'Discounted:', discountedTotal, 'Amount saved:', discountAmount);
+
         // Update display
         totalPriceField.innerHTML = `
             <span class="mphb-price-original" style="text-decoration: line-through; color: #999; font-weight: normal;">
@@ -425,21 +427,23 @@ document.addEventListener('DOMContentLoaded', function() {
             </span>
         `;
 
-        // Add or update discount badge
-        const totalPriceOutput = document.querySelector('.mphb-total-price output');
-        if (totalPriceOutput) {
-            let badge = totalPriceOutput.querySelector('.discount-badge-checkout');
-            if (badge) {
-                // Update existing badge
-                badge.textContent = `You're saving €${discountAmount} today`;
-            } else {
-                // Create new badge
-                badge = document.createElement('span');
-                badge.className = 'discount-badge-checkout';
-                badge.textContent = `You're saving €${discountAmount} today`;
-                totalPriceOutput.appendChild(badge);
+        // Force badge update after a tiny delay to ensure element exists
+        setTimeout(() => {
+            const totalPriceOutput = document.querySelector('.mphb-total-price output');
+            if (totalPriceOutput) {
+                let badge = totalPriceOutput.querySelector('.discount-badge-checkout');
+                if (badge) {
+                    console.log('[Discount Badge] Updating existing badge');
+                    badge.textContent = `You're saving €${discountAmount} today`;
+                } else {
+                    console.log('[Discount Badge] Creating new badge');
+                    badge = document.createElement('span');
+                    badge.className = 'discount-badge-checkout';
+                    badge.textContent = `You're saving €${discountAmount} today`;
+                    totalPriceOutput.appendChild(badge);
+                }
             }
-        }
+        }, 10);
     }
 
     function addUrgencyMessage() {
@@ -577,13 +581,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateDiscountBadge(discountAmount) {
+        console.log('[Discount Badge] updateDiscountBadge called with amount:', discountAmount);
+
         var totalPriceOutput = document.querySelector('.mphb-total-price output');
-        if (!totalPriceOutput) return;
+        if (!totalPriceOutput) {
+            console.log('[Discount Badge] No total price output found');
+            return;
+        }
 
         var badge = totalPriceOutput.querySelector('.discount-badge-checkout');
         if (badge) {
+            console.log('[Discount Badge] Updating existing badge text');
             badge.textContent = `You're saving €${discountAmount} today`;
         } else {
+            console.log('[Discount Badge] Badge not found - creating new one');
             // Badge was removed - recreate it
             badge = document.createElement('span');
             badge.className = 'discount-badge-checkout';
@@ -596,30 +607,50 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 totalPriceOutput.appendChild(badge);
             }
+            console.log('[Discount Badge] New badge created and appended');
         }
     }
 
     function ensureDiscountBadgeExists() {
+        console.log('[Discount Badge] ensureDiscountBadgeExists called');
+
         const discountPercent = document.querySelector('input[name="mphb_discount_percentage"]')?.value;
-        if (!discountPercent || discountPercent == 0) return;
+        if (!discountPercent || discountPercent == 0) {
+            console.log('[Discount Badge] No discount percentage found');
+            return;
+        }
 
         const totalPriceOutput = document.querySelector('.mphb-total-price output');
-        if (!totalPriceOutput) return;
+        if (!totalPriceOutput) {
+            console.log('[Discount Badge] No total price output element found');
+            return;
+        }
 
         const badge = totalPriceOutput.querySelector('.discount-badge-checkout');
-        if (badge) return; // Badge exists, no need to recreate
+        if (badge) {
+            console.log('[Discount Badge] Badge already exists');
+            return; // Badge exists, no need to recreate
+        }
 
         // Badge is missing - calculate discount and recreate
+        console.log('[Discount Badge] Badge missing - recalculating');
         const breakdown = document.querySelector('.mphb-price-breakdown');
-        if (!breakdown) return;
+        if (!breakdown) {
+            console.log('[Discount Badge] No price breakdown found');
+            return;
+        }
 
         const accommodationRow = breakdown.querySelector('.mphb-price-breakdown-accommodation-total');
-        if (!accommodationRow) return;
+        if (!accommodationRow) {
+            console.log('[Discount Badge] No accommodation row found');
+            return;
+        }
 
         const accommodationText = accommodationRow.querySelector('.mphb-table-price-column')?.textContent;
         const accommodationTotal = parseInt(accommodationText.replace(/[^0-9]/g, ''));
         const discountAmount = Math.round(accommodationTotal * (discountPercent / 100));
 
+        console.log('[Discount Badge] Recalculated discount:', discountAmount);
         updateDiscountBadge(discountAmount);
     }
 
