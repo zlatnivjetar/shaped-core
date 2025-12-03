@@ -74,8 +74,8 @@ class Shaped_Assets {
             );
         }
         
-        // ─── Language Switcher (only if WPML/Polylang active) ───
-        if ($this->has_multilingual_plugin() && file_exists(SHAPED_DIR . 'assets/js/language-switch-fade.js')) {
+        // ─── Language Switcher (load on all pages) ───
+        if (file_exists(SHAPED_DIR . 'assets/js/language-switch-fade.js')) {
             wp_enqueue_script(
                 'shaped-language-fade',
                 SHAPED_URL . 'assets/js/language-switch-fade.js',
@@ -294,6 +294,17 @@ class Shaped_Assets {
 
         // Home page usually has search form
         if (is_front_page()) {
+            return true;
+        }
+
+        // Room pages (MotoPress room type single pages under /accommodation/)
+        if (is_singular('mphb_room_type')) {
+            return true;
+        }
+
+        // Also check URL pattern for room pages
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
+        if (strpos($uri, '/accommodation/') !== false) {
             return true;
         }
 

@@ -394,11 +394,22 @@ document.addEventListener('DOMContentLoaded', function() {
         const priceSpan = totalPriceField.querySelector('.mphb-price');
         if (!priceSpan) return;
 
-        // Skip if already showing discount
-        if (totalPriceField.querySelector('.mphb-price-original')) return;
+        // Get original price from MotoPress (might be in .mphb-price or .mphb-price-current)
+        const currentPriceSpan = totalPriceField.querySelector('.mphb-price-current') || priceSpan;
+        const priceText = currentPriceSpan.textContent;
+        const currentPrice = parseInt(priceText.replace(/[^0-9]/g, ''));
 
-        const priceText = priceSpan.textContent;
-        const originalPrice = parseInt(priceText.replace(/[^0-9]/g, ''));
+        // Check if we already have discount structure - if so, get the ORIGINAL undiscounted price
+        const existingOriginalPrice = totalPriceField.querySelector('.mphb-price-original');
+        let originalPrice;
+
+        if (existingOriginalPrice) {
+            // Already showing discount - extract original price from the strikethrough element
+            originalPrice = parseInt(existingOriginalPrice.textContent.replace(/[^0-9]/g, ''));
+        } else {
+            // First time applying discount - current price IS the original
+            originalPrice = currentPrice;
+        }
 
         // Calculate discount on TOTAL price (including breakfast/services)
         const discountAmount = Math.round(originalPrice * (discountPercent / 100));
@@ -414,13 +425,20 @@ document.addEventListener('DOMContentLoaded', function() {
             </span>
         `;
 
-        // Add discount badge
+        // Add or update discount badge
         const totalPriceOutput = document.querySelector('.mphb-total-price output');
-        if (totalPriceOutput && !totalPriceOutput.querySelector('.discount-badge-checkout')) {
-            const badge = document.createElement('span');
-            badge.className = 'discount-badge-checkout';
-            badge.textContent = `You're saving €${discountAmount} today`;
-            totalPriceOutput.appendChild(badge);
+        if (totalPriceOutput) {
+            let badge = totalPriceOutput.querySelector('.discount-badge-checkout');
+            if (badge) {
+                // Update existing badge
+                badge.textContent = `You're saving €${discountAmount} today`;
+            } else {
+                // Create new badge
+                badge = document.createElement('span');
+                badge.className = 'discount-badge-checkout';
+                badge.textContent = `You're saving €${discountAmount} today`;
+                totalPriceOutput.appendChild(badge);
+            }
         }
     }
 
