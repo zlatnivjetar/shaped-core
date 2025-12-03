@@ -31,6 +31,17 @@ class Shaped_Assets {
                 true
             );
         }
+
+        // Language Switcher - load on all pages
+        if (file_exists(SHAPED_DIR . 'assets/js/language-switch-fade.js')) {
+            wp_enqueue_script(
+                'shaped-language-fade',
+                SHAPED_URL . 'assets/js/language-switch-fade.js',
+                ['jquery'],
+                SHAPED_VERSION,
+                true
+            );
+        }
         
         // ─── Checkout Page ───
         if ($this->is_checkout_page()) {
@@ -68,17 +79,6 @@ class Shaped_Assets {
             wp_enqueue_script(
                 'shaped-home-cards',
                 SHAPED_URL . 'assets/js/home-room-cards.js',
-                ['jquery'],
-                SHAPED_VERSION,
-                true
-            );
-        }
-        
-        // ─── Language Switcher (load on all pages) ───
-        if (file_exists(SHAPED_DIR . 'assets/js/language-switch-fade.js')) {
-            wp_enqueue_script(
-                'shaped-language-fade',
-                SHAPED_URL . 'assets/js/language-switch-fade.js',
                 ['jquery'],
                 SHAPED_VERSION,
                 true
