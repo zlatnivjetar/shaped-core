@@ -33,27 +33,11 @@ class Shaped_Amenity_Mapper {
     private static $icon_cache = [];
 
     /**
-     * Custom field names for taxonomy term overrides
-     *
-     * @var string
-     */
-    private const CUSTOM_FIELD = '_shaped_amenity_icon';
-    private const CUSTOM_FIELD_WEIGHT = '_shaped_amenity_icon_weight';
-
-    /**
      * Initialize the mapper
      */
     public function __construct() {
         // Load registry on first use
         $this->load_registry();
-
-        // Hook into taxonomy term fields
-        add_action('mphb_room_facility_add_form_fields', [$this, 'add_term_icon_field']);
-        add_action('mphb_room_facility_edit_form_fields', [$this, 'edit_term_icon_field'], 10, 1);
-        add_action('created_mphb_room_facility', [$this, 'save_term_icon_field']);
-        add_action('edited_mphb_room_facility', [$this, 'save_term_icon_field']);
-        add_filter('manage_edit-mphb_room_facility_columns', [$this, 'add_icon_column']);
-        add_filter('manage_mphb_room_facility_custom_column', [$this, 'render_icon_column'], 10, 3);
     }
 
     /**
@@ -93,11 +77,10 @@ class Shaped_Amenity_Mapper {
      * Get icon data for a facility term
      *
      * Priority order:
-     * 1. Custom field on term
-     * 2. Exact slug match in registry
-     * 3. Normalized name match
-     * 4. Keyword contains match
-     * 5. Fallback icon (or null if skip_fallback is true)
+     * 1. Exact slug match in registry
+     * 2. Normalized name match
+     * 3. Keyword contains match
+     * 4. Fallback icon (or null if skip_fallback is true)
      *
      * @param WP_Term|string $facility Term object or slug
      * @param array          $args     Optional arguments:
@@ -128,24 +111,7 @@ class Shaped_Amenity_Mapper {
             return self::$icon_cache[$cache_key];
         }
 
-        // Priority 1: Custom field override
-        if ($term_id) {
-            $custom_icon = get_term_meta($term_id, self::CUSTOM_FIELD, true);
-            if (!empty($custom_icon)) {
-                // Get custom weight if set
-                $custom_weight = get_term_meta($term_id, self::CUSTOM_FIELD_WEIGHT, true);
-                if (!empty($custom_weight)) {
-                    $args['weight'] = $custom_weight;
-                }
-
-                $icon_data = $this->build_icon_data($custom_icon, $name, $args);
-                $icon_data['is_fallback'] = false;
-                self::$icon_cache[$cache_key] = $icon_data;
-                return $icon_data;
-            }
-        }
-
-        // Priority 2: Exact slug match
+        // Priority 1: Exact slug match
         $registry_item = $this->find_by_slug($slug);
         if ($registry_item) {
             $icon_data = $this->build_icon_data($registry_item['icon'], $registry_item['label'], $args, $registry_item);
@@ -154,7 +120,7 @@ class Shaped_Amenity_Mapper {
             return $icon_data;
         }
 
-        // Priority 3: Normalized name match
+        // Priority 2: Normalized name match
         $registry_item = $this->find_by_normalized_name($name);
         if ($registry_item) {
             $icon_data = $this->build_icon_data($registry_item['icon'], $registry_item['label'], $args, $registry_item);
@@ -163,7 +129,7 @@ class Shaped_Amenity_Mapper {
             return $icon_data;
         }
 
-        // Priority 4: Keyword contains match
+        // Priority 3: Keyword contains match
         $registry_item = $this->find_by_keywords($name);
         if ($registry_item) {
             $icon_data = $this->build_icon_data($registry_item['icon'], $registry_item['label'], $args, $registry_item);
@@ -172,7 +138,7 @@ class Shaped_Amenity_Mapper {
             return $icon_data;
         }
 
-        // Priority 5: Fallback or null
+        // Priority 4: Fallback or null
         if ($skip_fallback) {
             self::$icon_cache[$cache_key] = null;
             return null;
@@ -353,133 +319,5 @@ class Shaped_Amenity_Mapper {
      */
     public static function clear_cache(): void {
         self::$icon_cache = [];
-    }
-
-    // ===========================
-    // Taxonomy Custom Field Hooks
-    // ===========================
-
-    /**
-     * Add custom icon field to term add form
-     *
-     * @param string $taxonomy Taxonomy name
-     * @return void
-     */
-    public function add_term_icon_field(string $taxonomy): void {
-        ?>
-        <div class="form-field">
-            <label for="shaped-amenity-icon"><?php esc_html_e('Custom Icon', 'shaped'); ?></label>
-            <input type="text" id="shaped-amenity-icon" name="shaped_amenity_icon" value="" />
-            <p class="description">
-                <?php esc_html_e('Override the default icon. Enter a Phosphor icon name (e.g., "wifi-high", "shower", "bed"). Leave blank to use automatic matching.', 'shaped'); ?>
-                <br>
-                <a href="https://phosphoricons.com/" target="_blank"><?php esc_html_e('Browse Phosphor Icons →', 'shaped'); ?></a>
-            </p>
-        </div>
-        <?php
-    }
-
-    /**
-     * Add custom icon field to term edit form
-     *
-     * @param WP_Term $term Current term object
-     * @return void
-     */
-    public function edit_term_icon_field(WP_Term $term): void {
-        $icon = get_term_meta($term->term_id, self::CUSTOM_FIELD, true);
-        ?>
-        <tr class="form-field">
-            <th scope="row">
-                <label for="shaped-amenity-icon"><?php esc_html_e('Custom Icon', 'shaped'); ?></label>
-            </th>
-            <td>
-                <input type="text" id="shaped-amenity-icon" name="shaped_amenity_icon" value="<?php echo esc_attr($icon); ?>" class="regular-text" />
-                <p class="description">
-                    <?php esc_html_e('Override the default icon. Enter a Phosphor icon name (e.g., "wifi-high", "shower", "bed"). Leave blank to use automatic matching.', 'shaped'); ?>
-                    <br>
-                    <a href="https://phosphoricons.com/" target="_blank"><?php esc_html_e('Browse Phosphor Icons →', 'shaped'); ?></a>
-                </p>
-                <?php
-                // Show preview of current icon
-                $current_icon = $this->get_icon($term);
-                if ($current_icon) {
-                    echo '<p class="description">';
-                    echo '<strong>' . esc_html__('Current icon:', 'shaped') . '</strong> ';
-                    echo $current_icon['html'] . ' ';
-                    echo '<code>' . esc_html($current_icon['icon']) . '</code>';
-                    echo '</p>';
-                }
-                ?>
-            </td>
-        </tr>
-        <?php
-    }
-
-    /**
-     * Save custom icon field
-     *
-     * @param int $term_id Term ID
-     * @return void
-     */
-    public function save_term_icon_field(int $term_id): void {
-        if (!isset($_POST['shaped_amenity_icon'])) {
-            return;
-        }
-
-        $icon = sanitize_text_field($_POST['shaped_amenity_icon']);
-
-        if (empty($icon)) {
-            delete_term_meta($term_id, self::CUSTOM_FIELD);
-        } else {
-            update_term_meta($term_id, self::CUSTOM_FIELD, $icon);
-        }
-
-        // Clear cache when term is updated
-        self::clear_cache();
-    }
-
-    /**
-     * Add icon column to term list table
-     *
-     * @param array $columns Existing columns
-     * @return array Modified columns
-     */
-    public function add_icon_column(array $columns): array {
-        $new_columns = [];
-
-        foreach ($columns as $key => $value) {
-            if ($key === 'name') {
-                $new_columns['icon'] = __('Icon', 'shaped');
-            }
-            $new_columns[$key] = $value;
-        }
-
-        return $new_columns;
-    }
-
-    /**
-     * Render icon in column
-     *
-     * @param string $content    Column content
-     * @param string $column_name Column name
-     * @param int    $term_id    Term ID
-     * @return string Column content
-     */
-    public function render_icon_column(string $content, string $column_name, int $term_id): string {
-        if ($column_name !== 'icon') {
-            return $content;
-        }
-
-        $term = get_term($term_id, 'mphb_room_facility');
-        if (!$term || is_wp_error($term)) {
-            return $content;
-        }
-
-        $icon_data = $this->get_icon($term);
-        if ($icon_data) {
-            return '<span style="font-size: 24px;">' . $icon_data['html'] . '</span>';
-        }
-
-        return '—';
     }
 }
