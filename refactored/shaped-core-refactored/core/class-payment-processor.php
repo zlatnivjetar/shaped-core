@@ -1,15 +1,13 @@
 <?php
 /**
  * Core Payment Logic
- * - Idempotency helpers
- * - Payment context
- * - Checkout notice (UI)
- * - Checkout redirect & Stripe session creation
- * - Webhook route + handler
- * - Scheduled charge executor
- * - Payment Method detach
- * - Cleanup hooks for scheduled charges
- * - Daily fallback scheduler
+ * 
+ * Supports two property-wide modes:
+ * 1. Scheduled Charge: <7 days = immediate full, ≥7 days = save card + charge at T-7
+ * 2. Deposit: ALL bookings charge X% immediately, balance due on arrival
+ *
+ * @package Shaped_Core
+ * @since 2.1.0
  */
 
 if (!defined('ABSPATH')) {
@@ -22,31 +20,30 @@ class Shaped_Payment_Processor
 {
     public function __construct()
     {
-        // [15] Checkout Payment Notice (UI)
+        // Checkout Payment Notice (UI)
         add_action('mphb_sc_checkout_form', [$this, 'render_checkout_payment_notice'], 55, 3);
 
-        // [16] Checkout Redirect & Session Creation
+        // Checkout Redirect & Session Creation
         add_action('template_redirect', [$this, 'intercept_checkout_redirect']);
 
-        // [17] Webhook Route Registration
+        // Webhook Route Registration
         add_action('rest_api_init', [$this, 'register_webhook_route']);
 
-        // [19] Scheduled Charge Executor
+        // Scheduled Charge Executor (for scheduled mode only)
         add_action('shaped_charge_single_booking', [$this, 'charge_single_booking'], 10, 2);
 
-        // [21] Charge Cleanup Hooks
+        // Charge Cleanup Hooks
         add_action('before_delete_post', [$this, 'on_booking_delete_clear_schedule'], 10);
         add_action('wp_trash_post',      [$this, 'on_booking_delete_clear_schedule'], 10, 1);
-        // add_action('pre_trash_post',     [$this, 'on_booking_delete_clear_schedule'], 10);
         add_action('mphb_booking_status_changed', [$this, 'on_booking_status_changed'], 10, 2);
 
-        // [24] Daily Fallback Scheduler
+        // Daily Fallback Scheduler (for scheduled mode)
         add_action('init', [$this, 'ensure_daily_fallback_schedule']);
         add_action('shaped_daily_charge_fallback', [$this, 'daily_charge_fallback']);
     }
 
     /* ============================================================
-     * [13] Idempotency Helpers
+     * Idempotency Helpers
      * ========================================================== */
 
     public static function event_already_processed(string $event_id): bool
@@ -82,8 +79,7 @@ class Shaped_Payment_Processor
     }
 
     /* ============================================================
-     * [14] Payment Context
-     *  - Used by UI and manager to show charge date, status, amount
+     * Payment Context
      * ========================================================== */
 
     public static function get_payment_context($booking): ?array
@@ -91,7 +87,7 @@ class Shaped_Payment_Processor
         if (!$booking) return null;
 
         $booking_id = $booking->getId();
-        $check_in   = $booking->getCheckInDate(); // DateTime
+        $check_in   = $booking->getCheckInDate();
         $check_out  = $booking->getCheckOutDate();
 
         // Normalize to 16:00 check-in and compute charge date
@@ -102,19 +98,33 @@ class Shaped_Payment_Processor
         // Deltas (days)
         $now               = new DateTime('now', $check_in_datetime->getTimezone());
         $days_until        = ($check_in_datetime->getTimestamp() - $now->getTimestamp()) / 86400;
-        $days_until_charge = ($charge_date->getTimestamp()     - $now->getTimestamp()) / 86400;
+        $days_until_charge = ($charge_date->getTimestamp() - $now->getTimestamp()) / 86400;
 
-        // Mode
+        // Get property-wide payment mode
+        $property_mode = class_exists('Shaped_Pricing') ? Shaped_Pricing::get_payment_mode() : 'scheduled';
+
+        // Determine effective mode for this booking
         $stored_mode = get_post_meta($booking_id, '_shaped_payment_mode', true);
-        $mode        = $stored_mode ?: (($days_until < 7) ? 'immediate' : 'delayed');
+        if ($stored_mode) {
+            $mode = $stored_mode;
+        } elseif ($property_mode === 'deposit') {
+            $mode = 'deposit';
+        } else {
+            $mode = ($days_until < 7) ? 'immediate' : 'delayed';
+        }
 
         // Status & Amount
         $is_charged      = (bool) get_post_meta($booking_id, '_stripe_payment_charged', true);
         $payment_status  = get_post_meta($booking_id, '_shaped_payment_status', true);
+        $payment_type    = get_post_meta($booking_id, '_shaped_payment_type', true); // 'full' | 'deposit'
+        
+        // Amounts
         $amount          = null;
         $paid_amount     = (float) get_post_meta($booking_id, '_mphb_paid_amount', true);
         $pending_amount  = (float) get_post_meta($booking_id, '_stripe_pending_amount', true);
         $stored_amount   = (float) get_post_meta($booking_id, '_shaped_payment_amount', true);
+        $deposit_amount  = (float) get_post_meta($booking_id, '_shaped_deposit_amount', true);
+        $balance_due     = (float) get_post_meta($booking_id, '_shaped_balance_due', true);
 
         if ($paid_amount > 0) {
             $amount = $paid_amount;
@@ -124,11 +134,13 @@ class Shaped_Payment_Processor
             $amount = $stored_amount;
         }
 
-        $is_immediate = ($mode === 'immediate' || $days_until < 7 || $is_charged);
+        $is_immediate = ($mode === 'immediate' || $mode === 'deposit' || $days_until < 7 || $is_charged);
 
         $actual_charge_status = 'pending';
         if ($is_charged || $payment_status === 'completed') {
             $actual_charge_status = 'paid';
+        } elseif ($payment_status === 'deposit_paid') {
+            $actual_charge_status = 'deposit_paid';
         } elseif ($payment_status === 'authorized') {
             $actual_charge_status = 'authorized';
         } elseif ($payment_status === 'charge_failed') {
@@ -143,28 +155,35 @@ class Shaped_Payment_Processor
             'days_until'        => $days_until,
             'days_until_charge' => $days_until_charge,
             'mode'              => $mode,
+            'property_mode'     => $property_mode,
             'is_charged'        => $is_charged,
             'amount'            => $amount,
             'is_immediate'      => $is_immediate,
             'payment_status'    => $actual_charge_status,
+            'payment_type'      => $payment_type ?: 'full',
+            'deposit_amount'    => $deposit_amount,
+            'balance_due'       => $balance_due,
         ];
     }
 
     /* ============================================================
-     * [15] Checkout Payment Notice (UI)
+     * Checkout Payment Notice (UI)
      * ========================================================== */
 
     public function render_checkout_payment_notice($booking, $roomDetails, $customer = null): void
     {
         $context = self::get_payment_context($booking);
-        if (!$context || $context['is_immediate']) {
-            return; // Only show for delayed charges
+        if (!$context) {
+            return;
         }
+
+        // Get property-wide mode
+        $property_mode = class_exists('Shaped_Pricing') ? Shaped_Pricing::get_payment_mode() : 'scheduled';
 
         // Base total
         $total_amount = (float) $booking->getTotalPrice();
 
-        // Optional: apply discount to accommodation-only (mirror canonical calc)
+        // Apply discount to accommodation
         $services_total  = 0;
         $price_breakdown = $booking->getPriceBreakdown();
         if (isset($price_breakdown['rooms']) && is_array($price_breakdown['rooms'])) {
@@ -191,6 +210,38 @@ class Shaped_Payment_Processor
             }
         }
 
+        // DEPOSIT MODE - Show deposit info
+        if ($property_mode === 'deposit') {
+            $deposit_data = Shaped_Pricing::calculate_deposit($total_amount);
+            $deposit_formatted = number_format($deposit_data['deposit'], 2);
+            $balance_formatted = number_format($deposit_data['balance'], 2);
+            $percent = $deposit_data['percent'];
+
+            ?>
+            <style>.payment-methods{display:none!important;}</style>
+            <div id="shaped-payment-note"
+                 class="shaped-note shaped-note--deposit"
+                 data-payment-mode="deposit"
+                 data-deposit-amount="<?php echo esc_attr($deposit_data['deposit']); ?>"
+                 data-balance-due="<?php echo esc_attr($deposit_data['balance']); ?>"
+                 data-total="<?php echo esc_attr($total_amount); ?>">
+                <div class="shaped-note__content">
+                    <strong class="shaped-note__headline">Pay €<?php echo esc_html($deposit_formatted); ?> deposit today</strong>
+                    <p class="shaped-note__body">
+                        Secure your booking with a <strong><?php echo esc_html($percent); ?>% deposit</strong>.<br>
+                        Remaining <strong>€<?php echo esc_html($balance_formatted); ?></strong> is due on arrival.
+                    </p>
+                </div>
+            </div>
+            <?php
+            return;
+        }
+
+        // SCHEDULED MODE - Only show for delayed charges (≥7 days out)
+        if ($context['is_immediate']) {
+            return;
+        }
+
         $charge_date_formatted = date_i18n('F j, Y', $context['charge_date']->getTimestamp());
         $amount_formatted      = number_format($total_amount, 2);
 
@@ -214,7 +265,7 @@ class Shaped_Payment_Processor
     }
 
     /* ============================================================
-     * [16] Checkout Redirect & Session Creation
+     * Checkout Redirect & Session Creation
      * ========================================================== */
 
     public function intercept_checkout_redirect(): void
@@ -241,13 +292,22 @@ class Shaped_Payment_Processor
             exit;
         }
 
-        // Determine mode by check-in delta
+        // Get property-wide payment mode
+        $property_mode = class_exists('Shaped_Pricing') ? Shaped_Pricing::get_payment_mode() : 'scheduled';
+
+        // Determine payment mode
         $check_in           = $booking->getCheckInDate();
         $check_in_datetime  = clone $check_in;
         $check_in_datetime->setTime(16, 0, 0);
         $now = new DateTime('now', $check_in_datetime->getTimezone());
         $days_until_checkin = ($check_in_datetime->getTimestamp() - $now->getTimestamp()) / 86400;
-        $payment_mode       = ($days_until_checkin < 7) ? 'immediate' : 'delayed';
+
+        // Decide mode based on property setting
+        if ($property_mode === 'deposit') {
+            $payment_mode = 'deposit';
+        } else {
+            $payment_mode = ($days_until_checkin < 7) ? 'immediate' : 'delayed';
+        }
 
         $charge_date = (clone $check_in_datetime)->modify('-7 days')->format('Y-m-d');
 
@@ -308,11 +368,71 @@ class Shaped_Payment_Processor
             ? Shaped_Pricing::calculate_final_amount($booking)
             : (float) $booking->getTotalPrice();
 
-        $amount   = (int) round($discounted_total * 100);
         $currency = strtolower(MPHB()->settings()->currency()->getCurrencyCode());
 
         try {
-            if ($payment_mode === 'immediate') {
+            // === DEPOSIT MODE ===
+            if ($payment_mode === 'deposit') {
+                $deposit_data = Shaped_Pricing::calculate_deposit($discounted_total);
+                
+                // Round deposit to 1 decimal place to match frontend display
+                $deposit_rounded = round($deposit_data['deposit'], 1);
+                $balance_due = round($discounted_total - $deposit_rounded, 2);
+                
+                $deposit_amount = (int) round($deposit_rounded * 100); // cents
+                $percent = $deposit_data['percent'];
+            
+                $product_name = sprintf('%s – %d%% Deposit', $product, $percent);
+            
+                $session_params = [
+                    'mode'      => 'payment',
+                    'customer'  => $stripe_customer_id,
+                    'line_items' => [[
+                        'price_data' => [
+                            'currency'     => $currency,
+                            'product_data' => ['name' => $product_name],
+                            'unit_amount'  => $deposit_amount,
+                        ],
+                        'quantity' => 1,
+                    ]],
+                    'payment_intent_data' => [
+                        'description' => 'Booking #' . $booking_id . ' - Deposit (' . $percent . '%)',
+                        'metadata' => [
+                            'booking_id'     => $booking_id,
+                            'payment_id'     => $payment_id,
+                            'payment_mode'   => 'deposit',
+                            'payment_type'   => 'deposit',
+                            'deposit_percent'=> $percent,
+                            'total_amount'   => $discounted_total,
+                            'deposit_amount' => $deposit_rounded,  // Use rounded value
+                            'balance_due'    => $balance_due,      // Use recalculated balance
+                        ],
+                    ],
+                    'metadata' => [
+                        'booking_id'     => $booking_id,
+                        'payment_id'     => $payment_id,
+                        'payment_mode'   => 'deposit',
+                        'payment_type'   => 'deposit',
+                        'deposit_percent'=> $percent,
+                        'total_amount'   => $discounted_total,
+                        'deposit_amount' => $deposit_rounded,
+                        'balance_due'    => $balance_due,
+                    ],
+                    'success_url' => str_replace('{BOOKING_ID}', $booking_id, SHAPED_SUCCESS_URL) . '&session_id={CHECKOUT_SESSION_ID}',
+                    'cancel_url'  => SHAPED_CANCEL_URL . '?cancel=1&booking_id=' . $booking_id,
+                ];
+            
+                // Store deposit meta before redirect (use rounded values)
+                update_post_meta($booking_id, '_shaped_payment_type', 'deposit');
+                update_post_meta($booking_id, '_shaped_deposit_percent', $percent);
+                update_post_meta($booking_id, '_shaped_deposit_amount', $deposit_rounded);
+                update_post_meta($booking_id, '_shaped_balance_due', $balance_due);
+                update_post_meta($booking_id, '_shaped_payment_amount', $discounted_total);
+
+            // === IMMEDIATE MODE (full payment) ===
+            } elseif ($payment_mode === 'immediate') {
+                $amount = (int) round($discounted_total * 100);
+
                 $session_params = [
                     'mode'      => 'payment',
                     'customer'  => $stripe_customer_id,
@@ -330,18 +450,25 @@ class Shaped_Payment_Processor
                             'booking_id'   => $booking_id,
                             'payment_id'   => $payment_id,
                             'payment_mode' => 'immediate',
+                            'payment_type' => 'full',
                         ],
                     ],
                     'metadata' => [
                         'booking_id'   => $booking_id,
                         'payment_id'   => $payment_id,
                         'payment_mode' => 'immediate',
+                        'payment_type' => 'full',
                     ],
                     'success_url' => str_replace('{BOOKING_ID}', $booking_id, SHAPED_SUCCESS_URL) . '&session_id={CHECKOUT_SESSION_ID}',
                     'cancel_url'  => SHAPED_CANCEL_URL . '?cancel=1&booking_id=' . $booking_id,
                 ];
+
+                update_post_meta($booking_id, '_shaped_payment_type', 'full');
+                update_post_meta($booking_id, '_shaped_payment_amount', $discounted_total);
+
+            // === DELAYED MODE (save card, charge later) ===
             } else {
-                // Setup mode (save card, charge later)
+                $amount = (int) round($discounted_total * 100);
                 $charge_date_pretty = date_i18n('F j, Y', strtotime($charge_date));
                 $amount_pretty      = number_format($discounted_total, 2);
                 $currency_symbol    = html_entity_decode(MPHB()->settings()->currency()->getCurrencySymbol(), ENT_QUOTES, 'UTF-8');
@@ -351,7 +478,7 @@ class Shaped_Payment_Processor
                     'customer'              => $stripe_customer_id,
                     'payment_method_types'  => ['card'],
                     'payment_method_options'=> [
-                        'card' => ['request_three_d_secure' => 'any'], // Prefer 3DS
+                        'card' => ['request_three_d_secure' => 'any'],
                     ],
                     'currency'              => $currency,
                     'custom_text'           => [
@@ -364,22 +491,23 @@ class Shaped_Payment_Processor
                         'currency'            => $currency,
                         'product_description' => $product,
                         'payment_mode'        => 'delayed',
+                        'payment_type'        => 'full',
                         'charge_date'         => $charge_date,
                     ],
                     'success_url' => str_replace('{BOOKING_ID}', $booking_id, SHAPED_SUCCESS_URL) . '&session_id={CHECKOUT_SESSION_ID}',
                     'cancel_url'  => SHAPED_CANCEL_URL . '?cancel=1&booking_id=' . $booking_id,
                 ];
+
+                update_post_meta($booking_id, '_shaped_payment_type', 'full');
+                update_post_meta($booking_id, '_shaped_payment_amount', $discounted_total);
+                update_post_meta($booking_id, '_shaped_charge_date', $charge_date);
             }
 
             $session = $stripe->checkout->sessions->create($session_params);
 
             update_post_meta($payment_id, '_shaped_stripe_session_id', $session->id);
-            update_post_meta($booking_id, '_shaped_payment_amount', $discounted_total);
-            update_post_meta($booking_id, '_shaped_charge_date', $charge_date);
 
             // Set booking to abandoned before redirecting to Stripe
-            // Will be set back to confirmed when payment succeeds via webhook
-            // Skip if booking came from RoomCloud (prevent loop)
             if (!get_post_meta($booking_id, '_roomcloud_source', true)) {
                 wp_update_post([
                     'ID' => $booking_id,
@@ -397,7 +525,7 @@ class Shaped_Payment_Processor
     }
 
     /* ============================================================
-     * [17] Webhook Route Registration
+     * Webhook Route Registration
      * ========================================================== */
 
     public function register_webhook_route(): void
@@ -410,9 +538,7 @@ class Shaped_Payment_Processor
     }
 
     /* ============================================================
-     * [18] Webhook Handler
-     *  - checkout.session.completed (payment & setup)
-     *  - payment_intent.succeeded (scheduled charge)
+     * Webhook Handler
      * ========================================================== */
 
     public function handle_stripe_webhook(WP_REST_Request $request): WP_REST_Response
@@ -444,8 +570,10 @@ class Shaped_Payment_Processor
                 return new WP_REST_Response(['received' => true, 'skipped' => 'duplicate_session'], 200);
             }
 
-            $booking_id = isset($session->metadata->booking_id) ? absint($session->metadata->booking_id) : 0;
-            $payment_id = isset($session->metadata->payment_id) ? absint($session->metadata->payment_id) : 0;
+            $booking_id   = isset($session->metadata->booking_id) ? absint($session->metadata->booking_id) : 0;
+            $payment_id   = isset($session->metadata->payment_id) ? absint($session->metadata->payment_id) : 0;
+            $payment_mode = isset($session->metadata->payment_mode) ? (string) $session->metadata->payment_mode : '';
+            $payment_type = isset($session->metadata->payment_type) ? (string) $session->metadata->payment_type : 'full';
 
             if (!$booking_id || !$payment_id) {
                 error_log('[Shaped Webhook] Missing booking_id or payment_id.');
@@ -465,18 +593,49 @@ class Shaped_Payment_Processor
                     return new WP_REST_Response(['received' => true, 'note' => 'booking_missing'], 200);
                 }
 
+                // === PAYMENT MODE (immediate or deposit) ===
                 if ($session->mode === 'payment') {
-                    // Immediate charge
                     $paid_amount = (float)($session->amount_total / 100);
 
-                    update_post_meta($booking_id, '_stripe_payment_charged', true);
-                    update_post_meta($booking_id, '_shaped_payment_mode', 'immediate');
-                    update_post_meta($booking_id, '_mphb_paid_amount', $paid_amount);
-                    update_post_meta($booking_id, '_shaped_payment_status', 'completed');
-                    update_post_meta($booking_id, '_stripe_payment_intent_id', $session->payment_intent);
-                    update_post_meta($booking_id, '_stripe_checkout_session_id', $session->id);
-                    
-                    do_action('shaped_payment_completed', $booking_id, 'immediate');
+                    // Check if this is a deposit payment
+                    if ($payment_type === 'deposit' || $payment_mode === 'deposit') {
+                        // DEPOSIT PAYMENT
+                        $total_amount    = isset($session->metadata->total_amount) ? (float) $session->metadata->total_amount : 0;
+                        $deposit_amount  = isset($session->metadata->deposit_amount) ? (float) $session->metadata->deposit_amount : $paid_amount;
+                        $balance_due     = isset($session->metadata->balance_due) ? (float) $session->metadata->balance_due : ($total_amount - $paid_amount);
+                        $deposit_percent = isset($session->metadata->deposit_percent) ? (int) $session->metadata->deposit_percent : 0;
+
+                        update_post_meta($booking_id, '_stripe_payment_charged', true);
+                        update_post_meta($booking_id, '_shaped_payment_mode', 'deposit');
+                        update_post_meta($booking_id, '_shaped_payment_type', 'deposit');
+                        update_post_meta($booking_id, '_mphb_paid_amount', $paid_amount);
+                        update_post_meta($booking_id, '_shaped_deposit_amount', $deposit_amount);
+                        update_post_meta($booking_id, '_shaped_balance_due', $balance_due);
+                        update_post_meta($booking_id, '_shaped_deposit_percent', $deposit_percent);
+                        update_post_meta($booking_id, '_shaped_payment_amount', $total_amount);
+                        update_post_meta($booking_id, '_shaped_payment_status', 'deposit_paid');
+                        update_post_meta($booking_id, '_stripe_payment_intent_id', $session->payment_intent);
+                        update_post_meta($booking_id, '_stripe_checkout_session_id', $session->id);
+
+                        do_action('shaped_deposit_paid', $booking_id, $deposit_amount, $balance_due);
+                        do_action('shaped_payment_completed', $booking_id, 'deposit');
+
+                        error_log(sprintf(
+                            '[Shaped Webhook] Deposit paid for booking #%d: €%.2f deposit, €%.2f balance due',
+                            $booking_id, $deposit_amount, $balance_due
+                        ));
+                    } else {
+                        // FULL IMMEDIATE PAYMENT
+                        update_post_meta($booking_id, '_stripe_payment_charged', true);
+                        update_post_meta($booking_id, '_shaped_payment_mode', 'immediate');
+                        update_post_meta($booking_id, '_shaped_payment_type', 'full');
+                        update_post_meta($booking_id, '_mphb_paid_amount', $paid_amount);
+                        update_post_meta($booking_id, '_shaped_payment_status', 'completed');
+                        update_post_meta($booking_id, '_stripe_payment_intent_id', $session->payment_intent);
+                        update_post_meta($booking_id, '_stripe_checkout_session_id', $session->id);
+
+                        do_action('shaped_payment_completed', $booking_id, 'immediate');
+                    }
 
                     // Payment object (best-effort)
                     if ($payment) {
@@ -490,7 +649,7 @@ class Shaped_Payment_Processor
                         }
                     }
 
-                    // Confirm booking (best-effort)
+                    // Confirm booking
                     if ($booking && $booking->getStatus() !== 'confirmed') {
                         try {
                             $booking->setStatus('confirmed');
@@ -498,13 +657,24 @@ class Shaped_Payment_Processor
                         } catch (\Throwable $e) {}
                     }
 
-                    // Emails
-                    try { if (function_exists('shaped_send_confirmation_email')) shaped_send_confirmation_email($booking_id); } catch (\Throwable $e) {}
-                    try { if (function_exists('shaped_send_admin_confirmation_email')) shaped_send_admin_confirmation_email($booking_id); } catch (\Throwable $e) {}
+                    // Emails - different for deposit vs full
+                    if ($payment_type === 'deposit' || $payment_mode === 'deposit') {
+                        try { if (function_exists('shaped_send_deposit_confirmation_email')) shaped_send_deposit_confirmation_email($booking_id); } catch (\Throwable $e) {}
+                        try { if (function_exists('shaped_send_admin_deposit_email')) shaped_send_admin_deposit_email($booking_id); } catch (\Throwable $e) {}
+                        // Fallback to regular confirmation if deposit-specific doesn't exist
+                        if (!function_exists('shaped_send_deposit_confirmation_email')) {
+                            try { if (function_exists('shaped_send_confirmation_email')) shaped_send_confirmation_email($booking_id); } catch (\Throwable $e) {}
+                            try { if (function_exists('shaped_send_admin_confirmation_email')) shaped_send_admin_confirmation_email($booking_id); } catch (\Throwable $e) {}
+                        }
+                    } else {
+                        try { if (function_exists('shaped_send_confirmation_email')) shaped_send_confirmation_email($booking_id); } catch (\Throwable $e) {}
+                        try { if (function_exists('shaped_send_admin_confirmation_email')) shaped_send_admin_confirmation_email($booking_id); } catch (\Throwable $e) {}
+                    }
 
                     self::mark_session_processed($session_id);
+
+                // === SETUP MODE (delayed charge) ===
                 } elseif ($session->mode === 'setup') {
-                    // Save card & schedule charge
                     $stripe = new \Stripe\StripeClient(SHAPED_STRIPE_SECRET);
 
                     try {
@@ -542,6 +712,7 @@ class Shaped_Payment_Processor
 
                         // Store meta
                         update_post_meta($booking_id, '_shaped_payment_mode', 'delayed');
+                        update_post_meta($booking_id, '_shaped_payment_type', 'full');
                         update_post_meta($booking_id, '_stripe_customer_id', $session->customer);
                         update_post_meta($booking_id, '_stripe_payment_method_id', $payment_method_id);
                         update_post_meta($booking_id, '_stripe_currency', $session->metadata->currency ?? 'eur');
@@ -555,7 +726,7 @@ class Shaped_Payment_Processor
                         try { if (function_exists('shaped_send_reservation_email')) shaped_send_reservation_email($booking_id); } catch (\Throwable $e) {}
                         try { if (function_exists('shaped_send_admin_reservation_email')) shaped_send_admin_reservation_email($booking_id); } catch (\Throwable $e) {}
 
-                        // Schedule
+                        // Schedule charge
                         if (!get_post_meta($booking_id, '_shaped_charge_scheduled', true)) {
                             wp_schedule_single_event($charge_ts, 'shaped_charge_single_booking', [$booking_id, $idempotency_key]);
                             update_post_meta($booking_id, '_shaped_charge_scheduled', true);
@@ -568,7 +739,7 @@ class Shaped_Payment_Processor
                         error_log('[Shaped] Setup processing error: ' . $e->getMessage());
                     }
 
-                    // Confirm booking (best-effort)
+                    // Confirm booking
                     if ($booking && $booking->getStatus() !== 'confirmed') {
                         try { $booking->setStatus('confirmed'); MPHB()->getBookingRepository()->save($booking); } catch (\Throwable $e) {}
                     }
@@ -627,7 +798,7 @@ class Shaped_Payment_Processor
     }
 
     /* ============================================================
-     * [19] Scheduled Charge Executor
+     * Scheduled Charge Executor
      * ========================================================== */
 
     public function charge_single_booking(int $booking_id, string $idempotency_key): void
@@ -691,8 +862,9 @@ class Shaped_Payment_Processor
                 'confirm'        => true,
                 'description'    => 'Booking #' . $booking_id . ' - Scheduled charge',
                 'metadata'       => [
-                    'booking_id'  => $booking_id,
+                    'booking_id'   => $booking_id,
                     'payment_mode' => 'delayed',
+                    'payment_type' => 'full',
                 ],
             ], [
                 'idempotency_key' => $idempotency_key,
@@ -703,7 +875,7 @@ class Shaped_Payment_Processor
             update_post_meta($booking_id, '_mphb_paid_amount', $final_amount);
             update_post_meta($booking_id, '_shaped_payment_status', 'completed');
             update_post_meta($booking_id, '_shaped_charge_processed', true);
-            
+
             do_action('shaped_payment_completed', $booking_id, 'delayed');
 
             if ($booking->getStatus() !== 'confirmed') {
@@ -734,7 +906,7 @@ class Shaped_Payment_Processor
     }
 
     /* ============================================================
-     * [20] PM Detach
+     * PM Detach
      * ========================================================== */
 
     public function detach_payment_method(int $booking_id): bool
@@ -756,22 +928,22 @@ class Shaped_Payment_Processor
             return true;
         } catch (\Throwable $e) {
             error_log('[Shaped] Detach failed: ' . $e->getMessage());
-            delete_post_meta($booking_id, '_stripe_payment_method_id'); // still clear
+            delete_post_meta($booking_id, '_stripe_payment_method_id');
             return false;
         }
     }
 
     /* ============================================================
-     * [21] Charge Cleanup Hooks
+     * Charge Cleanup Hooks
      * ========================================================== */
 
     public function on_booking_delete_clear_schedule(?int $post_id): void
     {
         $post_id = absint($post_id ?? 0);
         if (!$post_id) return;
-    
+
         if (get_post_type($post_id) !== 'mphb_booking') return;
-    
+
         self::clear_scheduled_charge($post_id);
     }
 
@@ -783,7 +955,7 @@ class Shaped_Payment_Processor
     }
 
     /* ============================================================
-     * [24] Daily Fallback Scheduler
+     * Daily Fallback Scheduler
      * ========================================================== */
 
     public function ensure_daily_fallback_schedule(): void
@@ -795,8 +967,13 @@ class Shaped_Payment_Processor
 
     public function daily_charge_fallback(): void
     {
+        // Only run in scheduled mode
+        if (class_exists('Shaped_Pricing') && Shaped_Pricing::is_deposit_mode()) {
+            return;
+        }
+
         error_log('[Shaped Fallback] Running daily charge check');
-        $now = current_time('timestamp', true); // UTC
+        $now = current_time('timestamp', true);
 
         $args = [
             'post_type'      => 'mphb_booking',

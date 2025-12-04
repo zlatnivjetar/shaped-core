@@ -2,10 +2,11 @@
 /**
  * Shaped Pricing Module
  *
- * Handles discount logic only. Base prices and seasonal rates come from MotoPress Rates.
+ * Handles discount logic and payment mode configuration.
+ * Base prices and seasonal rates come from MotoPress Rates.
  *
  * @package Shaped_Core
- * @since 2.0.0
+ * @since 2.1.0
  */
 
 if (!defined('ABSPATH')) {
@@ -17,7 +18,9 @@ class Shaped_Pricing {
     /**
      * Option keys
      */
-    const OPT_DISCOUNTS = 'shaped_discounts';
+    const OPT_DISCOUNTS       = 'shaped_discounts';
+    const OPT_PAYMENT_MODE    = 'shaped_payment_mode';      // 'scheduled' | 'deposit'
+    const OPT_DEPOSIT_PERCENT = 'shaped_deposit_percent';   // int 1-100
 
     /**
      * Room type slugs (customize per property)
@@ -50,7 +53,6 @@ class Shaped_Pricing {
 
     /**
      * Fetch room types from MotoPress
-     * Returns array of room slugs and titles
      */
     public static function fetch_room_types(): array {
         if (!function_exists('MPHB')) {
@@ -95,10 +97,25 @@ class Shaped_Pricing {
 
         foreach ($room_types as $slug => $title) {
             $val = isset($input[$slug]) ? intval($input[$slug]) : 0;
-            $output[$slug] = max(0, min(100, $val)); // Clamp 0-100
+            $output[$slug] = max(0, min(100, $val));
         }
 
         return $output;
+    }
+
+    /**
+     * Sanitize payment mode
+     */
+    public static function sanitize_payment_mode($input): string {
+        return in_array($input, ['scheduled', 'deposit'], true) ? $input : 'scheduled';
+    }
+
+    /**
+     * Sanitize deposit percentage
+     */
+    public static function sanitize_deposit_percent($input): int {
+        $val = intval($input);
+        return max(1, min(100, $val));
     }
 
     /**
@@ -109,6 +126,18 @@ class Shaped_Pricing {
             'type'              => 'array',
             'sanitize_callback' => [__CLASS__, 'sanitize_discounts'],
             'default'           => self::discount_defaults(),
+        ]);
+
+        register_setting('shaped_pricing_group', self::OPT_PAYMENT_MODE, [
+            'type'              => 'string',
+            'sanitize_callback' => [__CLASS__, 'sanitize_payment_mode'],
+            'default'           => 'scheduled',
+        ]);
+
+        register_setting('shaped_pricing_group', self::OPT_DEPOSIT_PERCENT, [
+            'type'              => 'integer',
+            'sanitize_callback' => [__CLASS__, 'sanitize_deposit_percent'],
+            'default'           => 30,
         ]);
     }
 
@@ -151,13 +180,15 @@ class Shaped_Pricing {
             return;
         }
 
-        $discounts = get_option(self::OPT_DISCOUNTS, self::discount_defaults());
-        $room_types = self::fetch_room_types();
+        $discounts       = get_option(self::OPT_DISCOUNTS, self::discount_defaults());
+        $payment_mode    = get_option(self::OPT_PAYMENT_MODE, 'scheduled');
+        $deposit_percent = get_option(self::OPT_DEPOSIT_PERCENT, 30);
+        $room_types      = self::fetch_room_types();
 
         if (empty($room_types)) {
             ?>
             <div class="wrap">
-                <h1>Shaped Direct Booking Discounts</h1>
+                <h1>Shaped Direct Booking Settings</h1>
                 <div class="notice notice-warning">
                     <p><strong>No room types found.</strong> Please create room types in MotoPress Hotel Booking first.</p>
                 </div>
@@ -167,62 +198,146 @@ class Shaped_Pricing {
         }
         ?>
         <div class="wrap shaped-pricing-wrap">
-            <h1>Shaped Direct Booking Discounts</h1>
-            <p class="description">
-                Set the discount percentage guests receive when booking directly vs OTAs.
-                Base prices and seasonal rates are managed in <strong>MotoPress → Rates</strong>.
-            </p>
+            <h1>Shaped Direct Booking Settings</h1>
 
             <form method="post" action="options.php">
                 <?php settings_fields('shaped_pricing_group'); ?>
 
-                <table class="wp-list-table widefat fixed striped shaped-pricing-table">
-                    <thead>
-                        <tr>
-                            <th>Room Type</th>
-                            <th>Direct Booking Discount (%)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($room_types as $slug => $title):
-                            $discount = isset($discounts[$slug]) ? intval($discounts[$slug]) : 0;
-                        ?>
-                        <tr>
-                            <td><strong><?php echo esc_html($title); ?></strong></td>
-                            <td>
-                                <input
-                                    type="number"
-                                    name="<?php echo esc_attr(self::OPT_DISCOUNTS); ?>[<?php echo esc_attr($slug); ?>]"
-                                    value="<?php echo esc_attr($discount); ?>"
-                                    min="0"
-                                    max="100"
-                                    step="1"
-                                    class="small-text"
-                                />
-                                <span class="description">%</span>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                <!-- Payment Mode Section -->
+                <div class="shaped-section" style="background: #fff; padding: 24px; border: 1px solid #ccd0d4; border-radius: 4px; margin-bottom: 24px;">
+                    <h2 style="margin-top: 0; padding-bottom: 12px; border-bottom: 2px solid #D1AF5D;">Payment Mode</h2>
+                    <p class="description" style="margin-bottom: 16px;">
+                        Choose how guests pay when booking directly.
+                    </p>
 
-                <?php submit_button('Save Discounts'); ?>
+                    <fieldset style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 12px; padding: 16px; background: <?php echo $payment_mode === 'scheduled' ? '#f0f7f0' : '#f9f9f9'; ?>; border: 2px solid <?php echo $payment_mode === 'scheduled' ? '#4C9155' : '#ddd'; ?>; border-radius: 4px; cursor: pointer;">
+                            <input type="radio" 
+                                   name="<?php echo esc_attr(self::OPT_PAYMENT_MODE); ?>" 
+                                   value="scheduled" 
+                                   <?php checked($payment_mode, 'scheduled'); ?>
+                                   style="margin-right: 8px;">
+                            <strong>Scheduled Charge</strong>
+                            <span style="display: block; margin-left: 24px; margin-top: 4px; color: #666;">
+                                Bookings &lt;7 days out: charge full amount immediately<br>
+                                Bookings ≥7 days out: save card, charge automatically 7 days before check-in
+                            </span>
+                        </label>
+
+                        <label style="display: block; padding: 16px; background: <?php echo $payment_mode === 'deposit' ? '#f0f7f0' : '#f9f9f9'; ?>; border: 2px solid <?php echo $payment_mode === 'deposit' ? '#4C9155' : '#ddd'; ?>; border-radius: 4px; cursor: pointer;">
+                            <input type="radio" 
+                                   name="<?php echo esc_attr(self::OPT_PAYMENT_MODE); ?>" 
+                                   value="deposit" 
+                                   <?php checked($payment_mode, 'deposit'); ?>
+                                   style="margin-right: 8px;">
+                            <strong>Deposit</strong>
+                            <span style="display: block; margin-left: 24px; margin-top: 4px; color: #666;">
+                                All bookings: charge deposit percentage immediately, guest pays balance on arrival
+                            </span>
+                        </label>
+                    </fieldset>
+
+                    <!-- Deposit Percentage -->
+                    <div id="deposit-settings" style="margin-top: 16px; padding: 16px; background: #fffbf0; border: 1px solid #D1AF5D; border-radius: 4px; <?php echo $payment_mode !== 'deposit' ? 'display: none;' : ''; ?>">
+                        <label for="deposit-percent" style="font-weight: 600; display: block; margin-bottom: 8px;">
+                            Deposit Percentage
+                        </label>
+                        <input type="number" 
+                               id="deposit-percent"
+                               name="<?php echo esc_attr(self::OPT_DEPOSIT_PERCENT); ?>" 
+                               value="<?php echo esc_attr($deposit_percent); ?>" 
+                               min="1" 
+                               max="100" 
+                               step="1"
+                               style="width: 80px;">
+                        <span>%</span>
+                        <p class="description" style="margin-top: 8px;">
+                            Example: 30% deposit on €200 booking = €60 charged now, €140 due on arrival
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Discounts Section -->
+                <div class="shaped-section" style="background: #fff; padding: 24px; border: 1px solid #ccd0d4; border-radius: 4px; margin-bottom: 24px;">
+                    <h2 style="margin-top: 0; padding-bottom: 12px; border-bottom: 2px solid #D1AF5D;">Direct Booking Discounts</h2>
+                    <p class="description" style="margin-bottom: 16px;">
+                        Set the discount percentage guests receive when booking directly vs OTAs.
+                    </p>
+
+                    <table class="wp-list-table widefat fixed striped shaped-pricing-table">
+                        <thead>
+                            <tr>
+                                <th>Room Type</th>
+                                <th>Direct Booking Discount (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($room_types as $slug => $title):
+                                $discount = isset($discounts[$slug]) ? intval($discounts[$slug]) : 0;
+                            ?>
+                            <tr>
+                                <td><strong><?php echo esc_html($title); ?></strong></td>
+                                <td>
+                                    <input
+                                        type="number"
+                                        name="<?php echo esc_attr(self::OPT_DISCOUNTS); ?>[<?php echo esc_attr($slug); ?>]"
+                                        value="<?php echo esc_attr($discount); ?>"
+                                        min="0"
+                                        max="100"
+                                        step="1"
+                                        class="small-text"
+                                    />
+                                    <span class="description">%</span>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <?php submit_button('Save Settings'); ?>
             </form>
 
-            <div class="shaped-pricing-info">
-                <h3>How it works</h3>
-                <ol>
-                    <li>MotoPress calculates the base price based on your Rates configuration</li>
-                    <li>The discount percentage you set here is applied to direct bookings</li>
-                    <li>Guests see "Save X%" messaging compared to OTA prices</li>
-                </ol>
+            <script>
+            (function() {
+                const modeInputs = document.querySelectorAll('input[name="<?php echo esc_js(self::OPT_PAYMENT_MODE); ?>"]');
+                const depositSettings = document.getElementById('deposit-settings');
                 
-                <h3>Example</h3>
-                <p>If MotoPress returns €100/night and you set a 10% discount:</p>
-                <ul>
-                    <li>Direct booking price: €90/night</li>
-                    <li>Guest sees: "Save 10% by booking direct"</li>
-                </ul>
+                modeInputs.forEach(input => {
+                    input.addEventListener('change', function() {
+                        depositSettings.style.display = this.value === 'deposit' ? 'block' : 'none';
+                        
+                        document.querySelectorAll('fieldset label').forEach(label => {
+                            const radio = label.querySelector('input[type="radio"]');
+                            if (radio && radio.checked) {
+                                label.style.background = '#f0f7f0';
+                                label.style.borderColor = '#4C9155';
+                            } else if (radio) {
+                                label.style.background = '#f9f9f9';
+                                label.style.borderColor = '#ddd';
+                            }
+                        });
+                    });
+                });
+            })();
+            </script>
+
+            <div class="shaped-pricing-info" style="background: #fff; padding: 24px; border: 1px solid #ccd0d4; border-radius: 4px;">
+                <h3 style="margin-top: 0;">How it works</h3>
+                
+                <h4>Scheduled Charge Mode</h4>
+                <ol>
+                    <li>Guest books ≥7 days before check-in → saves card, charged 7 days before arrival</li>
+                    <li>Guest books &lt;7 days before check-in → charged full amount immediately</li>
+                    <li>Free cancellation until 7 days before check-in</li>
+                </ol>
+
+                <h4>Deposit Mode</h4>
+                <ol>
+                    <li>Guest pays <?php echo esc_html($deposit_percent); ?>% deposit immediately for ALL bookings</li>
+                    <li>Remaining balance is paid on arrival at the property</li>
+                    <li>Deposit is non-refundable (configurable per your policy)</li>
+                </ol>
             </div>
         </div>
         <?php
@@ -244,23 +359,66 @@ class Shaped_Pricing {
     }
 
     /**
+     * Get payment mode setting
+     * 
+     * @return string 'scheduled' | 'deposit'
+     */
+    public static function get_payment_mode(): string {
+        return get_option(self::OPT_PAYMENT_MODE, 'scheduled');
+    }
+
+    /**
+     * Check if deposit mode is enabled
+     */
+    public static function is_deposit_mode(): bool {
+        return self::get_payment_mode() === 'deposit';
+    }
+
+    /**
+     * Get deposit percentage
+     * 
+     * @return int 1-100
+     */
+    public static function get_deposit_percent(): int {
+        return (int) get_option(self::OPT_DEPOSIT_PERCENT, 30);
+    }
+
+    /**
+     * Calculate deposit and balance amounts
+     * 
+     * @param float $total Discounted total amount
+     * @return array ['deposit' => float, 'balance' => float, 'percent' => int, 'total' => float]
+     */
+    public static function calculate_deposit(float $total): array {
+        $percent = self::get_deposit_percent();
+        $deposit = round($total * ($percent / 100), 2);
+        $balance = round($total - $deposit, 2);
+
+        return [
+            'deposit' => $deposit,
+            'balance' => $balance,
+            'percent' => $percent,
+            'total'   => $total,
+        ];
+    }
+
+    /**
      * Localize config for JavaScript
      */
     public static function localize_config(): void {
         $config = [
-            'discounts' => self::get_discounts(),
+            'discounts'      => self::get_discounts(),
+            'paymentMode'    => self::get_payment_mode(),
+            'depositPercent' => self::get_deposit_percent(),
         ];
 
-        // Define global constant for PHP access
         if (!defined('SHAPED_DISCOUNTS')) {
             define('SHAPED_DISCOUNTS', self::get_discounts());
         }
 
-        // Add to ShapedConfig if checkout script is enqueued
         if (wp_script_is('shaped-checkout', 'enqueued')) {
             wp_localize_script('shaped-checkout', 'ShapedPricing', $config);
         } else {
-            // Fallback: add to jQuery
             wp_localize_script('jquery', 'ShapedPricing', $config);
         }
     }
@@ -268,63 +426,50 @@ class Shaped_Pricing {
     /**
      * Calculate final amount with discount applied
      *
-     * Overloaded method that accepts either:
-     * - A booking object (backward compatibility)
-     * - float $base_amount and string $room_slug (new API)
-     *
      * @param mixed $base_amount_or_booking  Either float (base price) or booking object
      * @param string|null $room_slug         Room type slug (optional if booking object provided)
      * @return array|float If booking object: returns float. If base_amount: returns array with details
      */
     public static function calculate_final_amount($base_amount_or_booking, ?string $room_slug = null) {
-        // Backward compatibility: if first arg is a booking object, extract data from it
+        // Backward compatibility: booking object
         if (is_object($base_amount_or_booking) && method_exists($base_amount_or_booking, 'getTotalPrice')) {
             $booking = $base_amount_or_booking;
             $base_amount = (float) $booking->getTotalPrice();
 
-            // Get room type slug from booking
             $reserved_rooms = $booking->getReservedRooms();
             if (empty($reserved_rooms)) {
-                return $base_amount; // No discount if no room found
+                return $base_amount;
             }
 
             $room = reset($reserved_rooms);
             $room_type_id = $room->getRoomTypeId();
 
-            // Fix: MotoPress API sometimes returns 0, fallback to direct meta read
             if (!$room_type_id || $room_type_id === 0) {
                 $room_type_id = get_post_meta($room->getId(), 'mphb_room_type_id', true);
             }
 
             if (!$room_type_id) {
-                return $base_amount; // No discount if room type not found
+                return $base_amount;
             }
 
             $room_type = MPHB()->getRoomTypeRepository()->findById($room_type_id);
             if (!$room_type) {
-                return $base_amount; // No discount if room type not found
+                return $base_amount;
             }
 
             $room_slug = sanitize_title($room_type->getTitle());
 
-            // Calculate and return just the final amount (backward compat)
             $discounts = self::get_discounts();
             $discount_percent = isset($discounts[$room_slug]) ? intval($discounts[$room_slug]) : 0;
             $discount_multiplier = (100 - $discount_percent) / 100;
             return round($base_amount * $discount_multiplier, 2);
         }
 
-        // New API: calculate with explicit base amount and room slug
+        // New API: explicit base amount and room slug
         $base_amount = (float) $base_amount_or_booking;
         $discounts = self::get_discounts();
-
-        // Normalize slug
         $slug = sanitize_title($room_slug);
-
-        // Get discount for this room type (default 0 if not found)
         $discount_percent = isset($discounts[$slug]) ? intval($discounts[$slug]) : 0;
-
-        // Calculate
         $discount_multiplier = (100 - $discount_percent) / 100;
         $final = round($base_amount * $discount_multiplier, 2);
         $saved = round($base_amount - $final, 2);
@@ -339,23 +484,15 @@ class Shaped_Pricing {
 
     /**
      * Get discount for specific room type
-     * 
-     * @param string $room_slug
-     * @return int Discount percentage
      */
     public static function get_room_discount(string $room_slug): int {
         $discounts = self::get_discounts();
         $slug = sanitize_title($room_slug);
-        
         return isset($discounts[$slug]) ? intval($discounts[$slug]) : 0;
     }
 
     /**
      * Format price for display
-     * 
-     * @param float  $amount
-     * @param string $currency
-     * @return string
      */
     public static function format_price(float $amount, string $currency = 'EUR'): string {
         $symbols = [
@@ -366,7 +503,6 @@ class Shaped_Pricing {
         ];
         
         $symbol = $symbols[$currency] ?? $currency . ' ';
-        
         return $symbol . number_format($amount, 2, ',', '.');
     }
 }
