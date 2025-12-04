@@ -9,220 +9,239 @@ document.addEventListener('DOMContentLoaded', function() {
         low: 2        // "2 left"
     };
     
-    // Helper function to format prices (removes trailing zeros)
+    // Helper: round like Stripe (1 decimal)
+    function roundToOneDecimal(value) {
+        const num = typeof value === 'number' ? value : parseFloat(value);
+        if (isNaN(num)) return 0;
+        return Math.round(num * 10) / 10;
+    }
+    
+    // Helper: format for UI
+    // - 110.0  -> "110"
+    // - 110.5  -> "110.5"
     function formatPrice(value) {
-        return parseFloat(value.toFixed(2)).toString();
-    }
+        const rounded = roundToOneDecimal(value);
     
-// Global cache for RoomCloud availability data
-let roomcloudAvailability = null;
-let availabilityCheckInProgress = false;
+        // Check if it's effectively an integer (handle float imprecision)
+        const asInt = Math.round(rounded);
+        if (Math.abs(rounded - asInt) < 1e-6) {
+            return asInt.toString();
+        }
+    
+        return rounded.toFixed(1); // one decimal, no trailing zero beyond that
+    }
 
-async function fetchRoomCloudAvailability(checkIn, checkOut) {
-    if (availabilityCheckInProgress) {
-        // Wait for in-progress request
-        await new Promise(resolve => {
-            const interval = setInterval(() => {
-                if (!availabilityCheckInProgress) {
-                    clearInterval(interval);
-                    resolve();
-                }
-            }, 100);
-        });
-        return roomcloudAvailability;
-    }
-    
-    availabilityCheckInProgress = true;
-    
-    try {
-        const response = await fetch(ShapedConfig.ajaxUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-                action: 'shaped_rc_get_availability',
-                check_in: checkIn,
-                check_out: checkOut
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            roomcloudAvailability = data.data;
-            console.log('[RoomCloud] Availability for urgency badges:', roomcloudAvailability);
+
+    // Global cache for RoomCloud availability data
+    let roomcloudAvailability = null;
+    let availabilityCheckInProgress = false;
+
+    async function fetchRoomCloudAvailability(checkIn, checkOut) {
+        if (availabilityCheckInProgress) {
+            // Wait for in-progress request
+            await new Promise(resolve => {
+                const interval = setInterval(() => {
+                    if (!availabilityCheckInProgress) {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, 100);
+            });
             return roomcloudAvailability;
         }
-    } catch (error) {
-        console.error('[RoomCloud] Error fetching availability:', error);
-    } finally {
-        availabilityCheckInProgress = false;
-    }
-    
-    return null;
-}
-
-function detectAvailability(room) {
-    const roomTitle = room.querySelector('.mphb-room-type-title')?.textContent.trim();
-    if (!roomTitle) return null;
-    
-    const roomSlug = roomTitle.toLowerCase().replace(/\s+/g, '-');
-    
-    // PRIORITY 1: Check RoomCloud data first
-    if (roomcloudAvailability && roomcloudAvailability.hasOwnProperty(roomSlug)) {
-        const count = roomcloudAvailability[roomSlug];
         
-        if (count !== null && count !== undefined) {
-            return count;
+        availabilityCheckInProgress = true;
+        
+        try {
+            const response = await fetch(ShapedConfig.ajaxUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    action: 'shaped_rc_get_availability',
+                    check_in: checkIn,
+                    check_out: checkOut
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                roomcloudAvailability = data.data;
+                console.log('[RoomCloud] Availability for urgency badges:', roomcloudAvailability);
+                return roomcloudAvailability;
+            }
+        } catch (error) {
+            console.error('[RoomCloud] Error fetching availability:', error);
+        } finally {
+            availabilityCheckInProgress = false;
         }
+        
+        return null;
     }
-    
-    // PRIORITY 2: No RoomCloud data - check MotoPress DOM
-    const availableRoomsEl = room.querySelector('.mphb-available-rooms-count');
-    if (availableRoomsEl) {
-        const match = availableRoomsEl.textContent.match(/(\d+)/);
-        if (match) {
-            const count = parseInt(match[1]);
-            return count;
-        }
-    }
-    
-    // PRIORITY 3: Single room scenario (no counter shown)
-    const multipleWrapper = room.querySelector('.mphb-rooms-quantity-wrapper');
-    if (!multipleWrapper || multipleWrapper.classList.contains('mphb-hide')) {
-        return 1;
-    }
-    
-    return null;
-}
-    
-   async function applyDiscountsAndUrgency() {
-    // Get dates from URL or form
-    const urlParams = new URLSearchParams(window.location.search);
-// Get dates and convert to YYYY-MM-DD format
-let checkIn = urlParams.get('mphb_check_in_date') || 
-              document.querySelector('input[name="mphb_check_in_date"]')?.value;
-let checkOut = urlParams.get('mphb_check_out_date') || 
-               document.querySelector('input[name="mphb_check_out_date"]')?.value;
 
-// Convert DD/MM/YYYY to YYYY-MM-DD
-function convertDateFormat(dateStr) {
-    if (!dateStr) return null;
-    
-    // Already in YYYY-MM-DD format?
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-        return dateStr;
-    }
-    
-    // DD/MM/YYYY format?
-    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
-        const [day, month, year] = dateStr.split('/');
-        return `${year}-${month}-${day}`;
-    }
-    
-    return null;
-}
-
-checkIn = convertDateFormat(checkIn);
-checkOut = convertDateFormat(checkOut);
-    
-    // Fetch RoomCloud availability if we have dates
-    if (checkIn && checkOut) {
-        await fetchRoomCloudAvailability(checkIn, checkOut);
-    }
-    
-    const roomTypes = document.querySelectorAll('.mphb-room-type');
-    
-    roomTypes.forEach(room => {
+    function detectAvailability(room) {
         const roomTitle = room.querySelector('.mphb-room-type-title')?.textContent.trim();
-        const roomSlug = roomTitle?.toLowerCase().replace(/\s+/g, '-');
-        const discountPercent = discountConfig[roomSlug];
+        if (!roomTitle) return null;
         
-        // Find the price element
-        const priceEl = room.querySelector('.mphb-price');
-        if (!priceEl) return;
+        const roomSlug = roomTitle.toLowerCase().replace(/\s+/g, '-');
         
-        // Check if already processed
-        if (priceEl.closest('.mphb-price-discount-wrapper')) return;
-        
-        // Get availability count from RoomCloud
-        const availableCount = detectAvailability(room);
-        
-        // Get original price from MotoPress
-        const originalPriceText = priceEl.textContent;
-        const originalPrice = parseFloat(originalPriceText.replace(/[^0-9.,]/g, '').replace(',', '.'));
-        
-        // Calculate discounted price
-        const discountedPrice = discountPercent 
-            ? formatPrice(originalPrice * (1 - discountPercent / 100))
-            : formatPrice(originalPrice);
-        
-        // Find the parent paragraph
-        const priceContainer = priceEl.closest('.mphb-regular-price');
-        if (!priceContainer) return;
-        
-        // Create new wrapper structure
-        const discountWrapper = document.createElement('div');
-        discountWrapper.className = 'mphb-price-discount-wrapper';
-        
-        // Add original price with strikethrough if there's a discount
-        if (discountPercent) {
-            const originalPriceEl = document.createElement('span');
-            originalPriceEl.className = 'mphb-price-original';
-            originalPriceEl.innerHTML = `<span class="mphb-currency">€</span>${formatPrice(originalPrice)}`;
-            discountWrapper.appendChild(originalPriceEl);
-        }
-        
-        // Create the current/discounted price element
-        const currentPriceEl = document.createElement('span');
-        currentPriceEl.className = 'mphb-price mphb-price-current';
-        currentPriceEl.innerHTML = `<span class="mphb-currency">€</span>${discountedPrice}`;
-        discountWrapper.appendChild(currentPriceEl);
-        
-        // Get and add the period text
-        const periodEl = priceContainer.querySelector('.mphb-price-period');
-        const periodText = periodEl ? periodEl.textContent.trim() : '';
-        
-        const newPeriodEl = document.createElement('span');
-        newPeriodEl.className = 'mphb-price-period';
-        newPeriodEl.textContent = periodText;
-        discountWrapper.appendChild(newPeriodEl);
-        
-        // Add discount badge if applicable
-        if (discountPercent) {
-            const discountBadge = document.createElement('span');
-            discountBadge.className = 'mphb-discount-badge';
-            discountBadge.textContent = `${discountPercent}% off`;
-            discountWrapper.appendChild(discountBadge);
-        }
-        
-        // Add urgency badge if applicable - only for 1 or 2 rooms
-        if (availableCount !== null && availableCount <= urgencyConfig.low) {
-            const urgencyBadge = document.createElement('span');
-            urgencyBadge.className = 'mphb-urgency-badge';
+        // PRIORITY 1: Check RoomCloud data first
+        if (roomcloudAvailability && roomcloudAvailability.hasOwnProperty(roomSlug)) {
+            const count = roomcloudAvailability[roomSlug];
             
-            if (availableCount === urgencyConfig.critical) {
-                urgencyBadge.textContent = `Last room`;
-            } else if (availableCount === urgencyConfig.low) {
-                urgencyBadge.textContent = `2 left`;
+            if (count !== null && count !== undefined) {
+                return count;
             }
-            
-            discountWrapper.appendChild(urgencyBadge);
         }
         
-        // Replace content after "Prices start at:"
-        const strongEl = priceContainer.querySelector('strong');
-        if (strongEl) {
-            while (strongEl.nextSibling) {
-                strongEl.nextSibling.remove();
+        // PRIORITY 2: No RoomCloud data - check MotoPress DOM
+        const availableRoomsEl = room.querySelector('.mphb-available-rooms-count');
+        if (availableRoomsEl) {
+            const match = availableRoomsEl.textContent.match(/(\d+)/);
+            if (match) {
+                const count = parseInt(match[1]);
+                return count;
             }
-            priceContainer.appendChild(discountWrapper);
         }
-    });
-}
+        
+        // PRIORITY 3: Single room scenario (no counter shown)
+        const multipleWrapper = room.querySelector('.mphb-rooms-quantity-wrapper');
+        if (!multipleWrapper || multipleWrapper.classList.contains('mphb-hide')) {
+            return 1;
+        }
+        
+        return null;
+    }
 
-    // Function to check room availability for urgency
+    // Convert DD/MM/YYYY to YYYY-MM-DD
+    function convertDateFormat(dateStr) {
+        if (!dateStr) return null;
+        
+        // Already in YYYY-MM-DD format?
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+            return dateStr;
+        }
+        
+        // DD/MM/YYYY format?
+        if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+            const [day, month, year] = dateStr.split('/');
+            return `${year}-${month}-${day}`;
+        }
+        
+        return null;
+    }
+    
+    async function applyDiscountsAndUrgency() {
+        const urlParams = new URLSearchParams(window.location.search);
+
+        // Get dates and convert to YYYY-MM-DD format
+        let checkIn = urlParams.get('mphb_check_in_date') || 
+                      document.querySelector('input[name="mphb_check_in_date"]')?.value;
+        let checkOut = urlParams.get('mphb_check_out_date') || 
+                       document.querySelector('input[name="mphb_check_out_date"]')?.value;
+
+        checkIn = convertDateFormat(checkIn);
+        checkOut = convertDateFormat(checkOut);
+        
+        // Fetch RoomCloud availability if we have dates
+        if (checkIn && checkOut) {
+            await fetchRoomCloudAvailability(checkIn, checkOut);
+        }
+        
+        const roomTypes = document.querySelectorAll('.mphb-room-type');
+        
+        roomTypes.forEach(room => {
+            const roomTitle = room.querySelector('.mphb-room-type-title')?.textContent.trim();
+            const roomSlug = roomTitle?.toLowerCase().replace(/\s+/g, '-');
+            const discountPercent = discountConfig[roomSlug];
+            
+            // Find the price element
+            const priceEl = room.querySelector('.mphb-price');
+            if (!priceEl) return;
+            
+            // Check if already processed
+            if (priceEl.closest('.mphb-price-discount-wrapper')) return;
+            
+            // Get availability count from RoomCloud
+            const availableCount = detectAvailability(room);
+            
+            // Get original price from MotoPress
+            const originalPriceText = priceEl.textContent;
+            const originalPrice = parseFloat(originalPriceText.replace(/[^0-9.,]/g, '').replace(',', '.'));
+            
+            // Calculate discounted price
+            const discountedPrice = discountPercent 
+                ? formatPrice(originalPrice * (1 - discountPercent / 100))
+                : formatPrice(originalPrice);
+            
+            // Find the parent paragraph
+            const priceContainer = priceEl.closest('.mphb-regular-price');
+            if (!priceContainer) return;
+            
+            // Create new wrapper structure
+            const discountWrapper = document.createElement('div');
+            discountWrapper.className = 'mphb-price-discount-wrapper';
+            
+            // Add original price with strikethrough if there's a discount
+            if (discountPercent) {
+                const originalPriceEl = document.createElement('span');
+                originalPriceEl.className = 'mphb-price-original';
+                originalPriceEl.innerHTML = `<span class="mphb-currency">€</span>${formatPrice(originalPrice)}`;
+                discountWrapper.appendChild(originalPriceEl);
+            }
+            
+            // Create the current/discounted price element
+            const currentPriceEl = document.createElement('span');
+            currentPriceEl.className = 'mphb-price mphb-price-current';
+            currentPriceEl.innerHTML = `<span class="mphb-currency">€</span>${discountedPrice}`;
+            discountWrapper.appendChild(currentPriceEl);
+            
+            // Get and add the period text
+            const periodEl = priceContainer.querySelector('.mphb-price-period');
+            const periodText = periodEl ? periodEl.textContent.trim() : '';
+            
+            const newPeriodEl = document.createElement('span');
+            newPeriodEl.className = 'mphb-price-period';
+            newPeriodEl.textContent = periodText;
+            discountWrapper.appendChild(newPeriodEl);
+            
+            // Add discount badge if applicable
+            if (discountPercent) {
+                const discountBadge = document.createElement('span');
+                discountBadge.className = 'mphb-discount-badge';
+                discountBadge.textContent = `${discountPercent}% off`;
+                discountWrapper.appendChild(discountBadge);
+            }
+            
+            // Add urgency badge if applicable - only for 1 or 2 rooms
+            if (availableCount !== null && availableCount <= urgencyConfig.low) {
+                const urgencyBadge = document.createElement('span');
+                urgencyBadge.className = 'mphb-urgency-badge';
+                
+                if (availableCount === urgencyConfig.critical) {
+                    urgencyBadge.textContent = `Last room`;
+                } else if (availableCount === urgencyConfig.low) {
+                    urgencyBadge.textContent = `2 left`;
+                }
+                
+                discountWrapper.appendChild(urgencyBadge);
+            }
+            
+            // Replace content after "Prices start at:"
+            const strongEl = priceContainer.querySelector('strong');
+            if (strongEl) {
+                while (strongEl.nextSibling) {
+                    strongEl.nextSibling.remove();
+                }
+                priceContainer.appendChild(discountWrapper);
+            }
+        });
+    }
+
+    // =============== CHECKOUT HELPERS ======================
+
     function checkRoomAvailability() {
         const roomTitleElement = document.querySelector('h3.mphb-room-type-title');
         if (!roomTitleElement) return null;
@@ -259,42 +278,13 @@ checkOut = convertDateFormat(checkOut);
         }
         
         // Fallback: assume low availability if we're on checkout with no data
-        // This creates urgency even without exact count
         return { count: 1, roomType: roomTitle, assumed: true };
     }
-    
-    // Enhanced room selection handlers
-    document.querySelectorAll('.mphb-book-button, .mphb-view-details-button, .mphb-room-type-title a').forEach(link => {
-        link.addEventListener('click', function(e) {
-            const room = this.closest('.mphb-room-type');
-            if (room) {
-                const availableCount = detectAvailability(room);
-                const roomTitle = room.querySelector('.mphb-room-type-title')?.textContent.trim();
-                
-                // Store availability data
-                if (roomTitle && availableCount !== null) {
-                    const roomSlug = roomTitle.toLowerCase().replace(/\s+/g, '-');
-                    const data = { count: availableCount, timestamp: Date.now() };
-                    sessionStorage.setItem(`mphb_availability_${roomSlug}`, JSON.stringify(data));
-                    localStorage.setItem(`mphb_availability_${roomSlug}`, JSON.stringify(data));
-                    
-                    // Append to URL if it's a checkout link and availability is low
-                    if (this.href && availableCount <= 2) {
-                        const separator = this.href.includes('?') ? '&' : '?';
-                        if (!this.href.includes('room_availability=')) {
-                            this.href += `${separator}room_availability=${availableCount}`;
-                        }
-                    }
-                }
-            }
-        });
-    });
-    
-    // Function to apply discount to checkout display
-    function applyCheckoutDiscount() {
+
+    function ensureCheckoutDiscountState() {
         const roomTitleElement = document.querySelector('h3.mphb-room-type-title');
-        if (!roomTitleElement) return;
-        
+        if (!roomTitleElement) return 0;
+
         // Check URL for availability and store it
         const urlParams = new URLSearchParams(window.location.search);
         const urlAvailability = urlParams.get('room_availability');
@@ -310,16 +300,9 @@ checkOut = convertDateFormat(checkOut);
         const roomTitle = roomTitleElement.textContent.trim();
         const roomSlug = roomTitle.toLowerCase().replace(/\s+/g, '-');
         const discountPercent = discountConfig[roomSlug] || 0;
-        
-        if (!discountPercent) {
-            // Still try to add urgency even without discount
-            addUrgencyMessage();
-            return;
-        }
-        
-        // Inject discount data into form for PHP
+
         const form = document.querySelector('.mphb_sc_checkout-form');
-        if (form) {
+        if (form && discountPercent) {
             // Remove existing fields
             form.querySelectorAll('input[name^="mphb_discount_"]').forEach(el => el.remove());
             
@@ -336,13 +319,13 @@ checkOut = convertDateFormat(checkOut);
             discountField.value = discountPercent;
             form.appendChild(discountField);
         }
-        
-        // Update visual display
-        updateCheckoutPriceDisplay(discountPercent);
-        addUrgencyMessage();
+
+        return discountPercent;
     }
-    
+
     function updateCheckoutPriceDisplay(discountPercent) {
+        if (!discountPercent) return;
+
         const totalPriceField = document.querySelector('.mphb-total-price-field');
         if (!totalPriceField) return;
         
@@ -377,15 +360,6 @@ checkOut = convertDateFormat(checkOut);
                 <span class="mphb-currency">€</span>${discountedTotal}
             </span>
         `;
-        
-        // Add discount badge
-        const totalPriceOutput = document.querySelector('.mphb-total-price output');
-        if (totalPriceOutput && !totalPriceOutput.querySelector('.discount-badge-checkout')) {
-            const badge = document.createElement('span');
-            badge.className = 'discount-badge-checkout';
-            badge.textContent = `You're saving €${discountAmount} today`;
-            totalPriceOutput.appendChild(badge);
-        }
     }
 
     function addUrgencyMessage() {
@@ -401,14 +375,11 @@ checkOut = convertDateFormat(checkOut);
                 urgencyMessage.className = 'checkout-urgency-badge mphb-urgency-badge';
                 
                 if (availability.count === urgencyConfig.critical) {
-                    urgencyMessage.textContent = availability.assumed 
-                        ? `Last room`
-                        : `Last room`;
+                    urgencyMessage.textContent = `Last room`;
                 } else if (availability.count === urgencyConfig.low) {
                     urgencyMessage.textContent = `2 rooms left`;
                 }
                 
-                // Insert after discount badge or after price
                 const discountBadge = totalPriceOutput.querySelector('.discount-badge-checkout');
                 if (discountBadge) {
                     discountBadge.after(urgencyMessage);
@@ -418,7 +389,200 @@ checkOut = convertDateFormat(checkOut);
             }
         }
     }
-	
+
+    function updatePaymentNote() {
+        const paymentNote = document.getElementById('shaped-payment-note');
+        if (!paymentNote) return;
+    
+        const mode = paymentNote.dataset.paymentMode;
+        if (mode !== 'delayed' && mode !== 'deposit') return;
+    
+        // Prefer discounted total if present
+        const totalPriceEl =
+            document.querySelector('.mphb-total-price-field .mphb-price-current') ||
+            document.querySelector('.mphb-total-price-field .mphb-price');
+    
+        if (!totalPriceEl) return;
+    
+        const totalTextRaw = totalPriceEl.textContent;
+        const totalNumber = parseFloat(
+            totalTextRaw.replace(/[^0-9.,]/g, '').replace(',', '.')
+        );
+        if (isNaN(totalNumber)) return;
+    
+        const totalDisplay = formatPrice(totalNumber);
+    
+        // ===== DELAYED MODE (existing logic) =====
+        if (mode === 'delayed') {
+            const noteBody = paymentNote.querySelector('.shaped-note__body');
+            if (!noteBody) return;
+    
+            const chargeDate = paymentNote.dataset.chargeDate;
+            if (!chargeDate) return;
+    
+            const formattedDate = new Date(chargeDate).toLocaleDateString('en-US', { 
+                month: 'long', 
+                day: 'numeric', 
+                year: 'numeric' 
+            });
+    
+            noteBody.innerHTML = `
+                We will charge <strong>€${totalDisplay}</strong> 
+                on <strong style="color:#141310">${formattedDate}</strong> 
+                using the card you save now.
+            `;
+    
+            // Keep dataset in sync (optional but nice)
+            paymentNote.dataset.total = totalNumber;
+            return;
+        }
+    
+        // ===== DEPOSIT MODE =====
+        if (mode === 'deposit') {
+            const headline = paymentNote.querySelector('.shaped-note__headline');
+            const noteBody = paymentNote.querySelector('.shaped-note__body');
+            if (!headline || !noteBody) return;
+    
+            // 1) Get deposit percent:
+            //    - Prefer explicit data-deposit-percent
+            //    - Else derive from original deposit / original total
+            let depositPercent = paymentNote.dataset.depositPercent
+                ? parseFloat(paymentNote.dataset.depositPercent)
+                : null;
+    
+            if (!depositPercent || isNaN(depositPercent)) {
+                const origTotal   = parseFloat(paymentNote.dataset.total || totalNumber);
+                const origDeposit = parseFloat(paymentNote.dataset.depositAmount);
+                if (!origTotal || isNaN(origTotal) || !origDeposit || isNaN(origDeposit)) {
+                    return;
+                }
+                depositPercent = (origDeposit / origTotal) * 100;
+                paymentNote.dataset.depositPercent = depositPercent; // cache for next runs
+            }
+    
+            // 2) Recalculate deposit & balance from *current* total
+            const depositNumber  = (totalNumber * depositPercent) / 100;
+            const balanceNumber  = totalNumber - depositNumber;
+    
+            const depositDisplay = formatPrice(depositNumber);
+            const balanceDisplay = formatPrice(balanceNumber);
+    
+            // 3) Update headline + body copy
+            headline.innerHTML = `Pay €${depositDisplay} deposit today`;
+    
+            noteBody.innerHTML = `
+                Secure your booking with a <strong>${formatPrice(depositPercent)}% deposit</strong>.<br>
+                Remaining <strong>€${balanceDisplay}</strong> is due on arrival.
+            `;
+    
+            // 4) Keep data attributes in sync with recalculated values
+            paymentNote.dataset.total         = totalNumber;
+            paymentNote.dataset.depositAmount = depositNumber;
+            paymentNote.dataset.balanceDue    = balanceNumber;
+        }
+    }
+
+
+    function addDiscountRow(discountPercent) {
+        if (!discountPercent) return;
+
+        const $ = window.jQuery;
+        if (!$) return;
+
+        var $breakdown = $('.mphb-price-breakdown');
+        if ($breakdown.length && !$breakdown.find('.mphb-discount-row').length) {
+            var $accommodationRow = $breakdown.find('.mphb-price-breakdown-accommodation-total').last();
+            var $subtotalRow = $breakdown.find('.mphb-price-breakdown-subtotal').last();
+            
+            if ($accommodationRow.length) {
+                var accommodationText = $accommodationRow.find('.mphb-table-price-column').text();
+                var accommodationTotal = parseFloat(accommodationText.replace(/[^0-9.,]/g, '').replace(',', '.'));
+                var discountAmount = formatPrice(accommodationTotal * (discountPercent / 100));
+                
+                // Determine number of columns based on whether services exist
+                var hasServices = $('.mphb-price-breakdown-services').length > 0;
+                var colSpan = hasServices ? 2 : 1;
+                
+                var discountRow = '<tr class="mphb-discount-row">' +
+                    '<th colspan="' + colSpan + '">You\'re saving:</th>' +
+                    '<th class="mphb-table-price-column" style="color: #4C9155;">-<span class="mphb-currency">€</span>' + discountAmount + '</th>' +
+                    '</tr>';
+                
+                // Insert after the last subtotal row
+                if ($subtotalRow.length) {
+                    $subtotalRow.last().after(discountRow);
+                } else {
+                    // Fallback if no subtotal found
+                    $breakdown.find('tbody').append(discountRow);
+                }
+                
+                // Update the total to reflect the discount
+                var $totalRow = $breakdown.find('.mphb-price-breakdown-total');
+                if ($totalRow.length) {
+                    var $totalCell = $totalRow.find('.mphb-table-price-column');
+                    var totalText = $totalCell.text();
+                    var originalTotal = parseFloat(totalText.replace(/[^0-9.,]/g, '').replace(',', '.'));
+                    var newTotal = formatPrice(originalTotal - parseFloat(discountAmount));
+                    
+                    $totalCell.html('<span class="mphb-price"><span class="mphb-currency">€</span>' + newTotal + '</span>');
+                }
+            }
+        }
+    }
+
+    function renderCheckoutDiscountBadge(discountPercent) {
+        // Remove existing badge first
+        const existingBadge = document.querySelector('.discount-badge-checkout');
+        if (existingBadge) {
+            existingBadge.remove();
+        }
+        
+        if (!discountPercent) return;
+        
+        const totalPriceOutput = document.querySelector('.mphb-total-price output');
+        if (!totalPriceOutput) return;
+        
+        // Get current prices for calculation
+        const originalPriceEl = document.querySelector('.mphb-total-price-field .mphb-price-original');
+        const currentPriceEl = document.querySelector('.mphb-total-price-field .mphb-price-current');
+        
+        if (!originalPriceEl || !currentPriceEl) return;
+        
+        const originalPrice = parseFloat(originalPriceEl.textContent.replace(/[^0-9.,]/g, '').replace(',', '.'));
+        const currentPrice = parseFloat(currentPriceEl.textContent.replace(/[^0-9.,]/g, '').replace(',', '.'));
+        const discountAmount = formatPrice(originalPrice - currentPrice);
+        
+        // Create and append new badge
+        const badge = document.createElement('span');
+        badge.className = 'discount-badge-checkout';
+        badge.textContent = `You're saving €${discountAmount} today`;
+        totalPriceOutput.appendChild(badge);
+    }
+
+    // =============== UNIFIED CHECKOUT REFRESH ======================
+
+    function refreshCheckoutUI() {
+        // If there's no checkout form, bail fast (e.g. search results only)
+        const checkoutForm = document.querySelector('.mphb_sc_checkout-form');
+        if (!checkoutForm) return;
+
+        // 1) Ensure hidden discount fields exist and get current percent
+        const discountPercent = ensureCheckoutDiscountState();
+
+        // 2) If discount exists, update all discount-related UI
+        if (discountPercent) {
+            updateCheckoutPriceDisplay(discountPercent);
+            addDiscountRow(discountPercent);
+            renderCheckoutDiscountBadge(discountPercent);
+        }
+
+        // 3) Always apply urgency + payment note if relevant
+        addUrgencyMessage();
+        updatePaymentNote();
+    }
+
+    // =============== CONTEXT SAVING / AJAX HOOKS ======================
+
     // Save booking context when user interacts with room cards
     function saveBookingContext() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -442,13 +606,43 @@ checkOut = convertDateFormat(checkOut);
     // Save on page load
     saveBookingContext();
     
+    // Enhanced room selection handlers
+    document.querySelectorAll('.mphb-book-button, .mphb-view-details-button, .mphb-room-type-title a').forEach(link => {
+        link.addEventListener('click', function() {
+            const room = this.closest('.mphb-room-type');
+            if (room) {
+                const availableCount = detectAvailability(room);
+                const roomTitle = room.querySelector('.mphb-room-type-title')?.textContent.trim();
+                
+                // Store availability data
+                if (roomTitle && availableCount !== null) {
+                    const roomSlug = roomTitle.toLowerCase().replace(/\s+/g, '-');
+                    const data = { count: availableCount, timestamp: Date.now() };
+                    sessionStorage.setItem(`mphb_availability_${roomSlug}`, JSON.stringify(data));
+                    localStorage.setItem(`mphb_availability_${roomSlug}`, JSON.stringify(data));
+                    
+                    // Append to URL if it's a checkout link and availability is low
+                    if (this.href && availableCount <= 2) {
+                        const separator = this.href.includes('?') ? '&' : '?';
+                        if (!this.href.includes('room_availability=')) {
+                            this.href += `${separator}room_availability=${availableCount}`;
+                        }
+                    }
+                }
+            }
+        });
+    });
+    
     // AJAX handling for MotoPress updates
     if (window.jQuery) {
-        jQuery(document).on('click', '.mphb-room-type', function() {
+        const $ = window.jQuery;
+
+        $(document).on('click', '.mphb-room-type', function() {
             const availableCount = detectAvailability(this);
+            // availableCount currently unused, but you might log or use later
         });
         
-        jQuery(document).ajaxSend(function(event, xhr, settings) {
+        $(document).ajaxSend(function(event, xhr, settings) {
             if (settings.url && settings.url.includes('mphb_')) {
                 // Add discount config to all MotoPress AJAX requests
                 if (settings.data) {
@@ -457,180 +651,19 @@ checkOut = convertDateFormat(checkOut);
             }
         });
         
-        // Reapply after AJAX updates
-        jQuery(document).ajaxComplete(function(event, xhr, settings) {
-            if (settings.url && settings.url.includes('mphb_update_checkout_info')) {
-                setTimeout(applyCheckoutDiscount, 100);
-            }
-        });
-    }
-    
-    // Initial application
-    (async () => {
-    await applyDiscountsAndUrgency();
-})();
-    setTimeout(applyCheckoutDiscount, 500);
-    
-    // Mutation observer for dynamic updates
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.target.classList && 
-                (mutation.target.classList.contains('mphb-total-price-field') || 
-                 mutation.target.classList.contains('mphb-price-breakdown'))) {
-                setTimeout(applyCheckoutDiscount, 50);
-            }
-        });
-    });
-    
-    const priceElements = document.querySelectorAll('.mphb-total-price, .mphb-checkout-form');
-    priceElements.forEach(el => {
-        observer.observe(el, { childList: true, subtree: true });
-    });
-	
-	 function updatePaymentNote() {
-        const paymentNote = document.getElementById('shaped-payment-note');
-        if (!paymentNote || paymentNote.dataset.paymentMode !== 'delayed') return;
-        
-        // Get current total from checkout display
-        const totalPriceEl = document.querySelector('.mphb-total-price-field .mphb-price-current');
-        if (!totalPriceEl) return;
-        
-        const totalText = totalPriceEl.textContent;
-        const totalAmount = formatPrice(parseFloat(totalText.replace(/[^0-9.,]/g, '').replace(',', '.')));
-        
-        // Update the note
-        const noteBody = paymentNote.querySelector('.shaped-note__body');
-        if (noteBody) {
-            const chargeDate = paymentNote.dataset.chargeDate;
-            const formattedDate = new Date(chargeDate).toLocaleDateString('en-US', { 
-                month: 'long', 
-                day: 'numeric', 
-                year: 'numeric' 
-            });
-            
-            noteBody.innerHTML = `
-                We will charge <strong>€${totalAmount}</strong> 
-                on <strong style="color:#141310">${formattedDate}</strong> 
-                using the card you save now.
-            `;
-        }
-    }
-    
-    // Monitor for price changes
-    if (window.jQuery) {
-        jQuery(document).ajaxComplete(function(event, xhr, settings) {
-            if (settings.url && settings.url.includes('mphb_update_checkout_info')) {
-                setTimeout(updatePaymentNote, 100);
-            }
-        });
-    }
-    
-    // Initial update
-    setTimeout(updatePaymentNote, 500);
-    
-    
-    // =============== CHECKOUT DISCOUNT BADGE (re-render on AJAX) ======================
-    function renderCheckoutDiscountBadge() {
-        // Remove existing badge first
-        const existingBadge = document.querySelector('.discount-badge-checkout');
-        if (existingBadge) {
-            existingBadge.remove();
-        }
-        
-        // Get discount info from hidden field
-        const discountPercent = document.querySelector('input[name="mphb_discount_percentage"]')?.value;
-        if (!discountPercent || discountPercent == 0) return;
-        
-        const totalPriceOutput = document.querySelector('.mphb-total-price output');
-        if (!totalPriceOutput) return;
-        
-        // Get current prices for calculation
-        const originalPriceEl = document.querySelector('.mphb-total-price-field .mphb-price-original');
-        const currentPriceEl = document.querySelector('.mphb-total-price-field .mphb-price-current');
-        
-        if (!originalPriceEl || !currentPriceEl) return;
-        
-        const originalPrice = parseFloat(originalPriceEl.textContent.replace(/[^0-9.,]/g, '').replace(',', '.'));
-        const currentPrice = parseFloat(currentPriceEl.textContent.replace(/[^0-9.,]/g, '').replace(',', '.'));
-        const discountAmount = formatPrice(originalPrice - currentPrice);
-        
-        // Create and append new badge
-        const badge = document.createElement('span');
-        badge.className = 'discount-badge-checkout';
-        badge.textContent = `You're saving €${discountAmount} today`;
-        totalPriceOutput.appendChild(badge);
-    }
-    
-    // Hook into AJAX updates (add to existing jQuery block)
-    jQuery(document).ready(function($) {
-        // Initial render
-        setTimeout(renderCheckoutDiscountBadge, 600);
-        
-        // Re-render after AJAX
+        // Single hook for all checkout UI refresh after MotoPress recalculates
         $(document).ajaxComplete(function(event, xhr, settings) {
             if (settings.url && settings.url.includes('mphb_update_checkout_info')) {
-                setTimeout(renderCheckoutDiscountBadge, 150);
+                setTimeout(refreshCheckoutUI, 50);
             }
         });
-    });
-});
-	
-	
-// =============== CHECKOUT DISCOUNT ROW ======================
-	    jQuery(document).ready(function($) {
-        // Helper function to format prices (removes trailing zeros)
-        function formatPrice(value) {
-            return parseFloat(value.toFixed(2)).toString();
-        }
-        
-        function addDiscountRow() {
-    var discountPercent = $('input[name="mphb_discount_percentage"]').val();
-    if (!discountPercent || discountPercent == 0) return;
-    
-    var $breakdown = $('.mphb-price-breakdown');
-    if ($breakdown.length && !$breakdown.find('.mphb-discount-row').length) {
-        var $accommodationRow = $breakdown.find('.mphb-price-breakdown-accommodation-total').last();
-        var $subtotalRow = $breakdown.find('.mphb-price-breakdown-subtotal').last();
-        
-        if ($accommodationRow.length) {
-            var accommodationText = $accommodationRow.find('.mphb-table-price-column').text();
-            var accommodationTotal = parseFloat(accommodationText.replace(/[^0-9.,]/g, '').replace(',', '.'));
-            var discountAmount = formatPrice(accommodationTotal * (discountPercent / 100));
-            
-            // Determine number of columns based on whether services exist
-            var hasServices = $('.mphb-price-breakdown-services').length > 0;
-            var colSpan = hasServices ? 2 : 1;
-            
-            var discountRow = '<tr class="mphb-discount-row">' +
-                '<th colspan="' + colSpan + '">You\'re saving:</th>' +
-                '<th class="mphb-table-price-column" style="color: #4C9155;">-<span class="mphb-currency">€</span>' + discountAmount + '</th>' +
-                '</tr>';
-            
-            // Insert after the last subtotal row
-            if ($subtotalRow.length) {
-                $subtotalRow.last().after(discountRow);
-            } else {
-                // Fallback if no subtotal found
-                $breakdown.find('tbody').append(discountRow);
-            }
-            
-            // Update the total to reflect the discount
-            var $totalRow = $breakdown.find('.mphb-price-breakdown-total');
-            if ($totalRow.length) {
-                var $totalCell = $totalRow.find('.mphb-table-price-column');
-                var totalText = $totalCell.text();
-                var originalTotal = parseFloat(totalText.replace(/[^0-9.,]/g, '').replace(',', '.'));
-                var newTotal = formatPrice(originalTotal - parseFloat(discountAmount));
-                
-                $totalCell.html('<span class="mphb-price"><span class="mphb-currency">€</span>' + newTotal + '</span>');
-            }
-        }
     }
-}
+    
+    // Initial applications
+    (async () => {
+        await applyDiscountsAndUrgency();  // search results decoration
+    })();
 
-        // Run on load and after AJAX
-        setTimeout(addDiscountRow, 500);
-        $(document).ajaxComplete(function() {
-            setTimeout(addDiscountRow, 100);
-        });
-    });
+    // Initial checkout refresh (if on checkout)
+    setTimeout(refreshCheckoutUI, 200);
+});

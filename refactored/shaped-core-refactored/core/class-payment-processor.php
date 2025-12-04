@@ -212,11 +212,10 @@ class Shaped_Payment_Processor
 
         // DEPOSIT MODE - Show deposit info
         if ($property_mode === 'deposit') {
-            $deposit_data = Shaped_Pricing::calculate_deposit($total_amount);
+            $deposit_data     = Shaped_Pricing::calculate_deposit($total_amount);
             $deposit_formatted = number_format($deposit_data['deposit'], 2);
             $balance_formatted = number_format($deposit_data['balance'], 2);
-            $percent = $deposit_data['percent'];
-
+            $percent           = $deposit_data['percent'];
             ?>
             <style>.payment-methods{display:none!important;}</style>
             <div id="shaped-payment-note"
@@ -224,7 +223,8 @@ class Shaped_Payment_Processor
                  data-payment-mode="deposit"
                  data-deposit-amount="<?php echo esc_attr($deposit_data['deposit']); ?>"
                  data-balance-due="<?php echo esc_attr($deposit_data['balance']); ?>"
-                 data-total="<?php echo esc_attr($total_amount); ?>">
+                 data-total="<?php echo esc_attr($total_amount); ?>"
+                 data-deposit-percent="<?php echo esc_attr($percent); ?>">
                 <div class="shaped-note__content">
                     <strong class="shaped-note__headline">Pay €<?php echo esc_html($deposit_formatted); ?> deposit today</strong>
                     <p class="shaped-note__body">
@@ -236,6 +236,7 @@ class Shaped_Payment_Processor
             <?php
             return;
         }
+
 
         // SCHEDULED MODE - Only show for delayed charges (≥7 days out)
         if ($context['is_immediate']) {
