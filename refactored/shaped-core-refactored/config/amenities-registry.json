@@ -1,0 +1,288 @@
+{
+  "amenities": [
+    {
+      "slug": "private-bathroom",
+      "icon": "shower",
+      "label": "Private Bathroom",
+      "priority": 1,
+      "keywords": ["bathroom", "bath", "shower", "toilet", "ensuite", "en-suite"]
+    },
+    {
+      "slug": "private-kitchen",
+      "icon": "cooking-pot",
+      "label": "Private Kitchen",
+      "priority": 2,
+      "keywords": ["kitchen", "kitchenette", "cooking", "stove", "cooker"]
+    },
+    {
+      "slug": "private-parking",
+      "icon": "car",
+      "label": "Private Parking",
+      "priority": 3,
+      "keywords": ["parking", "garage", "car park"]
+    },
+    {
+      "slug": "smoke-free",
+      "icon": "smoking-slash",
+      "label": "Smoke-free",
+      "priority": 4,
+      "keywords": ["non-smoking", "no smoking", "smoke free", "smokefree"]
+    },
+    {
+      "slug": "sea-view",
+      "icon": "waves",
+      "label": "Sea View",
+      "priority": 5,
+      "keywords": ["ocean view", "beach view", "water view", "sea", "ocean"]
+    },
+    {
+      "slug": "room-service",
+      "icon": "bell-concierge",
+      "label": "Room Service",
+      "priority": 6,
+      "keywords": ["concierge", "service", "room service"]
+    },
+    {
+      "slug": "living-room",
+      "icon": "couch",
+      "label": "Living Room",
+      "priority": 7,
+      "keywords": ["lounge", "living area", "sitting room", "sofa"]
+    },
+    {
+      "slug": "air-conditioning",
+      "icon": "snowflake",
+      "label": "Air Conditioning",
+      "priority": 8,
+      "keywords": ["ac", "aircon", "air con", "cooling", "climate control"]
+    },
+    {
+      "slug": "heating",
+      "icon": "thermometer-hot",
+      "label": "Heating",
+      "priority": 9,
+      "keywords": ["heater", "radiator", "central heating", "warm"]
+    },
+    {
+      "slug": "wi-fi",
+      "icon": "wifi-high",
+      "label": "WiFi",
+      "priority": 10,
+      "keywords": ["wifi", "wireless", "internet", "broadband"]
+    },
+    {
+      "slug": "flat-screen-tv",
+      "icon": "television",
+      "label": "Flat Screen TV",
+      "priority": 11,
+      "keywords": ["tv", "television", "flatscreen", "smart tv"]
+    },
+    {
+      "slug": "balcony",
+      "icon": "door-open",
+      "label": "Balcony",
+      "priority": 12,
+      "keywords": ["terrace", "patio", "veranda"]
+    },
+    {
+      "slug": "minibar",
+      "icon": "wine",
+      "label": "Minibar",
+      "priority": 13,
+      "keywords": ["mini bar", "fridge", "mini-fridge", "drinks"]
+    },
+    {
+      "slug": "safe",
+      "icon": "lock-key",
+      "label": "Safe",
+      "priority": 14,
+      "keywords": ["safety box", "security box", "vault"]
+    },
+    {
+      "slug": "coffee-maker",
+      "icon": "coffee",
+      "label": "Coffee Maker",
+      "priority": 15,
+      "keywords": ["coffee machine", "espresso", "kettle", "tea maker"]
+    },
+    {
+      "slug": "washer",
+      "icon": "washing-machine",
+      "label": "Washing Machine",
+      "priority": 16,
+      "keywords": ["laundry", "washer", "washing"]
+    },
+    {
+      "slug": "dryer",
+      "icon": "package",
+      "label": "Dryer",
+      "priority": 17,
+      "keywords": ["tumble dryer", "clothes dryer"]
+    },
+    {
+      "slug": "iron",
+      "icon": "iron",
+      "label": "Iron",
+      "priority": 18,
+      "keywords": ["ironing board", "iron and board"]
+    },
+    {
+      "slug": "hairdryer",
+      "icon": "hairdryer",
+      "label": "Hairdryer",
+      "priority": 19,
+      "keywords": ["hair dryer", "blow dryer"]
+    },
+    {
+      "slug": "desk",
+      "icon": "desk",
+      "label": "Desk",
+      "priority": 20,
+      "keywords": ["work desk", "writing desk", "workspace"]
+    },
+    {
+      "slug": "soundproof",
+      "icon": "speaker-slash",
+      "label": "Soundproof",
+      "priority": 21,
+      "keywords": ["sound proof", "noise proof", "quiet"]
+    },
+    {
+      "slug": "wheelchair-accessible",
+      "icon": "wheelchair",
+      "label": "Wheelchair Accessible",
+      "priority": 22,
+      "keywords": ["accessible", "disabled access", "mobility"]
+    },
+    {
+      "slug": "pet-friendly",
+      "icon": "paw-print",
+      "label": "Pet Friendly",
+      "priority": 23,
+      "keywords": ["pets allowed", "dog friendly", "cat friendly"]
+    },
+    {
+      "slug": "pool",
+      "icon": "swimming-pool",
+      "label": "Swimming Pool",
+      "priority": 24,
+      "keywords": ["pool access", "private pool", "shared pool"]
+    },
+    {
+      "slug": "gym",
+      "icon": "barbell",
+      "label": "Gym Access",
+      "priority": 25,
+      "keywords": ["fitness center", "fitness room", "workout", "exercise"]
+    },
+    {
+      "slug": "spa",
+      "icon": "flower-lotus",
+      "label": "Spa Access",
+      "priority": 26,
+      "keywords": ["spa access", "wellness", "massage"]
+    },
+    {
+      "slug": "garden",
+      "icon": "tree",
+      "label": "Garden",
+      "priority": 27,
+      "keywords": ["garden view", "garden access", "outdoor space"]
+    },
+    {
+      "slug": "mountain-view",
+      "icon": "mountains",
+      "label": "Mountain View",
+      "priority": 28,
+      "keywords": ["mountain", "hill view", "scenic view"]
+    },
+    {
+      "slug": "city-view",
+      "icon": "buildings",
+      "label": "City View",
+      "priority": 29,
+      "keywords": ["urban view", "skyline", "street view"]
+    },
+    {
+      "slug": "breakfast",
+      "icon": "egg",
+      "label": "Breakfast Included",
+      "priority": 30,
+      "keywords": ["breakfast", "morning meal", "breakfast service"]
+    },
+    {
+      "slug": "private-entrance",
+      "icon": "door",
+      "label": "Private Entrance",
+      "priority": 31,
+      "keywords": ["separate entrance", "own entrance", "direct access"]
+    },
+    {
+      "slug": "fireplace",
+      "icon": "fire",
+      "label": "Fireplace",
+      "priority": 32,
+      "keywords": ["fire place", "log burner", "wood stove"]
+    },
+    {
+      "slug": "dishwasher",
+      "icon": "faucet",
+      "label": "Dishwasher",
+      "priority": 33,
+      "keywords": ["dish washer", "dishwashing machine"]
+    },
+    {
+      "slug": "microwave",
+      "icon": "microwave",
+      "label": "Microwave",
+      "priority": 34,
+      "keywords": ["microwave oven"]
+    },
+    {
+      "slug": "towels",
+      "icon": "towel",
+      "label": "Towels Provided",
+      "priority": 35,
+      "keywords": ["towels", "bath towels", "linen"]
+    },
+    {
+      "slug": "toiletries",
+      "icon": "bottle",
+      "label": "Toiletries",
+      "priority": 36,
+      "keywords": ["toiletry", "shampoo", "soap", "bath products"]
+    },
+    {
+      "slug": "bbq",
+      "icon": "grill",
+      "label": "BBQ",
+      "priority": 37,
+      "keywords": ["barbecue", "grill", "outdoor cooking"]
+    },
+    {
+      "slug": "electric-vehicle-charging",
+      "icon": "charging-station",
+      "label": "EV Charging",
+      "priority": 38,
+      "keywords": ["ev charging", "electric car", "charging station"]
+    },
+    {
+      "slug": "bicycle-rental",
+      "icon": "bicycle",
+      "label": "Bicycle Rental",
+      "priority": 39,
+      "keywords": ["bike rental", "bicycle", "bikes"]
+    },
+    {
+      "slug": "games-room",
+      "icon": "game-controller",
+      "label": "Games Room",
+      "priority": 40,
+      "keywords": ["game room", "entertainment", "recreation room"]
+    }
+  ],
+  "fallback": {
+    "icon": "circle-dashed",
+    "weight": "regular"
+  }
+}
