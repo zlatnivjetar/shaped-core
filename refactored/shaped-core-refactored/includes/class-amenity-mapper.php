@@ -33,11 +33,12 @@ class Shaped_Amenity_Mapper {
     private static $icon_cache = [];
 
     /**
-     * Custom field name for taxonomy term overrides
+     * Custom field names for taxonomy term overrides
      *
      * @var string
      */
     private const CUSTOM_FIELD = '_shaped_amenity_icon';
+    private const CUSTOM_FIELD_WEIGHT = '_shaped_amenity_icon_weight';
 
     /**
      * Initialize the mapper
@@ -131,6 +132,12 @@ class Shaped_Amenity_Mapper {
         if ($term_id) {
             $custom_icon = get_term_meta($term_id, self::CUSTOM_FIELD, true);
             if (!empty($custom_icon)) {
+                // Get custom weight if set
+                $custom_weight = get_term_meta($term_id, self::CUSTOM_FIELD_WEIGHT, true);
+                if (!empty($custom_weight)) {
+                    $args['weight'] = $custom_weight;
+                }
+
                 $icon_data = $this->build_icon_data($custom_icon, $name, $args);
                 $icon_data['is_fallback'] = false;
                 self::$icon_cache[$cache_key] = $icon_data;
