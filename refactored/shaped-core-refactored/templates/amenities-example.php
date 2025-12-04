@@ -51,11 +51,17 @@ if (!defined('ABSPATH')) {
     // ─── Facilities (using Shaped amenity mapper) ───
 
     // Get icon data for all facilities, automatically sorted by priority
+    // Note: By default, amenities without icons are automatically skipped
+    $amenities = shaped_get_amenities_for_room(get_the_ID());
+
+    // Alternative manual approach with duplicate filtering:
+    /*
     $amenities = [];
     $displayed_labels = []; // Track displayed labels to avoid duplicates
 
     foreach ($facilities as $facility) {
-        $icon_data = shaped_get_amenity_icon($facility);
+        // skip_fallback: true will hide amenities without icons (default behavior)
+        $icon_data = shaped_get_amenity_icon($facility, ['skip_fallback' => true]);
 
         if ($icon_data) {
             $label = $icon_data['label'];
@@ -67,13 +73,9 @@ if (!defined('ABSPATH')) {
             }
         }
     }
+    */
 
-    // Sort by priority (lower number = higher priority)
-    usort($amenities, function($a, $b) {
-        return $a['priority'] - $b['priority'];
-    });
-
-    // Display amenities
+    // Display amenities (already sorted by priority and filtered to exclude missing icons)
     foreach ($amenities as $amenity) {
         echo '<li class="mphb-amenity-item">';
         echo '<span class="mphb-amenity-icon">' . $amenity['html'] . '</span>';

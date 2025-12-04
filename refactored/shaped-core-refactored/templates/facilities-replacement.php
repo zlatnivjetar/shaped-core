@@ -56,7 +56,9 @@ if (!defined('ABSPATH')) {
 
     foreach ($facilities as $facility) {
         // Get icon data using Shaped helper function
-        $icon_data = shaped_get_amenity_icon($facility);
+        // Note: skip_fallback is false here so we manually check, but you can set it to true
+        // to automatically skip amenities without icons
+        $icon_data = shaped_get_amenity_icon($facility, ['skip_fallback' => true]);
 
         if ($icon_data) {
             $label = $icon_data['label'];

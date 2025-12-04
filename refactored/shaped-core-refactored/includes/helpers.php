@@ -100,12 +100,19 @@ function shaped_log(string $message, string $level = 'info'): void {
  * Get amenity icon data for a facility term
  *
  * @param WP_Term|string $facility Term object or slug
- * @param array          $args     Optional arguments (weight, class, etc.)
- * @return array|null Icon data array or null if facility is invalid
+ * @param array          $args     Optional arguments:
+ *                                 - weight (string): Icon weight (regular, bold, light, thin, duotone, fill)
+ *                                 - class (string): Additional CSS classes
+ *                                 - skip_fallback (bool): Return null if no icon found (default: false)
+ * @return array|null Icon data array or null if no match found and skip_fallback is true
  *
  * @example
  * $icon = shaped_get_amenity_icon($facility);
  * echo $icon['html']; // Outputs: <i class="ph ph-wifi-high"></i>
+ *
+ * @example Skip amenities without icons:
+ * $icon = shaped_get_amenity_icon($facility, ['skip_fallback' => true]);
+ * if ($icon) { echo $icon['html']; }
  */
 function shaped_get_amenity_icon(WP_Term|string $facility, array $args = []): ?array {
     static $mapper = null;
@@ -143,10 +150,17 @@ function shaped_get_amenities_registry(): array {
  *
  * @param WP_Term|string $facility Term object or slug
  * @param string         $label    Optional custom label
- * @param array          $args     Optional arguments
- * @return string HTML output
+ * @param array          $args     Optional arguments:
+ *                                 - weight (string): Icon weight
+ *                                 - class (string): Additional CSS classes
+ *                                 - skip_fallback (bool): Skip if no icon found (default: true)
+ * @return string HTML output (empty string if no icon and skip_fallback is true)
  */
 function shaped_render_amenity_badge(WP_Term|string $facility, string $label = '', array $args = []): string {
+    // Default to skipping fallback icons
+    $skip_fallback = $args['skip_fallback'] ?? true;
+    $args['skip_fallback'] = $skip_fallback;
+
     $icon_data = shaped_get_amenity_icon($facility, $args);
 
     if (!$icon_data) {
@@ -166,10 +180,12 @@ function shaped_render_amenity_badge(WP_Term|string $facility, string $label = '
 /**
  * Get sorted amenities for a room type
  *
- * @param int $room_type_id Room type post ID
- * @return array Sorted array of icon data
+ * @param int   $room_type_id Room type post ID
+ * @param array $args         Optional arguments:
+ *                            - skip_fallback (bool): Skip amenities without icons (default: true)
+ * @return array Sorted array of icon data (automatically filtered to exclude amenities without icons)
  */
-function shaped_get_amenities_for_room(int $room_type_id): array {
+function shaped_get_amenities_for_room(int $room_type_id, array $args = []): array {
     static $mapper = null;
 
     if ($mapper === null) {
@@ -179,5 +195,5 @@ function shaped_get_amenities_for_room(int $room_type_id): array {
         $mapper = new Shaped_Amenity_Mapper();
     }
 
-    return $mapper->get_room_amenities($room_type_id);
+    return $mapper->get_room_amenities($room_type_id, $args);
 }
