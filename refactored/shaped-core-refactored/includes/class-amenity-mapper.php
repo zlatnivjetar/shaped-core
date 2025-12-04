@@ -96,11 +96,14 @@ class Shaped_Amenity_Mapper {
      * 2. Exact slug match in registry
      * 3. Normalized name match
      * 4. Keyword contains match
-     * 5. Fallback icon
+     * 5. Fallback icon (or null if skip_fallback is true)
      *
      * @param WP_Term|string $facility Term object or slug
-     * @param array          $args     Optional arguments (weight, class, etc.)
-     * @return array|null Icon data array or null if facility is invalid
+     * @param array          $args     Optional arguments:
+     *                                 - weight (string): Icon weight (regular, bold, light, thin, duotone, fill)
+     *                                 - class (string): Additional CSS classes
+     *                                 - skip_fallback (bool): Return null if no icon found (default: false)
+     * @return array|null Icon data array or null if no match found and skip_fallback is true
      */
     public function get_icon(WP_Term|string $facility, array $args = []): ?array {
         // Normalize input
@@ -116,6 +119,8 @@ class Shaped_Amenity_Mapper {
             return null;
         }
 
+        $skip_fallback = $args['skip_fallback'] ?? false;
+
         // Check cache first
         $cache_key = $slug . '_' . md5(serialize($args));
         if (isset(self::$icon_cache[$cache_key])) {
@@ -127,6 +132,7 @@ class Shaped_Amenity_Mapper {
             $custom_icon = get_term_meta($term_id, self::CUSTOM_FIELD, true);
             if (!empty($custom_icon)) {
                 $icon_data = $this->build_icon_data($custom_icon, $name, $args);
+                $icon_data['is_fallback'] = false;
                 self::$icon_cache[$cache_key] = $icon_data;
                 return $icon_data;
             }
@@ -136,6 +142,7 @@ class Shaped_Amenity_Mapper {
         $registry_item = $this->find_by_slug($slug);
         if ($registry_item) {
             $icon_data = $this->build_icon_data($registry_item['icon'], $registry_item['label'], $args, $registry_item);
+            $icon_data['is_fallback'] = false;
             self::$icon_cache[$cache_key] = $icon_data;
             return $icon_data;
         }
@@ -144,6 +151,7 @@ class Shaped_Amenity_Mapper {
         $registry_item = $this->find_by_normalized_name($name);
         if ($registry_item) {
             $icon_data = $this->build_icon_data($registry_item['icon'], $registry_item['label'], $args, $registry_item);
+            $icon_data['is_fallback'] = false;
             self::$icon_cache[$cache_key] = $icon_data;
             return $icon_data;
         }
@@ -152,13 +160,20 @@ class Shaped_Amenity_Mapper {
         $registry_item = $this->find_by_keywords($name);
         if ($registry_item) {
             $icon_data = $this->build_icon_data($registry_item['icon'], $registry_item['label'], $args, $registry_item);
+            $icon_data['is_fallback'] = false;
             self::$icon_cache[$cache_key] = $icon_data;
             return $icon_data;
         }
 
-        // Priority 5: Fallback
+        // Priority 5: Fallback or null
+        if ($skip_fallback) {
+            self::$icon_cache[$cache_key] = null;
+            return null;
+        }
+
         $fallback = self::$registry['fallback'] ?? ['icon' => 'circle-dashed', 'weight' => 'regular'];
         $icon_data = $this->build_icon_data($fallback['icon'], $name, $args, ['priority' => 999]);
+        $icon_data['is_fallback'] = true;
         self::$icon_cache[$cache_key] = $icon_data;
         return $icon_data;
     }
@@ -292,20 +307,25 @@ class Shaped_Amenity_Mapper {
     /**
      * Get sorted amenities for a room type
      *
-     * @param int $room_type_id Room type post ID
+     * @param int   $room_type_id  Room type post ID
+     * @param array $args          Optional arguments:
+     *                             - skip_fallback (bool): Skip amenities without icons (default: true)
      * @return array Sorted array of icon data
      */
-    public function get_room_amenities(int $room_type_id): array {
+    public function get_room_amenities(int $room_type_id, array $args = []): array {
         $facilities = get_the_terms($room_type_id, 'mphb_room_facility');
 
         if (empty($facilities) || is_wp_error($facilities)) {
             return [];
         }
 
+        // Default to skipping fallback icons (hide amenities without icons)
+        $skip_fallback = $args['skip_fallback'] ?? true;
+
         $amenities = [];
 
         foreach ($facilities as $facility) {
-            $icon_data = $this->get_icon($facility);
+            $icon_data = $this->get_icon($facility, ['skip_fallback' => $skip_fallback]);
             if ($icon_data) {
                 $amenities[] = $icon_data;
             }
