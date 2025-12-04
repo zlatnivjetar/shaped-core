@@ -26,6 +26,7 @@ class Shaped_Loader {
         'Shaped_Assets'             => 'includes/class-assets.php',
         'Shaped_Admin'              => 'includes/class-admin.php',
         'Shaped_Amenity_Mapper'     => 'includes/class-amenity-mapper.php',
+        'Shaped_Amenity_Admin'      => 'includes/class-amenity-admin.php',
 
         // Schema
         'Shaped_Schema_Markup'      => 'schema/class-markup.php',

@@ -129,6 +129,7 @@ add_action('plugins_loaded', function() {
     // ─── Core Classes (always load) ───
     new Shaped_Assets();
     new Shaped_Amenity_Mapper();
+    new Shaped_Amenity_Admin();
     new Shaped_Payment_Processor();
     new Shaped_Booking_Manager();
     Shaped_Pricing::init();

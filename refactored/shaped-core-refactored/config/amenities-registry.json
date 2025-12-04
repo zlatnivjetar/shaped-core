@@ -16,14 +16,14 @@
     },
     {
       "slug": "air-conditioning",
-      "icon": "snowflake",
+      "icon": "thermometer-hot",
       "label": "Air Conditioning",
       "priority": 3,
       "keywords": ["ac", "aircon", "air con", "cooling", "climate control"]
     },
     {
       "slug": "heating-system",
-      "icon": "thermometer-hot",
+      "icon": "fire-simple",
       "label": "Heating System",
       "priority": 4,
       "keywords": ["heating", "heater", "radiator", "central heating", "warm"]
@@ -37,7 +37,7 @@
     },
     {
       "slug": "private-bathroom",
-      "icon": "shower",
+      "icon": "bathtub",
       "label": "Private Bathroom",
       "priority": 6,
       "keywords": ["bathroom", "bath", "shower", "toilet", "ensuite", "en-suite"]
@@ -51,21 +51,21 @@
     },
     {
       "slug": "hair-dryer",
-      "icon": "hairdryer",
+      "icon": "hair-dryer",
       "label": "Hair Dryer",
       "priority": 8,
       "keywords": ["hairdryer", "hair dryer", "blow dryer"]
     },
     {
       "slug": "clothes-storage",
-      "icon": "closet",
+      "icon": "wardrobe",
       "label": "Clothes Storage",
       "priority": 9,
       "keywords": ["closet", "wardrobe", "storage", "clothes storage"]
     },
     {
       "slug": "in-room-safe",
-      "icon": "lock-key",
+      "icon": "vault",
       "label": "In-room Safe",
       "priority": 10,
       "keywords": ["safe", "safety box", "security box", "vault", "in-room safe"]
@@ -100,14 +100,14 @@
     },
     {
       "slug": "private-balcony",
-      "icon": "door-open",
+      "icon": "buildings",
       "label": "Private Balcony",
       "priority": 15,
       "keywords": ["balcony", "terrace", "patio", "veranda", "private balcony"]
     },
     {
       "slug": "blackout-curtains",
-      "icon": "curtains",
+      "icon": "moon-stars",
       "label": "Blackout Curtains",
       "priority": 16,
       "keywords": ["curtains", "blackout", "drapes", "blinds"]
@@ -128,7 +128,7 @@
     },
     {
       "slug": "iron-steamer",
-      "icon": "iron",
+      "icon": "t-shirt",
       "label": "Iron/Steamer",
       "priority": 19,
       "keywords": ["iron", "steamer", "ironing board", "iron and board"]
@@ -142,7 +142,7 @@
     },
     {
       "slug": "fresh-towels",
-      "icon": "towel",
+      "icon": "hand-towel",
       "label": "Fresh Towels",
       "priority": 21,
       "keywords": ["towels", "bath towels", "linen", "fresh towels"]
@@ -156,21 +156,21 @@
     },
     {
       "slug": "slippers",
-      "icon": "sneaker",
+      "icon": "footprints",
       "label": "Slippers",
       "priority": 23,
       "keywords": ["slippers", "house shoes"]
     },
     {
       "slug": "room-service",
-      "icon": "bell-concierge",
+      "icon": "bell-simple-ringing",
       "label": "Room Service",
       "priority": 24,
       "keywords": ["room service", "concierge", "service"]
     },
     {
       "slug": "24h-reception",
-      "icon": "clock",
+      "icon": "phone-call",
       "label": "24h Reception",
       "priority": 25,
       "keywords": ["24 hour", "reception", "front desk", "24/7"]
@@ -184,35 +184,35 @@
     },
     {
       "slug": "private-parking",
-      "icon": "car",
+      "icon": "parking",
       "label": "Private Parking",
       "priority": 27,
       "keywords": ["parking", "garage", "car park", "private parking"]
     },
     {
       "slug": "valet-parking",
-      "icon": "car-simple",
+      "icon": "car-profile",
       "label": "Valet Parking",
       "priority": 28,
       "keywords": ["valet", "valet parking", "parking service"]
     },
     {
       "slug": "airport-shuttle",
-      "icon": "airplane",
+      "icon": "airplane-takeoff",
       "label": "Airport Shuttle",
       "priority": 29,
       "keywords": ["airport", "shuttle", "transfer", "airport shuttle"]
     },
     {
       "slug": "fitness-center",
-      "icon": "barbell",
+      "icon": "dumbbell",
       "label": "Fitness Center",
       "priority": 30,
       "keywords": ["fitness", "gym", "workout", "exercise", "fitness center"]
     },
     {
       "slug": "spa-access",
-      "icon": "flower-lotus",
+      "icon": "spa",
       "label": "Spa Access",
       "priority": 31,
       "keywords": ["spa", "wellness", "massage", "spa access"]
@@ -226,14 +226,14 @@
     },
     {
       "slug": "hot-tub",
-      "icon": "bathtub",
+      "icon": "thermometer",
       "label": "Hot Tub",
       "priority": 33,
       "keywords": ["hot tub", "jacuzzi", "spa bath", "whirlpool"]
     },
     {
       "slug": "sauna-room",
-      "icon": "flame",
+      "icon": "fire",
       "label": "Sauna Room",
       "priority": 34,
       "keywords": ["sauna", "steam room", "sauna room"]
@@ -254,14 +254,14 @@
     },
     {
       "slug": "included-breakfast",
-      "icon": "egg",
+      "icon": "egg-crack",
       "label": "Included Breakfast",
       "priority": 37,
       "keywords": ["breakfast", "breakfast included", "morning meal"]
     },
     {
       "slug": "buffet-breakfast",
-      "icon": "bowl-food",
+      "icon": "restaurant",
       "label": "Buffet Breakfast",
       "priority": 38,
       "keywords": ["buffet", "breakfast buffet", "buffet breakfast"]
@@ -282,7 +282,7 @@
     },
     {
       "slug": "kitchenette",
-      "icon": "oven",
+      "icon": "fork-knife",
       "label": "Kitchenette",
       "priority": 41,
       "keywords": ["kitchenette", "small kitchen", "mini kitchen"]
@@ -296,7 +296,7 @@
     },
     {
       "slug": "dishwasher",
-      "icon": "faucet",
+      "icon": "drops",
       "label": "Dishwasher",
       "priority": 43,
       "keywords": ["dishwasher", "dish washer"]
@@ -338,35 +338,35 @@
     },
     {
       "slug": "non-smoking",
-      "icon": "smoking-slash",
+      "icon": "smoking-ban",
       "label": "Non-smoking",
       "priority": 49,
       "keywords": ["non-smoking", "no smoking", "smoke free", "smokefree"]
     },
     {
       "slug": "quiet-rooms",
-      "icon": "speaker-x",
+      "icon": "bell-slash",
       "label": "Quiet Rooms",
       "priority": 50,
       "keywords": ["quiet", "quiet rooms", "silent"]
     },
     {
       "slug": "safe-deposit",
-      "icon": "vault",
+      "icon": "lock",
       "label": "Safe Deposit",
       "priority": 51,
       "keywords": ["safe deposit", "deposit box", "safety deposit"]
     },
     {
       "slug": "concierge-service",
-      "icon": "user-circle",
+      "icon": "identification-badge",
       "label": "Concierge Service",
       "priority": 52,
       "keywords": ["concierge", "concierge service", "guest services"]
     },
     {
       "slug": "porter-service",
-      "icon": "hand-coins",
+      "icon": "hand-heart",
       "label": "Porter Service",
       "priority": 53,
       "keywords": ["porter", "bellhop", "porter service"]
@@ -387,7 +387,7 @@
     },
     {
       "slug": "gear-storage",
-      "icon": "backpack",
+      "icon": "archive-box",
       "label": "Gear Storage",
       "priority": 56,
       "keywords": ["gear storage", "equipment storage", "storage room"]
@@ -401,21 +401,21 @@
     },
     {
       "slug": "flexible-check-in",
-      "icon": "clock-afternoon",
+      "icon": "clock-counter-clockwise",
       "label": "Flexible Check-in",
       "priority": 58,
       "keywords": ["flexible check-in", "early check-in", "check in"]
     },
     {
       "slug": "flexible-check-out",
-      "icon": "clock-countdown",
+      "icon": "clock-clockwise",
       "label": "Flexible Check-out",
       "priority": 59,
       "keywords": ["flexible check-out", "late check-out", "check out"]
     },
     {
       "slug": "room-upgrades",
-      "icon": "arrow-up-right",
+      "icon": "arrow-fat-lines-up",
       "label": "Room Upgrades",
       "priority": 60,
       "keywords": ["upgrade", "room upgrade", "complimentary upgrade"]
@@ -436,7 +436,7 @@
     },
     {
       "slug": "workstation",
-      "icon": "laptop",
+      "icon": "monitor",
       "label": "Workstation",
       "priority": 63,
       "keywords": ["workstation", "work area", "office"]
@@ -464,14 +464,14 @@
     },
     {
       "slug": "beach-access",
-      "icon": "umbrella-simple",
+      "icon": "umbrella",
       "label": "Beach Access",
       "priority": 67,
       "keywords": ["beach", "beach access", "beachfront"]
     },
     {
       "slug": "sea-view",
-      "icon": "waves",
+      "icon": "wave-sine",
       "label": "Sea View",
       "priority": 68,
       "keywords": ["sea view", "ocean view", "water view"]
@@ -485,7 +485,7 @@
     },
     {
       "slug": "pool-bar",
-      "icon": "martini",
+      "icon": "cocktail",
       "label": "Pool Bar",
       "priority": 70,
       "keywords": ["pool bar", "poolside bar", "swim-up bar"]
@@ -499,28 +499,28 @@
     },
     {
       "slug": "keyless-entry",
-      "icon": "key",
+      "icon": "keyhole",
       "label": "Keyless Entry",
       "priority": 72,
       "keywords": ["keyless", "digital lock", "smart lock", "key card"]
     },
     {
       "slug": "extra-pillows",
-      "icon": "pillow",
+      "icon": "pillows",
       "label": "Extra Pillows",
       "priority": 73,
       "keywords": ["pillows", "extra pillows", "pillow menu"]
     },
     {
       "slug": "board-games",
-      "icon": "game-controller",
+      "icon": "dice-five",
       "label": "Board Games",
       "priority": 74,
       "keywords": ["games", "board games", "entertainment"]
     },
     {
       "slug": "kids-corner",
-      "icon": "baby-carriage",
+      "icon": "puzzle-piece",
       "label": "Kids Corner",
       "priority": 75,
       "keywords": ["kids", "children", "play area", "kids corner"]
@@ -534,7 +534,7 @@
     },
     {
       "slug": "guest-guides",
-      "icon": "book-open",
+      "icon": "compass",
       "label": "Guest Guides",
       "priority": 77,
       "keywords": ["guide", "guest guide", "information"]
@@ -548,14 +548,14 @@
     },
     {
       "slug": "rental-services",
-      "icon": "key",
+      "icon": "car-simple",
       "label": "Rental Services",
       "priority": 79,
       "keywords": ["rental", "rent", "rental services"]
     },
     {
       "slug": "add-on-packages",
-      "icon": "package",
+      "icon": "seal-check",
       "label": "Add-on Packages",
       "priority": 80,
       "keywords": ["package", "add-on", "extras", "upgrades"]
