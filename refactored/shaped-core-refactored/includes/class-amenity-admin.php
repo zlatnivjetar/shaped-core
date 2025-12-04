@@ -45,52 +45,26 @@ class Shaped_Amenity_Admin {
     }
 
     /**
-     * Add admin submenu page under Shaped Core
+     * Add admin submenu page under Accommodation (MotoPress)
      */
     public function add_admin_page(): void {
+        // Add under MotoPress Accommodation menu
         add_submenu_page(
-            'shaped-core',           // Parent slug (we'll create this if it doesn't exist)
-            'Amenity Icons',         // Page title
-            'Amenity Icons',         // Menu title
-            'manage_options',        // Capability
-            'shaped-amenity-icons',  // Menu slug
+            'mphb_accommodation_type',  // Parent slug (MotoPress Accommodation)
+            'Amenity Icons',            // Page title
+            'Amenity Icons',            // Menu title
+            'manage_options',           // Capability
+            'shaped-amenity-icons',     // Menu slug
             [$this, 'render_admin_page'] // Callback
         );
-
-        // If main menu doesn't exist, create it
-        if (!menu_page_url('shaped-core', false)) {
-            add_menu_page(
-                'Shaped Core',              // Page title
-                'Shaped Core',              // Menu title
-                'manage_options',           // Capability
-                'shaped-core',              // Menu slug
-                [$this, 'render_main_page'], // Callback
-                'dashicons-admin-settings', // Icon
-                30                          // Position
-            );
-        }
-    }
-
-    /**
-     * Render main Shaped Core admin page
-     */
-    public function render_main_page(): void {
-        ?>
-        <div class="wrap">
-            <h1>Shaped Core</h1>
-            <p>Welcome to Shaped Core settings.</p>
-            <ul>
-                <li><a href="<?php echo admin_url('admin.php?page=shaped-amenity-icons'); ?>">Manage Amenity Icons</a></li>
-            </ul>
-        </div>
-        <?php
     }
 
     /**
      * Enqueue admin assets
      */
     public function enqueue_admin_assets($hook): void {
-        if ($hook !== 'shaped-core_page_shaped-amenity-icons' && $hook !== 'toplevel_page_shaped-core') {
+        // Only load on our amenity icons page
+        if ($hook !== 'accommodation_page_shaped-amenity-icons') {
             return;
         }
 
