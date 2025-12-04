@@ -41,6 +41,16 @@ class Shaped_Assets {
             );
         }
 
+        if (file_exists(SHAPED_DIR . 'assets/js/language-switch-fade.js')) {
+            wp_enqueue_script(
+                'shaped-language-switch-fade',
+                SHAPED_URL . 'assets/js/language-switch-fade.js',
+                [],
+                SHAPED_VERSION,
+                true
+            );
+        }
+
         // ─── Checkout Page ───
         if ($this->is_checkout_page()) {
             $this->enqueue_checkout_assets();
