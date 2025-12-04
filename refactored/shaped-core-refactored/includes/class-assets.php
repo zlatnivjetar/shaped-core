@@ -31,6 +31,16 @@ class Shaped_Assets {
             '2.0.3'
         );
 
+        // Cookie Banner & Language Switcher styles
+        if (file_exists(SHAPED_DIR . 'assets/css/cookie-banner.css')) {
+            wp_enqueue_style(
+                'shaped-cookie-banner',
+                SHAPED_URL . 'assets/css/cookie-banner.css',
+                [],
+                SHAPED_VERSION
+            );
+        }
+
         if (file_exists(SHAPED_DIR . 'assets/js/calendar-fix.js')) {
             wp_enqueue_script(
                 'shaped-calendar-fix',
