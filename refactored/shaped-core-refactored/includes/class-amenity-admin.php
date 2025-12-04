@@ -45,16 +45,16 @@ class Shaped_Amenity_Admin {
     }
 
     /**
-     * Add admin submenu page under Accommodation (MotoPress)
+     * Add admin submenu page under Shaped Core
      */
     public function add_admin_page(): void {
-        // Add under MotoPress Accommodation menu
+        // Add under Shaped Core menu
         add_submenu_page(
-            'mphb_accommodation_type',  // Parent slug (MotoPress Accommodation)
-            'Amenity Icons',            // Page title
-            'Amenity Icons',            // Menu title
-            'manage_options',           // Capability
-            'shaped-amenity-icons',     // Menu slug
+            'shaped-settings',       // Parent slug (Shaped Core)
+            'Amenity Icons',         // Page title
+            'Amenity Icons',         // Menu title
+            'manage_options',        // Capability
+            'shaped-amenity-icons',  // Menu slug
             [$this, 'render_admin_page'] // Callback
         );
     }
@@ -64,7 +64,7 @@ class Shaped_Amenity_Admin {
      */
     public function enqueue_admin_assets($hook): void {
         // Only load on our amenity icons page
-        if ($hook !== 'accommodation_page_shaped-amenity-icons') {
+        if ($hook !== 'shaped-core_page_shaped-amenity-icons') {
             return;
         }
 
