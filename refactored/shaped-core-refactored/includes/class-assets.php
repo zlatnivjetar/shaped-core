@@ -20,8 +20,17 @@ class Shaped_Assets {
      * Enqueue frontend assets conditionally
      */
     public function enqueue_frontend(): void {
-        
+
         // ─── Always Load (lightweight utilities) ───
+
+        // Phosphor Icons for amenity display
+        wp_enqueue_style(
+            'phosphor-icons',
+            'https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css',
+            [],
+            '2.0.3'
+        );
+
         if (file_exists(SHAPED_DIR . 'assets/js/calendar-fix.js')) {
             wp_enqueue_script(
                 'shaped-calendar-fix',

@@ -87,7 +87,97 @@ function shaped_log(string $message, string $level = 'info'): void {
     if (!WP_DEBUG) {
         return;
     }
-    
+
     $prefix = '[Shaped ' . ucfirst($level) . ']';
     error_log($prefix . ' ' . $message);
+}
+
+/* =========================================================================
+ * AMENITY ICON HELPERS
+ * ========================================================================= */
+
+/**
+ * Get amenity icon data for a facility term
+ *
+ * @param WP_Term|string $facility Term object or slug
+ * @param array          $args     Optional arguments (weight, class, etc.)
+ * @return array|null Icon data array or null if facility is invalid
+ *
+ * @example
+ * $icon = shaped_get_amenity_icon($facility);
+ * echo $icon['html']; // Outputs: <i class="ph ph-wifi-high"></i>
+ */
+function shaped_get_amenity_icon(WP_Term|string $facility, array $args = []): ?array {
+    static $mapper = null;
+
+    if ($mapper === null) {
+        if (!class_exists('Shaped_Amenity_Mapper')) {
+            return null;
+        }
+        $mapper = new Shaped_Amenity_Mapper();
+    }
+
+    return $mapper->get_icon($facility, $args);
+}
+
+/**
+ * Get all amenities from the registry
+ *
+ * @return array Amenities array
+ */
+function shaped_get_amenities_registry(): array {
+    static $mapper = null;
+
+    if ($mapper === null) {
+        if (!class_exists('Shaped_Amenity_Mapper')) {
+            return [];
+        }
+        $mapper = new Shaped_Amenity_Mapper();
+    }
+
+    return $mapper->get_all_amenities();
+}
+
+/**
+ * Render amenity badge HTML
+ *
+ * @param WP_Term|string $facility Term object or slug
+ * @param string         $label    Optional custom label
+ * @param array          $args     Optional arguments
+ * @return string HTML output
+ */
+function shaped_render_amenity_badge(WP_Term|string $facility, string $label = '', array $args = []): string {
+    $icon_data = shaped_get_amenity_icon($facility, $args);
+
+    if (!$icon_data) {
+        return '';
+    }
+
+    $display_label = !empty($label) ? $label : $icon_data['label'];
+
+    $html = '<li class="mphb-amenity-item">';
+    $html .= '<span class="mphb-amenity-icon">' . $icon_data['html'] . '</span>';
+    $html .= '<span class="mphb-amenity-text">' . esc_html($display_label) . '</span>';
+    $html .= '</li>';
+
+    return $html;
+}
+
+/**
+ * Get sorted amenities for a room type
+ *
+ * @param int $room_type_id Room type post ID
+ * @return array Sorted array of icon data
+ */
+function shaped_get_amenities_for_room(int $room_type_id): array {
+    static $mapper = null;
+
+    if ($mapper === null) {
+        if (!class_exists('Shaped_Amenity_Mapper')) {
+            return [];
+        }
+        $mapper = new Shaped_Amenity_Mapper();
+    }
+
+    return $mapper->get_room_amenities($room_type_id);
 }
