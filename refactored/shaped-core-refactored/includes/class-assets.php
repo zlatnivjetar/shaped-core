@@ -92,17 +92,6 @@ class Shaped_Assets {
             }
         }
 
-        // ─── Home Page ───
-        if (is_front_page() && file_exists(SHAPED_DIR . 'assets/js/home-room-cards.js')) {
-            wp_enqueue_script(
-                'shaped-home-cards',
-                SHAPED_URL . 'assets/js/home-room-cards.js',
-                ['jquery'],
-                SHAPED_VERSION,
-                true
-            );
-        }
-
         // ─── Modals (always load for modal links) ───
         $this->enqueue_modal_assets();
 

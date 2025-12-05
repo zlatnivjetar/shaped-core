@@ -586,18 +586,223 @@ function shaped_get_cancellation_template($data) {
     return ob_get_clean();
 }
 
+/**
+ * Send deposit confirmation email to guest
+ * Sent when deposit payment is successfully processed
+ *
+ * @param int $booking_id The booking ID
+ * @return bool True if sent successfully
+ */
+function shaped_send_deposit_confirmation_email($booking_id) {
+    try {
+        error_log('[Shaped Email] Starting deposit confirmation for booking #' . $booking_id);
+
+        $booking = MPHB()->getBookingRepository()->findById($booking_id, true);
+        if (!$booking) return false;
+
+        $customer = $booking->getCustomer();
+        if (!$customer || !$customer->getEmail()) return false;
+
+        // Prevent duplicate sends
+        $already_sent = get_post_meta($booking_id, '_shaped_deposit_confirmation_sent', true);
+        if ($already_sent) {
+            error_log('[Shaped Email] Deposit confirmation already sent on ' . $already_sent);
+            return false;
+        }
+
+        // Get deposit details
+        $check_in = $booking->getCheckInDate()->format('F j, Y');
+        $check_out = $booking->getCheckOutDate()->format('F j, Y');
+        $currency = MPHB()->settings()->currency()->getCurrencySymbol();
+        $deposit_amount = get_post_meta($booking_id, '_shaped_deposit_paid', true);
+        $balance_due = get_post_meta($booking_id, '_shaped_balance_due', true);
+
+        $room_type_ids = $booking->getReservedRoomTypeIds();
+        $room_names = array_map('get_the_title', $room_type_ids);
+        $room_list = implode(', ', $room_names);
+
+        $to = $customer->getEmail();
+        $subject = 'Deposit Received #' . $booking_id . ' - Preelook Apartments';
+
+        // Plain text message
+        $message = "Dear " . $customer->getFirstName() . ",\n\n";
+        $message .= "Thank you! We've successfully received your deposit payment for booking #" . $booking_id . ".\n\n";
+        $message .= "DEPOSIT DETAILS:\n";
+        $message .= "Deposit Paid: " . $currency . number_format($deposit_amount, 2) . "\n";
+        $message .= "Balance Due: " . $currency . number_format($balance_due, 2) . "\n";
+        $message .= "Payment Due: On arrival at check-in\n\n";
+        $message .= "BOOKING DETAILS:\n";
+        $message .= "Booking ID: #" . $booking_id . "\n";
+        $message .= "Check-in: " . $check_in . " (from 16:00)\n";
+        $message .= "Check-out: " . $check_out . " (until 11:00)\n";
+        $message .= "Accommodation: " . $room_list . "\n\n";
+        $message .= "GETTING HERE:\n";
+        $message .= "Address: Preluk 4, 51000 Rijeka, Croatia\n";
+        $message .= "Google Maps: https://maps.app.goo.gl/Zn5MTHb858g4aEUL8\n\n";
+        $message .= "NEED HELP?\n";
+        $message .= "Phone: +385 91 613 3609\n";
+        $message .= "Email: info@test.preelook.com\n\n";
+        $message .= "We're looking forward to welcoming you to Preelook Apartments!\n\n";
+        $message .= "Warm regards,\n";
+        $message .= "The Preelook Team";
+
+        $headers = [
+            'From: Preelook Apartments <info@test.preelook.com>',
+            'Reply-To: info@test.preelook.com'
+        ];
+
+        $sent = wp_mail($to, $subject, $message, $headers);
+
+        if ($sent) {
+            update_post_meta($booking_id, '_shaped_deposit_confirmation_sent', current_time('mysql'));
+            error_log('[Shaped Email] Deposit confirmation sent to ' . $to);
+        }
+
+        return $sent;
+
+    } catch (Exception $e) {
+        error_log('[Shaped Email] ERROR in deposit confirmation: ' . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Send payment confirmation email to guest (delayed charge succeeded)
+ * Sent when scheduled charge is successfully processed
+ *
+ * @param int $booking_id The booking ID
+ * @return bool True if sent successfully
+ */
+function shaped_send_payment_confirmation_email($booking_id) {
+    try {
+        error_log('[Shaped Email] Starting payment confirmation for booking #' . $booking_id);
+
+        $booking = MPHB()->getBookingRepository()->findById($booking_id, true);
+        if (!$booking) return false;
+
+        $customer = $booking->getCustomer();
+        if (!$customer || !$customer->getEmail()) return false;
+
+        $check_in = $booking->getCheckInDate()->format('F j, Y');
+        $currency = MPHB()->settings()->currency()->getCurrencySymbol();
+        $paid_amount = get_post_meta($booking_id, '_mphb_paid_amount', true);
+
+        $to = $customer->getEmail();
+        $subject = 'Payment Confirmed #' . $booking_id . ' - Preelook Apartments';
+
+        // Plain text message
+        $message = "Dear " . $customer->getFirstName() . ",\n\n";
+        $message .= "Your payment has been successfully processed for booking #" . $booking_id . ".\n\n";
+        $message .= "PAYMENT DETAILS:\n";
+        $message .= "Amount Charged: " . $currency . number_format($paid_amount, 2) . "\n";
+        $message .= "Booking ID: #" . $booking_id . "\n";
+        $message .= "Check-in: " . $check_in . "\n\n";
+        $message .= "Your booking is now fully confirmed. We look forward to welcoming you!\n\n";
+        $message .= "GETTING HERE:\n";
+        $message .= "Address: Preluk 4, 51000 Rijeka, Croatia\n";
+        $message .= "Google Maps: https://maps.app.goo.gl/Zn5MTHb858g4aEUL8\n";
+        $message .= "Check-in time: from 16:00\n\n";
+        $message .= "CONTACT US:\n";
+        $message .= "Phone: +385 91 613 3609\n";
+        $message .= "Email: info@test.preelook.com\n\n";
+        $message .= "Warm regards,\n";
+        $message .= "The Preelook Team";
+
+        $headers = [
+            'From: Preelook Apartments <info@test.preelook.com>',
+            'Reply-To: info@test.preelook.com'
+        ];
+
+        $sent = wp_mail($to, $subject, $message, $headers);
+
+        if ($sent) {
+            error_log('[Shaped Email] Payment confirmation sent to ' . $to);
+        }
+
+        return $sent;
+
+    } catch (Exception $e) {
+        error_log('[Shaped Email] ERROR in payment confirmation: ' . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Send payment failed email to guest (delayed charge failed)
+ * Sent when scheduled charge attempt fails
+ *
+ * @param int $booking_id The booking ID
+ * @return bool True if sent successfully
+ */
+function shaped_send_payment_failed_email($booking_id) {
+    try {
+        error_log('[Shaped Email] Starting payment failed notification for booking #' . $booking_id);
+
+        $booking = MPHB()->getBookingRepository()->findById($booking_id, true);
+        if (!$booking) return false;
+
+        $customer = $booking->getCustomer();
+        if (!$customer || !$customer->getEmail()) return false;
+
+        $check_in = $booking->getCheckInDate()->format('F j, Y');
+        $currency = MPHB()->settings()->currency()->getCurrencySymbol();
+        $pending_amount = get_post_meta($booking_id, '_stripe_pending_amount', true);
+
+        $to = $customer->getEmail();
+        $subject = 'Payment Failed - Action Required #' . $booking_id . ' - Preelook Apartments';
+
+        // Plain text message
+        $message = "Dear " . $customer->getFirstName() . ",\n\n";
+        $message .= "We attempted to charge your payment for booking #" . $booking_id . " but the payment was unsuccessful.\n\n";
+        $message .= "BOOKING DETAILS:\n";
+        $message .= "Booking ID: #" . $booking_id . "\n";
+        $message .= "Amount Due: " . $currency . number_format($pending_amount, 2) . "\n";
+        $message .= "Check-in: " . $check_in . "\n\n";
+        $message .= "WHAT HAPPENS NEXT:\n";
+        $message .= "Your booking is at risk of cancellation. Please contact us immediately to resolve this payment issue.\n\n";
+        $message .= "Common reasons for payment failure:\n";
+        $message .= "- Insufficient funds\n";
+        $message .= "- Expired card\n";
+        $message .= "- Card limit exceeded\n";
+        $message .= "- Bank declined the transaction\n\n";
+        $message .= "CONTACT US URGENTLY:\n";
+        $message .= "Phone: +385 91 613 3609\n";
+        $message .= "Email: info@test.preelook.com\n\n";
+        $message .= "We're here to help resolve this quickly.\n\n";
+        $message .= "Regards,\n";
+        $message .= "The Preelook Team";
+
+        $headers = [
+            'From: Preelook Apartments <info@test.preelook.com>',
+            'Reply-To: info@test.preelook.com'
+        ];
+
+        $sent = wp_mail($to, $subject, $message, $headers);
+
+        if ($sent) {
+            error_log('[Shaped Email] Payment failed notification sent to ' . $to);
+        }
+
+        return $sent;
+
+    } catch (Exception $e) {
+        error_log('[Shaped Email] ERROR in payment failed notification: ' . $e->getMessage());
+        return false;
+    }
+}
+
 add_action( 'transition_post_status', function( $new_status, $old_status, $post ) {
     // Only for bookings
     if ( $post->post_type !== 'mphb_booking' ) {
         return;
     }
-    
+
     // When transitioning to confirmed
     if ( $new_status === 'confirmed' && $old_status !== 'confirmed' ) {
         // Check if payment is complete
         $paid_amount = get_post_meta( $post->ID, '_mphb_paid_amount', true );
         $payment_verified = get_post_meta( $post->ID, '_mphb_payment_verified', true );
-        
+
         if ( ( $paid_amount > 0 || $payment_verified ) && ! get_post_meta( $post->ID, '_shaped_confirmation_sent', true ) ) {
             error_log( '[Shaped Email] Booking confirmed with payment, sending email' );
             shaped_send_confirmation_email( $post->ID );

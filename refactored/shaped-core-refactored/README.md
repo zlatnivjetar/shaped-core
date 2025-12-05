@@ -26,7 +26,6 @@ shaped-core/
 │   └── js/
 │       ├── checkout.js          # Pricing logic, availability, urgency badges
 │       ├── calendar-fix.js      # MPHB calendar fixes
-│       ├── home-room-cards.js   # Home page room cards
 │       ├── language-switch-fade.js  # WPML/Polylang transitions
 │       ├── leave-page-modal-popup.js
 │       └── provider-badge-stars.js
@@ -181,7 +180,6 @@ Assets load conditionally based on page context:
 |-------|----------|
 | `checkout.css/js` | Checkout page, search results |
 | `search-results.css` | Search results page |
-| `home-room-cards.js` | Front page only |
 | `calendar-fix.js` | All pages (lightweight) |
 | `language-switch-fade.js` | Only if WPML/Polylang active |
 
