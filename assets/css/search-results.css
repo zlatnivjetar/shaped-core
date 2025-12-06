@@ -99,10 +99,18 @@
 /* Room Content */
 .mphb-room-type > h2,
 .mphb-room-type > .mphb-regular-price,
-.mphb-room-type > .mphb-view-details-button-wrapper,
 .mphb-room-type > .mphb-reserve-room-section {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
+}
+
+.mphb-room-type > .mphb-view-details-button-wrapper {
+    padding: 1.5rem 0 0 0 !important;
+}
+
+
+#detailsbutton {
+    display: none !important;
 }
 
 .mphb-room-type-details-title {
@@ -145,7 +153,7 @@
 /* Price Display */
 .mphb-regular-price {
     background: #fffbf0;
-    margin: 1rem 0;
+    margin: 2rem 0;
     padding: 1.25rem;
     border-top: 1px solid #f0f0f0;
     display: flex;
@@ -443,7 +451,7 @@
     }
     
     h3.mphb-room-type-details-title {
-        padding: 16px 24px 0;
+        padding: 4px 24px 0;
     }
     
     .mphb-room-type img {
@@ -466,11 +474,15 @@
     /* Room Content Padding */
     .mphb-room-type > h2,
     .mphb-room-type > .mphb-regular-price,
-    .mphb-room-type > .mphb-view-details-button-wrapper,
     .mphb-room-type > .mphb-reserve-room-section {
         padding-left: 1.5rem;
         padding-right: 1.5rem;
     }
+    
+    .mphb-room-type > .mphb-view-details-button-wrapper {
+    padding: 1rem 0 0 0 !important;
+    }
+
     
     .mphb-room-type-details-title {
         padding: 16px 16px 8px 16px;
@@ -498,7 +510,7 @@
     }
     
     .mphb-regular-price {
-        margin: -0.75rem 0;
+        margin: 1.25rem 0;
         padding: 1.25rem;
     }
 

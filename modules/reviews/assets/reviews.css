@@ -360,15 +360,15 @@ span.page-numbers.current {
 }
 
 /* ===== READ MORE BUTTON ===== */
-.shaped-read-more-btn,
-.prs-read-more-btn {
+.shaped-read-more-btn, .prs-read-more-btn {
     background: none;
     border: none;
-    color: var(--shaped-accent, #D1AF5D);
-    font-weight: 600;
-    font-size: 0.9375rem;
+    color: #141310 !important;
+    font-weight: 600 !important;
+    font-size: 0.9375rem !important;
     cursor: pointer;
-    padding: 0.5rem 0 0;
+    text-transform: none !important;
+    padding: 1rem 0 0 !important;
     margin-top: auto;
     text-align: left;
     transition: color 200ms ease;
