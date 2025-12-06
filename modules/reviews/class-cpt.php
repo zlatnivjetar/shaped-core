@@ -97,7 +97,7 @@ class CPT {
         // Create default provider terms
         $providers = [
             'booking'     => 'Booking',
-            'google-maps' => 'Google',
+            'google'      => 'Google',
             'tripadvisor' => 'TripAdvisor',
             'expedia'     => 'Expedia'
         ];
