@@ -341,13 +341,29 @@ class Shaped_Booking_Manager
                         <?php if ($accommodation_name): ?>
                         <div><span style="color: #666666;">Accommodation:</span> <strong><?php echo esc_html($accommodation_name); ?></strong></div>
                         <?php endif; ?>
-                        <?php if (is_numeric($context['amount'])): ?>
-                        <div><span style="color: #666666;">Total Amount:</span> <strong style="color: #D1AF5D;">€<?php echo number_format($context['amount'], 2); ?></strong></div>
+
+                        <?php if ($context['payment_type'] === 'deposit' && $context['deposit_amount'] > 0): ?>
+                            <!-- DEPOSIT PAYMENT -->
+                            <div style="padding-top: 8px; border-top: 1px solid #e0e0e0; margin-top: 8px;">
+                                <div style="margin-bottom: 6px;"><span style="color: #666666;">Deposit Paid:</span> <strong style="color: #4C9155;">€<?php echo number_format($context['deposit_amount'], 2); ?></strong></div>
+                                <?php if ($context['balance_due'] > 0): ?>
+                                <div style="margin-bottom: 6px;"><span style="color: #666666;">Balance Due on Arrival:</span> <strong style="color: #D1AF5D;">€<?php echo number_format($context['balance_due'], 2); ?></strong></div>
+                                <?php endif; ?>
+                                <div><span style="color: #666666;">Total Booking Amount:</span> <strong>€<?php echo number_format($context['deposit_amount'] + $context['balance_due'], 2); ?></strong></div>
+                            </div>
+                        <?php else: ?>
+                            <!-- FULL PAYMENT -->
+                            <?php if (is_numeric($context['amount'])): ?>
+                            <div><span style="color: #666666;">Total Amount:</span> <strong style="color: #D1AF5D;">€<?php echo number_format($context['amount'], 2); ?></strong></div>
+                            <?php endif; ?>
                         <?php endif; ?>
+
                         <div style="padding-top: 8px; border-top: 1px solid #e0e0e0;">
                             <span style="color: #666666;">Payment Status:</span>
                             <?php if ($context['payment_status'] === 'paid'): ?>
-                                <strong style="color: #4C9155;">Paid</strong>
+                                <strong style="color: #4C9155;">Paid in Full</strong>
+                            <?php elseif ($context['payment_status'] === 'deposit_paid'): ?>
+                                <strong style="color: #4C9155;">Deposit Paid</strong> <span style="color: #666666;">(Balance due on arrival)</span>
                             <?php elseif ($context['payment_status'] === 'failed'): ?>
                                 <strong style="color: #b83c2e;">Payment Failed</strong>
                             <?php elseif ($context['payment_status'] === 'authorized'): ?>
@@ -655,24 +671,49 @@ class Shaped_Booking_Manager
                 <div style="background: #fffbf0; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; padding: 24px; border-radius: 8px; border: 1px solid #c8e6c9;">
                     <h2 style="color: #141310; font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Payment Information</h2>
 
-                    <?php if (is_numeric($context['amount'])): ?>
-                    <p style="color: #141310; margin-bottom: 12px; line-height: 1.5;">
-                        <strong>Total Amount:</strong>
-                        <span style="color: #D1AF5D; font-size: 1.25rem; font-weight: 700;">
-                            €<?php echo number_format((float)$context['amount'], 2); ?>
-                        </span>
-                    </p>
-                    <?php endif; ?>
-
-                    <?php if ($context['is_immediate']): ?>
-                        <p style="color: #141310; margin-bottom: 8px; line-height: 1.5;">
-                            Thank you for booking with us. You’ll receive a receipt by email shortly.
+                    <?php if ($context['payment_type'] === 'deposit' && $context['deposit_amount'] > 0): ?>
+                        <!-- DEPOSIT PAYMENT -->
+                        <p style="color: #141310; margin-bottom: 12px; line-height: 1.5;">
+                            <strong>Deposit Paid:</strong>
+                            <span style="color: #D1AF5D; font-size: 1.25rem; font-weight: 700;">
+                                €<?php echo number_format((float)$context['deposit_amount'], 2); ?>
+                            </span>
+                        </p>
+                        <?php if ($context['balance_due'] > 0): ?>
+                        <p style="color: #141310; margin-bottom: 12px; line-height: 1.5;">
+                            <strong>Balance Due on Arrival:</strong>
+                            <span style="font-size: 1.125rem; font-weight: 600;">
+                                €<?php echo number_format((float)$context['balance_due'], 2); ?>
+                            </span>
+                        </p>
+                        <?php endif; ?>
+                        <p style="color: #666666; margin-bottom: 8px; padding-top: 8px; border-top: 1px solid #e0e0e0; font-size: 0.9375rem;">
+                            Total Booking Amount: <strong>€<?php echo number_format((float)($context['deposit_amount'] + $context['balance_due']), 2); ?></strong>
+                        </p>
+                        <p style="color: #141310; margin-bottom: 0; line-height: 1.5;">
+                            Thank you for your deposit. The remaining balance is due upon arrival at the property. You'll receive a receipt by email shortly.
                         </p>
                     <?php else: ?>
-                        <p style="color: #141310; margin-bottom: 8px; line-height: 1.5;">
-                            Your card has been securely saved and will be charged <strong>7 days before check-in</strong>
-                            (<?php echo $context['charge_date']->format('F j, Y'); ?>).
+                        <!-- FULL PAYMENT (immediate or delayed) -->
+                        <?php if (is_numeric($context['amount'])): ?>
+                        <p style="color: #141310; margin-bottom: 12px; line-height: 1.5;">
+                            <strong>Total Amount:</strong>
+                            <span style="color: #D1AF5D; font-size: 1.25rem; font-weight: 700;">
+                                €<?php echo number_format((float)$context['amount'], 2); ?>
+                            </span>
                         </p>
+                        <?php endif; ?>
+
+                        <?php if ($context['is_immediate']): ?>
+                            <p style="color: #141310; margin-bottom: 8px; line-height: 1.5;">
+                                Thank you for booking with us. You'll receive a receipt by email shortly.
+                            </p>
+                        <?php else: ?>
+                            <p style="color: #141310; margin-bottom: 8px; line-height: 1.5;">
+                                Your card has been securely saved and will be charged <strong>7 days before check-in</strong>
+                                (<?php echo $context['charge_date']->format('F j, Y'); ?>).
+                            </p>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>
