@@ -122,7 +122,7 @@ class Admin {
             return;
         }
 
-        $is_five_scale = in_array(strtolower($provider), ['google-maps', 'google', 'tripadvisor']);
+        $is_five_scale = in_array(strtolower($provider), ['google', 'tripadvisor']);
 
         if ($is_five_scale) {
             $star_rating = floatval($rating);
@@ -167,8 +167,7 @@ class Admin {
         $configs = [
             'booking'     => ['name' => 'Booking.com', 'color' => '#003580'],
             'booking.com' => ['name' => 'Booking.com', 'color' => '#003580'],
-            'google-maps' => ['name' => 'Google Maps', 'color' => '#4285f4'],
-            'google'      => ['name' => 'Google Maps', 'color' => '#4285f4'],
+            'google'      => ['name' => 'Google', 'color' => '#4285f4'],
             'tripadvisor' => ['name' => 'TripAdvisor', 'color' => '#00af87'],
             'expedia'     => ['name' => 'Expedia', 'color' => '#ffda00', 'text' => '#000']
         ];
@@ -687,7 +686,6 @@ class Admin {
             if ($provider) {
                 $provider_slug = strtolower(str_replace(' ', '-', $provider));
                 if ($provider_slug === 'booking.com') $provider_slug = 'booking';
-                if ($provider_slug === 'google') $provider_slug = 'google-maps';
 
                 wp_set_object_terms($review->ID, $provider_slug, 'review_provider');
             }

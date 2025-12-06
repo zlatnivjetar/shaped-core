@@ -196,10 +196,9 @@ class Sync {
      */
     private function normalize_provider_slug(string $provider): string {
         $provider = strtolower(str_replace(' ', '-', $provider));
-        
+
         $map = [
             'booking.com' => 'booking',
-            'google'      => 'google-maps',
         ];
 
         return $map[$provider] ?? $provider;
