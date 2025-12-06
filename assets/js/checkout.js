@@ -15,20 +15,94 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isNaN(num)) return 0;
         return Math.round(num * 10) / 10;
     }
+
+    // NEW: robust EU/US price parser
+    // Handles:
+    //   "€1.265,0"  -> 1265.0
+    //   "1.265,80"  -> 1265.8
+    //   "€140,0"    -> 140.0
+    //   "€140.0"    -> 140.0
+    //   "€1.300"    -> 1300.0   (thousands, not 1.3)
+    function parsePrice(text) {
+        if (!text) return 0;
     
-    // Helper: format for UI
-    // - 110.0  -> "110"
-    // - 110.5  -> "110.5"
+        const numeric = text.replace(/[^0-9.,]/g, '');
+        if (!numeric) return 0;
+    
+        const hasComma = numeric.indexOf(',') !== -1;
+        const hasDot = numeric.indexOf('.') !== -1;
+    
+        let normalized;
+    
+        if (hasComma && hasDot) {
+            // EU style: "." thousands, "," decimal (1.234,5)
+            normalized = numeric.replace(/\./g, '').replace(',', '.');
+        } else if (hasComma) {
+            // Only comma: decimal separator (116,8)
+            normalized = numeric.replace(',', '.');
+        } else if (hasDot) {
+            // Could be decimal (116.8) or thousands (1.300)
+            const parts = numeric.split('.');
+    
+            if (parts.length === 2 && parts[1].length === 3 && parts[0].length >= 1) {
+                // Pattern like "1.300", "12.500" -> thousands separator
+                normalized = parts[0] + parts[1]; // "1" + "300" => "1300"
+            } else if (parts.length > 2) {
+                // Many groups: treat all but last as thousands
+                const last = parts.pop();
+                const intPart = parts.join('');
+    
+                if (last.length === 3) {
+                    // "1.234.567" -> "1234567"
+                    normalized = intPart + last;
+                } else {
+                    // "1.234.5" -> "1234.5"
+                    normalized = intPart + '.' + last;
+                }
+            } else {
+                // Standard decimal like "116.8"
+                normalized = numeric;
+            }
+        } else {
+            // Digits only
+            normalized = numeric;
+        }
+    
+        const result = parseFloat(normalized);
+        return isNaN(result) ? 0 : result;
+    }
+
+    
     function formatPrice(value) {
         const rounded = roundToOneDecimal(value);
     
-        // Check if it's effectively an integer (handle float imprecision)
-        const asInt = Math.round(rounded);
-        if (Math.abs(rounded - asInt) < 1e-6) {
-            return asInt.toString();
+        // If rounded value is effectively an integer → no decimals
+        const intVal = Math.round(rounded);
+        if (Math.abs(rounded - intVal) < 1e-6) {
+            return intVal
+                .toString()
+                .replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // 1634 -> "1.634"
         }
     
-        return rounded.toFixed(1); // one decimal, no trailing zero beyond that
+        // Non-integer: 1 decimal, EU style
+        const [intPartRaw, decPart] = rounded.toFixed(1).split('.'); // "1634.1"
+    
+        const intPartWithThousands = intPartRaw.replace(
+            /\B(?=(\d{3})+(?!\d))/g,
+            '.'
+        ); // "1634" -> "1.634"
+    
+        return `${intPartWithThousands},${decPart}`; // "1.634,1"
+    }
+
+
+    // Percentage formatter (for deposit percent text)
+    function formatPercent(value) {
+        const num = typeof value === 'number' ? value : parseFloat(value);
+        if (isNaN(num)) return '0';
+        const asInt = Math.round(num);
+        if (Math.abs(num - asInt) < 1e-6) return asInt.toString();
+        return num.toFixed(1).replace('.', ',');
     }
 
     // Global cache for RoomCloud availability data
@@ -119,7 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!dateStr) return null;
         
         // Already in YYYY-MM-DD format?
-        if (/^\d{4}-\d{2}-\d2$/.test(dateStr)) {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
             return dateStr;
         }
         
@@ -168,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Get original price from MotoPress
             const originalPriceText = priceEl.textContent;
-            const originalPrice = parseFloat(originalPriceText.replace(/[^0-9.,]/g, '').replace(',', '.'));
+            const originalPrice = parsePrice(originalPriceText);
             
             // Calculate discounted price
             const discountedPrice = discountPercent 
@@ -185,10 +259,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Add original price with strikethrough if there's a discount
             if (discountPercent) {
-                const originalPriceEl = document.createElement('span');
-                originalPriceEl.className = 'mphb-price-original';
-                originalPriceEl.innerHTML = `<span class="mphb-currency">€</span>${formatPrice(originalPrice)}`;
-                discountWrapper.appendChild(originalPriceEl);
+                const originalPriceElNode = document.createElement('span');
+                originalPriceElNode.className = 'mphb-price-original';
+                originalPriceElNode.innerHTML = `<span class="mphb-currency">€</span>${formatPrice(originalPrice)}`;
+                discountWrapper.appendChild(originalPriceElNode);
             }
             
             // Create the current/discounted price element
@@ -335,19 +409,19 @@ document.addEventListener('DOMContentLoaded', function() {
         if (totalPriceField.querySelector('.mphb-price-original')) return;
         
         const priceText = priceSpan.textContent;
-        const originalPrice = parseFloat(priceText.replace(/[^0-9.,]/g, '').replace(',', '.'));
+        const originalPrice = parsePrice(priceText);
         
         // Get services total from price breakdown if available
         let servicesTotal = 0;
         const servicesRow = document.querySelector('.mphb-price-breakdown-services-total .mphb-table-price-column');
         if (servicesRow) {
             const servicesText = servicesRow.textContent;
-            servicesTotal = parseFloat(servicesText.replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
+            servicesTotal = parsePrice(servicesText) || 0;
         }
         
         // Calculate discount only on accommodation (total - services)
         const accommodationTotal = originalPrice - servicesTotal;
-        const discountAmount = parseFloat(formatPrice(accommodationTotal * (discountPercent / 100)));
+        const discountAmount = roundToOneDecimal(accommodationTotal * (discountPercent / 100));
         const discountedTotal = formatPrice(originalPrice - discountAmount);
         
         // Update display
@@ -404,9 +478,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!totalPriceEl) return;
     
         const totalTextRaw = totalPriceEl.textContent;
-        const totalNumber = parseFloat(
-            totalTextRaw.replace(/[^0-9.,]/g, '').replace(',', '.')
-        );
+        const totalNumber = parsePrice(totalTextRaw);
         if (isNaN(totalNumber)) return;
     
         const totalDisplay = formatPrice(totalNumber);
@@ -468,7 +540,7 @@ document.addEventListener('DOMContentLoaded', function() {
             headline.innerHTML = `Pay €${depositDisplay} deposit today`;
     
             noteBody.innerHTML = `
-                Secure your booking with a <strong>${formatPrice(depositPercent)}% deposit</strong>.<br>
+                Secure your booking with a <strong>${formatPercent(depositPercent)}% deposit</strong>.<br>
                 Remaining <strong>€${balanceDisplay}</strong> is due on arrival.
             `;
     
@@ -492,8 +564,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if ($accommodationRow.length) {
                 var accommodationText = $accommodationRow.find('.mphb-table-price-column').text();
-                var accommodationTotal = parseFloat(accommodationText.replace(/[^0-9.,]/g, '').replace(',', '.'));
-                var discountAmount = parseFloat(formatPrice(accommodationTotal * (discountPercent / 100)));
+                var accommodationTotal = parsePrice(accommodationText);
+                var discountAmountNum = roundToOneDecimal(accommodationTotal * (discountPercent / 100));
                 
                 // Determine number of columns based on whether services exist
                 var hasServices = $('.mphb-price-breakdown-services').length > 0;
@@ -501,7 +573,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 var discountRow = '<tr class="mphb-discount-row">' +
                     '<th colspan="' + colSpan + '">You\'re saving:</th>' +
-                    '<th class="mphb-table-price-column" style="color: #4C9155;">-<span class="mphb-currency">€</span>' + formatPrice(discountAmount) + '</th>' +
+                    '<th class="mphb-table-price-column" style="color: #4C9155;">-<span class="mphb-currency">€</span>' + formatPrice(discountAmountNum) + '</th>' +
                     '</tr>';
                 
                 // Insert after the last subtotal row
@@ -517,8 +589,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 if ($totalRow.length) {
                     var $totalCell = $totalRow.find('.mphb-table-price-column');
                     var totalText = $totalCell.text();
-                    var originalTotal = parseFloat(totalText.replace(/[^0-9.,]/g, '').replace(',', '.'));
-                    var newTotal = formatPrice(originalTotal - discountAmount);
+                    var originalTotal = parsePrice(totalText);
+                    var newTotal = formatPrice(originalTotal - discountAmountNum);
                     
                     $totalCell.html('<span class="mphb-price"><span class="mphb-currency">€</span>' + newTotal + '</span>');
                 }
@@ -544,8 +616,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!originalPriceEl || !currentPriceEl) return;
         
-        const originalPrice = parseFloat(originalPriceEl.textContent.replace(/[^0-9.,]/g, '').replace(',', '.'));
-        const currentPrice = parseFloat(currentPriceEl.textContent.replace(/[^0-9.,]/g, '').replace(',', '.'));
+        const originalPrice = parsePrice(originalPriceEl.textContent);
+        const currentPrice = parsePrice(currentPriceEl.textContent);
         const discountAmount = formatPrice(originalPrice - currentPrice);
         
         // Create and append new badge
@@ -580,7 +652,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 basePrice = parseFloat(span.dataset.basePrice);
             } else {
                 const raw = span.textContent;
-                basePrice = parseFloat(raw.replace(/[^0-9.,]/g, '').replace(',', '.'));
+                basePrice = parsePrice(raw);
                 if (isNaN(basePrice)) return;
                 span.dataset.basePrice = basePrice; // cache original
             }
