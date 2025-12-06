@@ -18,7 +18,6 @@ if (!defined('ABSPATH')) {
 function get_provider_configs(): array {
     return [
         'booking'     => ['name' => 'Booking', 'bg' => '#003580', 'text' => '#ffffff', 'scale' => 10],
-        'booking.com' => ['name' => 'Booking', 'bg' => '#003580', 'text' => '#ffffff', 'scale' => 10],
         'expedia'     => ['name' => 'Expedia', 'bg' => '#ffda00', 'text' => '#000000', 'scale' => 10],
         'tripadvisor' => ['name' => 'TripAdvisor', 'bg' => '#00af87', 'text' => '#ffffff', 'scale' => 5],
         'google'      => ['name' => 'Google', 'bg' => '#4285f4', 'text' => '#ffffff', 'scale' => 5],
@@ -42,12 +41,7 @@ function get_provider_links(): array {
  */
 function normalize_provider(string $provider): string {
     $provider = strtolower(trim(str_replace(['-', '_'], ' ', $provider)));
-
-    $map = [
-        'booking.com' => 'booking',
-    ];
-
-    return $map[$provider] ?? str_replace(' ', '-', $provider);
+    return str_replace(' ', '-', $provider);
 }
 
 /**
