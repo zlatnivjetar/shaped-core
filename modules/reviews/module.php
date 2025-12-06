@@ -45,13 +45,16 @@ require_once SHAPED_REVIEWS_DIR . 'assets.php';
 add_action('init', function() {
     // Register CPT and taxonomies
     CPT::register();
-    
+
     // Initialize sync system
     new Sync();
-    
+
     // Initialize admin enhancements
     if (is_admin()) {
         Admin::init();
+    } else {
+        // Initialize frontend hooks (sorting, etc.)
+        Admin::init_frontend();
     }
 }, 5);
 

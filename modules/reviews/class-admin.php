@@ -59,8 +59,16 @@ class Admin {
         // Admin styles
         add_action('admin_head', [__CLASS__, 'admin_styles']);
 
-        // Elementor query
+        // Elementor query (legacy - specific query ID)
         add_action('elementor/query/featured_reviews_query', [__CLASS__, 'elementor_featured_query']);
+    }
+
+    /**
+     * Initialize frontend hooks
+     */
+    public static function init_frontend(): void {
+        // Apply featured/priority sorting to all frontend review queries
+        add_action('pre_get_posts', [__CLASS__, 'apply_frontend_sorting']);
     }
 
     /**
@@ -218,7 +226,7 @@ class Admin {
     }
 
     /**
-     * Handle column sorting
+     * Handle column sorting (admin only)
      */
     public static function handle_column_sorting(\WP_Query $query): void {
         if (!is_admin() || !$query->is_main_query()) {
@@ -242,6 +250,81 @@ class Admin {
             $query->set('meta_key', $meta_keys[$orderby]['key']);
             $query->set('orderby', $meta_keys[$orderby]['type']);
         }
+    }
+
+    /**
+     * Apply featured/priority sorting to all frontend review queries
+     * This ensures reviews are always sorted correctly, even with Elementor taxonomy filters
+     */
+    public static function apply_frontend_sorting(\WP_Query $query): void {
+        // Only apply on frontend, for main queries or Elementor queries
+        if (is_admin()) {
+            return;
+        }
+
+        // Only apply to review post type queries
+        if ($query->get('post_type') !== CPT::POST_TYPE) {
+            return;
+        }
+
+        // Don't override if user explicitly set orderby (unless it's the default 'date')
+        $current_orderby = $query->get('orderby');
+        if (!empty($current_orderby) && $current_orderby !== 'date' && $current_orderby !== 'post_date') {
+            return;
+        }
+
+        // Set up meta query for featured and priority
+        $existing_meta_query = $query->get('meta_query') ?: [];
+
+        // Add clauses for featured and priority if they don't already exist
+        $has_featured_clause = false;
+        $has_priority_clause = false;
+
+        if (is_array($existing_meta_query)) {
+            foreach ($existing_meta_query as $key => $clause) {
+                if (isset($clause['key'])) {
+                    if ($clause['key'] === 'is_featured') {
+                        $has_featured_clause = true;
+                    }
+                    if ($clause['key'] === 'priority') {
+                        $has_priority_clause = true;
+                    }
+                }
+            }
+        }
+
+        // Build meta query
+        $meta_query = is_array($existing_meta_query) ? $existing_meta_query : [];
+
+        if (!$has_featured_clause) {
+            $meta_query['featured_clause'] = [
+                'key'     => 'is_featured',
+                'compare' => 'EXISTS',
+                'type'    => 'NUMERIC'
+            ];
+        }
+
+        if (!$has_priority_clause) {
+            $meta_query['priority_clause'] = [
+                'key'     => 'priority',
+                'compare' => 'EXISTS',
+                'type'    => 'NUMERIC'
+            ];
+        }
+
+        if (!empty($meta_query)) {
+            if (!isset($meta_query['relation'])) {
+                $meta_query['relation'] = 'AND';
+            }
+            $query->set('meta_query', $meta_query);
+        }
+
+        // Set orderby to prioritize featured, then priority, then date
+        $query->set('orderby', [
+            'featured_clause' => 'DESC',
+            'priority_clause' => 'DESC',
+            'date'            => 'DESC'
+        ]);
     }
 
     /**
@@ -624,5 +707,117 @@ class Admin {
         foreach ($reviews as $review) {
             self::auto_assign_themes($review->ID);
         }
+    }
+
+    /**
+     * Find and remove duplicate reviews based on external_key
+     * Keeps the oldest review and removes newer duplicates
+     *
+     * @return array Stats about duplicates removed
+     */
+    public static function cleanup_duplicate_reviews(): array {
+        global $wpdb;
+
+        $stats = [
+            'duplicates_found' => 0,
+            'reviews_removed'  => 0,
+            'errors'           => 0
+        ];
+
+        // Find all reviews with external_key
+        $reviews = $wpdb->get_results($wpdb->prepare("
+            SELECT p.ID, pm.meta_value as external_key, p.post_date
+            FROM {$wpdb->posts} p
+            INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+            WHERE p.post_type = %s
+            AND pm.meta_key = 'external_key'
+            AND pm.meta_value != ''
+            ORDER BY pm.meta_value, p.post_date ASC
+        ", CPT::POST_TYPE));
+
+        if (empty($reviews)) {
+            return $stats;
+        }
+
+        // Group by external_key
+        $grouped = [];
+        foreach ($reviews as $review) {
+            $key = $review->external_key;
+            if (!isset($grouped[$key])) {
+                $grouped[$key] = [];
+            }
+            $grouped[$key][] = $review;
+        }
+
+        // Find and remove duplicates (keep oldest)
+        foreach ($grouped as $external_key => $review_group) {
+            if (count($review_group) > 1) {
+                $stats['duplicates_found']++;
+
+                // Keep the first (oldest) review, remove the rest
+                for ($i = 1; $i < count($review_group); $i++) {
+                    $result = wp_delete_post($review_group[$i]->ID, true);
+                    if ($result) {
+                        $stats['reviews_removed']++;
+                    } else {
+                        $stats['errors']++;
+                    }
+                }
+            }
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Find duplicate reviews without removing them (for reporting)
+     *
+     * @return array List of duplicate groups
+     */
+    public static function find_duplicate_reviews(): array {
+        global $wpdb;
+
+        $duplicates = [];
+
+        // Find all reviews with external_key
+        $reviews = $wpdb->get_results($wpdb->prepare("
+            SELECT p.ID, p.post_title, pm.meta_value as external_key, p.post_date,
+                   pm2.meta_value as provider, pm3.meta_value as author_name
+            FROM {$wpdb->posts} p
+            INNER JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+            LEFT JOIN {$wpdb->postmeta} pm2 ON p.ID = pm2.post_id AND pm2.meta_key = 'provider'
+            LEFT JOIN {$wpdb->postmeta} pm3 ON p.ID = pm3.post_id AND pm3.meta_key = 'author_name'
+            WHERE p.post_type = %s
+            AND pm.meta_key = 'external_key'
+            AND pm.meta_value != ''
+            ORDER BY pm.meta_value, p.post_date ASC
+        ", CPT::POST_TYPE));
+
+        if (empty($reviews)) {
+            return $duplicates;
+        }
+
+        // Group by external_key
+        $grouped = [];
+        foreach ($reviews as $review) {
+            $key = $review->external_key;
+            if (!isset($grouped[$key])) {
+                $grouped[$key] = [];
+            }
+            $grouped[$key][] = $review;
+        }
+
+        // Find duplicates
+        foreach ($grouped as $external_key => $review_group) {
+            if (count($review_group) > 1) {
+                $duplicates[] = [
+                    'external_key' => $external_key,
+                    'count'        => count($review_group),
+                    'reviews'      => $review_group
+                ];
+            }
+        }
+
+        return $duplicates;
     }
 }
