@@ -67,10 +67,16 @@ add_action('admin_init', function() {
         Admin::migrate_providers_to_taxonomy();
         update_option('shaped_reviews_taxonomy_migrated', 'yes');
     }
-    
+
     // Assign themes to existing reviews (one-time)
     if (get_option('shaped_reviews_themes_assigned') !== 'yes') {
         Admin::assign_themes_to_existing();
         update_option('shaped_reviews_themes_assigned', 'yes');
+    }
+
+    // Clean up old provider taxonomy terms (one-time)
+    if (get_option('shaped_reviews_providers_cleaned') !== 'yes') {
+        Admin::cleanup_old_provider_terms();
+        update_option('shaped_reviews_providers_cleaned', 'yes');
     }
 });
