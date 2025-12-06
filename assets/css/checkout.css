@@ -448,6 +448,7 @@ abbr[title="Required"] {
 	background: #fffbf0;
 	padding: 2rem 2rem 0 2rem;
 	text-align: center;
+	margin-bottom: 1rem;
 }
 
 .mphb-total-price output {
@@ -506,13 +507,9 @@ abbr[title="Required"] {
 
 .payment-method-logo {
 	width: auto;
-	max-width: 40px !important;
+	max-width: 36px !important;
 	object-fit: contain;
-	transition: transform 0.2s ease;
-}
-
-.payment-method-logo:hover {
-	transform: scale(1.05);
+	height: 32px !important;
 }
 
 
@@ -602,7 +599,7 @@ ul.mphb_sc_checkout-services-list.mphb_checkout-services-list {
 
 .mphb_sc_checkout-submit-wrapper {
 	background: #fffbf0;
-	padding: 1.5rem 0 2rem 0;
+	padding: 1.5rem 0 1rem 0;
 	text-align: center;
 	margin-bottom: 0;
 }
@@ -802,19 +799,16 @@ input:focus,
 	margin-left: 8px;
 }
 
-.desktop-trust-signals {
+.trust-signals {
 	display: flex;
 	justify-content: center;
-	gap: 40px;
-	padding-left: 16px;
+	font-size:14px;
+	color: #666;
 }
 
-.mobile-trust-signals {
-	display: none;
-}
 
-.desktop-trust-signals p,
-.mobile-trust-signals p {
+.trust-signals p
+{
 	margin: 0;
 }
 
@@ -895,9 +889,6 @@ input:focus,
 		margin-bottom: 4px;
 	}
 
-	.desktop-trust-signals {
-		display: none;
-	}
 
 	.discount-badge-checkout+.mphb-urgency-badge {
 		margin-left: 80px;
@@ -913,13 +904,6 @@ input:focus,
 		margin-left: 40px;
 		margin-right: 40px;
 		display: inline-block;
-	}
-
-	.mobile-trust-signals {
-		display: flex;
-		justify-content: center;
-		gap: 28px;
-		padding-left: 12px;
 	}
 
 	.checkout-form-bottom> :last-child {
@@ -1095,15 +1079,15 @@ input:focus,
 
 	.payment-methods {
 		gap: 1rem;
-		padding: 1rem;
+		padding: .5rem;
 		margin-top: 0rem;
-		padding-top: .5rem;
+		opacity: 0.87;
 	}
 
 	.payment-method-logo {
-		max-width: 32px !important;
-		filter: saturate(0.75);
+		max-width: 36px !important;
 	}
+
 	
 	.mphb-room-rate-chooser-title {
     padding-bottom: .5rem !important;
