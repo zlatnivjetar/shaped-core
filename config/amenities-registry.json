@@ -16,14 +16,14 @@
     },
     {
       "slug": "air-conditioning",
-      "icon": "thermometer-hot",
+      "icon": "snowflake",
       "label": "Air Conditioning",
       "priority": 3,
       "keywords": ["ac", "aircon", "air con", "cooling", "climate control"]
     },
     {
       "slug": "heating-system",
-      "icon": "fire-simple",
+      "icon": "thermometer-hot",
       "label": "Heating System",
       "priority": 4,
       "keywords": ["heating", "heater", "radiator", "central heating", "warm"]
@@ -58,7 +58,7 @@
     },
     {
       "slug": "clothes-storage",
-      "icon": "wardrobe",
+      "icon": "coat-hanger",
       "label": "Clothes Storage",
       "priority": 9,
       "keywords": ["closet", "wardrobe", "storage", "clothes storage"]
@@ -184,7 +184,7 @@
     },
     {
       "slug": "private-parking",
-      "icon": "parking",
+      "icon": "letter-circle-p",
       "label": "Private Parking",
       "priority": 27,
       "keywords": ["parking", "garage", "car park", "private parking"]
@@ -254,7 +254,7 @@
     },
     {
       "slug": "included-breakfast",
-      "icon": "egg-crack",
+      "icon": "bread",
       "label": "Included Breakfast",
       "priority": 37,
       "keywords": ["breakfast", "breakfast included", "morning meal"]
@@ -338,7 +338,7 @@
     },
     {
       "slug": "non-smoking",
-      "icon": "smoking-ban",
+      "icon": "cigarette-slash",
       "label": "Non-smoking",
       "priority": 49,
       "keywords": ["non-smoking", "no smoking", "smoke free", "smokefree"]
@@ -464,14 +464,14 @@
     },
     {
       "slug": "beach-access",
-      "icon": "umbrella",
+      "icon": "beach-ball",
       "label": "Beach Access",
       "priority": 67,
       "keywords": ["beach", "beach access", "beachfront"]
     },
     {
       "slug": "sea-view",
-      "icon": "wave-sine",
+      "icon": "waves",
       "label": "Sea View",
       "priority": 68,
       "keywords": ["sea view", "ocean view", "water view"]
