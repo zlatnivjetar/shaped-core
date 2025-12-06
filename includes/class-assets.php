@@ -26,9 +26,9 @@ class Shaped_Assets {
         // Phosphor Icons for amenity display
         wp_enqueue_style(
             'phosphor-icons',
-            'https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css',
+            'https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css',
             [],
-            '2.0.3'
+            '2.1.1'
         );
 
         // Cookie Banner & Language Switcher styles
