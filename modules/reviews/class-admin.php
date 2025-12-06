@@ -705,6 +705,51 @@ class Admin {
     }
 
     /**
+     * Clean up old provider taxonomy terms (one-time migration)
+     * Removes 'booking.com' and 'google-maps' terms, migrating reviews to 'booking' and 'google'
+     */
+    public static function cleanup_old_provider_terms(): void {
+        $old_to_new_mapping = [
+            'booking.com' => 'booking',
+            'google-maps' => 'google',
+        ];
+
+        foreach ($old_to_new_mapping as $old_slug => $new_slug) {
+            // Check if old term exists
+            $old_term = get_term_by('slug', $old_slug, 'review_provider');
+            if (!$old_term) {
+                continue;
+            }
+
+            // Get all reviews with the old term
+            $reviews = get_posts([
+                'post_type'      => CPT::POST_TYPE,
+                'posts_per_page' => -1,
+                'post_status'    => 'any',
+                'tax_query'      => [
+                    [
+                        'taxonomy' => 'review_provider',
+                        'field'    => 'slug',
+                        'terms'    => $old_slug,
+                    ],
+                ],
+            ]);
+
+            // Migrate reviews to new term
+            foreach ($reviews as $review) {
+                // Remove old term
+                wp_remove_object_terms($review->ID, $old_term->term_id, 'review_provider');
+
+                // Add new term
+                wp_set_object_terms($review->ID, $new_slug, 'review_provider', false);
+            }
+
+            // Delete the old term
+            wp_delete_term($old_term->term_id, 'review_provider');
+        }
+    }
+
+    /**
      * Find and remove duplicate reviews based on external_key
      * Keeps the oldest review and removes newer duplicates
      *
