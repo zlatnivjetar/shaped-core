@@ -29,6 +29,7 @@ class Sync {
         // Admin actions
         add_action('admin_menu', [$this, 'add_admin_menu']);
         add_action('admin_init', [$this, 'handle_manual_sync']);
+        add_action('admin_init', [$this, 'handle_duplicate_cleanup']);
     }
 
     /**
@@ -296,6 +297,7 @@ class Sync {
      */
     public function render_admin_page(): void {
         $last_sync = get_option('shaped_reviews_last_sync', []);
+        $duplicates = Admin::find_duplicate_reviews();
         ?>
         <div class="wrap">
             <h1>Review Sync Settings</h1>
@@ -303,6 +305,16 @@ class Sync {
             <?php if (isset($_GET['synced'])): ?>
                 <div class="notice notice-success">
                     <p>Manual sync completed successfully!</p>
+                </div>
+            <?php endif; ?>
+
+            <?php if (isset($_GET['duplicates_cleaned'])): ?>
+                <div class="notice notice-success">
+                    <p>
+                        Duplicate cleanup completed!<br>
+                        <strong>Duplicate groups found:</strong> <?php echo intval($_GET['duplicates_found']); ?><br>
+                        <strong>Reviews removed:</strong> <?php echo intval($_GET['reviews_removed']); ?>
+                    </p>
                 </div>
             <?php endif; ?>
 
@@ -327,6 +339,51 @@ class Sync {
                         <input type="submit" class="button button-primary" value="Run Manual Sync">
                     </p>
                 </form>
+            </div>
+
+            <div class="card">
+                <h2>Duplicate Reviews</h2>
+                <?php if (!empty($duplicates)): ?>
+                    <div class="notice notice-warning inline">
+                        <p><strong>Warning:</strong> Found <?php echo count($duplicates); ?> duplicate review group(s)!</p>
+                    </div>
+
+                    <table class="widefat" style="margin: 15px 0;">
+                        <thead>
+                            <tr>
+                                <th>Provider</th>
+                                <th>Author</th>
+                                <th>Title</th>
+                                <th>Date</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($duplicates as $dup): ?>
+                                <?php foreach ($dup['reviews'] as $review): ?>
+                                    <tr>
+                                        <td><?php echo esc_html($review->provider); ?></td>
+                                        <td><?php echo esc_html($review->author_name); ?></td>
+                                        <td><a href="<?php echo get_edit_post_link($review->ID); ?>"><?php echo esc_html($review->post_title); ?></a></td>
+                                        <td><?php echo esc_html($review->post_date); ?></td>
+                                        <td><?php echo esc_html($dup['count']); ?> duplicates</td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+
+                    <form method="post" action="" onsubmit="return confirm('This will permanently delete duplicate reviews. The oldest review in each group will be kept. Continue?');">
+                        <?php wp_nonce_field('shaped_reviews_cleanup_duplicates', 'shaped_reviews_cleanup_nonce'); ?>
+                        <input type="hidden" name="shaped_reviews_action" value="cleanup_duplicates">
+                        <p>
+                            <input type="submit" class="button button-secondary" value="Remove Duplicate Reviews">
+                            <span class="description">This will keep the oldest review in each duplicate group and remove the rest.</span>
+                        </p>
+                    </form>
+                <?php else: ?>
+                    <p style="color: green;">✓ No duplicate reviews found</p>
+                <?php endif; ?>
             </div>
 
             <div class="card">
@@ -364,6 +421,34 @@ define('SUPABASE_SERVICE_KEY', 'your-service-key');
         $this->sync_reviews();
 
         wp_redirect(admin_url('edit.php?post_type=' . CPT::POST_TYPE . '&page=shaped-reviews-sync&synced=1'));
+        exit;
+    }
+
+    /**
+     * Handle duplicate cleanup
+     */
+    public function handle_duplicate_cleanup(): void {
+        if (!isset($_POST['shaped_reviews_action']) || $_POST['shaped_reviews_action'] !== 'cleanup_duplicates') {
+            return;
+        }
+
+        if (!wp_verify_nonce($_POST['shaped_reviews_cleanup_nonce'], 'shaped_reviews_cleanup_duplicates')) {
+            return;
+        }
+
+        if (!current_user_can('manage_options')) {
+            return;
+        }
+
+        $stats = Admin::cleanup_duplicate_reviews();
+
+        wp_redirect(admin_url(
+            'edit.php?post_type=' . CPT::POST_TYPE .
+            '&page=shaped-reviews-sync' .
+            '&duplicates_cleaned=1' .
+            '&duplicates_found=' . $stats['duplicates_found'] .
+            '&reviews_removed=' . $stats['reviews_removed']
+        ));
         exit;
     }
 
