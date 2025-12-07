@@ -101,12 +101,23 @@ function shaped_room_cards_shortcode($atts) {
             if (defined('WP_DEBUG') && WP_DEBUG) {
                 error_log('[Shaped Debug] Template file: ' . $template_file);
                 error_log('[Shaped Debug] Template exists: ' . (file_exists($template_file) ? 'yes' : 'no'));
+                error_log('[Shaped Debug] SHAPED_DIR constant: ' . SHAPED_DIR);
             }
 
             if (file_exists($template_file)) {
+                // Start a nested output buffer to catch any errors in template
+                ob_start();
                 include $template_file;
+                $template_output = ob_get_clean();
+
+                // Debug: Check if template produced output
+                if (defined('WP_DEBUG') && WP_DEBUG) {
+                    error_log('[Shaped Debug] Template output length: ' . strlen($template_output) . ' characters');
+                }
+
+                echo $template_output;
             } else {
-                echo '<p>Template not found: room-card-' . esc_html($template) . '.php</p>';
+                echo '<p style="background: #ffebee; border: 1px solid #c62828; padding: 10px; margin: 10px 0;">Template not found: ' . esc_html($template_file) . '</p>';
             }
         }
 
@@ -115,7 +126,10 @@ function shaped_room_cards_shortcode($atts) {
         // Reset post data
         wp_reset_postdata();
     } else {
-        echo '<p class="shaped-no-rooms">No rooms available.</p>';
+        echo '<div class="shaped-no-rooms" style="background: #fff3e0; border: 1px solid #f57c00; padding: 15px; margin: 10px 0;">';
+        echo '<p><strong>Shaped Room Cards:</strong> No rooms found.</p>';
+        echo '<p><small>Query: post_type=' . esc_html($query_args['post_type']) . ', posts_per_page=' . esc_html($query_args['posts_per_page']) . '</small></p>';
+        echo '</div>';
 
         // Debug: Log why no rooms found
         if (defined('WP_DEBUG') && WP_DEBUG) {
