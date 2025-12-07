@@ -144,6 +144,7 @@ add_action('plugins_loaded', function() {
     // ─── Shortcodes ───
     require_once SHAPED_DIR . 'shortcodes/room-details.php';
     require_once SHAPED_DIR . 'shortcodes/room-meta.php';
+    require_once SHAPED_DIR . 'shortcodes/room-cards.php';
     require_once SHAPED_DIR . 'shortcodes/class-provider-badge.php';
     require_once SHAPED_DIR . 'shortcodes/class-modal-link.php';
     
