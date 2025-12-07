@@ -125,6 +125,7 @@ add_action('plugins_loaded', function() {
 
     // Load helper functions
     require_once SHAPED_DIR . 'includes/helpers.php';
+    require_once SHAPED_DIR . 'includes/pricing-helpers.php';
     
     // ─── Core Classes (always load) ───
     new Shaped_Assets();

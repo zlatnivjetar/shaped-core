@@ -43,12 +43,8 @@ $facilities = get_the_terms($room_id, 'mphb_room_type_facility');
 // Get room slug for discount lookup
 $room_slug = sanitize_title($room_title);
 
-// Get discount from global config
-$discount_percentage = Shaped_Pricing::get_room_discount($room_slug);
-
-// Get pricing - you can customize this based on your pricing logic
-$base_price = get_post_meta($room_id, '_mphb_base_price', true) ?: '160';
-$discount_price = round($base_price * (1 - $discount_percentage / 100));
+// Get pricing data
+$pricing = shaped_get_room_pricing_data($room_id, $room_slug);
 
 // Build comprehensive class list for the wrapper
 $wrapper_classes = [
@@ -152,24 +148,12 @@ if (!empty($facilities) && !is_wp_error($facilities)) {
     </ul>
     <?php endif; ?>
 
-    <div class="mphb-regular-price" style="margin-bottom:0">
-        <strong>Prices start at:</strong>
-        <div class="mphb-price-discount-wrapper">
-            <span class="mphb-price-original">
-                <span class="mphb-currency">€</span><?php echo esc_html($base_price); ?>
-            </span>
-            <span class="mphb-price mphb-price-current">
-                <span class="mphb-currency">€</span><?php echo esc_html($discount_price); ?>
-            </span>
-            <span class="mphb-price-period">per night</span>
-            <span class="mphb-discount-badge"><?php echo esc_html($discount_percentage); ?>% off</span>
-        </div>
-    </div>
+    <?php shaped_render_room_price($room_id, $room_slug); ?>
 
     <div class="mphb-reserve-room-section"
          data-room-type-id="<?php echo esc_attr($room_id); ?>"
          data-room-type-title="<?php echo esc_attr($room_title); ?>"
-         data-room-price="<?php echo esc_attr($base_price); ?>">
+         data-room-price="<?php echo esc_attr($pricing['base_price']); ?>">
         <a href="<?php echo esc_url($room_permalink); ?>">
             <button class="button mphb-button mphb-book-button">View Room Details</button>
         </a>
