@@ -111,11 +111,6 @@ if (!function_exists('shaped_load_stripe_sdk')) {
  * INITIALIZATION
  * ========================================================================= */
 
-// Load diagnostic shortcode early (doesn't require MPHB)
-add_action('plugins_loaded', function() {
-    require_once SHAPED_DIR . 'shortcodes/diagnostic.php';
-}, 5);
-
 add_action('plugins_loaded', function() {
 
     // Dependency check: MotoPress Hotel Booking required
