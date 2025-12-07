@@ -1,7 +1,9 @@
 <?php
 /**
  * Room Card Template - Home Page
- * Displays room cards on the home page with pricing and booking info
+ *
+ * Clean template for displaying room cards on the homepage.
+ * Uses Shaped amenity registry for icons (Phosphor Icons).
  *
  * @package Shaped_Core
  * @var WP_Post $room_type The room type post object
@@ -16,76 +18,115 @@ $room_id = $room_type->ID;
 $room_title = get_the_title($room_id);
 $room_permalink = get_permalink($room_id);
 $room_excerpt = get_the_excerpt($room_id);
-$room_thumbnail = get_the_post_thumbnail($room_id, 'large', ['class' => 'room-card-image']);
+$room_thumbnail = get_the_post_thumbnail_url($room_id, 'large');
 
-// Get room meta
-$capacity = get_post_meta($room_id, 'mphb_capacity', true);
-$size = get_post_meta($room_id, 'mphb_size', true);
-$view = get_post_meta($room_id, 'mphb_view', true);
+// Get MotoPress room type object
+if (class_exists('MPHB') && function_exists('MPHB')) {
+    $mphb_room = MPHB()->getRoomTypeRepository()->findById($room_id);
+} else {
+    return; // MotoPress not available
+}
 
-// Get base price (this will be dynamically replaced by JavaScript)
-$base_price_display = apply_filters('shaped/room_card/base_price_display', 'from €XX', $room_id);
+// Get room attributes
+$size = $mphb_room ? $mphb_room->getSize() : '';
+$bed_type = $mphb_room ? $mphb_room->getBedType() : '';
+
+// Get facilities for amenity display
+$facilities = get_the_terms($room_id, 'mphb_room_type_facility');
+
+// Get pricing - you can customize this based on your pricing logic
+$base_price = get_post_meta($room_id, '_mphb_base_price', true) ?: '160';
+$discount_percentage = 15; // You can make this dynamic
+$discount_price = round($base_price * (1 - $discount_percentage / 100));
 ?>
 
-<div class="shaped-room-card shaped-room-card-home" data-room-id="<?php echo esc_attr($room_id); ?>">
+<div id="<?php echo esc_attr(sanitize_title($room_title)); ?>" class="mphb-room-type post-<?php echo esc_attr($room_id); ?> mphb_room_type type-mphb_room_type">
 
     <?php if ($room_thumbnail): ?>
-    <div class="room-card-image-wrapper">
+    <p class="post-thumbnail mphb-loop-room-thumbnail">
         <a href="<?php echo esc_url($room_permalink); ?>">
-            <?php echo $room_thumbnail; ?>
+            <img loading="lazy" decoding="async" src="<?php echo esc_url($room_thumbnail); ?>"
+                 class="attachment-post-thumbnail size-post-thumbnail wp-post-image"
+                 alt="<?php echo esc_attr($room_title); ?>">
         </a>
+    </p>
+    <?php endif; ?>
+
+    <h2 class="mphb-room-type-title entry-title">
+        <a class="mphb-room-type-title" href="<?php echo esc_url($room_permalink); ?>">
+            <?php echo esc_html($room_title); ?>
+        </a>
+    </h2>
+
+    <?php if ($room_excerpt): ?>
+    <p><?php echo esc_html($room_excerpt); ?></p>
+    <?php endif; ?>
+
+    <?php if (!empty($facilities) && !is_wp_error($facilities)): ?>
+    <h3 class="mphb-room-type-details-title" style="display:none;">Amenities</h3>
+    <div class="mphb-room-amenities-wrapper">
+        <ul class="mphb-room-amenities-list">
+
+            <?php
+            // Add Size
+            if (!empty($size)):
+            ?>
+            <li class="mphb-amenity-item">
+                <span class="mphb-amenity-icon"><i class="ph ph-ruler" aria-hidden="true"></i></span>
+                <span class="mphb-amenity-text"><?php echo esc_html($size); ?>m²</span>
+            </li>
+            <?php endif; ?>
+
+            <?php
+            // Add Bed Type
+            if (!empty($bed_type)):
+            ?>
+            <li class="mphb-amenity-item">
+                <span class="mphb-amenity-icon"><i class="ph ph-bed" aria-hidden="true"></i></span>
+                <span class="mphb-amenity-text"><?php echo esc_html($bed_type); ?></span>
+            </li>
+            <?php endif; ?>
+
+            <?php
+            // Get amenities using Shaped system
+            $amenities = shaped_get_amenities_for_room($room_id, ['skip_fallback' => true]);
+
+            // Limit to top 9 amenities for homepage cards (size + bed + 7 amenities = 9 total)
+            $amenities = array_slice($amenities, 0, 7);
+
+            foreach ($amenities as $amenity):
+            ?>
+            <li class="mphb-amenity-item">
+                <span class="mphb-amenity-icon"><?php echo $amenity['html']; ?></span>
+                <span class="mphb-amenity-text"><?php echo esc_html($amenity['label']); ?></span>
+            </li>
+            <?php endforeach; ?>
+
+        </ul>
     </div>
     <?php endif; ?>
 
-    <div class="room-card-content">
-
-        <h3 class="room-card-title">
-            <a href="<?php echo esc_url($room_permalink); ?>">
-                <?php echo esc_html($room_title); ?>
-            </a>
-        </h3>
-
-        <?php if ($room_excerpt): ?>
-        <div class="room-card-excerpt">
-            <?php echo wp_kses_post($room_excerpt); ?>
-        </div>
-        <?php endif; ?>
-
-        <div class="room-card-meta">
-            <?php if ($capacity): ?>
-            <span class="room-meta-item room-capacity">
-                <i class="dashicons dashicons-groups"></i>
-                <?php echo esc_html(sprintf(__('Up to %d guests', 'shaped'), $capacity)); ?>
+    <div class="mphb-regular-price" style="margin-bottom:0">
+        <strong>Prices start at:</strong>
+        <div class="mphb-price-discount-wrapper">
+            <span class="mphb-price-original">
+                <span class="mphb-currency">€</span><?php echo esc_html($base_price); ?>
             </span>
-            <?php endif; ?>
-
-            <?php if ($size): ?>
-            <span class="room-meta-item room-size">
-                <i class="dashicons dashicons-admin-home"></i>
-                <?php echo esc_html($size); ?>
+            <span class="mphb-price mphb-price-current">
+                <span class="mphb-currency">€</span><?php echo esc_html($discount_price); ?>
             </span>
-            <?php endif; ?>
-
-            <?php if ($view): ?>
-            <span class="room-meta-item room-view">
-                <i class="dashicons dashicons-visibility"></i>
-                <?php echo esc_html($view); ?>
-            </span>
-            <?php endif; ?>
+            <span class="mphb-price-period">per night</span>
+            <span class="mphb-discount-badge"><?php echo esc_html($discount_percentage); ?>% off</span>
         </div>
+    </div>
 
-        <div class="room-card-footer">
-            <div class="room-card-price" data-room-slug="<?php echo esc_attr(sanitize_title($room_title)); ?>">
-                <span class="price-label"><?php _e('From', 'shaped'); ?></span>
-                <span class="price-amount"><?php echo esc_html($base_price_display); ?></span>
-                <span class="price-period"><?php _e('per night', 'shaped'); ?></span>
-            </div>
-
-            <a href="<?php echo esc_url($room_permalink); ?>" class="room-card-cta button">
-                <?php _e('View Details', 'shaped'); ?>
-            </a>
-        </div>
-
+    <div class="mphb-reserve-room-section"
+         data-room-type-id="<?php echo esc_attr($room_id); ?>"
+         data-room-type-title="<?php echo esc_attr($room_title); ?>"
+         data-room-price="<?php echo esc_attr($base_price); ?>">
+        <a href="<?php echo esc_url($room_permalink); ?>">
+            <button class="button mphb-button mphb-book-button">View Room Details</button>
+        </a>
     </div>
 
 </div>
