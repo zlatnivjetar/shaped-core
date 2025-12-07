@@ -39,11 +39,23 @@
         "warm"
       ]
     },
+        {
+      "slug": "private-parking",
+      "icon": "letter-circle-p",
+      "label": "Private Parking",
+      "priority": 4,
+      "keywords": [
+        "parking",
+        "garage",
+        "car park",
+        "private parking"
+      ]
+    },
     {
       "slug": "private-bathroom",
       "icon": "bathtub",
       "label": "Private Bathroom",
-      "priority": 4,
+      "priority": 5,
       "keywords": [
         "bathroom",
         "bath",
@@ -53,11 +65,24 @@
         "en-suite"
       ]
     },
+        {
+      "slug": "full-kitchen",
+      "icon": "cooking-pot",
+      "label": "Full Kitchen",
+      "priority": 6,
+      "keywords": [
+        "kitchen",
+        "full kitchen",
+        "cooking",
+        "stove",
+        "private kitchen"
+      ]
+    },
     {
       "slug": "bedding",
       "icon": "bed",
       "label": "Quality Bedding",
-      "priority": 5,
+      "priority": 7,
       "keywords": [
         "bed",
         "bedding",
@@ -69,7 +94,7 @@
       "slug": "smoke-free",
       "icon": "cigarette-slash",
       "label": "Smoke Free",
-      "priority": 6,
+      "priority": 8,
       "keywords": [
         "non-smoking",
         "no smoking",
@@ -78,22 +103,21 @@
       ]
     },
     {
-      "slug": "private-parking",
-      "icon": "letter-circle-p",
-      "label": "Private Parking",
-      "priority": 7,
+      "slug": "sea-view",
+      "icon": "waves",
+      "label": "Sea View",
+      "priority":9,
       "keywords": [
-        "parking",
-        "garage",
-        "car park",
-        "private parking"
+        "sea view",
+        "ocean view",
+        "water view"
       ]
     },
     {
       "slug": "in-room-safe",
       "icon": "vault",
       "label": "Mini Safe",
-      "priority": 8,
+      "priority": 10,
       "keywords": [
         "safe",
         "safety box",
@@ -103,21 +127,10 @@
       ]
     },
     {
-      "slug": "sea-view",
-      "icon": "waves",
-      "label": "Sea View",
-      "priority": 9,
-      "keywords": [
-        "sea view",
-        "ocean view",
-        "water view"
-      ]
-    },
-    {
       "slug": "beach-access",
       "icon": "beach-ball",
       "label": "Beach Access",
-      "priority": 10,
+      "priority": 11,
       "keywords": [
         "beach",
         "beach access",
@@ -128,7 +141,7 @@
       "slug": "swimming-pool",
       "icon": "swimming-pool",
       "label": "Swimming Pool",
-      "priority": 11,
+      "priority": 12,
       "keywords": [
         "pool",
         "swimming pool",
@@ -140,24 +153,11 @@
       "slug": "included-breakfast",
       "icon": "bread",
       "label": "Breakfast Included",
-      "priority": 12,
+      "priority": 13,
       "keywords": [
         "breakfast",
         "breakfast included",
         "morning meal"
-      ]
-    },
-    {
-      "slug": "full-kitchen",
-      "icon": "cooking-pot",
-      "label": "Full Kitchen",
-      "priority": 13,
-      "keywords": [
-        "kitchen",
-        "full kitchen",
-        "cooking",
-        "stove",
-        "private kitchen"
       ]
     },
     {
