@@ -21,6 +21,9 @@ if (!defined('ABSPATH')) {
 add_shortcode('shaped_room_cards', 'shaped_room_cards_shortcode');
 
 function shaped_room_cards_shortcode($atts) {
+    // Flag that the shortcode is being used (for CSS enqueuing)
+    add_action('wp_footer', 'shaped_enqueue_room_cards_css', 1);
+
     $atts = shortcode_atts([
         'template' => 'home',        // 'home' or 'listing'
         'ids'      => '',            // Comma-separated room IDs
@@ -83,6 +86,20 @@ function shaped_room_cards_shortcode($atts) {
     }
 
     return ob_get_clean();
+}
+
+/**
+ * Enqueue search-results.css when shortcode is used
+ */
+function shaped_enqueue_room_cards_css() {
+    if (file_exists(SHAPED_DIR . 'assets/css/search-results.css')) {
+        wp_enqueue_style(
+            'shaped-search-results',
+            SHAPED_URL . 'assets/css/search-results.css',
+            [],
+            SHAPED_VERSION
+        );
+    }
 }
 
 /**
