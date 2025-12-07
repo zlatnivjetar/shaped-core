@@ -14,6 +14,14 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Validate that we have a room type object
+if (!isset($room_type) || !($room_type instanceof WP_Post)) {
+    echo '<div style="background: #ffebee; border: 1px solid #c62828; padding: 10px; margin: 10px 0;">';
+    echo '<strong>Error:</strong> Invalid room type object passed to template.';
+    echo '</div>';
+    return;
+}
+
 // Get room type data
 $room_id = $room_type->ID;
 $room_title = get_the_title($room_id);
@@ -25,7 +33,11 @@ $room_thumbnail = get_the_post_thumbnail_url($room_id, 'large');
 if (class_exists('MPHB') && function_exists('MPHB')) {
     $mphb_room = MPHB()->getRoomTypeRepository()->findById($room_id);
 } else {
-    return; // MotoPress not available
+    // MotoPress not available - show error
+    echo '<div style="background: #ffebee; border: 1px solid #c62828; padding: 10px; margin: 10px 0;">';
+    echo '<strong>Error:</strong> MotoPress Hotel Booking plugin is not active.';
+    echo '</div>';
+    return;
 }
 
 // Get room attributes
