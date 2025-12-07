@@ -15,9 +15,6 @@ if (!defined('ABSPATH')) {
 
 // Validate that we have a room type object
 if (!isset($room_type) || !($room_type instanceof WP_Post)) {
-    echo '<div style="background: #ffebee; border: 1px solid #c62828; padding: 10px; margin: 10px 0;">';
-    echo '<strong>Error:</strong> Invalid room type object passed to template.';
-    echo '</div>';
     return;
 }
 
@@ -29,15 +26,11 @@ $room_excerpt = get_the_excerpt($room_id);
 $room_thumbnail = get_the_post_thumbnail_url($room_id, 'large');
 
 // Get MotoPress room type object
-if (function_exists('MPHB')) {
-    $mphb_room = MPHB()->getRoomTypeRepository()->findById($room_id);
-} else {
-    // MotoPress not available - show error
-    echo '<div style="background: #ffebee; border: 1px solid #c62828; padding: 10px; margin: 10px 0;">';
-    echo '<strong>Error:</strong> MotoPress Hotel Booking plugin is not active.';
-    echo '</div>';
+if (!function_exists('MPHB')) {
     return;
 }
+
+$mphb_room = MPHB()->getRoomTypeRepository()->findById($room_id);
 
 // Get room attributes
 $size = $mphb_room ? $mphb_room->getSize() : '';
@@ -46,9 +39,14 @@ $bed_type = $mphb_room ? $mphb_room->getBedType() : '';
 // Get facilities for amenity display
 $facilities = get_the_terms($room_id, 'mphb_room_type_facility');
 
+// Get room slug for discount lookup
+$room_slug = sanitize_title($room_title);
+
+// Get discount from global config
+$discount_percentage = Shaped_Pricing::get_room_discount($room_slug);
+
 // Get pricing - you can customize this based on your pricing logic
 $base_price = get_post_meta($room_id, '_mphb_base_price', true) ?: '160';
-$discount_percentage = 15; // You can make this dynamic
 $discount_price = round($base_price * (1 - $discount_percentage / 100));
 ?>
 
