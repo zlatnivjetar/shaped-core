@@ -98,7 +98,7 @@ $pricing = shaped_get_room_pricing_data($room_id, $room_slug);
             $amenities = shaped_get_amenities_for_room($room_id, ['skip_fallback' => true]);
 
             // Limit to top 9 amenities for homepage cards (size + bed + 7 amenities = 9 total)
-            $amenities = array_slice($amenities, 0, 7);
+            $amenities = array_slice($amenities, 0, 6);
 
             foreach ($amenities as $amenity):
             ?>
