@@ -30,7 +30,7 @@ $room_excerpt = get_the_excerpt($room_id);
 $room_thumbnail = get_the_post_thumbnail_url($room_id, 'large');
 
 // Get MotoPress room type object
-if (class_exists('MPHB') && function_exists('MPHB')) {
+if (function_exists('MPHB')) {
     $mphb_room = MPHB()->getRoomTypeRepository()->findById($room_id);
 } else {
     // MotoPress not available - show error
