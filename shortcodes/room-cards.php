@@ -21,11 +21,6 @@ if (!defined('ABSPATH')) {
 add_shortcode('shaped_room_cards', 'shaped_room_cards_shortcode');
 
 function shaped_room_cards_shortcode($atts) {
-    // Debug: Log that shortcode was called
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[Shaped Debug] shaped_room_cards shortcode called with atts: ' . print_r($atts, true));
-    }
-
     $atts = shortcode_atts([
         'template' => 'home',        // 'home' or 'listing'
         'ids'      => '',            // Comma-separated room IDs
@@ -47,11 +42,6 @@ function shaped_room_cards_shortcode($atts) {
         'post_status'    => 'publish',
     ];
 
-    // Debug: Log query args
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[Shaped Debug] Query args: ' . print_r($query_args, true));
-    }
-
     // Filter by specific IDs if provided
     if (!empty($atts['ids'])) {
         $ids = array_map('intval', explode(',', $atts['ids']));
@@ -62,12 +52,6 @@ function shaped_room_cards_shortcode($atts) {
     // Run query
     $rooms_query = new WP_Query($query_args);
 
-    // Debug: Log query results
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[Shaped Debug] Found ' . $rooms_query->found_posts . ' rooms');
-        error_log('[Shaped Debug] Post count: ' . $rooms_query->post_count);
-    }
-
     // Build wrapper classes
     $wrapper_classes = ['shaped-room-cards-wrapper', 'template-' . $template];
     if (!empty($atts['class'])) {
@@ -77,11 +61,6 @@ function shaped_room_cards_shortcode($atts) {
     // Start output buffering
     ob_start();
 
-    // Debug: Add visible marker when WP_DEBUG is on
-    if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_DISPLAY') && WP_DEBUG_DISPLAY) {
-        echo '<!-- Shaped Room Cards Shortcode Debug: Template=' . esc_html($template) . ', Found=' . $rooms_query->found_posts . ' rooms -->';
-    }
-
     if ($rooms_query->have_posts()) {
         echo '<div class="' . esc_attr(implode(' ', $wrapper_classes)) . '">';
 
@@ -89,35 +68,11 @@ function shaped_room_cards_shortcode($atts) {
             $rooms_query->the_post();
             $room_type = get_post();
 
-            // Debug: Log which room is being processed
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('[Shaped Debug] Processing room: ' . $room_type->post_title . ' (ID: ' . $room_type->ID . ')');
-            }
-
             // Load the appropriate template
             $template_file = SHAPED_DIR . 'templates/room-card-' . $template . '.php';
 
-            // Debug: Log template path
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('[Shaped Debug] Template file: ' . $template_file);
-                error_log('[Shaped Debug] Template exists: ' . (file_exists($template_file) ? 'yes' : 'no'));
-                error_log('[Shaped Debug] SHAPED_DIR constant: ' . SHAPED_DIR);
-            }
-
             if (file_exists($template_file)) {
-                // Start a nested output buffer to catch any errors in template
-                ob_start();
                 include $template_file;
-                $template_output = ob_get_clean();
-
-                // Debug: Check if template produced output
-                if (defined('WP_DEBUG') && WP_DEBUG) {
-                    error_log('[Shaped Debug] Template output length: ' . strlen($template_output) . ' characters');
-                }
-
-                echo $template_output;
-            } else {
-                echo '<p style="background: #ffebee; border: 1px solid #c62828; padding: 10px; margin: 10px 0;">Template not found: ' . esc_html($template_file) . '</p>';
             }
         }
 
@@ -125,26 +80,9 @@ function shaped_room_cards_shortcode($atts) {
 
         // Reset post data
         wp_reset_postdata();
-    } else {
-        echo '<div class="shaped-no-rooms" style="background: #fff3e0; border: 1px solid #f57c00; padding: 15px; margin: 10px 0;">';
-        echo '<p><strong>Shaped Room Cards:</strong> No rooms found.</p>';
-        echo '<p><small>Query: post_type=' . esc_html($query_args['post_type']) . ', posts_per_page=' . esc_html($query_args['posts_per_page']) . '</small></p>';
-        echo '</div>';
-
-        // Debug: Log why no rooms found
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('[Shaped Debug] No rooms found. SQL query: ' . $rooms_query->request);
-        }
     }
 
-    $output = ob_get_clean();
-
-    // Debug: Log final output length
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[Shaped Debug] Output length: ' . strlen($output) . ' characters');
-    }
-
-    return $output;
+    return ob_get_clean();
 }
 
 /**

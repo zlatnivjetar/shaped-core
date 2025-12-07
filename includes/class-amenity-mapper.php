@@ -286,7 +286,7 @@ class Shaped_Amenity_Mapper {
      * @return array Sorted array of icon data
      */
     public function get_room_amenities(int $room_type_id, array $args = []): array {
-        $facilities = get_the_terms($room_type_id, 'mphb_room_facility');
+        $facilities = get_the_terms($room_type_id, 'mphb_room_type_facility');
 
         if (empty($facilities) || is_wp_error($facilities)) {
             return [];
