@@ -357,7 +357,7 @@
     flex-wrap: wrap;
     gap: 1rem;
     list-style: none;
-    margin: 0;
+    margin: 1rem 0 0 0;
     padding: 0 1.5rem;
     align-items: center;
     min-height: 6.281rem;
