@@ -9,7 +9,7 @@ function showLeavingConfirmation(destination, url, isProvider = false) {
        left: 0;
        width: 100%;
        height: 100%;
-       background: rgba(0,0,0,0.5);
+       background: var(--color-overlay-scrim, rgba(0,0,0,0.5));
        display: flex;
        align-items: center;
        justify-content: center;
@@ -29,39 +29,39 @@ function showLeavingConfirmation(destination, url, isProvider = false) {
    modal.innerHTML = `
        <div style="
         box-shadow: none !important;
-           background: #FBFAF9;
+           background: var(--color-surface-page, #FBFAF9);
            padding: 2rem;
-           border-radius: 8px;
+           border-radius: var(--radius-md, 8px);
            max-width: 400px;
            margin: 1rem;
            text-align: center;
-           font-family: 'DM Sans', sans-serif;
+           font-family: var(--font-body, 'DM Sans', sans-serif);
        " class="modal-content">
-           <h3 style="color: #141310; margin-bottom: 1rem;">
+           <h3 style="color: var(--color-text-primary, #141310); margin-bottom: 1rem;">
               ${title}
            </h3>
-           <p style="color: #666666; margin-bottom: 1.5rem;">
+           <p style="color: var(--color-text-muted, #666666); margin-bottom: 1.5rem;">
                ${description}
            </p>
            <div style="display: flex; gap: 1rem; justify-content: center;" class="button-container">
                <button onclick="this.closest('[data-modal]').remove()" style="
                    padding: 0.875rem 1.875rem;
-                   border: 1px solid #e0e0e0;
-                   background: #D1AF5D;
-                   color: white;
-                   border-radius: 8px;
+                   border: 1px solid var(--color-border-default, #e0e0e0);
+                   background: var(--color-brand-primary, #D1AF5D);
+                   color: var(--color-text-inverse, white);
+                   border-radius: var(--radius-md, 8px);
                    cursor: pointer;
                    font-family: inherit;
                    transition: all 0.3s ease;
                    font-size: 1rem;
                " onmouseenter="this.style.transform='translateY(-2px)';this.style.background='#c39937'; this.style.boxShadow='0 0 4px rgba(209, 175, 93, 0.6), 0 0 8px rgba(209, 175, 93, 0.45), 0 0 16px rgba(209, 175, 93, 0.3)'; this.style.borderColor='#d1af5d';" onmouseleave="this.style.transform='none'; this.style.boxShadow='none'; this.style.borderColor='#e0e0e0'; this.style.background='#d1af5d';" class="modal-button">Stay Here</button>
-               
+
                <button onclick="window.open('${url}', '_blank'); this.closest('[data-modal]').remove();" style="
                    padding: 0.875rem 1.875rem;
-                   border: 1px solid #e0e0e0;
-                   background: #fbfaf9;
-                   color: #141310;
-                   border-radius: 8px;
+                   border: 1px solid var(--color-border-default, #e0e0e0);
+                   background: var(--color-surface-page, #fbfaf9);
+                   color: var(--color-text-primary, #141310);
+                   border-radius: var(--radius-md, 8px);
                    cursor: pointer;
                    font-family: inherit;
                    font-weight: 600;

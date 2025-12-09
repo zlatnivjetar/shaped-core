@@ -426,10 +426,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Update display
         totalPriceField.innerHTML = `
-            <span class="mphb-price-original" style="text-decoration: line-through; color: #999; font-weight: normal;">
+            <span class="mphb-price-original" style="text-decoration: line-through; color: var(--color-text-muted, #999); font-weight: normal;">
                 <span class="mphb-currency">€</span>${formatPrice(originalPrice)}
             </span>
-            <span class="mphb-price mphb-price-current" style="color: #D1AF5D; margin-left: 8px; font-weight: bold;">
+            <span class="mphb-price mphb-price-current" style="color: var(--color-brand-primary, #D1AF5D); margin-left: 8px; font-weight: bold;">
                 <span class="mphb-currency">€</span>${discountedTotal}
             </span>
         `;
@@ -498,8 +498,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     
             noteBody.innerHTML = `
-                We will charge <strong>€${totalDisplay}</strong> 
-                on <strong style="color:#141310">${formattedDate}</strong> 
+                We will charge <strong>€${totalDisplay}</strong>
+                on <strong style="color: var(--color-text-primary, #141310)">${formattedDate}</strong>
                 using the card you save now.
             `;
     
@@ -573,7 +573,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 var discountRow = '<tr class="mphb-discount-row">' +
                     '<th colspan="' + colSpan + '">You\'re saving:</th>' +
-                    '<th class="mphb-table-price-column" style="color: #4C9155;">-<span class="mphb-currency">€</span>' + formatPrice(discountAmountNum) + '</th>' +
+                    '<th class="mphb-table-price-column" style="color: var(--color-semantic-success, #4C9155);">-<span class="mphb-currency">€</span>' + formatPrice(discountAmountNum) + '</th>' +
                     '</tr>';
                 
                 // Insert after the last subtotal row
@@ -667,13 +667,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const currencyHTML = currencyEl ? currencyEl.outerHTML : '';
 
             const originalHTML = `
-                <span class="mphb-price-original" style="text-decoration: line-through; color:#999; font-weight: normal;">
+                <span class="mphb-price-original" style="text-decoration: line-through; color: var(--color-text-muted, #999); font-weight: normal;">
                     ${currencyHTML}${formattedOriginal}
                 </span>
             `.trim();
 
             const discountedHTML = `
-                <span class="mphb-price-discount" style="color:#D1AF5D; font-weight:bold; margin-left:4px;">
+                <span class="mphb-price-discount" style="color: var(--color-brand-primary, #D1AF5D); font-weight:bold; margin-left:4px;">
                     ${currencyHTML}${formattedDiscounted}
                 </span>
             `.trim();

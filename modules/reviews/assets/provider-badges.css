@@ -55,7 +55,7 @@
 .shaped-provider-badge[data-provider="expedia"],
 .prs-provider-badge[data-provider="expedia"] {
     background-color: #FFCB00;
-    color: #141310;
+    color: var(--color-text-primary, #141310);
 }
 
 .shaped-provider-badge[data-provider="google"],
