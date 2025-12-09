@@ -21,6 +21,17 @@ class Shaped_Assets {
      */
     public function enqueue_frontend(): void {
 
+        // ─── Design Tokens (must load first) ───
+        // CSS custom properties used by all other stylesheets
+        if (file_exists(SHAPED_DIR . 'assets/css/design-tokens.css')) {
+            wp_enqueue_style(
+                'shaped-design-tokens',
+                SHAPED_URL . 'assets/css/design-tokens.css',
+                [],
+                SHAPED_VERSION
+            );
+        }
+
         // ─── Always Load (lightweight utilities) ───
 
         // Phosphor Icons for amenity display
@@ -36,7 +47,7 @@ class Shaped_Assets {
             wp_enqueue_style(
                 'shaped-cookie-banner',
                 SHAPED_URL . 'assets/css/cookie-banner.css',
-                [],
+                ['shaped-design-tokens'],
                 SHAPED_VERSION
             );
         }
@@ -77,7 +88,7 @@ class Shaped_Assets {
                 wp_enqueue_style(
                     'shaped-search-form',
                     SHAPED_URL . 'assets/css/search-form.css',
-                    [],
+                    ['shaped-design-tokens'],
                     SHAPED_VERSION
                 );
             }
@@ -86,7 +97,7 @@ class Shaped_Assets {
                 wp_enqueue_style(
                     'shaped-search-calendar',
                     SHAPED_URL . 'assets/css/search-calendar.css',
-                    [],
+                    ['shaped-design-tokens'],
                     SHAPED_VERSION
                 );
             }
@@ -100,7 +111,7 @@ class Shaped_Assets {
             wp_enqueue_style(
                 'shaped-guest-reviews',
                 SHAPED_URL . 'assets/css/guest-reviews.css',
-                [],
+                ['shaped-design-tokens'],
                 SHAPED_VERSION
             );
         }
@@ -109,7 +120,7 @@ class Shaped_Assets {
             wp_enqueue_style(
                 'shaped-gallery-element',
                 SHAPED_URL . 'assets/css/gallery-element.css',
-                [],
+                ['shaped-design-tokens'],
                 SHAPED_VERSION
             );
         }
@@ -124,7 +135,7 @@ class Shaped_Assets {
             wp_enqueue_style(
                 'shaped-checkout',
                 SHAPED_URL . 'assets/css/checkout.css',
-                [],
+                ['shaped-design-tokens'],
                 SHAPED_VERSION
             );
         }
@@ -161,7 +172,7 @@ class Shaped_Assets {
             wp_enqueue_style(
                 'shaped-modals',
                 SHAPED_URL . 'assets/css/modals.css',
-                [],
+                ['shaped-design-tokens'],
                 SHAPED_VERSION
             );
         }
@@ -187,7 +198,7 @@ class Shaped_Assets {
             wp_enqueue_style(
                 'shaped-search-results',
                 SHAPED_URL . 'assets/css/search-results.css',
-                [],
+                ['shaped-design-tokens'],
                 SHAPED_VERSION
             );
         }
@@ -197,7 +208,7 @@ class Shaped_Assets {
             wp_enqueue_style(
                 'shaped-search-form',
                 SHAPED_URL . 'assets/css/search-form.css',
-                [],
+                ['shaped-design-tokens'],
                 SHAPED_VERSION
             );
         }
@@ -207,7 +218,7 @@ class Shaped_Assets {
             wp_enqueue_style(
                 'shaped-search-calendar',
                 SHAPED_URL . 'assets/css/search-calendar.css',
-                [],
+                ['shaped-design-tokens'],
                 SHAPED_VERSION
             );
         }

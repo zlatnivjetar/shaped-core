@@ -10,27 +10,27 @@
 
 .e-filter-item {
     padding: 0.5rem 1rem;
-    border: 2px solid #e0e0e0;
-    background: #ffffff;
-    color: #666666;
+    border: 2px solid var(--color-border-default, #e0e0e0);
+    background: var(--color-surface-card, #ffffff);
+    color: var(--color-text-muted, #666666);
     font-weight: 500;
     font-size: 0.875rem;
     border-radius: 0.5rem;
     cursor: pointer;
-    transition: all 200ms ease;
-    font-family: 'DM Sans', sans-serif;
+    transition: all var(--transition-base, 200ms ease);
+    font-family: var(--font-body, 'DM Sans', sans-serif);
 }
 
 .e-filter-item:hover {
-    border-color: #D1AF5D;
-    color: #141310 !important;
-    background: #ffffff;
+    border-color: var(--color-brand-primary, #D1AF5D);
+    color: var(--color-text-primary, #141310) !important;
+    background: var(--color-surface-card, #ffffff);
 }
 
 .e-filter-item[aria-pressed="true"] {
-    background: #D1AF5D;
-    border-color: #D1AF5D;
-    color: #ffffff;
+    background: var(--color-brand-primary, #D1AF5D);
+    border-color: var(--color-brand-primary, #D1AF5D);
+    color: var(--color-text-inverse, #ffffff);
 }
 
 /* Review Card Height Fix */
@@ -61,25 +61,25 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #ffffff;
-    border: 2px solid #e0e0e0;
-    color: #666666;
+    background: var(--color-surface-card, #ffffff);
+    border: 2px solid var(--color-border-default, #e0e0e0);
+    color: var(--color-text-muted, #666666);
     text-decoration: none;
     font-weight: 500;
     border-radius: 0.25rem;
-    transition: all 200ms ease;
+    transition: all var(--transition-base, 200ms ease);
 }
 
 .e-load-more-pagination-page:hover {
-    border-color: #f6f6f6;
-    color: #141310;
+    border-color: var(--color-border-lighter, #f6f6f6);
+    color: var(--color-text-primary, #141310);
 }
 
 .e-load-more-pagination-page-current,
 .e-load-more-pagination-page[aria-current="true"] {
-    background: #D1AF5D;
-    border-color: #D1AF5D;
-    color: #ffffff;
+    background: var(--color-brand-primary, #D1AF5D);
+    border-color: var(--color-brand-primary, #D1AF5D);
+    color: var(--color-text-inverse, #ffffff);
 }
 
 .e-load-more-pagination-ellipsis {
@@ -88,26 +88,26 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #999999;
+    color: var(--color-text-light, #999999);
 }
 
 .e-load-more-pagination-prev,
 .e-load-more-pagination-next {
     padding: 0.5rem 1rem;
-    background: #ffffff;
-    border: 2px solid #e0e0e0;
-    color: #666666;
+    background: var(--color-surface-card, #ffffff);
+    border: 2px solid var(--color-border-default, #e0e0e0);
+    color: var(--color-text-muted, #666666);
     text-decoration: none;
     font-weight: 500;
     border-radius: 0.25rem;
-    transition: all 200ms ease;
+    transition: all var(--transition-base, 200ms ease);
 }
 
 .e-load-more-pagination-prev:hover,
 .e-load-more-pagination-next:hover {
-    border-color: #D1AF5D;
-    background: #D1AF5D;
-    color: #ffffff;
+    border-color: var(--color-brand-primary, #D1AF5D);
+    background: var(--color-brand-primary, #D1AF5D);
+    color: var(--color-text-inverse, #ffffff);
 }
 
 /* Taxonomy filter buttons */
@@ -118,42 +118,42 @@
 }
 
 .elementor-widget-taxonomy-filter .e-filter-item[aria-pressed=true] {
-    color: #ffffff;
-    background-color: #d1af5d !important;
+    color: var(--color-text-inverse, #ffffff);
+    background-color: var(--color-brand-primary, #d1af5d) !important;
     border: none;
 }
 
 .elementor-widget-taxonomy-filter .e-filter-item {
-    border-radius: 8px;
-    color:#666666;
+    border-radius: var(--radius-md, 8px);
+    color: var(--color-text-muted, #666666);
 }
 
 .elementor-widget-taxonomy-filter .e-filter {
     margin-bottom: 1rem;
-	  border-radius: 8px;
+	  border-radius: var(--radius-md, 8px);
 }
 
 .elementor-widget-taxonomy-filter .elementor-taxonomy-filter__item {
     padding: 0.5rem 1rem !important;
-    border: 2px solid #e0e0e0 !important;
-    background: #ffffff !important;
-    color: #666666 !important;
+    border: 2px solid var(--color-border-default, #e0e0e0) !important;
+    background: var(--color-surface-card, #ffffff) !important;
+    color: var(--color-text-muted, #666666) !important;
     font-weight: 500 !important;
     border-radius: 0.5rem !important;
     text-decoration: none !important;
-    transition: all 200ms ease !important;
+    transition: all var(--transition-base, 200ms ease) !important;
 }
 
 .elementor-widget-taxonomy-filter .elementor-taxonomy-filter__item:hover {
-    border-color: #D1AF5D !important;
-    color: #141310 !important;
-    background: #D1AF5D;
+    border-color: var(--color-brand-primary, #D1AF5D) !important;
+    color: var(--color-text-primary, #141310) !important;
+    background: var(--color-brand-primary, #D1AF5D);
 }
 
 .elementor-widget-taxonomy-filter .elementor-taxonomy-filter__item--active {
-    background: #D1AF5D !important;
-    border-color: #D1AF5D !important;
-    color: #ffffff !important;
+    background: var(--color-brand-primary, #D1AF5D) !important;
+    border-color: var(--color-brand-primary, #D1AF5D) !important;
+    color: var(--color-text-inverse, #ffffff) !important;
 }
 
 nav.elementor-pagination {
@@ -171,13 +171,13 @@ button.e-filter-item {
 
 
 a.page-numbers {
-    background: #fff;
+    background: var(--color-surface-card, #ffffff);
     height: fit-content;
     width: auto;
     padding: 10px 20px;
     line-height: 1.5em;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border: 1px solid var(--color-border-default, #e0e0e0);
+    border-radius: var(--radius-md, 8px);
     margin: 0 !important;
     font-size: .875rem;
 }
@@ -187,8 +187,8 @@ span.page-numbers.current {
     width: auto;
     padding: 10px 20px;
     line-height: 1.5em;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border: 1px solid var(--color-border-default, #e0e0e0);
+    border-radius: var(--radius-md, 8px);
     margin: 0 !important;
     font-size: .875rem;
 }
@@ -203,7 +203,7 @@ span.page-numbers.current {
 
 
 .prs-read-more-btn {
-    color: #D1AF5D !important;
+    color: var(--color-brand-primary, #D1AF5D) !important;
     padding: 8px 0 0 0 !important;
     font-size: 0.875rem !important;
     text-transform:capitalize !important;
@@ -217,7 +217,7 @@ span.page-numbers.current {
 a.page-numbers {
 
     padding: 8px 16px;
-    border: 1px solid #e0e0e0 !important;
+    border: 1px solid var(--color-border-default, #e0e0e0) !important;
   font-size: .8125rem;
 }
 span.page-numbers.current, .page-numbers.dots {
@@ -249,11 +249,11 @@ button.e-filter-item {
     padding: 1rem 0;
     gap: .5rem !important;
     flex-wrap: wrap !important;
-    background:#fff;
+    background: var(--color-surface-card, #ffffff);
 }
 
 .e-filter-item[aria-pressed="true"]:hover {
-    color:#fff!important;
+    color: var(--color-text-inverse, #ffffff) !important;
 }
 
 .elementor-loop-container.elementor-grid {

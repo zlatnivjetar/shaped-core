@@ -13,7 +13,7 @@
     letter-spacing: 0.5px;
     background-color: transparent;
     font-size: 1rem;
-    color: #141310;
+    color: var(--color-text-primary, #141310);
 }
 
 .mphb-room-type img {
@@ -28,19 +28,19 @@
 }
 
 .elementor-element .elementor-button .elementor-button-icon{
-    color: #d1af5d;
+    color: var(--color-brand-primary, #d1af5d);
 }
 
 .elementor-element .elementor-button:hover {
-    color: #d1af5d;
+    color: var(--color-brand-primary, #d1af5d);
 }
 
 /* Base Container */
 .mphb_sc_search_results-wrapper {
-    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: var(--font-body, 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif);
     max-width: 1280px;
     margin: 0 auto;
-    color: #141310;
+    color: var(--color-text-primary, #141310);
     line-height: 1.5;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -49,16 +49,16 @@
 
 /* Results Info Bar */
 .mphb_sc_search_results-info {
-    background: #ffffff;
-    border-left: 4px solid #D1AF5D;
-    border-right: 4px solid #D1AF5D;
+    background: var(--color-surface-card, #ffffff);
+    border-left: 4px solid var(--color-brand-primary, #D1AF5D);
+    border-right: 4px solid var(--color-brand-primary, #D1AF5D);
     padding: 1.5rem 2rem;
     margin-bottom: 0;
     border-radius: 0.5rem;
     font-size: 1rem;
     font-weight: 600;
-    color: #141310;
-    box-shadow: 0 2px 5px -1px rgba(50, 50, 93, 0.25), 0 1px 3px -1px rgba(0, 0, 0, 0.3);
+    color: var(--color-text-primary, #141310);
+    box-shadow: var(--shadow-card, 0 2px 5px -1px rgba(50, 50, 93, 0.25), 0 1px 3px -1px rgba(0, 0, 0, 0.3));
     grid-column: 1 / -1;
     text-align: center;
 }
@@ -81,11 +81,11 @@
 
 /* Individual Room Cards */
 .mphb-room-type {
-    background: #ffffff;
+    background: var(--color-surface-card, #ffffff);
     border-radius: 0.75rem;
     overflow: hidden;
-    box-shadow: 0 8px 32px rgba(20, 19, 16, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    transition: transform 200ms ease, box-shadow 200ms ease;
+    box-shadow: var(--shadow-xl, 0 8px 32px rgba(20, 19, 16, 0.12)), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transition: transform var(--transition-base, 200ms ease), box-shadow var(--transition-base, 200ms ease);
 }
 
 .mphb-room-type:hover {
@@ -128,18 +128,18 @@
 }
 
 .mphb-room-type-title a {
-    color: #141310;
+    color: var(--color-text-primary, #141310);
     text-decoration: none;
-    transition: color 200ms ease;
+    transition: color var(--transition-base, 200ms ease);
 }
 
 .mphb-room-type-title a:hover {
-    color: #D1AF5D;
+    color: var(--color-brand-primary, #D1AF5D);
 }
 
 /* Room Description */
 .mphb-room-type > p {
-    color: #666666;
+    color: var(--color-text-muted, #666666);
     font-size: 1rem;
     line-height: 1.5;
     margin-bottom: 0rem;
@@ -152,10 +152,10 @@
 
 /* Price Display */
 .mphb-regular-price {
-    background: #fffbf0;
+    background: var(--color-surface-highlight, #fffbf0);
     margin: 2rem 0;
     padding: 1.25rem;
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid var(--color-border-light, #f0f0f0);
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
@@ -163,7 +163,7 @@
 }
 
 .mphb-regular-price strong {
-    color: #141310;
+    color: var(--color-text-primary, #141310);
     font-size: 1.125rem;
     font-weight: 600;
     margin-bottom: 8px;
@@ -171,14 +171,14 @@
 }
 
 .mphb-price {
-    color: #D1AF5D;
+    color: var(--color-brand-primary, #D1AF5D);
     font-size: 1.5rem;
     font-weight: 700;
     display: block;
 }
 
 .mphb-price-period {
-    color: #999999;
+    color: var(--color-text-light, #999999);
     font-size: 1rem;
     font-weight: 400;
     display: block;
@@ -208,7 +208,7 @@
 }
 
 .mphb-price-original {
-    color: #999999;
+    color: var(--color-text-light, #999999);
     text-decoration: line-through;
     font-size: 18px;
     font-weight: 400;
@@ -216,20 +216,20 @@
 }
 
 .mphb-price-current {
-    color: #D1AF5D !important;
+    color: var(--color-brand-primary, #D1AF5D) !important;
     font-weight: 700 !important;
     font-size: 24px;
 }
 
 .mphb-price-discount-wrapper .mphb-price-period {
-    color: #666666;
+    color: var(--color-text-muted, #666666);
     font-size: 16px;
     font-weight: 400;
 }
 
 .mphb-discount-badge {
-    background: #4C9155;
-    color: #ffffff;
+    background: var(--color-badge-discount-bg, #4C9155);
+    color: var(--color-badge-discount-text, #ffffff);
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 14px;
@@ -238,8 +238,8 @@
 }
 
 .mphb-urgency-badge {
-    background: #FCEEEE;
-    color: #b83c2e;
+    background: var(--color-badge-urgency-bg, #FCEEEE);
+    color: var(--color-badge-urgency-text, #b83c2e);
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 14px;
@@ -276,47 +276,47 @@
 .mphb-view-details-button {
     display: inline-block;
     background: transparent;
-    color: #141310;
+    color: var(--color-text-primary, #141310);
     border: none;
     font-weight: 600;
     text-transform: uppercase;
     font-size: 1rem;
-    transition: color 200ms ease;
+    transition: color var(--transition-base, 200ms ease);
     letter-spacing: 0.5px;
 }
 
 .mphb-view-details-button:hover {
-    color: #D1AF5D;
+    color: var(--color-brand-primary, #D1AF5D);
 }
 
 /* Reserve Room Section */
 .mphb-reserve-room-section {
     padding-bottom: 1.5rem;
     padding-top: 0;
-    background: #fffbf0;
+    background: var(--color-surface-highlight, #fffbf0);
 }
 
 .mphb-rooms-quantity {
     padding: 8px 12px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid var(--color-border-default, #e0e0e0);
     border-radius: 0.5rem;
     font-family: inherit;
     font-size: 0.875rem;
-    color: #141310;
-    background: #ffffff;
+    color: var(--color-text-primary, #141310);
+    background: var(--color-surface-card, #ffffff);
     margin-right: 0.5rem;
 }
 
 .mphb-available-rooms-count {
-    color: #666666;
+    color: var(--color-text-muted, #666666);
     font-size: 0.875rem;
 }
 
 /* Book Button */
 .mphb-book-button,
 .mphb-confirm-reservation {
-    background: #D1AF5D;
-    color: #ffffff;
+    background: var(--color-brand-primary, #D1AF5D);
+    color: var(--color-text-on-accent, #ffffff);
     border: none;
     border-radius: 0.5rem;
     padding: 1rem 2rem;
@@ -324,14 +324,14 @@
     font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
-    transition: background 200ms ease;
+    transition: background var(--transition-base, 200ms ease);
     width: 100%;
     text-transform: uppercase;
 }
 
 .mphb-book-button:hover,
 .mphb-confirm-reservation:hover {
-    background: #C5A24A;
+    background: var(--color-brand-primary-hover, #C5A24A);
 }
 
 /* Reservation Messages */
@@ -340,7 +340,7 @@
 }
 
 .mphb-remove-from-reservation {
-    color: #dc2626;
+    color: var(--color-semantic-error-alt, #dc2626);
     font-size: 0.875rem;
     text-decoration: none;
 }
@@ -368,14 +368,14 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #666666;
+    color: var(--color-text-muted, #666666);
     font-size: 0.875rem;
     margin: 0;
     padding: 0;
 }
 
 .mphb-amenity-icon {
-    color: #D1AF5D;
+    color: var(--color-brand-primary, #D1AF5D);
     font-size: 1rem;
     width: 20px;
     text-align: center;
@@ -385,7 +385,7 @@
 }
 
 .mphb-amenity-text {
-    color: #666;
+    color: var(--color-text-muted, #666666);
     font-weight: 400;
 }
 
@@ -444,7 +444,7 @@
     
     p.mphb_sc_search_results-info {
         text-align: center;
-        background: #ffffff;
+        background: var(--color-surface-card, #ffffff);
         padding: 1rem 2rem;
         margin: 1rem 0 -.5rem 0;
 

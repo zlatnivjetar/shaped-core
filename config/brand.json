@@ -1,0 +1,64 @@
+{
+  "colors": {
+    "brand": {
+      "primary": "#D1AF5D",
+      "primaryHover": "#C39937",
+      "secondary": "#94772E"
+    },
+    "surface": {
+      "page": "#FBFAF9",
+      "alt": "#fafafa",
+      "card": "#ffffff"
+    },
+    "border": {
+      "default": "#e0e0e0"
+    },
+    "text": {
+      "primary": "#141310",
+      "muted": "#666666",
+      "inverse": "#ffffff",
+      "onAccent": "#ffffff"
+    },
+    "semantic": {
+      "success": "#4C9155",
+      "error": "#b83c2e",
+      "warning": "#E69500"
+    },
+    "overlay": {
+      "scrim": "rgba(20, 19, 16, 0.5)"
+    }
+  },
+  "type": {
+    "baseSize": 16,
+    "heading": { "family": "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif" },
+    "body": { "family": "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif" }
+  },
+  "radius": {
+    "sm": 4,
+    "md": 8
+  },
+  "layout": {
+    "maxWidth": { "content": 1200 },
+    "breakpoint": {
+      "mobile": 480,
+      "tablet": 768,
+      "desktop": 1200
+    }
+  },
+  "booking": {
+    "colors": {
+      "price": {
+        "primary": "#D1AF5D",
+        "muted": "#999999"
+      },
+      "badge": {
+        "urgency": { "bg": "#FCEEEE", "text": "#b83c2e" },
+        "discount": { "bg": "#4C9155", "text": "#ffffff" }
+      }
+    },
+    "card": {
+      "radius": "8px",
+      "shadow": "0 8px 32px rgba(20, 19, 16, 0.12)"
+    }
+  }
+}

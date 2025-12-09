@@ -15,15 +15,14 @@
     display: flex;
     flex-direction:column;
     align-items: center;
-    background: #fbfaf9;
-    border: 1px solid #e0e0e0;
+    background: var(--color-surface-page, #fbfaf9);
+    border: 1px solid var(--color-border-default, #e0e0e0);
     padding: 24px;
-        box-shadow: 
-        0 6px 24px rgba(20, 19, 16, 0.1), 0px 0px 9px 3px #d1af5d1b;
-    border-radius: 12px;
+        box-shadow: var(--shadow-search-form, 0 6px 24px rgba(20, 19, 16, 0.1), 0px 0px 9px 3px rgba(209, 175, 93, 0.1));
+    border-radius: var(--radius-lg, 12px);
 
 
-    font-family: 'DM Sans', sans-serif;
+    font-family: var(--font-body, 'DM Sans', sans-serif);
     position: relative;
 }
 
@@ -49,12 +48,12 @@
     display: block;
     font-size: 14px;
     font-weight: 900;
-    color: #141310;
+    color: var(--color-text-primary, #141310);
     letter-spacing: 0.5px;
     text-transform: uppercase;
     width: fit-content;
 line-height: 1.5em;
-    font-family: 'DM Sans', -apple-system, system-ui, BlinkMacSystemFont, sans-serif;
+    font-family: var(--font-body, 'DM Sans', -apple-system, system-ui, BlinkMacSystemFont, sans-serif);
 }
 
 /* Completely remove asterisk and disable cursor events */
@@ -77,15 +76,15 @@ abbr[title="Formatted as dd/mm/yyyy"] {
     width: 100%;
     height: 52px;
     padding: 10px 14px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border: 1px solid var(--color-border-default, #e0e0e0);
+    border-radius: var(--radius-md, 8px);
     font-size: 16px;
-    font-family: 'DM Sans', sans-serif;
-    color: #141310;
-    background: #ffffff;
-    transition: all 0.3s ease;
+    font-family: var(--font-body, 'DM Sans', sans-serif);
+    color: var(--color-text-primary, #141310);
+    background: var(--color-surface-card, #ffffff);
+    transition: all var(--transition-slow, 0.3s ease);
     line-height: 1.5;
-    box-shadow: 0 2px 8px rgba(20, 19, 16, 0.05);
+    box-shadow: var(--shadow-sm, 0 2px 8px rgba(20, 19, 16, 0.05));
 }
 
 .mphb-datepick.mphb_datepicker:focus {
@@ -155,18 +154,18 @@ abbr[title="Formatted as dd/mm/yyyy"] {
     .mphb_sc_search-form {
         padding: 24px;
         gap: 16px;
-        border-radius: 12px;
-        background: #fbfaf9;
+        border-radius: var(--radius-lg, 12px);
+        background: var(--color-surface-page, #fbfaf9);
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .search-form-wrapper {
      flex-direction:column;
 }
-    
+
     .mphb-datepick.mphb_datepicker::placeholder {
-    color: #999999;
+    color: var(--color-text-light, #999999);
     font-size: 0.875rem;
 }
     

@@ -12,7 +12,7 @@
 
 .shaped-pricing-wrap > .description {
     font-size: 14px;
-    color: #666;
+    color: var(--color-text-muted, #666);
     margin-bottom: 1.5rem;
 }
 
@@ -22,7 +22,7 @@
 }
 
 .shaped-pricing-table th {
-    background: #f9f9f9;
+    background: var(--color-surface-alt, #f9f9f9);
 }
 
 .shaped-pricing-table td {
@@ -35,14 +35,14 @@
 }
 
 .shaped-pricing-table .description {
-    color: #666;
+    color: var(--color-text-muted, #666);
     margin-left: 8px;
 }
 
 .shaped-pricing-info {
-    background: #f9f9f9;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
+    background: var(--color-surface-alt, #f9f9f9);
+    border: 1px solid var(--color-border-default, #e0e0e0);
+    border-radius: var(--radius-sm, 4px);
     padding: 1.5rem;
     margin-top: 2rem;
 }
