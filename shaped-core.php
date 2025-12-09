@@ -126,7 +126,11 @@ add_action('plugins_loaded', function() {
     // Load helper functions
     require_once SHAPED_DIR . 'includes/helpers.php';
     require_once SHAPED_DIR . 'includes/pricing-helpers.php';
-    
+
+    // Load brand configuration system
+    require_once SHAPED_DIR . 'includes/class-brand-config.php';
+    require_once SHAPED_DIR . 'config/brand-helpers.php';
+
     // ─── Core Classes (always load) ───
     new Shaped_Assets();
     new Shaped_Amenity_Mapper();
@@ -179,16 +183,21 @@ add_action('wp_enqueue_scripts', function() {
     if (!class_exists('Shaped_Pricing')) {
         return;
     }
-    
+
     $config = [
         'ajaxUrl'      => admin_url('admin-ajax.php'),
         'nonce'        => wp_create_nonce('shaped_ajax'),
         'discounts'    => Shaped_Pricing::get_discounts_config(),
     ];
-    
+
     // Attach to jQuery (always available) or shaped-checkout if enqueued
     $handle = wp_script_is('shaped-checkout', 'enqueued') ? 'shaped-checkout' : 'jquery';
     wp_localize_script($handle, 'ShapedConfig', $config);
+
+    // Localize brand colors for JavaScript
+    if (function_exists('shaped_brand_colors_for_js')) {
+        wp_localize_script($handle, 'ShapedBrand', shaped_brand_colors_for_js());
+    }
 }, 25);
 
 /**
