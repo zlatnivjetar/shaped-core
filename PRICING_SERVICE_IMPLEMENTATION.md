@@ -2,8 +2,8 @@
 
 **Project:** LLM-accessible pricing API for hotel clients
 **Start Date:** 2025-12-11
-**Current Phase:** Session 1 Complete - Ready for Session 2
-**Status:** ✅ Session 1 Complete | 🟡 Session 2 Pending
+**Current Phase:** Session 2 Complete - Ready for Session 3
+**Status:** ✅ Session 1-2 Complete | 🟡 Session 3 Pending
 
 ---
 
@@ -14,7 +14,7 @@
 - **Phase 1:** Define unified data models (Steps 3-4)
 - **Target:** Understanding + PriceRequest/PriceResult classes
 
-### Session 2: Service Architecture ⏳ NOT STARTED
+### Session 2: Service Architecture ✅ COMPLETE
 - **Phase 2:** Abstract pricing into service (Steps 5-9)
 - **Target:** Working pricing service abstraction
 
@@ -111,6 +111,68 @@
 
 ---
 
+### Session 2: Service Architecture
+
+#### Phase 2 - Abstract Pricing Into Service
+
+**Step 5: Define pricing provider interface**
+- Status: ✅ Complete
+- File: `includes/Pricing/PricingProviderInterface.php` (44 lines)
+- Methods:
+  - `quote(PriceRequest): PriceResult` - Get price quote
+  - `is_available(): bool` - Check provider status
+  - `get_name(): string` - Provider identifier
+
+**Step 6: Implement RoomCloud provider**
+- Status: ✅ Complete
+- File: `includes/Pricing/RoomCloudPricingProvider.php` (336 lines)
+- Features:
+  - Uses RoomCloud for availability checks
+  - Gets base prices from MotoPress
+  - Applies direct booking discounts from Shaped_Pricing
+  - Handles refundability logic based on payment mode
+  - Returns best rate + alternative options sorted by price
+- Integration:
+  - Uses `Shaped_RC_Availability_Manager::get_available_rooms()`
+  - Uses `shaped_get_room_base_price()` helper
+  - Uses `Shaped_Pricing::get_room_discount()`
+
+**Step 7: Create MotoPress provider stub**
+- Status: ✅ Complete
+- File: `includes/Pricing/MotoPressPricingProvider.php` (94 lines)
+- Purpose: Placeholder for future MotoPress-only sites (no RoomCloud)
+- Implementation: Throws exception with TODO notes for future expansion
+
+**Step 8: Create ShapedPricingService wrapper**
+- Status: ✅ Complete
+- File: `includes/Pricing/ShapedPricingService.php` (257 lines)
+- Features:
+  - Single entry point for all pricing operations
+  - Enforces service-level validation (max nights, max guests, date limits)
+  - Caching with WordPress transients (5-minute TTL)
+  - Error logging and exception handling
+- Configuration:
+  - max_nights: 30 (configurable)
+  - max_future_months: 18 (configurable)
+  - max_guests: 10 (configurable)
+  - cache_ttl: 300 seconds (configurable)
+
+**Step 9: Wire service into plugin bootstrap**
+- Status: ✅ Complete
+- Files:
+  - `includes/Pricing/init.php` (115 lines) - Bootstrap logic
+  - `shaped-core.php` - Added initialization call
+- Global Functions:
+  - `shaped_init_pricing_service()` - Initialize service with auto-provider selection
+  - `shaped_pricing_service()` - Get global service instance
+  - `shaped_get_price_quote($params)` - Quick helper for getting quotes
+- Provider Selection Logic:
+  1. Try RoomCloud if enabled and available
+  2. Fallback to MotoPress-only provider
+  3. Log errors if no provider available
+
+---
+
 ## Discovery Findings Log
 
 ### Existing Pricing Logic
@@ -159,8 +221,13 @@
 - [x] `includes/Pricing/PriceRequest.php` (235 lines) - Input data model
 - [x] `includes/Pricing/PriceResult.php` (320 lines) - Output data model
 
-### Session 2 (Phase 2)
-- _[To be filled]_
+### Session 2 (Phase 2) ✅ COMPLETE
+- [x] `includes/Pricing/PricingProviderInterface.php` (44 lines) - Provider interface
+- [x] `includes/Pricing/RoomCloudPricingProvider.php` (336 lines) - RoomCloud implementation
+- [x] `includes/Pricing/MotoPressPricingProvider.php` (94 lines) - MotoPress stub
+- [x] `includes/Pricing/ShapedPricingService.php` (257 lines) - Unified service wrapper
+- [x] `includes/Pricing/init.php` (115 lines) - Bootstrap & global helpers
+- [x] `shaped-core.php` - Wired service into plugin initialization
 
 ---
 
