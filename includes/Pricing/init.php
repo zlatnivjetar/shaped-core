@@ -121,3 +121,10 @@ function shaped_get_price_quote(array $params): ?Shaped_Price_Result
 
     return $service->quote($params);
 }
+
+/**
+ * Initialize REST API endpoints
+ *
+ * Registers /wp-json/shaped/v1/price and /wp-json/shaped/v1/price-html
+ */
+Shaped_Pricing_Rest_Api::init();

@@ -2,8 +2,8 @@
 
 **Project:** LLM-accessible pricing API for hotel clients
 **Start Date:** 2025-12-11
-**Current Phase:** Session 2 Complete - Ready for Session 3
-**Status:** ✅ Session 1-2 Complete | 🟡 Session 3 Pending
+**Current Phase:** Session 3 Complete (Skipped Phase 3, Completed Phase 4-5)
+**Status:** ✅ Session 1-3 Complete | 🟡 Session 4 Pending (Optional)
 
 ---
 
@@ -18,14 +18,15 @@
 - **Phase 2:** Abstract pricing into service (Steps 5-9)
 - **Target:** Working pricing service abstraction
 
-### Session 3: UI Refactoring ⏳ NOT STARTED
+### Session 3: UI Refactoring ⏭️ SKIPPED
 - **Phase 3:** Refactor UI to use new service (Steps 10-11)
-- **Target:** All front-end uses new service
+- **Reason:** UI already consistent (uses same MotoPress + Shaped_Pricing sources)
+- **Decision:** Skip to API endpoints (main project goal)
 
-### Session 4: API Endpoints ⏳ NOT STARTED
+### Session 3: API Endpoints ✅ COMPLETE
 - **Phase 4:** JSON endpoint (Steps 12-14)
 - **Phase 5:** HTML endpoint (Steps 15-16)
-- **Target:** Working REST API endpoints
+- **Target:** Working REST API endpoints for LLMs and bots
 
 ### Session 5: Security & Validation ⏳ NOT STARTED
 - **Phase 6:** Guardrails & security (Steps 17-20)
@@ -173,6 +174,70 @@
 
 ---
 
+### Session 3: API Endpoints (Skipped Phase 3, Completed Phase 4-5)
+
+#### Phase 4 + 5 - REST API Endpoints
+
+**Steps 12-16: Combined implementation of JSON and HTML endpoints**
+- Status: ✅ Complete
+- File: `includes/Pricing/RestApi.php` (289 lines)
+- Endpoints:
+  1. `/wp-json/shaped/v1/price` (JSON)
+  2. `/wp-json/shaped/v1/price-html` (HTML)
+
+**Features:**
+- **Public Access:** No authentication required (permission_callback: __return_true)
+- **Parameter Validation:**
+  - checkin (required, date, Y-m-d format)
+  - checkout (required, date, Y-m-d format)
+  - adults (optional, int, default: 2, min: 1, max: 10)
+  - children (optional, int, default: 0, min: 0, max: 10)
+  - room_type (optional, string, room slug)
+- **Error Handling:**
+  - 400 for invalid requests (bad dates, validation failures)
+  - 503 for service unavailable (PMS errors, no availability)
+  - Errors logged with context
+- **Discounts:** Automatically included via service (uses Shaped_Pricing)
+- **Caching:** Inherits 5-minute caching from ShapedPricingService
+
+**JSON Endpoint Response:**
+```json
+{
+  "property_name": "Preelook Apartments",
+  "currency": "EUR",
+  "checkin": "2025-12-19",
+  "checkout": "2025-12-20",
+  "nights": 1,
+  "adults": 2,
+  "children": 0,
+  "best_rate": {
+    "room_type_slug": "deluxe-studio-apartment",
+    "room_type_name": "Deluxe Studio Apartment",
+    "board": "Room Only",
+    "refundable": true,
+    "total": 153.00,
+    "per_night": 153.00,
+    "tax_included": true,
+    "discounts_applied": ["15% direct booking discount"]
+  },
+  "other_options": [...],
+  "source": "roomcloud",
+  "generated_at": "2025-12-11T10:30:00+00:00"
+}
+```
+
+**HTML Endpoint Response:**
+```html
+For 2 adults from 2025-12-19 to 2025-12-20, the best direct price at <strong>Preelook Apartments</strong> is <strong>€153.00</strong> (€153.00 per night) for <strong>Deluxe Studio Apartment</strong>, Room Only. Taxes included. 15% direct booking discount. Free cancellation available.
+```
+
+**Integration:**
+- Wired into `includes/Pricing/init.php` via `Shaped_Pricing_Rest_Api::init()`
+- Uses existing `shaped_pricing_service()` helper
+- Respects all service-level validation and caching
+
+---
+
 ## Discovery Findings Log
 
 ### Existing Pricing Logic
@@ -228,6 +293,11 @@
 - [x] `includes/Pricing/ShapedPricingService.php` (257 lines) - Unified service wrapper
 - [x] `includes/Pricing/init.php` (115 lines) - Bootstrap & global helpers
 - [x] `shaped-core.php` - Wired service into plugin initialization
+
+### Session 3 (Phase 4-5, Skipped Phase 3) ✅ COMPLETE
+- [x] `includes/Pricing/RestApi.php` (289 lines) - REST API endpoints (JSON + HTML)
+- [x] `includes/Pricing/init.php` - Added REST API initialization
+- [x] `PRICING_SERVICE_IMPLEMENTATION.md` - Updated tracking
 
 ---
 
