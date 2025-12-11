@@ -138,7 +138,11 @@ add_action('plugins_loaded', function() {
     new Shaped_Booking_Manager();
     Shaped_Pricing::init();
     Shaped_Admin::init();
-    
+
+    // ─── Pricing Service (unified pricing API) ───
+    require_once SHAPED_DIR . 'includes/Pricing/init.php';
+    shaped_init_pricing_service();
+
     // Load email handlers (procedural)
     require_once SHAPED_DIR . 'core/email-handler.php';
     require_once SHAPED_DIR . 'core/email-handler-admin.php';
