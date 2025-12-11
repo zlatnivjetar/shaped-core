@@ -14,6 +14,17 @@ if (!defined('ABSPATH')) {
 }
 
 /**
+ * Load Pricing classes
+ */
+require_once __DIR__ . '/PriceRequest.php';
+require_once __DIR__ . '/PriceResult.php';
+require_once __DIR__ . '/PricingProviderInterface.php';
+require_once __DIR__ . '/RoomCloudPricingProvider.php';
+require_once __DIR__ . '/MotoPressPricingProvider.php';
+require_once __DIR__ . '/ShapedPricingService.php';
+require_once __DIR__ . '/RestApi.php';
+
+/**
  * Global pricing service instance
  */
 global $shaped_pricing_service;
