@@ -15,33 +15,6 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-add_action('mphb_wp_session_start', function() {
-    if (!empty($_SERVER['REQUEST_URI']) && 
-        strpos($_SERVER['REQUEST_URI'], '/wp-json/shaped/v1/price') !== false) {
-        
-        // Prevent the session cookie from being set
-        if (!headers_sent()) {
-            remove_action('shutdown', '\MPHB\Libraries\WP_SessionManager\wp_session_write_close');
-        }
-        
-        // Return a dummy session instance that doesn't write cookies
-        // This prevents MotoPress from trying to create the session
-        return false;
-    }
-}, 1); // Priority 1 to run before anything else
-
-/**
- * Additionally, filter the WP_Session singleton initialization
- */
-add_filter('plugins_loaded', function() {
-    if (!empty($_SERVER['REQUEST_URI']) && 
-        strpos($_SERVER['REQUEST_URI'], '/wp-json/shaped/v1/price') !== false) {
-        
-        // Remove MotoPress's session initialization for this request
-        remove_action('plugins_loaded', '\MPHB\Libraries\WP_SessionManager\wp_session_start');
-    }
-}, 0); // Priority 0 to run before MotoPress (which runs at default priority 10)
-
 /**
  * Prevent session start on Shaped price endpoints
  *
