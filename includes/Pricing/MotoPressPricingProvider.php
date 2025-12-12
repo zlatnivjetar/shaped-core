@@ -147,16 +147,16 @@ class Shaped_MotoPress_Pricing_Provider implements Shaped_Pricing_Provider_Inter
      */
     private function build_rate_for_room(string $room_slug, int $room_id, Shaped_Price_Request $request): array
     {
-        // Get base price from MotoPress
-        $base_price_per_night = $this->get_base_price($room_id);
+        // Get period price from MotoPress (considers seasonal rates!)
+        $base_total = $this->get_period_price($room_id, $request);
 
-        if ($base_price_per_night <= 0) {
+        if ($base_total <= 0) {
             throw new Exception("No pricing configured for room: {$room_slug}");
         }
 
-        // Calculate total base price for stay
+        // Calculate per-night rate
         $nights = $request->get_nights();
-        $base_total = $base_price_per_night * $nights;
+        $base_per_night = round($base_total / $nights, 2);
 
         // Apply direct booking discount
         $discount_percent = Shaped_Pricing::get_room_discount($room_slug);
@@ -192,34 +192,56 @@ class Shaped_MotoPress_Pricing_Provider implements Shaped_Pricing_Provider_Inter
     }
 
     /**
-     * Get base price for room type
+     * Get period price for room type considering seasonal rates
      *
-     * Uses existing shaped_get_room_base_price() helper
+     * Uses MotoPress date-aware pricing that considers seasons/rates
      *
      * @param int $room_type_id Room type post ID
-     * @return float Base price per night
+     * @param Shaped_Price_Request $request Pricing request with dates and guests
+     * @return float Total price for the entire period
      */
-    private function get_base_price(int $room_type_id): float
+    private function get_period_price(int $room_type_id, Shaped_Price_Request $request): float
     {
-        // Use existing helper function
-        if (function_exists('shaped_get_room_base_price')) {
-            return shaped_get_room_base_price($room_type_id);
-        }
+        // Use MotoPress period pricing function (considers seasonal rates!)
+        if (function_exists('mphb_get_room_type_period_price')) {
+            $args = [
+                'adults'   => $request->adults,
+                'children' => $request->children,
+            ];
 
-        // Fallback: direct MotoPress query
-        if (function_exists('MPHB')) {
-            $room_type = MPHB()->getRoomTypeRepository()->findById($room_type_id);
-            if ($room_type && method_exists($room_type, 'getDefaultPrice')) {
-                $price = $room_type->getDefaultPrice();
-                if ($price > 0) {
-                    return (float) $price;
-                }
+            $price = mphb_get_room_type_period_price(
+                $request->checkin,
+                $request->checkout,
+                $room_type_id,
+                $args
+            );
+
+            if ($price > 0) {
+                return (float) $price;
             }
         }
 
-        // Last resort: post meta
+        // Fallback: use base price method (less accurate, no seasonal pricing)
+        if (function_exists('mphb_get_room_type_base_price')) {
+            $base_price = mphb_get_room_type_base_price(
+                $room_type_id,
+                $request->checkin,
+                $request->checkout
+            );
+
+            if ($base_price > 0) {
+                // Base price is per-night, multiply by nights
+                return (float) ($base_price * $request->get_nights());
+            }
+        }
+
+        // Last resort: static base price from post meta (no seasonal pricing)
         $base = get_post_meta($room_type_id, '_mphb_base_price', true);
-        return $base ? (float) $base : 0.0;
+        if ($base && $base > 0) {
+            return (float) ($base * $request->get_nights());
+        }
+
+        return 0.0;
     }
 
     /**
