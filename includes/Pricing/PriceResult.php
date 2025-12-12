@@ -85,6 +85,12 @@ class Shaped_Price_Result
     public $source;
 
     /**
+     * Platform provider identifier (always 'shaped')
+     * @var string
+     */
+    public $provider;
+
+    /**
      * Timestamp when this result was generated (ISO8601)
      * @var string
      */
@@ -113,6 +119,7 @@ class Shaped_Price_Result
 
         // Optional fields with defaults
         $this->other_options = $data['other_options'] ?? [];
+        $this->provider = $data['provider'] ?? 'shaped';
         $this->generated_at = $data['generated_at'] ?? gmdate('c');
 
         // Validate best_rate structure
@@ -181,6 +188,7 @@ class Shaped_Price_Result
             'best_rate'     => $this->best_rate,
             'other_options' => $this->other_options,
             'source'        => $this->source,
+            'provider'      => $this->provider,
             'generated_at'  => $this->generated_at,
         ];
     }
