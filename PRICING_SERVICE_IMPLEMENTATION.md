@@ -76,13 +76,13 @@
 - Findings:
   - ✅ `shaped-core` plugin is the correct home (confirmed via CLAUDE.md)
   - ✅ Already has core/, includes/, and modules/ structure
-  - ✅ New service will live in `includes/Pricing/` namespace
+  - ✅ New service will live in `includes/pricing/` namespace
 
 #### Phase 1 - Define Unified Pricing Model
 
 **Step 3: Create standard "pricing request" structure**
 - Status: ✅ Complete
-- File: `includes/Pricing/PriceRequest.php` (235 lines)
+- File: `includes/pricing/class-price-request.php` (235 lines)
 - Features:
   - Validates check-in/checkout dates and guest counts
   - Supports DateTime objects or Y-m-d strings
@@ -98,7 +98,7 @@
 
 **Step 4: Create standard "pricing result" structure**
 - Status: ✅ Complete
-- File: `includes/Pricing/PriceResult.php` (320 lines)
+- File: `includes/pricing/class-price-result.php` (320 lines)
 - Features:
   - Structured rate data with validation
   - Converts to JSON or HTML (human-readable sentence)
@@ -119,7 +119,7 @@
 
 **Step 5: Define pricing provider interface**
 - Status: ✅ Complete
-- File: `includes/Pricing/PricingProviderInterface.php` (44 lines)
+- File: `includes/pricing/interface-pricing-provider.php` (44 lines)
 - Methods:
   - `quote(PriceRequest): PriceResult` - Get price quote
   - `is_available(): bool` - Check provider status
@@ -127,7 +127,7 @@
 
 **Step 6: Implement RoomCloud provider**
 - Status: ✅ Complete
-- File: `includes/Pricing/RoomCloudPricingProvider.php` (336 lines)
+- File: `includes/pricing/class-roomcloud-pricing-provider.php` (336 lines)
 - Features:
   - Uses RoomCloud for availability checks
   - Gets base prices from MotoPress
@@ -141,13 +141,13 @@
 
 **Step 7: Create MotoPress provider stub**
 - Status: ✅ Complete
-- File: `includes/Pricing/MotoPressPricingProvider.php` (94 lines)
+- File: `includes/pricing/class-motopress-pricing-provider.php` (94 lines)
 - Purpose: Placeholder for future MotoPress-only sites (no RoomCloud)
 - Implementation: Throws exception with TODO notes for future expansion
 
 **Step 8: Create ShapedPricingService wrapper**
 - Status: ✅ Complete
-- File: `includes/Pricing/ShapedPricingService.php` (257 lines)
+- File: `includes/pricing/class-shaped-pricing-service.php` (257 lines)
 - Features:
   - Single entry point for all pricing operations
   - Enforces service-level validation (max nights, max guests, date limits)
@@ -162,7 +162,7 @@
 **Step 9: Wire service into plugin bootstrap**
 - Status: ✅ Complete
 - Files:
-  - `includes/Pricing/init.php` (115 lines) - Bootstrap logic
+  - `includes/pricing/init.php` (115 lines) - Bootstrap logic
   - `shaped-core.php` - Added initialization call
 - Global Functions:
   - `shaped_init_pricing_service()` - Initialize service with auto-provider selection
@@ -181,7 +181,7 @@
 
 **Steps 12-16: Combined implementation of JSON and HTML endpoints**
 - Status: ✅ Complete
-- File: `includes/Pricing/RestApi.php` (289 lines)
+- File: `includes/pricing/class-rest-api.php` (289 lines)
 - Endpoints:
   1. `/wp-json/shaped/v1/price` (JSON)
   2. `/wp-json/shaped/v1/price-html` (HTML)
@@ -233,7 +233,7 @@ For 2 adults from 2025-12-19 to 2025-12-20, the best direct price at <strong>Pre
 ```
 
 **Integration:**
-- Wired into `includes/Pricing/init.php` via `Shaped_Pricing_Rest_Api::init()`
+- Wired into `includes/pricing/init.php` via `Shaped_Pricing_Rest_Api::init()`
 - Uses existing `shaped_pricing_service()` helper
 - Respects all service-level validation and caching
 
@@ -252,7 +252,7 @@ For 2 adults from 2025-12-19 to 2025-12-20, the best direct price at <strong>Pre
 
 **Step 19: Rate Limiting Documentation**
 - Status: ✅ Complete
-- File: `includes/Pricing/SECURITY.md` (Section: Rate Limiting)
+- File: `includes/pricing/SECURITY.md` (Section: Rate Limiting)
 - Recommendations:
   - 60 requests/minute/IP via Cloudflare/nginx
   - Infrastructure-level (not PHP-based)
@@ -261,7 +261,7 @@ For 2 adults from 2025-12-19 to 2025-12-20, the best direct price at <strong>Pre
 
 **Step 20: Sensitive Data Audit**
 - Status: ✅ Complete - NO LEAKS FOUND
-- File: `includes/Pricing/SECURITY.md` (Section: Data Leak Audit)
+- File: `includes/pricing/SECURITY.md` (Section: Data Leak Audit)
 - Audit Results:
   - ✅ No internal IDs exposed
   - ✅ No RoomCloud/MotoPress mappings exposed
@@ -278,7 +278,7 @@ For 2 adults from 2025-12-19 to 2025-12-20, the best direct price at <strong>Pre
 
 **Step 22: Manual Testing Checklist**
 - Status: ✅ Complete
-- File: `includes/Pricing/TESTING.md` (17 test cases)
+- File: `includes/pricing/TESTING.md` (17 test cases)
 - Coverage:
   - Core functionality (5 tests)
   - Validation (5 tests)
@@ -291,9 +291,9 @@ For 2 adults from 2025-12-19 to 2025-12-20, the best direct price at <strong>Pre
 **Step 23: Discoverability Documentation**
 - Status: ✅ Complete
 - Files Created:
-  1. `includes/Pricing/README.md` - Public API documentation
-  2. `includes/Pricing/SECURITY.md` - Security guidelines
-  3. `includes/Pricing/TESTING.md` - Testing procedures
+  1. `includes/pricing/README.md` - Public API documentation
+  2. `includes/pricing/SECURITY.md` - Security guidelines
+  3. `includes/pricing/TESTING.md` - Testing procedures
 - Ready for:
   - Footer links ("For Developers" section)
   - robots.txt inclusion
@@ -373,26 +373,26 @@ For 2 adults from 2025-12-19 to 2025-12-20, the best direct price at <strong>Pre
 
 ### Session 1 (Phase 0-1) ✅ COMPLETE
 - [x] `PRICING_SERVICE_IMPLEMENTATION.md` (this file) - Implementation tracking
-- [x] `includes/Pricing/PriceRequest.php` (235 lines) - Input data model
-- [x] `includes/Pricing/PriceResult.php` (320 lines) - Output data model
+- [x] `includes/pricing/class-price-request.php` (235 lines) - Input data model
+- [x] `includes/pricing/class-price-result.php` (320 lines) - Output data model
 
 ### Session 2 (Phase 2) ✅ COMPLETE
-- [x] `includes/Pricing/PricingProviderInterface.php` (44 lines) - Provider interface
-- [x] `includes/Pricing/RoomCloudPricingProvider.php` (336 lines) - RoomCloud implementation
-- [x] `includes/Pricing/MotoPressPricingProvider.php` (94 lines) - MotoPress stub
-- [x] `includes/Pricing/ShapedPricingService.php` (257 lines) - Unified service wrapper
-- [x] `includes/Pricing/init.php` (115 lines) - Bootstrap & global helpers
+- [x] `includes/pricing/interface-pricing-provider.php` (44 lines) - Provider interface
+- [x] `includes/pricing/class-roomcloud-pricing-provider.php` (336 lines) - RoomCloud implementation
+- [x] `includes/pricing/class-motopress-pricing-provider.php` (94 lines) - MotoPress stub
+- [x] `includes/pricing/class-shaped-pricing-service.php` (257 lines) - Unified service wrapper
+- [x] `includes/pricing/init.php` (115 lines) - Bootstrap & global helpers
 - [x] `shaped-core.php` - Wired service into plugin initialization
 
 ### Session 3 (Phase 4-5, Skipped Phase 3) ✅ COMPLETE
-- [x] `includes/Pricing/RestApi.php` (289 lines) - REST API endpoints (JSON + HTML)
-- [x] `includes/Pricing/init.php` - Added REST API initialization
+- [x] `includes/pricing/class-rest-api.php` (289 lines) - REST API endpoints (JSON + HTML)
+- [x] `includes/pricing/init.php` - Added REST API initialization
 - [x] `PRICING_SERVICE_IMPLEMENTATION.md` - Updated tracking
 
 ### Session 4 (Phase 6-7) ✅ COMPLETE - PRODUCTION READY
-- [x] `includes/Pricing/SECURITY.md` (280 lines) - Security audit & guidelines
-- [x] `includes/Pricing/TESTING.md` (350 lines) - Manual testing checklist (17 tests)
-- [x] `includes/Pricing/README.md` (200 lines) - Public API documentation
+- [x] `includes/pricing/SECURITY.md` (280 lines) - Security audit & guidelines
+- [x] `includes/pricing/TESTING.md` (350 lines) - Manual testing checklist (17 tests)
+- [x] `includes/pricing/README.md` (200 lines) - Public API documentation
 - [x] `PRICING_SERVICE_IMPLEMENTATION.md` - Updated tracking
 
 ---

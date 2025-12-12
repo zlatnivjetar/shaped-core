@@ -71,4 +71,4 @@ MU-plugins cannot be deactivated from the WordPress admin, so only install trust
 ## More Information
 
 - [WordPress MU-Plugins Documentation](https://wordpress.org/support/article/must-use-plugins/)
-- [Shaped Core Price API Documentation](../includes/Pricing/API_IMPROVEMENTS.md)
+- [Shaped Core Price API Documentation](../includes/pricing/API_IMPROVEMENTS.md)
