@@ -1,0 +1,1658 @@
+/ (archive root)
+├── motopress-hotel-booking/
+│   ├── assets/
+│   │   ├── blocks/
+│   │   │   ├── blocks.js
+│   │   │   └── blocks.min.js
+│   │   ├── css/
+│   │   │   ├── admin-datepick-themes/
+│   │   │   │   └── mphb-datepicker-admin.css
+│   │   │   ├── datepick-themes/
+│   │   │   │   ├── mphb-datepicker-dark-blue.css
+│   │   │   │   ├── mphb-datepicker-dark-green.css
+│   │   │   │   ├── mphb-datepicker-dark-red.css
+│   │   │   │   ├── mphb-datepicker-grayscale.css
+│   │   │   │   ├── mphb-datepicker-light-blue.css
+│   │   │   │   ├── mphb-datepicker-light-coral.css
+│   │   │   │   ├── mphb-datepicker-light-green.css
+│   │   │   │   ├── mphb-datepicker-light-yellow.css
+│   │   │   │   ├── mphb-datepicker-minimal-blue.css
+│   │   │   │   ├── mphb-datepicker-minimal-orange.css
+│   │   │   │   ├── mphb-datepicker-minimal.css
+│   │   │   │   ├── mphb-datepicker-peru.css
+│   │   │   │   ├── mphb-datepicker-sky-blue.css
+│   │   │   │   ├── mphb-datepicker-slate-blue.css
+│   │   │   │   └── mphb-datepicker-turquoise.css
+│   │   │   ├── fonts/
+│   │   │   │   ├── flexslider-icon.eot
+│   │   │   │   ├── flexslider-icon.svg
+│   │   │   │   ├── flexslider-icon.ttf
+│   │   │   │   └── flexslider-icon.woff
+│   │   │   ├── admin-datepick-themes
+│   │   │   ├── admin-ical.css
+│   │   │   ├── admin-ical.min.css
+│   │   │   ├── admin.css
+│   │   │   ├── admin.min.css
+│   │   │   ├── datepick-themes
+│   │   │   ├── flexslider-fixed.css
+│   │   │   ├── fonts
+│   │   │   ├── mphb.css
+│   │   │   └── mphb.min.css
+│   │   ├── js/
+│   │   │   ├── admin/
+│   │   │   │   ├── admin-ical.js
+│   │   │   │   ├── admin-ical.min.js
+│   │   │   │   ├── admin-reports.js
+│   │   │   │   ├── admin-reports.min.js
+│   │   │   │   ├── admin.js
+│   │   │   │   └── admin.min.js
+│   │   │   ├── public/
+│   │   │   │   ├── mphb.js
+│   │   │   │   └── mphb.min.js
+│   │   │   ├── admin
+│   │   │   └── public
+│   │   ├── others/
+│   │   │   ├── .htaccess
+│   │   │   └── index.php
+│   │   ├── blocks
+│   │   ├── css
+│   │   ├── js
+│   │   └── others
+│   ├── images/
+│   │   └── loading.gif
+│   ├── includes/
+│   │   ├── admin/
+│   │   │   ├── edit-cpt-pages/
+│   │   │   │   ├── attributes-edit-cpt-page.php
+│   │   │   │   ├── booking-edit-cpt-page.php
+│   │   │   │   ├── coupon-edit-cpt-page.php
+│   │   │   │   ├── edit-cpt-page.php
+│   │   │   │   ├── payment-edit-cpt-page.php
+│   │   │   │   ├── rate-edit-cpt-page.php
+│   │   │   │   ├── room-edit-cpt-page.php
+│   │   │   │   └── room-type-edit-cpt-page.php
+│   │   │   ├── fields/
+│   │   │   │   ├── abstract-complex-field.php
+│   │   │   │   ├── action-button-field.php
+│   │   │   │   ├── amount-field.php
+│   │   │   │   ├── checkbox-field.php
+│   │   │   │   ├── color-picker-field.php
+│   │   │   │   ├── complex-horizontal-field.php
+│   │   │   │   ├── complex-vertical-field.php
+│   │   │   │   ├── date-picker-field.php
+│   │   │   │   ├── dependent-field.php
+│   │   │   │   ├── dynamic-select-field.php
+│   │   │   │   ├── email-field.php
+│   │   │   │   ├── field-factory.php
+│   │   │   │   ├── heading-field.php
+│   │   │   │   ├── input-field.php
+│   │   │   │   ├── install-plugin-field.php
+│   │   │   │   ├── link-button-field.php
+│   │   │   │   ├── media-field.php
+│   │   │   │   ├── multiple-checkbox-field.php
+│   │   │   │   ├── multiple-select-field.php
+│   │   │   │   ├── notes-list-field.php
+│   │   │   │   ├── number-field.php
+│   │   │   │   ├── page-select-field.php
+│   │   │   │   ├── placeholder-field.php
+│   │   │   │   ├── post-id-field.php
+│   │   │   │   ├── price-breakdown-field.php
+│   │   │   │   ├── radio-field.php
+│   │   │   │   ├── rich-editor-field.php
+│   │   │   │   ├── rules-list-field.php
+│   │   │   │   ├── select-field.php
+│   │   │   │   ├── service-chooser-field.php
+│   │   │   │   ├── single-checkbox-field.php
+│   │   │   │   ├── text-field.php
+│   │   │   │   ├── textarea-field.php
+│   │   │   │   ├── thousand-separator-field.php
+│   │   │   │   ├── time-picker-field.php
+│   │   │   │   ├── total-price-field.php
+│   │   │   │   └── variable-pricing-field.php
+│   │   │   ├── groups/
+│   │   │   │   ├── input-group.php
+│   │   │   │   ├── license-settings-group.php
+│   │   │   │   ├── meta-box-group.php
+│   │   │   │   └── settings-group.php
+│   │   │   ├── manage-cpt-pages/
+│   │   │   │   ├── attributes-manage-cpt-page.php
+│   │   │   │   ├── booking-manage-cpt-page.php
+│   │   │   │   ├── coupon-manage-cpt-page.php
+│   │   │   │   ├── manage-cpt-page.php
+│   │   │   │   ├── payment-manage-cpt-page.php
+│   │   │   │   ├── rate-manage-cpt-page.php
+│   │   │   │   ├── room-manage-cpt-page.php
+│   │   │   │   ├── room-type-manage-cpt-page.php
+│   │   │   │   ├── season-manage-cpt-page.php
+│   │   │   │   └── service-manage-cpt-page.php
+│   │   │   ├── manage-tax-pages/
+│   │   │   │   ├── facility-manage-tax-page.php
+│   │   │   │   └── manage-tax-page.php
+│   │   │   ├── menu-pages/
+│   │   │   │   ├── create-booking/
+│   │   │   │   │   ├── booking-step.php
+│   │   │   │   │   ├── checkout-step.php
+│   │   │   │   │   ├── results-step.php
+│   │   │   │   │   ├── search-step.php
+│   │   │   │   │   └── step.php
+│   │   │   │   ├── edit-booking/
+│   │   │   │   │   ├── booking-control.php
+│   │   │   │   │   ├── checkout-control.php
+│   │   │   │   │   ├── edit-control.php
+│   │   │   │   │   ├── step-control.php
+│   │   │   │   │   └── summary-control.php
+│   │   │   │   ├── abstract-menu-page.php
+│   │   │   │   ├── booking-rules-menu-page.php
+│   │   │   │   ├── calendar-menu-page.php
+│   │   │   │   ├── create-booking
+│   │   │   │   ├── create-booking-menu-page.php
+│   │   │   │   ├── customers-menu-page.php
+│   │   │   │   ├── edit-booking
+│   │   │   │   ├── edit-booking-menu-page.php
+│   │   │   │   ├── extensions-menu-page.php
+│   │   │   │   ├── i-cal-import-menu-page.php
+│   │   │   │   ├── i-cal-menu-page.php
+│   │   │   │   ├── i-cal-sync-logs-menu-page.php
+│   │   │   │   ├── language-menu-page.php
+│   │   │   │   ├── reports-menu-page.php
+│   │   │   │   ├── rooms-generator-menu-page.php
+│   │   │   │   ├── settings-menu-page.php
+│   │   │   │   ├── shortcodes-menu-page.php
+│   │   │   │   └── taxes-and-fees-menu-page.php
+│   │   │   ├── tabs/
+│   │   │   │   ├── settings-sub-tab.php
+│   │   │   │   └── settings-tab.php
+│   │   │   ├── admin-page.php
+│   │   │   ├── customers-list-table.php
+│   │   │   ├── edit-cpt-pages
+│   │   │   ├── fields
+│   │   │   ├── groups
+│   │   │   ├── manage-cpt-pages
+│   │   │   ├── manage-tax-pages
+│   │   │   ├── menu-pages
+│   │   │   ├── menus.php
+│   │   │   ├── room-list-table.php
+│   │   │   ├── sync-logs-list-table.php
+│   │   │   ├── sync-rooms-list-table.php
+│   │   │   └── tabs
+│   │   ├── advanced/
+│   │   │   ├── admin/
+│   │   │   │   ├── tab/
+│   │   │   │   │   ├── subtabs/
+│   │   │   │   │   │   ├── api-keys/
+│   │   │   │   │   │   │   ├── js/
+│   │   │   │   │   │   │   │   ├── lib/
+│   │   │   │   │   │   │   │   │   ├── jquery.blockUI.js
+│   │   │   │   │   │   │   │   │   └── jquery.qrcode.js
+│   │   │   │   │   │   │   │   ├── api-keys-page.js
+│   │   │   │   │   │   │   │   └── lib
+│   │   │   │   │   │   │   ├── api-keys-ajax.php
+│   │   │   │   │   │   │   ├── api-keys-screen-option.php
+│   │   │   │   │   │   │   ├── api-keys-table-list.php
+│   │   │   │   │   │   │   ├── api-keys.php
+│   │   │   │   │   │   │   ├── html-keys-edit.php
+│   │   │   │   │   │   │   └── js
+│   │   │   │   │   │   └── api-keys
+│   │   │   │   │   ├── settings-sub-tab-advanced.php
+│   │   │   │   │   ├── settings-tab-advanced.php
+│   │   │   │   │   ├── subtabs
+│   │   │   │   │   └── tab.php
+│   │   │   │   ├── admin.php
+│   │   │   │   └── tab
+│   │   │   ├── api/
+│   │   │   │   ├── controllers/
+│   │   │   │   │   ├── v1/
+│   │   │   │   │   │   ├── accommodation-type-amenities-controller.php
+│   │   │   │   │   │   ├── accommodation-type-attribute-terms-controller.php
+│   │   │   │   │   │   ├── accommodation-type-attributes-controller.php
+│   │   │   │   │   │   ├── accommodation-type-categories-controller.php
+│   │   │   │   │   │   ├── accommodation-type-images-controller.php
+│   │   │   │   │   │   ├── accommodation-type-services-controller.php
+│   │   │   │   │   │   ├── accommodation-type-tags-controller.php
+│   │   │   │   │   │   ├── accommodation-types-controller.php
+│   │   │   │   │   │   ├── accommodations-controller.php
+│   │   │   │   │   │   ├── booking-availability-controller.php
+│   │   │   │   │   │   ├── booking-rules-controller.php
+│   │   │   │   │   │   ├── bookings-controller.php
+│   │   │   │   │   │   ├── coupons-controller.php
+│   │   │   │   │   │   ├── payments-controller.php
+│   │   │   │   │   │   ├── rates-controller.php
+│   │   │   │   │   │   ├── seasons-controller.php
+│   │   │   │   │   │   └── taxes-and-fees-controller.php
+│   │   │   │   │   ├── abstract-rest-controller.php
+│   │   │   │   │   ├── abstract-rest-object-controller.php
+│   │   │   │   │   ├── abstract-rest-options-controller.php
+│   │   │   │   │   ├── abstract-rest-terms-controller.php
+│   │   │   │   │   └── v1
+│   │   │   │   ├── data/
+│   │   │   │   │   ├── abstract-data.php
+│   │   │   │   │   ├── abstract-post-data.php
+│   │   │   │   │   ├── accommodation-data.php
+│   │   │   │   │   ├── accommodation-type-data.php
+│   │   │   │   │   ├── accommodation-types-attribute-data.php
+│   │   │   │   │   ├── booking-data.php
+│   │   │   │   │   ├── coupon-data.php
+│   │   │   │   │   ├── customer-data.php
+│   │   │   │   │   ├── data-factory.php
+│   │   │   │   │   ├── options-schema.php
+│   │   │   │   │   ├── payment-data.php
+│   │   │   │   │   ├── rate-data.php
+│   │   │   │   │   ├── season-data.php
+│   │   │   │   │   └── service-data.php
+│   │   │   │   ├── traits/
+│   │   │   │   │   └── singleton-trait.php
+│   │   │   │   ├── api-authentication.php
+│   │   │   │   ├── api-helper.php
+│   │   │   │   ├── api.php
+│   │   │   │   ├── controllers
+│   │   │   │   ├── data
+│   │   │   │   ├── server.php
+│   │   │   │   └── traits
+│   │   │   ├── admin
+│   │   │   ├── advanced.php
+│   │   │   └── api
+│   │   ├── ajax-api/
+│   │   │   ├── ajax-actions/
+│   │   │   │   ├── abstract-ajax-api-action.php
+│   │   │   │   ├── create-stripe-payment-intent.php
+│   │   │   │   ├── get-admin-calendar-booking-info.php
+│   │   │   │   ├── get-room-type-availability-data.php
+│   │   │   │   ├── get-room-type-calendar-data.php
+│   │   │   │   └── update-booking-notes.php
+│   │   │   ├── ajax-actions
+│   │   │   └── ajax-api-handler.php
+│   │   ├── bundles/
+│   │   │   ├── countries-bundle.php
+│   │   │   ├── currency-bundle.php
+│   │   │   ├── customer-bundle.php
+│   │   │   └── units-bundle.php
+│   │   ├── core/
+│   │   │   ├── data/
+│   │   │   │   ├── booking-rules-data.php
+│   │   │   │   ├── room-type-availability-data.php
+│   │   │   │   └── room-type-availability-status.php
+│   │   │   ├── helpers/
+│   │   │   │   ├── booking-helper.php
+│   │   │   │   ├── price-breakdown-helper.php
+│   │   │   │   ├── price-helper.php
+│   │   │   │   ├── room-availability-helper.php
+│   │   │   │   ├── room-helper.php
+│   │   │   │   ├── rooms-recommendation-helper.php
+│   │   │   │   └── string-encrypt-helper.php
+│   │   │   ├── abstract-core-api-facade.php
+│   │   │   ├── bookings-core-api-facade.php
+│   │   │   ├── data
+│   │   │   ├── helpers
+│   │   │   ├── prices-core-api-facade.php
+│   │   │   ├── rooms-availability-core-api-facade.php
+│   │   │   └── rooms-core-api-facade.php
+│   │   ├── crons/
+│   │   │   ├── abandon-booking-pending-payment-cron.php
+│   │   │   ├── abandon-booking-pending-user-cron.php
+│   │   │   ├── abandon-payment-pending-cron.php
+│   │   │   ├── abstract-cron.php
+│   │   │   ├── check-license-status-cron.php
+│   │   │   ├── cron-manager.php
+│   │   │   ├── delete-old-sync-logs-cron.php
+│   │   │   └── ical-auto-synchronization-cron.php
+│   │   ├── csv/
+│   │   │   ├── bookings/
+│   │   │   │   ├── bookings-exporter-helper.php
+│   │   │   │   ├── bookings-exporter.php
+│   │   │   │   └── bookings-query.php
+│   │   │   ├── bookings
+│   │   │   ├── csv-export-handler.php
+│   │   │   └── csv-file.php
+│   │   ├── emails/
+│   │   │   ├── booking/
+│   │   │   │   ├── admin/
+│   │   │   │   │   ├── base-email.php
+│   │   │   │   │   ├── cancelled-email.php
+│   │   │   │   │   ├── confirmed-by-payment-email.php
+│   │   │   │   │   ├── confirmed-email.php
+│   │   │   │   │   └── pending-email.php
+│   │   │   │   ├── customer/
+│   │   │   │   │   ├── approved-email.php
+│   │   │   │   │   ├── base-email.php
+│   │   │   │   │   ├── cancelled-email.php
+│   │   │   │   │   ├── confirmation-email.php
+│   │   │   │   │   ├── direct-bank-transfer-email.php
+│   │   │   │   │   ├── pending-email.php
+│   │   │   │   │   └── registration-email.php
+│   │   │   │   ├── admin
+│   │   │   │   └── customer
+│   │   │   ├── templaters/
+│   │   │   │   ├── abstract-templater.php
+│   │   │   │   ├── cancellation-booking-templater.php
+│   │   │   │   ├── email-templater.php
+│   │   │   │   └── reserved-rooms-templater.php
+│   │   │   ├── templates/
+│   │   │   │   ├── email-footer.php
+│   │   │   │   ├── email-header.php
+│   │   │   │   └── email-styles.php
+│   │   │   ├── abstract-email.php
+│   │   │   ├── booking
+│   │   │   ├── emails.php
+│   │   │   ├── mailer.php
+│   │   │   ├── templaters
+│   │   │   └── templates
+│   │   ├── entities/
+│   │   │   ├── accommodation-attribute.php
+│   │   │   ├── booking.php
+│   │   │   ├── coupon.php
+│   │   │   ├── customer.php
+│   │   │   ├── payment.php
+│   │   │   ├── rate.php
+│   │   │   ├── recurrent-season.php
+│   │   │   ├── reserved-room.php
+│   │   │   ├── reserved-service.php
+│   │   │   ├── room-type.php
+│   │   │   ├── room.php
+│   │   │   ├── season-price.php
+│   │   │   ├── season.php
+│   │   │   ├── service.php
+│   │   │   └── wp-post-data.php
+│   │   ├── exceptions/
+│   │   │   ├── mphb-exception.php
+│   │   │   ├── no-enough-execution-time-exception.php
+│   │   │   └── request-exception.php
+│   │   ├── i-cal/
+│   │   │   ├── background-processes/
+│   │   │   │   ├── background-synchronizer.php
+│   │   │   │   ├── background-uploader.php
+│   │   │   │   ├── background-worker.php
+│   │   │   │   └── queued-synchronizer.php
+│   │   │   ├── background-processes
+│   │   │   ├── exporter.php
+│   │   │   ├── i-cal.php
+│   │   │   ├── import-status.php
+│   │   │   ├── importer.php
+│   │   │   ├── logger.php
+│   │   │   ├── logs-handler.php
+│   │   │   ├── minimized-logger.php
+│   │   │   ├── options-handler.php
+│   │   │   ├── queue.php
+│   │   │   └── stats.php
+│   │   ├── libraries/
+│   │   │   ├── edd-plugin-updater/
+│   │   │   │   └── edd-plugin-updater.php
+│   │   │   ├── emogrifier/
+│   │   │   │   └── emogrifier.php
+│   │   │   ├── wp-background-processing/
+│   │   │   │   ├── classes/
+│   │   │   │   │   ├── wp-async-request.php
+│   │   │   │   │   └── wp-background-process.php
+│   │   │   │   ├── classes
+│   │   │   │   ├── composer.json
+│   │   │   │   ├── license.txt
+│   │   │   │   ├── README.md
+│   │   │   │   └── wp-background-processing.php
+│   │   │   ├── wp-meta-query/
+│   │   │   │   └── wp-meta-query.php
+│   │   │   ├── wp-session-manager/
+│   │   │   │   ├── class-recursive-arrayaccess.php
+│   │   │   │   ├── class-wp-session.php
+│   │   │   │   └── wp-session.php
+│   │   │   ├── ZContent-icalendar/
+│   │   │   │   ├── includes/
+│   │   │   │   │   ├── date.php
+│   │   │   │   │   ├── framework.php
+│   │   │   │   │   ├── ical.php
+│   │   │   │   │   ├── index.html
+│   │   │   │   │   ├── recurringdate.php
+│   │   │   │   │   └── timezone.php
+│   │   │   │   ├── includes
+│   │   │   │   ├── README.md
+│   │   │   │   └── zapcallib.php
+│   │   │   ├── edd-plugin-updater
+│   │   │   ├── emogrifier
+│   │   │   ├── wp-background-processing
+│   │   │   ├── wp-meta-query
+│   │   │   ├── wp-session-manager
+│   │   │   └── ZContent-icalendar
+│   │   ├── payments/
+│   │   │   ├── gateways/
+│   │   │   │   ├── braintree/
+│   │   │   │   │   ├── supported-currencies.php
+│   │   │   │   │   └── webhook-listener.php
+│   │   │   │   ├── paypal/
+│   │   │   │   │   ├── ipn-listener.php
+│   │   │   │   │   └── supported-currencies.php
+│   │   │   │   ├── stripe/
+│   │   │   │   │   ├── stripe-api.php
+│   │   │   │   │   └── webhook-listener.php
+│   │   │   │   ├── two-checkout/
+│   │   │   │   │   ├── ins-listener.php
+│   │   │   │   │   └── supported-currencies.php
+│   │   │   │   ├── abstract-notification-listener.php
+│   │   │   │   ├── bank-gateway.php
+│   │   │   │   ├── beanstream-gateway.php
+│   │   │   │   ├── braintree
+│   │   │   │   ├── braintree-gateway.php
+│   │   │   │   ├── cash-gateway.php
+│   │   │   │   ├── gateway-interface.php
+│   │   │   │   ├── gateway-manager.php
+│   │   │   │   ├── gateway.php
+│   │   │   │   ├── manual-gateway.php
+│   │   │   │   ├── paypal
+│   │   │   │   ├── paypal-gateway.php
+│   │   │   │   ├── stripe
+│   │   │   │   ├── stripe-gateway.php
+│   │   │   │   ├── test-gateway.php
+│   │   │   │   ├── two-checkout
+│   │   │   │   └── two-checkout-gateway.php
+│   │   │   ├── gateways
+│   │   │   └── payment-manager.php
+│   │   ├── persistences/
+│   │   │   ├── attributes-persistence.php
+│   │   │   ├── booking-persistence.php
+│   │   │   ├── cpt-persistence.php
+│   │   │   ├── payment-persistence.php
+│   │   │   ├── rate-persistence.php
+│   │   │   ├── reserved-room-persistence.php
+│   │   │   ├── room-persistence.php
+│   │   │   ├── room-type-dependenced-persistence.php
+│   │   │   └── room-type-persistence.php
+│   │   ├── polyfills/
+│   │   │   └── mbstring.php
+│   │   ├── post-types/
+│   │   │   ├── abstract-cpt/
+│   │   │   │   └── statuses.php
+│   │   │   ├── booking-cpt/
+│   │   │   │   ├── logs.php
+│   │   │   │   └── statuses.php
+│   │   │   ├── payment-cpt/
+│   │   │   │   └── statuses.php
+│   │   │   ├── abstract-cpt
+│   │   │   ├── abstract-cpt.php
+│   │   │   ├── attributes-cpt.php
+│   │   │   ├── booking-cpt
+│   │   │   ├── booking-cpt.php
+│   │   │   ├── coupon-cpt.php
+│   │   │   ├── editable-cpt.php
+│   │   │   ├── payment-cpt
+│   │   │   ├── payment-cpt.php
+│   │   │   ├── rate-cpt.php
+│   │   │   ├── reserved-room-cpt.php
+│   │   │   ├── room-cpt.php
+│   │   │   ├── room-type-cpt.php
+│   │   │   ├── season-cpt.php
+│   │   │   └── service-cpt.php
+│   │   ├── reports/
+│   │   │   ├── data/
+│   │   │   │   ├── abstract-reports-data.php
+│   │   │   │   ├── report-by-dates-data.php
+│   │   │   │   └── report-earnings-by-dates-data.php
+│   │   │   ├── abstract-report.php
+│   │   │   ├── data
+│   │   │   ├── earnings-report.php
+│   │   │   ├── report-filters.php
+│   │   │   └── report.php
+│   │   ├── repositories/
+│   │   │   ├── abstract-post-repository.php
+│   │   │   ├── attribute-repository.php
+│   │   │   ├── booking-repository.php
+│   │   │   ├── coupon-repository.php
+│   │   │   ├── payment-repository.php
+│   │   │   ├── rate-repository.php
+│   │   │   ├── reserved-room-repository.php
+│   │   │   ├── room-repository.php
+│   │   │   ├── room-type-repository.php
+│   │   │   ├── season-repository.php
+│   │   │   ├── service-repository.php
+│   │   │   └── sync-urls-repository.php
+│   │   ├── script-managers/
+│   │   │   ├── admin-script-manager.php
+│   │   │   ├── block-script-manager.php
+│   │   │   ├── datepick-locales.php
+│   │   │   ├── public-script-manager.php
+│   │   │   └── script-manager.php
+│   │   ├── settings/
+│   │   │   ├── booking-rules-settings.php
+│   │   │   ├── currency-settings.php
+│   │   │   ├── date-time-settings.php
+│   │   │   ├── email-settings.php
+│   │   │   ├── export-settings.php
+│   │   │   ├── license-settings.php
+│   │   │   ├── main-settings.php
+│   │   │   ├── page-settings.php
+│   │   │   ├── payment-settings.php
+│   │   │   ├── settings-registry.php
+│   │   │   ├── taxes-and-fees-settings.php
+│   │   │   └── units-settings.php
+│   │   ├── shortcodes/
+│   │   │   ├── checkout-shortcode/
+│   │   │   │   ├── step-booking.php
+│   │   │   │   ├── step-checkout.php
+│   │   │   │   ├── step-complete.php
+│   │   │   │   └── step.php
+│   │   │   ├── abstract-shortcode.php
+│   │   │   ├── account-shortcode.php
+│   │   │   ├── availability-calendar-shortcode.php
+│   │   │   ├── booking-cancellation-shortcode.php
+│   │   │   ├── booking-confirmation-shortcode.php
+│   │   │   ├── booking-form-shortcode.php
+│   │   │   ├── checkout-shortcode
+│   │   │   ├── checkout-shortcode.php
+│   │   │   ├── room-rates-shortcode.php
+│   │   │   ├── room-shortcode.php
+│   │   │   ├── rooms-shortcode.php
+│   │   │   ├── search-results-shortcode.php
+│   │   │   ├── search-shortcode.php
+│   │   │   └── services-shortcode.php
+│   │   ├── taxes-and-fees/
+│   │   │   └── taxes-and-fees.php
+│   │   ├── upgrades/
+│   │   │   ├── background-booking-upgrader-2-0-0.php
+│   │   │   ├── background-booking-upgrader-2-2-0.php
+│   │   │   ├── background-booking-upgrader-2-3-0.php
+│   │   │   ├── background-booking-upgrader-4-2-0.php
+│   │   │   └── background-upgrader.php
+│   │   ├── user-actions/
+│   │   │   ├── action-link-helper.php
+│   │   │   ├── booking-cancellation-action.php
+│   │   │   ├── booking-confirmation-action.php
+│   │   │   ├── booking-view-action.php
+│   │   │   └── user-actions.php
+│   │   ├── users-and-roles/
+│   │   │   ├── capabilities-and-roles.php
+│   │   │   ├── customer.php
+│   │   │   ├── customers.php
+│   │   │   ├── role.php
+│   │   │   ├── roles.php
+│   │   │   └── user.php
+│   │   ├── utils/
+│   │   │   ├── array-utils.php
+│   │   │   ├── booking-details-util.php
+│   │   │   ├── booking-utils.php
+│   │   │   ├── cast-utils.php
+│   │   │   ├── color-utils.php
+│   │   │   ├── date-utils.php
+│   │   │   ├── parse-utils.php
+│   │   │   ├── taxes-and-fees-utils.php
+│   │   │   ├── third-party-plugins-utils.php
+│   │   │   └── validate-utils.php
+│   │   ├── views/
+│   │   │   ├── create-booking/
+│   │   │   │   └── checkout-view.php
+│   │   │   ├── edit-booking/
+│   │   │   │   └── checkout-view.php
+│   │   │   ├── shortcodes/
+│   │   │   │   └── checkout-view.php
+│   │   │   ├── booking-view.php
+│   │   │   ├── create-booking
+│   │   │   ├── edit-booking
+│   │   │   ├── global-view.php
+│   │   │   ├── loop-room-type-view.php
+│   │   │   ├── loop-service-view.php
+│   │   │   ├── reserved-room-view.php
+│   │   │   ├── room-type-view.php
+│   │   │   ├── shortcodes
+│   │   │   ├── single-room-type-view.php
+│   │   │   ├── single-service-view.php
+│   │   │   └── view-actions.php
+│   │   ├── widgets/
+│   │   │   ├── base-widget.php
+│   │   │   ├── rooms-widget.php
+│   │   │   └── search-availability-widget.php
+│   │   ├── actions-handler.php
+│   │   ├── admin
+│   │   ├── advanced
+│   │   ├── ajax-api
+│   │   ├── ajax.php
+│   │   ├── attribute-functions.php
+│   │   ├── autoloader.php
+│   │   ├── background-pausable-process.php
+│   │   ├── background-process.php
+│   │   ├── blocks-render.php
+│   │   ├── bookings-calendar.php
+│   │   ├── bundles
+│   │   ├── calendar-feed.php
+│   │   ├── core
+│   │   ├── crons
+│   │   ├── csv
+│   │   ├── custom-post-types.php
+│   │   ├── emails
+│   │   ├── entities
+│   │   ├── exceptions
+│   │   ├── fixes.php
+│   │   ├── i-cal
+│   │   ├── importer.php
+│   │   ├── libraries
+│   │   ├── license-notice.php
+│   │   ├── linked-rooms.php
+│   │   ├── notices.php
+│   │   ├── payments
+│   │   ├── persistences
+│   │   ├── polyfills
+│   │   ├── post-types
+│   │   ├── reports
+│   │   ├── repositories
+│   │   ├── reservation-request.php
+│   │   ├── script-managers
+│   │   ├── search-parameters-storage.php
+│   │   ├── session.php
+│   │   ├── settings
+│   │   ├── shortcodes
+│   │   ├── shortcodes.php
+│   │   ├── taxes-and-fees
+│   │   ├── translation.php
+│   │   ├── upgrader.php
+│   │   ├── upgrades
+│   │   ├── user-actions
+│   │   ├── users-and-roles
+│   │   ├── utils
+│   │   ├── views
+│   │   ├── widgets
+│   │   └── wizard.php
+│   ├── languages/
+│   │   ├── motopress-hotel-booking-ar.mo
+│   │   ├── motopress-hotel-booking-ar.po
+│   │   ├── motopress-hotel-booking-bg_BG.mo
+│   │   ├── motopress-hotel-booking-bg_BG.po
+│   │   ├── motopress-hotel-booking-ca.mo
+│   │   ├── motopress-hotel-booking-ca.po
+│   │   ├── motopress-hotel-booking-cs_CZ.mo
+│   │   ├── motopress-hotel-booking-cs_CZ.po
+│   │   ├── motopress-hotel-booking-da_DK.mo
+│   │   ├── motopress-hotel-booking-da_DK.po
+│   │   ├── motopress-hotel-booking-de_DE.mo
+│   │   ├── motopress-hotel-booking-de_DE.po
+│   │   ├── motopress-hotel-booking-es_ES.mo
+│   │   ├── motopress-hotel-booking-es_ES.po
+│   │   ├── motopress-hotel-booking-es_MX.mo
+│   │   ├── motopress-hotel-booking-es_MX.po
+│   │   ├── motopress-hotel-booking-fi.mo
+│   │   ├── motopress-hotel-booking-fi.po
+│   │   ├── motopress-hotel-booking-fr_FR.mo
+│   │   ├── motopress-hotel-booking-fr_FR.po
+│   │   ├── motopress-hotel-booking-hr.mo
+│   │   ├── motopress-hotel-booking-hr.po
+│   │   ├── motopress-hotel-booking-hu_HU.mo
+│   │   ├── motopress-hotel-booking-hu_HU.po
+│   │   ├── motopress-hotel-booking-it_IT.mo
+│   │   ├── motopress-hotel-booking-it_IT.po
+│   │   ├── motopress-hotel-booking-ja.mo
+│   │   ├── motopress-hotel-booking-ja.po
+│   │   ├── motopress-hotel-booking-lt_LT.mo
+│   │   ├── motopress-hotel-booking-lt_LT.po
+│   │   ├── motopress-hotel-booking-nb_NO.mo
+│   │   ├── motopress-hotel-booking-nb_NO.po
+│   │   ├── motopress-hotel-booking-nl_NL.mo
+│   │   ├── motopress-hotel-booking-nl_NL.po
+│   │   ├── motopress-hotel-booking-pl_PL.mo
+│   │   ├── motopress-hotel-booking-pl_PL.po
+│   │   ├── motopress-hotel-booking-pt_BR.mo
+│   │   ├── motopress-hotel-booking-pt_BR.po
+│   │   ├── motopress-hotel-booking-pt_PT.mo
+│   │   ├── motopress-hotel-booking-pt_PT.po
+│   │   ├── motopress-hotel-booking-ro_RO.mo
+│   │   ├── motopress-hotel-booking-ro_RO.po
+│   │   ├── motopress-hotel-booking-ru_RU.mo
+│   │   ├── motopress-hotel-booking-ru_RU.po
+│   │   ├── motopress-hotel-booking-sk_SK.mo
+│   │   ├── motopress-hotel-booking-sk_SK.po
+│   │   ├── motopress-hotel-booking-sv_SE.mo
+│   │   ├── motopress-hotel-booking-sv_SE.po
+│   │   ├── motopress-hotel-booking-tr_TR.mo
+│   │   ├── motopress-hotel-booking-tr_TR.po
+│   │   ├── motopress-hotel-booking-uk.mo
+│   │   ├── motopress-hotel-booking-uk.po
+│   │   ├── motopress-hotel-booking-vi.mo
+│   │   ├── motopress-hotel-booking-vi.po
+│   │   ├── motopress-hotel-booking-zh_CN.mo
+│   │   ├── motopress-hotel-booking-zh_CN.po
+│   │   └── motopress-hotel-booking.pot
+│   ├── templates/
+│   │   ├── account/
+│   │   │   ├── account-details.php
+│   │   │   ├── bookings.php
+│   │   │   └── dashboard.php
+│   │   ├── create-booking/
+│   │   │   ├── checkout/
+│   │   │   │   └── checkout-form.php
+│   │   │   ├── results/
+│   │   │   │   ├── reserve-rooms.php
+│   │   │   │   └── rooms-found.php
+│   │   │   ├── search/
+│   │   │   │   └── search-form.php
+│   │   │   ├── checkout
+│   │   │   ├── errors.php
+│   │   │   ├── results
+│   │   │   └── search
+│   │   ├── edit-booking/
+│   │   │   ├── add-room-popup.php
+│   │   │   ├── checkout-form.php
+│   │   │   ├── edit-dates.php
+│   │   │   ├── edit-reserved-rooms.php
+│   │   │   ├── errors.php
+│   │   │   ├── last-checkout.php
+│   │   │   └── summary-table.php
+│   │   ├── emails/
+│   │   │   ├── payment-gateways/
+│   │   │   │   ├── direct-bank-transfer/
+│   │   │   │   │   └── customer-pending-booking.php
+│   │   │   │   └── direct-bank-transfer
+│   │   │   ├── admin-customer-cancelled-booking.php
+│   │   │   ├── admin-customer-confirmed-booking.php
+│   │   │   ├── admin-payment-confirmed-booking.php
+│   │   │   ├── admin-pending-booking.php
+│   │   │   ├── cancellation-details.php
+│   │   │   ├── customer-approved-booking.php
+│   │   │   ├── customer-cancelled-booking.php
+│   │   │   ├── customer-confirmation-booking.php
+│   │   │   ├── customer-pending-booking.php
+│   │   │   ├── customer-registration.php
+│   │   │   ├── payment-gateways
+│   │   │   └── reserved-room-details.php
+│   │   ├── loop-room-type/
+│   │   │   ├── attributes/
+│   │   │   │   ├── adults.php
+│   │   │   │   ├── bedType.php
+│   │   │   │   ├── categories.php
+│   │   │   │   ├── children.php
+│   │   │   │   ├── custom-attributes.php
+│   │   │   │   ├── facilities.php
+│   │   │   │   ├── size.php
+│   │   │   │   ├── total-capacity.php
+│   │   │   │   └── view.php
+│   │   │   ├── attributes
+│   │   │   ├── attributes.php
+│   │   │   ├── book-button.php
+│   │   │   ├── description.php
+│   │   │   ├── excerpt.php
+│   │   │   ├── featured-image.php
+│   │   │   ├── gallery.php
+│   │   │   ├── price-for-dates.php
+│   │   │   ├── price.php
+│   │   │   ├── title.php
+│   │   │   └── view-details-button.php
+│   │   ├── loop-service/
+│   │   │   ├── description.php
+│   │   │   ├── excerpt.php
+│   │   │   ├── featured-image.php
+│   │   │   ├── price.php
+│   │   │   └── title.php
+│   │   ├── shortcodes/
+│   │   │   ├── booking-cancellation/
+│   │   │   │   ├── already-cancelled.php
+│   │   │   │   ├── booking-cancellation-button.php
+│   │   │   │   ├── invalid-request.php
+│   │   │   │   └── not-possible.php
+│   │   │   ├── booking-confirmation/
+│   │   │   │   ├── already-confirmed.php
+│   │   │   │   ├── confirmed.php
+│   │   │   │   ├── expired.php
+│   │   │   │   ├── invalid-request.php
+│   │   │   │   ├── not-possible.php
+│   │   │   │   └── received.php
+│   │   │   ├── booking-details/
+│   │   │   │   └── booking-details.php
+│   │   │   ├── payment-confirmation/
+│   │   │   │   ├── completed.php
+│   │   │   │   └── received.php
+│   │   │   ├── room-rates/
+│   │   │   │   ├── not-found.php
+│   │   │   │   └── rate-content.php
+│   │   │   ├── room/
+│   │   │   │   ├── not-found.php
+│   │   │   │   └── room-content.php
+│   │   │   ├── rooms/
+│   │   │   │   ├── not-found.php
+│   │   │   │   └── room-content.php
+│   │   │   ├── search-results/
+│   │   │   │   ├── errors.php
+│   │   │   │   ├── results-info.php
+│   │   │   │   └── room-content.php
+│   │   │   ├── search/
+│   │   │   │   └── search-form.php
+│   │   │   ├── services/
+│   │   │   │   ├── not-found.php
+│   │   │   │   └── service-content.php
+│   │   │   ├── booking-cancellation
+│   │   │   ├── booking-confirmation
+│   │   │   ├── booking-details
+│   │   │   ├── payment-confirmation
+│   │   │   ├── room
+│   │   │   ├── room-rates
+│   │   │   ├── rooms
+│   │   │   ├── search
+│   │   │   ├── search-results
+│   │   │   └── services
+│   │   ├── single-room-type/
+│   │   │   ├── attributes/
+│   │   │   │   ├── adults.php
+│   │   │   │   ├── bedType.php
+│   │   │   │   ├── categories.php
+│   │   │   │   ├── children.php
+│   │   │   │   ├── custom-attributes.php
+│   │   │   │   ├── facilities.php
+│   │   │   │   ├── size.php
+│   │   │   │   ├── total-capacity.php
+│   │   │   │   └── view.php
+│   │   │   ├── attributes
+│   │   │   ├── attributes.php
+│   │   │   ├── calendar.php
+│   │   │   ├── description.php
+│   │   │   ├── excerpt.php
+│   │   │   ├── featured-image.php
+│   │   │   ├── gallery.php
+│   │   │   ├── price-for-dates.php
+│   │   │   ├── price.php
+│   │   │   ├── reservation-form.php
+│   │   │   └── title.php
+│   │   ├── single-service/
+│   │   │   └── price.php
+│   │   ├── widgets/
+│   │   │   ├── rooms/
+│   │   │   │   ├── not-found.php
+│   │   │   │   └── room-content.php
+│   │   │   ├── search-availability/
+│   │   │   │   └── search-form.php
+│   │   │   ├── rooms
+│   │   │   └── search-availability
+│   │   ├── account
+│   │   ├── create-booking
+│   │   ├── edit-booking
+│   │   ├── emails
+│   │   ├── loop-room-type
+│   │   ├── loop-service
+│   │   ├── required-fields-tip.php
+│   │   ├── shortcodes
+│   │   ├── single-room-type
+│   │   ├── single-room-type.php
+│   │   ├── single-service
+│   │   └── widgets
+│   ├── vendors/
+│   │   ├── beanstream-sdk/
+│   │   │   ├── js/
+│   │   │   │   └── beanstream_payfields.js
+│   │   │   ├── src/
+│   │   │   │   ├── Beanstream/
+│   │   │   │   │   ├── api/
+│   │   │   │   │   │   ├── Payments.php
+│   │   │   │   │   │   ├── Profiles.php
+│   │   │   │   │   │   └── Reporting.php
+│   │   │   │   │   ├── communications/
+│   │   │   │   │   │   ├── Endpoints.php
+│   │   │   │   │   │   └── HttpConnector.php
+│   │   │   │   │   ├── api
+│   │   │   │   │   ├── communications
+│   │   │   │   │   ├── Configuration.php
+│   │   │   │   │   ├── examples.php
+│   │   │   │   │   ├── Exception.php
+│   │   │   │   │   └── Gateway.php
+│   │   │   │   └── Beanstream
+│   │   │   ├── js
+│   │   │   └── src
+│   │   ├── bgrins-spectrum/
+│   │   │   ├── build/
+│   │   │   │   ├── spectrum-min.js
+│   │   │   │   └── spectrum_theme.css
+│   │   │   └── build
+│   │   ├── braintree-sdk/
+│   │   │   ├── lib/
+│   │   │   │   ├── Braintree/
+│   │   │   │   │   ├── Dispute/
+│   │   │   │   │   │   ├── EvidenceDetails.php
+│   │   │   │   │   │   ├── PayPalMessageDetails.php
+│   │   │   │   │   │   ├── StatusHistoryDetails.php
+│   │   │   │   │   │   └── TransactionDetails.php
+│   │   │   │   │   ├── Error/
+│   │   │   │   │   │   ├── Codes.php
+│   │   │   │   │   │   ├── ErrorCollection.php
+│   │   │   │   │   │   ├── Validation.php
+│   │   │   │   │   │   └── ValidationErrorCollection.php
+│   │   │   │   │   ├── Exception/
+│   │   │   │   │   │   ├── Authentication.php
+│   │   │   │   │   │   ├── Authorization.php
+│   │   │   │   │   │   ├── Configuration.php
+│   │   │   │   │   │   ├── Connection.php
+│   │   │   │   │   │   ├── GatewayTimeout.php
+│   │   │   │   │   │   ├── InvalidChallenge.php
+│   │   │   │   │   │   ├── InvalidSignature.php
+│   │   │   │   │   │   ├── NotFound.php
+│   │   │   │   │   │   ├── RequestTimeout.php
+│   │   │   │   │   │   ├── ServerError.php
+│   │   │   │   │   │   ├── ServiceUnavailable.php
+│   │   │   │   │   │   ├── SSLCaFileNotFound.php
+│   │   │   │   │   │   ├── SSLCertificate.php
+│   │   │   │   │   │   ├── TestOperationPerformedInProduction.php
+│   │   │   │   │   │   ├── Timeout.php
+│   │   │   │   │   │   ├── TooManyRequests.php
+│   │   │   │   │   │   ├── Unexpected.php
+│   │   │   │   │   │   ├── UpgradeRequired.php
+│   │   │   │   │   │   └── ValidationsFailed.php
+│   │   │   │   │   ├── HttpHelpers/
+│   │   │   │   │   │   ├── Curl.php
+│   │   │   │   │   │   ├── CurlRequest.php
+│   │   │   │   │   │   └── HttpRequest.php
+│   │   │   │   │   ├── MerchantAccount/
+│   │   │   │   │   │   ├── AddressDetails.php
+│   │   │   │   │   │   ├── BusinessDetails.php
+│   │   │   │   │   │   ├── FundingDetails.php
+│   │   │   │   │   │   └── IndividualDetails.php
+│   │   │   │   │   ├── Result/
+│   │   │   │   │   │   ├── CreditCardVerification.php
+│   │   │   │   │   │   ├── Error.php
+│   │   │   │   │   │   ├── Successful.php
+│   │   │   │   │   │   └── UsBankAccountVerification.php
+│   │   │   │   │   ├── Subscription/
+│   │   │   │   │   │   └── StatusDetails.php
+│   │   │   │   │   ├── Test/
+│   │   │   │   │   │   ├── AuthenticationIds.php
+│   │   │   │   │   │   ├── CreditCardNumbers.php
+│   │   │   │   │   │   ├── MerchantAccount.php
+│   │   │   │   │   │   ├── Nonces.php
+│   │   │   │   │   │   ├── Transaction.php
+│   │   │   │   │   │   ├── TransactionAmounts.php
+│   │   │   │   │   │   └── VenmoSdk.php
+│   │   │   │   │   ├── Transaction/
+│   │   │   │   │   │   ├── AddressDetails.php
+│   │   │   │   │   │   ├── ApplePayCardDetails.php
+│   │   │   │   │   │   ├── CreditCardDetails.php
+│   │   │   │   │   │   ├── CustomerDetails.php
+│   │   │   │   │   │   ├── GooglePayCardDetails.php
+│   │   │   │   │   │   ├── LocalPaymentDetails.php
+│   │   │   │   │   │   ├── MetaCheckoutCardDetails.php
+│   │   │   │   │   │   ├── MetaCheckoutTokenDetails.php
+│   │   │   │   │   │   ├── PackageDetails.php
+│   │   │   │   │   │   ├── PayPalDetails.php
+│   │   │   │   │   │   ├── PayPalHereDetails.php
+│   │   │   │   │   │   ├── SamsungPayCardDetails.php
+│   │   │   │   │   │   ├── SepaDirectDebitAccountDetails.php
+│   │   │   │   │   │   ├── StatusDetails.php
+│   │   │   │   │   │   ├── SubscriptionDetails.php
+│   │   │   │   │   │   ├── UsBankAccountDetails.php
+│   │   │   │   │   │   ├── VenmoAccountDetails.php
+│   │   │   │   │   │   └── VisaCheckoutCardDetails.php
+│   │   │   │   │   ├── Xml/
+│   │   │   │   │   │   ├── Generator.php
+│   │   │   │   │   │   └── Parser.php
+│   │   │   │   │   ├── AccountUpdaterDailyReport.php
+│   │   │   │   │   ├── AchMandate.php
+│   │   │   │   │   ├── AddOn.php
+│   │   │   │   │   ├── AddOnGateway.php
+│   │   │   │   │   ├── Address.php
+│   │   │   │   │   ├── AddressGateway.php
+│   │   │   │   │   ├── ApplePayCard.php
+│   │   │   │   │   ├── ApplePayGateway.php
+│   │   │   │   │   ├── ApplePayOptions.php
+│   │   │   │   │   ├── AuthorizationAdjustment.php
+│   │   │   │   │   ├── Base.php
+│   │   │   │   │   ├── BinData.php
+│   │   │   │   │   ├── ClientToken.php
+│   │   │   │   │   ├── ClientTokenGateway.php
+│   │   │   │   │   ├── Collection.php
+│   │   │   │   │   ├── Configuration.php
+│   │   │   │   │   ├── ConnectedMerchantPayPalStatusChanged.php
+│   │   │   │   │   ├── ConnectedMerchantStatusTransitioned.php
+│   │   │   │   │   ├── CredentialsParser.php
+│   │   │   │   │   ├── CreditCard.php
+│   │   │   │   │   ├── CreditCardGateway.php
+│   │   │   │   │   ├── CreditCardVerification.php
+│   │   │   │   │   ├── CreditCardVerificationGateway.php
+│   │   │   │   │   ├── CreditCardVerificationSearch.php
+│   │   │   │   │   ├── Customer.php
+│   │   │   │   │   ├── CustomerGateway.php
+│   │   │   │   │   ├── CustomerSearch.php
+│   │   │   │   │   ├── Descriptor.php
+│   │   │   │   │   ├── Digest.php
+│   │   │   │   │   ├── Disbursement.php
+│   │   │   │   │   ├── DisbursementDetails.php
+│   │   │   │   │   ├── Discount.php
+│   │   │   │   │   ├── DiscountGateway.php
+│   │   │   │   │   ├── Dispute
+│   │   │   │   │   ├── Dispute.php
+│   │   │   │   │   ├── DisputeGateway.php
+│   │   │   │   │   ├── DisputeSearch.php
+│   │   │   │   │   ├── DocumentUpload.php
+│   │   │   │   │   ├── DocumentUploadGateway.php
+│   │   │   │   │   ├── EndsWithNode.php
+│   │   │   │   │   ├── EnrichedCustomerData.php
+│   │   │   │   │   ├── EqualityNode.php
+│   │   │   │   │   ├── Error
+│   │   │   │   │   ├── Exception
+│   │   │   │   │   ├── Exception.php
+│   │   │   │   │   ├── ExchangeRateQuote.php
+│   │   │   │   │   ├── ExchangeRateQuoteGateway.php
+│   │   │   │   │   ├── ExchangeRateQuoteInput.php
+│   │   │   │   │   ├── ExchangeRateQuoteRequest.php
+│   │   │   │   │   ├── ExchangeRateQuoteResponse.php
+│   │   │   │   │   ├── FacilitatedDetails.php
+│   │   │   │   │   ├── FacilitatorDetails.php
+│   │   │   │   │   ├── Gateway.php
+│   │   │   │   │   ├── GooglePayCard.php
+│   │   │   │   │   ├── GrantedPaymentInstrumentUpdate.php
+│   │   │   │   │   ├── GraphQL.php
+│   │   │   │   │   ├── GraphQLClient.php
+│   │   │   │   │   ├── Http.php
+│   │   │   │   │   ├── HttpHelpers
+│   │   │   │   │   ├── Instance.php
+│   │   │   │   │   ├── IsNode.php
+│   │   │   │   │   ├── KeyValueNode.php
+│   │   │   │   │   ├── LiabilityShift.php
+│   │   │   │   │   ├── LocalPaymentCompleted.php
+│   │   │   │   │   ├── LocalPaymentExpired.php
+│   │   │   │   │   ├── LocalPaymentFunded.php
+│   │   │   │   │   ├── LocalPaymentReversed.php
+│   │   │   │   │   ├── Merchant.php
+│   │   │   │   │   ├── MerchantAccount
+│   │   │   │   │   ├── MerchantAccount.php
+│   │   │   │   │   ├── MerchantAccountGateway.php
+│   │   │   │   │   ├── MerchantGateway.php
+│   │   │   │   │   ├── MetaCheckoutCard.php
+│   │   │   │   │   ├── MetaCheckoutToken.php
+│   │   │   │   │   ├── Modification.php
+│   │   │   │   │   ├── MonetaryAmount.php
+│   │   │   │   │   ├── MultipleValueNode.php
+│   │   │   │   │   ├── MultipleValueOrTextNode.php
+│   │   │   │   │   ├── OAuthAccessRevocation.php
+│   │   │   │   │   ├── OAuthCredentials.php
+│   │   │   │   │   ├── OAuthGateway.php
+│   │   │   │   │   ├── OAuthResult.php
+│   │   │   │   │   ├── PaginatedCollection.php
+│   │   │   │   │   ├── PaginatedResult.php
+│   │   │   │   │   ├── PartialMatchNode.php
+│   │   │   │   │   ├── PartnerMerchant.php
+│   │   │   │   │   ├── PaymentInstrumentType.php
+│   │   │   │   │   ├── PaymentMethod.php
+│   │   │   │   │   ├── PaymentMethodCustomerDataUpdatedMetadata.php
+│   │   │   │   │   ├── PaymentMethodGateway.php
+│   │   │   │   │   ├── PaymentMethodNonce.php
+│   │   │   │   │   ├── PaymentMethodNonceGateway.php
+│   │   │   │   │   ├── PaymentMethodParser.php
+│   │   │   │   │   ├── PayPalAccount.php
+│   │   │   │   │   ├── PayPalAccountGateway.php
+│   │   │   │   │   ├── Plan.php
+│   │   │   │   │   ├── PlanGateway.php
+│   │   │   │   │   ├── ProcessorResponseTypes.php
+│   │   │   │   │   ├── RangeNode.php
+│   │   │   │   │   ├── ResourceCollection.php
+│   │   │   │   │   ├── Result
+│   │   │   │   │   ├── RevokedPaymentMethodMetadata.php
+│   │   │   │   │   ├── RiskData.php
+│   │   │   │   │   ├── SamsungPayCard.php
+│   │   │   │   │   ├── SepaDirectDebitAccount.php
+│   │   │   │   │   ├── SepaDirectDebitAccountGateway.php
+│   │   │   │   │   ├── SettlementBatchSummary.php
+│   │   │   │   │   ├── SettlementBatchSummaryGateway.php
+│   │   │   │   │   ├── ShippingMethod.php
+│   │   │   │   │   ├── SignatureService.php
+│   │   │   │   │   ├── Subscription
+│   │   │   │   │   ├── Subscription.php
+│   │   │   │   │   ├── SubscriptionGateway.php
+│   │   │   │   │   ├── SubscriptionSearch.php
+│   │   │   │   │   ├── Test
+│   │   │   │   │   ├── TestingGateway.php
+│   │   │   │   │   ├── TextNode.php
+│   │   │   │   │   ├── ThreeDSecureInfo.php
+│   │   │   │   │   ├── Transaction
+│   │   │   │   │   ├── Transaction.php
+│   │   │   │   │   ├── TransactionGateway.php
+│   │   │   │   │   ├── TransactionLineItem.php
+│   │   │   │   │   ├── TransactionLineItemGateway.php
+│   │   │   │   │   ├── TransactionReview.php
+│   │   │   │   │   ├── TransactionSearch.php
+│   │   │   │   │   ├── UnknownPaymentMethod.php
+│   │   │   │   │   ├── UsBankAccount.php
+│   │   │   │   │   ├── UsBankAccountGateway.php
+│   │   │   │   │   ├── UsBankAccountVerification.php
+│   │   │   │   │   ├── UsBankAccountVerificationGateway.php
+│   │   │   │   │   ├── UsBankAccountVerificationSearch.php
+│   │   │   │   │   ├── Util.php
+│   │   │   │   │   ├── VenmoAccount.php
+│   │   │   │   │   ├── VenmoProfileData.php
+│   │   │   │   │   ├── Version.php
+│   │   │   │   │   ├── VisaCheckoutCard.php
+│   │   │   │   │   ├── WebhookNotification.php
+│   │   │   │   │   ├── WebhookNotificationGateway.php
+│   │   │   │   │   ├── WebhookTesting.php
+│   │   │   │   │   ├── WebhookTestingGateway.php
+│   │   │   │   │   ├── Xml
+│   │   │   │   │   └── Xml.php
+│   │   │   │   ├── ssl/
+│   │   │   │   │   └── api_braintreegateway_com.ca.crt
+│   │   │   │   ├── autoload.php
+│   │   │   │   ├── Braintree
+│   │   │   │   ├── Braintree.php
+│   │   │   │   └── ssl
+│   │   │   └── lib
+│   │   ├── canjs/
+│   │   │   ├── can.custom.js
+│   │   │   └── can.custom.min.js
+│   │   ├── fancybox/
+│   │   │   ├── dist/
+│   │   │   │   ├── jquery.fancybox.css
+│   │   │   │   ├── jquery.fancybox.js
+│   │   │   │   ├── jquery.fancybox.min.css
+│   │   │   │   └── jquery.fancybox.min.js
+│   │   │   └── dist
+│   │   ├── jquery-flot-dashes/
+│   │   │   ├── jquery.flot.dashes.js
+│   │   │   ├── LICENSE
+│   │   │   └── README.md
+│   │   ├── jquery-flot/
+│   │   │   ├── jquery.flot.js
+│   │   │   ├── jquery.flot.min.js
+│   │   │   ├── jquery.flot.time.js
+│   │   │   └── jquery.flot.time.min.js
+│   │   ├── jquery-tiptip/
+│   │   │   ├── jquery.tipTip.js
+│   │   │   └── jquery.tipTip.min.js
+│   │   ├── jquery.serializeJSON/
+│   │   │   ├── jquery.serializejson.js
+│   │   │   └── jquery.serializejson.min.js
+│   │   ├── kbwood/
+│   │   │   ├── datepick/
+│   │   │   │   ├── jquery.datepick-af.js
+│   │   │   │   ├── jquery.datepick-am.js
+│   │   │   │   ├── jquery.datepick-ar-DZ.js
+│   │   │   │   ├── jquery.datepick-ar-EG.js
+│   │   │   │   ├── jquery.datepick-ar.js
+│   │   │   │   ├── jquery.datepick-az.js
+│   │   │   │   ├── jquery.datepick-bg.js
+│   │   │   │   ├── jquery.datepick-bs.js
+│   │   │   │   ├── jquery.datepick-ca.js
+│   │   │   │   ├── jquery.datepick-cs.js
+│   │   │   │   ├── jquery.datepick-da.js
+│   │   │   │   ├── jquery.datepick-de-CH.js
+│   │   │   │   ├── jquery.datepick-de.js
+│   │   │   │   ├── jquery.datepick-el.js
+│   │   │   │   ├── jquery.datepick-en-AU.js
+│   │   │   │   ├── jquery.datepick-en-GB.js
+│   │   │   │   ├── jquery.datepick-en-NZ.js
+│   │   │   │   ├── jquery.datepick-eo.js
+│   │   │   │   ├── jquery.datepick-es-AR.js
+│   │   │   │   ├── jquery.datepick-es-PE.js
+│   │   │   │   ├── jquery.datepick-es.js
+│   │   │   │   ├── jquery.datepick-et.js
+│   │   │   │   ├── jquery.datepick-eu.js
+│   │   │   │   ├── jquery.datepick-fa.js
+│   │   │   │   ├── jquery.datepick-fi.js
+│   │   │   │   ├── jquery.datepick-fo.js
+│   │   │   │   ├── jquery.datepick-fr-CH.js
+│   │   │   │   ├── jquery.datepick-fr.js
+│   │   │   │   ├── jquery.datepick-gl.js
+│   │   │   │   ├── jquery.datepick-gu.js
+│   │   │   │   ├── jquery.datepick-he.js
+│   │   │   │   ├── jquery.datepick-hi-IN.js
+│   │   │   │   ├── jquery.datepick-hi.js
+│   │   │   │   ├── jquery.datepick-hr.js
+│   │   │   │   ├── jquery.datepick-hu.js
+│   │   │   │   ├── jquery.datepick-hy.js
+│   │   │   │   ├── jquery.datepick-id.js
+│   │   │   │   ├── jquery.datepick-is.js
+│   │   │   │   ├── jquery.datepick-it.js
+│   │   │   │   ├── jquery.datepick-ja.js
+│   │   │   │   ├── jquery.datepick-ka.js
+│   │   │   │   ├── jquery.datepick-km.js
+│   │   │   │   ├── jquery.datepick-ko.js
+│   │   │   │   ├── jquery.datepick-lt.js
+│   │   │   │   ├── jquery.datepick-lv.js
+│   │   │   │   ├── jquery.datepick-me-ME.js
+│   │   │   │   ├── jquery.datepick-me.js
+│   │   │   │   ├── jquery.datepick-mk.js
+│   │   │   │   ├── jquery.datepick-ml.js
+│   │   │   │   ├── jquery.datepick-ms.js
+│   │   │   │   ├── jquery.datepick-mt.js
+│   │   │   │   ├── jquery.datepick-nl-BE.js
+│   │   │   │   ├── jquery.datepick-nl.js
+│   │   │   │   ├── jquery.datepick-no.js
+│   │   │   │   ├── jquery.datepick-pl.js
+│   │   │   │   ├── jquery.datepick-pt-BR.js
+│   │   │   │   ├── jquery.datepick-pt.js
+│   │   │   │   ├── jquery.datepick-rm.js
+│   │   │   │   ├── jquery.datepick-ro.js
+│   │   │   │   ├── jquery.datepick-ru.js
+│   │   │   │   ├── jquery.datepick-sk.js
+│   │   │   │   ├── jquery.datepick-sl.js
+│   │   │   │   ├── jquery.datepick-sq.js
+│   │   │   │   ├── jquery.datepick-sr-SR.js
+│   │   │   │   ├── jquery.datepick-sr.js
+│   │   │   │   ├── jquery.datepick-sv.js
+│   │   │   │   ├── jquery.datepick-ta.js
+│   │   │   │   ├── jquery.datepick-th.js
+│   │   │   │   ├── jquery.datepick-tr.js
+│   │   │   │   ├── jquery.datepick-tt.js
+│   │   │   │   ├── jquery.datepick-uk.js
+│   │   │   │   ├── jquery.datepick-ur.js
+│   │   │   │   ├── jquery.datepick-vi.js
+│   │   │   │   ├── jquery.datepick-zh-CN.js
+│   │   │   │   ├── jquery.datepick-zh-HK.js
+│   │   │   │   ├── jquery.datepick-zh-TW.js
+│   │   │   │   ├── jquery.datepick.css
+│   │   │   │   ├── jquery.datepick.js
+│   │   │   │   ├── jquery.datepick.min.js
+│   │   │   │   ├── jquery.plugin.js
+│   │   │   │   └── jquery.plugin.min.js
+│   │   │   └── datepick
+│   │   ├── stripe-api/
+│   │   │   ├── data/
+│   │   │   │   └── ca-certificates.crt
+│   │   │   ├── lib/
+│   │   │   │   ├── ApiOperations/
+│   │   │   │   │   ├── All.php
+│   │   │   │   │   ├── Create.php
+│   │   │   │   │   ├── Delete.php
+│   │   │   │   │   ├── NestedResource.php
+│   │   │   │   │   ├── Request.php
+│   │   │   │   │   ├── Retrieve.php
+│   │   │   │   │   ├── Search.php
+│   │   │   │   │   ├── SingletonRetrieve.php
+│   │   │   │   │   └── Update.php
+│   │   │   │   ├── Apps/
+│   │   │   │   │   └── Secret.php
+│   │   │   │   ├── BillingPortal/
+│   │   │   │   │   ├── Configuration.php
+│   │   │   │   │   └── Session.php
+│   │   │   │   ├── Checkout/
+│   │   │   │   │   └── Session.php
+│   │   │   │   ├── Climate/
+│   │   │   │   │   ├── Order.php
+│   │   │   │   │   ├── Product.php
+│   │   │   │   │   └── Supplier.php
+│   │   │   │   ├── Exception/
+│   │   │   │   │   ├── OAuth/
+│   │   │   │   │   │   ├── ExceptionInterface.php
+│   │   │   │   │   │   ├── InvalidClientException.php
+│   │   │   │   │   │   ├── InvalidGrantException.php
+│   │   │   │   │   │   ├── InvalidRequestException.php
+│   │   │   │   │   │   ├── InvalidScopeException.php
+│   │   │   │   │   │   ├── OAuthErrorException.php
+│   │   │   │   │   │   ├── UnknownOAuthErrorException.php
+│   │   │   │   │   │   ├── UnsupportedGrantTypeException.php
+│   │   │   │   │   │   └── UnsupportedResponseTypeException.php
+│   │   │   │   │   ├── ApiConnectionException.php
+│   │   │   │   │   ├── ApiErrorException.php
+│   │   │   │   │   ├── AuthenticationException.php
+│   │   │   │   │   ├── BadMethodCallException.php
+│   │   │   │   │   ├── CardException.php
+│   │   │   │   │   ├── ExceptionInterface.php
+│   │   │   │   │   ├── IdempotencyException.php
+│   │   │   │   │   ├── InvalidArgumentException.php
+│   │   │   │   │   ├── InvalidRequestException.php
+│   │   │   │   │   ├── OAuth
+│   │   │   │   │   ├── PermissionException.php
+│   │   │   │   │   ├── RateLimitException.php
+│   │   │   │   │   ├── SignatureVerificationException.php
+│   │   │   │   │   ├── UnexpectedValueException.php
+│   │   │   │   │   └── UnknownApiErrorException.php
+│   │   │   │   ├── FinancialConnections/
+│   │   │   │   │   ├── Account.php
+│   │   │   │   │   ├── AccountOwner.php
+│   │   │   │   │   ├── AccountOwnership.php
+│   │   │   │   │   ├── Session.php
+│   │   │   │   │   └── Transaction.php
+│   │   │   │   ├── HttpClient/
+│   │   │   │   │   ├── ClientInterface.php
+│   │   │   │   │   ├── CurlClient.php
+│   │   │   │   │   └── StreamingClientInterface.php
+│   │   │   │   ├── Identity/
+│   │   │   │   │   ├── VerificationReport.php
+│   │   │   │   │   └── VerificationSession.php
+│   │   │   │   ├── Issuing/
+│   │   │   │   │   ├── Authorization.php
+│   │   │   │   │   ├── Card.php
+│   │   │   │   │   ├── CardDetails.php
+│   │   │   │   │   ├── Cardholder.php
+│   │   │   │   │   ├── Dispute.php
+│   │   │   │   │   ├── Token.php
+│   │   │   │   │   └── Transaction.php
+│   │   │   │   ├── Radar/
+│   │   │   │   │   ├── EarlyFraudWarning.php
+│   │   │   │   │   ├── ValueList.php
+│   │   │   │   │   └── ValueListItem.php
+│   │   │   │   ├── Reporting/
+│   │   │   │   │   ├── ReportRun.php
+│   │   │   │   │   └── ReportType.php
+│   │   │   │   ├── Service/
+│   │   │   │   │   ├── Apps/
+│   │   │   │   │   │   ├── AppsServiceFactory.php
+│   │   │   │   │   │   └── SecretService.php
+│   │   │   │   │   ├── BillingPortal/
+│   │   │   │   │   │   ├── BillingPortalServiceFactory.php
+│   │   │   │   │   │   ├── ConfigurationService.php
+│   │   │   │   │   │   └── SessionService.php
+│   │   │   │   │   ├── Checkout/
+│   │   │   │   │   │   ├── CheckoutServiceFactory.php
+│   │   │   │   │   │   └── SessionService.php
+│   │   │   │   │   ├── Climate/
+│   │   │   │   │   │   ├── ClimateServiceFactory.php
+│   │   │   │   │   │   ├── OrderService.php
+│   │   │   │   │   │   ├── ProductService.php
+│   │   │   │   │   │   └── SupplierService.php
+│   │   │   │   │   ├── FinancialConnections/
+│   │   │   │   │   │   ├── AccountService.php
+│   │   │   │   │   │   ├── FinancialConnectionsServiceFactory.php
+│   │   │   │   │   │   ├── SessionService.php
+│   │   │   │   │   │   └── TransactionService.php
+│   │   │   │   │   ├── Identity/
+│   │   │   │   │   │   ├── IdentityServiceFactory.php
+│   │   │   │   │   │   ├── VerificationReportService.php
+│   │   │   │   │   │   └── VerificationSessionService.php
+│   │   │   │   │   ├── Issuing/
+│   │   │   │   │   │   ├── AuthorizationService.php
+│   │   │   │   │   │   ├── CardholderService.php
+│   │   │   │   │   │   ├── CardService.php
+│   │   │   │   │   │   ├── DisputeService.php
+│   │   │   │   │   │   ├── IssuingServiceFactory.php
+│   │   │   │   │   │   ├── TokenService.php
+│   │   │   │   │   │   └── TransactionService.php
+│   │   │   │   │   ├── Radar/
+│   │   │   │   │   │   ├── EarlyFraudWarningService.php
+│   │   │   │   │   │   ├── RadarServiceFactory.php
+│   │   │   │   │   │   ├── ValueListItemService.php
+│   │   │   │   │   │   └── ValueListService.php
+│   │   │   │   │   ├── Reporting/
+│   │   │   │   │   │   ├── ReportingServiceFactory.php
+│   │   │   │   │   │   ├── ReportRunService.php
+│   │   │   │   │   │   └── ReportTypeService.php
+│   │   │   │   │   ├── Sigma/
+│   │   │   │   │   │   ├── ScheduledQueryRunService.php
+│   │   │   │   │   │   └── SigmaServiceFactory.php
+│   │   │   │   │   ├── Tax/
+│   │   │   │   │   │   ├── CalculationService.php
+│   │   │   │   │   │   ├── RegistrationService.php
+│   │   │   │   │   │   ├── SettingsService.php
+│   │   │   │   │   │   ├── TaxServiceFactory.php
+│   │   │   │   │   │   └── TransactionService.php
+│   │   │   │   │   ├── Terminal/
+│   │   │   │   │   │   ├── ConfigurationService.php
+│   │   │   │   │   │   ├── ConnectionTokenService.php
+│   │   │   │   │   │   ├── LocationService.php
+│   │   │   │   │   │   ├── ReaderService.php
+│   │   │   │   │   │   └── TerminalServiceFactory.php
+│   │   │   │   │   ├── TestHelpers/
+│   │   │   │   │   │   ├── Issuing/
+│   │   │   │   │   │   │   ├── AuthorizationService.php
+│   │   │   │   │   │   │   ├── CardService.php
+│   │   │   │   │   │   │   ├── IssuingServiceFactory.php
+│   │   │   │   │   │   │   └── TransactionService.php
+│   │   │   │   │   │   ├── Terminal/
+│   │   │   │   │   │   │   ├── ReaderService.php
+│   │   │   │   │   │   │   └── TerminalServiceFactory.php
+│   │   │   │   │   │   ├── Treasury/
+│   │   │   │   │   │   │   ├── InboundTransferService.php
+│   │   │   │   │   │   │   ├── OutboundPaymentService.php
+│   │   │   │   │   │   │   ├── OutboundTransferService.php
+│   │   │   │   │   │   │   ├── ReceivedCreditService.php
+│   │   │   │   │   │   │   ├── ReceivedDebitService.php
+│   │   │   │   │   │   │   └── TreasuryServiceFactory.php
+│   │   │   │   │   │   ├── CustomerService.php
+│   │   │   │   │   │   ├── Issuing
+│   │   │   │   │   │   ├── RefundService.php
+│   │   │   │   │   │   ├── Terminal
+│   │   │   │   │   │   ├── TestClockService.php
+│   │   │   │   │   │   ├── TestHelpersServiceFactory.php
+│   │   │   │   │   │   └── Treasury
+│   │   │   │   │   ├── Treasury/
+│   │   │   │   │   │   ├── CreditReversalService.php
+│   │   │   │   │   │   ├── DebitReversalService.php
+│   │   │   │   │   │   ├── FinancialAccountService.php
+│   │   │   │   │   │   ├── InboundTransferService.php
+│   │   │   │   │   │   ├── OutboundPaymentService.php
+│   │   │   │   │   │   ├── OutboundTransferService.php
+│   │   │   │   │   │   ├── ReceivedCreditService.php
+│   │   │   │   │   │   ├── ReceivedDebitService.php
+│   │   │   │   │   │   ├── TransactionEntryService.php
+│   │   │   │   │   │   ├── TransactionService.php
+│   │   │   │   │   │   └── TreasuryServiceFactory.php
+│   │   │   │   │   ├── AbstractService.php
+│   │   │   │   │   ├── AbstractServiceFactory.php
+│   │   │   │   │   ├── AccountLinkService.php
+│   │   │   │   │   ├── AccountService.php
+│   │   │   │   │   ├── AccountSessionService.php
+│   │   │   │   │   ├── ApplePayDomainService.php
+│   │   │   │   │   ├── ApplicationFeeService.php
+│   │   │   │   │   ├── Apps
+│   │   │   │   │   ├── BalanceService.php
+│   │   │   │   │   ├── BalanceTransactionService.php
+│   │   │   │   │   ├── BillingPortal
+│   │   │   │   │   ├── ChargeService.php
+│   │   │   │   │   ├── Checkout
+│   │   │   │   │   ├── Climate
+│   │   │   │   │   ├── CoreServiceFactory.php
+│   │   │   │   │   ├── CountrySpecService.php
+│   │   │   │   │   ├── CouponService.php
+│   │   │   │   │   ├── CreditNoteService.php
+│   │   │   │   │   ├── CustomerService.php
+│   │   │   │   │   ├── CustomerSessionService.php
+│   │   │   │   │   ├── DisputeService.php
+│   │   │   │   │   ├── EphemeralKeyService.php
+│   │   │   │   │   ├── EventService.php
+│   │   │   │   │   ├── ExchangeRateService.php
+│   │   │   │   │   ├── FileLinkService.php
+│   │   │   │   │   ├── FileService.php
+│   │   │   │   │   ├── FinancialConnections
+│   │   │   │   │   ├── Identity
+│   │   │   │   │   ├── InvoiceItemService.php
+│   │   │   │   │   ├── InvoiceService.php
+│   │   │   │   │   ├── Issuing
+│   │   │   │   │   ├── MandateService.php
+│   │   │   │   │   ├── OAuthService.php
+│   │   │   │   │   ├── PaymentIntentService.php
+│   │   │   │   │   ├── PaymentLinkService.php
+│   │   │   │   │   ├── PaymentMethodConfigurationService.php
+│   │   │   │   │   ├── PaymentMethodDomainService.php
+│   │   │   │   │   ├── PaymentMethodService.php
+│   │   │   │   │   ├── PayoutService.php
+│   │   │   │   │   ├── PlanService.php
+│   │   │   │   │   ├── PriceService.php
+│   │   │   │   │   ├── ProductService.php
+│   │   │   │   │   ├── PromotionCodeService.php
+│   │   │   │   │   ├── QuoteService.php
+│   │   │   │   │   ├── Radar
+│   │   │   │   │   ├── RefundService.php
+│   │   │   │   │   ├── Reporting
+│   │   │   │   │   ├── ReviewService.php
+│   │   │   │   │   ├── SetupAttemptService.php
+│   │   │   │   │   ├── SetupIntentService.php
+│   │   │   │   │   ├── ShippingRateService.php
+│   │   │   │   │   ├── Sigma
+│   │   │   │   │   ├── SourceService.php
+│   │   │   │   │   ├── SubscriptionItemService.php
+│   │   │   │   │   ├── SubscriptionScheduleService.php
+│   │   │   │   │   ├── SubscriptionService.php
+│   │   │   │   │   ├── Tax
+│   │   │   │   │   ├── TaxCodeService.php
+│   │   │   │   │   ├── TaxRateService.php
+│   │   │   │   │   ├── Terminal
+│   │   │   │   │   ├── TestHelpers
+│   │   │   │   │   ├── TokenService.php
+│   │   │   │   │   ├── TopupService.php
+│   │   │   │   │   ├── TransferService.php
+│   │   │   │   │   ├── Treasury
+│   │   │   │   │   └── WebhookEndpointService.php
+│   │   │   │   ├── Sigma/
+│   │   │   │   │   └── ScheduledQueryRun.php
+│   │   │   │   ├── Tax/
+│   │   │   │   │   ├── Calculation.php
+│   │   │   │   │   ├── CalculationLineItem.php
+│   │   │   │   │   ├── Registration.php
+│   │   │   │   │   ├── Settings.php
+│   │   │   │   │   ├── Transaction.php
+│   │   │   │   │   └── TransactionLineItem.php
+│   │   │   │   ├── Terminal/
+│   │   │   │   │   ├── Configuration.php
+│   │   │   │   │   ├── ConnectionToken.php
+│   │   │   │   │   ├── Location.php
+│   │   │   │   │   └── Reader.php
+│   │   │   │   ├── TestHelpers/
+│   │   │   │   │   └── TestClock.php
+│   │   │   │   ├── Treasury/
+│   │   │   │   │   ├── CreditReversal.php
+│   │   │   │   │   ├── DebitReversal.php
+│   │   │   │   │   ├── FinancialAccount.php
+│   │   │   │   │   ├── FinancialAccountFeatures.php
+│   │   │   │   │   ├── InboundTransfer.php
+│   │   │   │   │   ├── OutboundPayment.php
+│   │   │   │   │   ├── OutboundTransfer.php
+│   │   │   │   │   ├── ReceivedCredit.php
+│   │   │   │   │   ├── ReceivedDebit.php
+│   │   │   │   │   ├── Transaction.php
+│   │   │   │   │   └── TransactionEntry.php
+│   │   │   │   ├── Util/
+│   │   │   │   │   ├── ApiVersion.php
+│   │   │   │   │   ├── CaseInsensitiveArray.php
+│   │   │   │   │   ├── DefaultLogger.php
+│   │   │   │   │   ├── LoggerInterface.php
+│   │   │   │   │   ├── ObjectTypes.php
+│   │   │   │   │   ├── RandomGenerator.php
+│   │   │   │   │   ├── RequestOptions.php
+│   │   │   │   │   ├── Set.php
+│   │   │   │   │   └── Util.php
+│   │   │   │   ├── Account.php
+│   │   │   │   ├── AccountLink.php
+│   │   │   │   ├── AccountSession.php
+│   │   │   │   ├── ApiOperations
+│   │   │   │   ├── ApiRequestor.php
+│   │   │   │   ├── ApiResource.php
+│   │   │   │   ├── ApiResponse.php
+│   │   │   │   ├── ApplePayDomain.php
+│   │   │   │   ├── ApplicationFee.php
+│   │   │   │   ├── ApplicationFeeRefund.php
+│   │   │   │   ├── Apps
+│   │   │   │   ├── Balance.php
+│   │   │   │   ├── BalanceTransaction.php
+│   │   │   │   ├── BankAccount.php
+│   │   │   │   ├── BaseStripeClient.php
+│   │   │   │   ├── BaseStripeClientInterface.php
+│   │   │   │   ├── BillingPortal
+│   │   │   │   ├── Capability.php
+│   │   │   │   ├── Card.php
+│   │   │   │   ├── CashBalance.php
+│   │   │   │   ├── Charge.php
+│   │   │   │   ├── Checkout
+│   │   │   │   ├── Climate
+│   │   │   │   ├── Collection.php
+│   │   │   │   ├── CountrySpec.php
+│   │   │   │   ├── Coupon.php
+│   │   │   │   ├── CreditNote.php
+│   │   │   │   ├── CreditNoteLineItem.php
+│   │   │   │   ├── Customer.php
+│   │   │   │   ├── CustomerBalanceTransaction.php
+│   │   │   │   ├── CustomerCashBalanceTransaction.php
+│   │   │   │   ├── CustomerSession.php
+│   │   │   │   ├── Discount.php
+│   │   │   │   ├── Dispute.php
+│   │   │   │   ├── EphemeralKey.php
+│   │   │   │   ├── ErrorObject.php
+│   │   │   │   ├── Event.php
+│   │   │   │   ├── Exception
+│   │   │   │   ├── ExchangeRate.php
+│   │   │   │   ├── File.php
+│   │   │   │   ├── FileLink.php
+│   │   │   │   ├── FinancialConnections
+│   │   │   │   ├── FundingInstructions.php
+│   │   │   │   ├── HttpClient
+│   │   │   │   ├── Identity
+│   │   │   │   ├── Invoice.php
+│   │   │   │   ├── InvoiceItem.php
+│   │   │   │   ├── InvoiceLineItem.php
+│   │   │   │   ├── Issuing
+│   │   │   │   ├── LineItem.php
+│   │   │   │   ├── LoginLink.php
+│   │   │   │   ├── Mandate.php
+│   │   │   │   ├── OAuth.php
+│   │   │   │   ├── OAuthErrorObject.php
+│   │   │   │   ├── PaymentIntent.php
+│   │   │   │   ├── PaymentLink.php
+│   │   │   │   ├── PaymentMethod.php
+│   │   │   │   ├── PaymentMethodConfiguration.php
+│   │   │   │   ├── PaymentMethodDomain.php
+│   │   │   │   ├── Payout.php
+│   │   │   │   ├── Person.php
+│   │   │   │   ├── Plan.php
+│   │   │   │   ├── Price.php
+│   │   │   │   ├── Product.php
+│   │   │   │   ├── PromotionCode.php
+│   │   │   │   ├── Quote.php
+│   │   │   │   ├── Radar
+│   │   │   │   ├── RecipientTransfer.php
+│   │   │   │   ├── Refund.php
+│   │   │   │   ├── Reporting
+│   │   │   │   ├── RequestTelemetry.php
+│   │   │   │   ├── Review.php
+│   │   │   │   ├── SearchResult.php
+│   │   │   │   ├── Service
+│   │   │   │   ├── SetupAttempt.php
+│   │   │   │   ├── SetupIntent.php
+│   │   │   │   ├── ShippingRate.php
+│   │   │   │   ├── Sigma
+│   │   │   │   ├── SingletonApiResource.php
+│   │   │   │   ├── Source.php
+│   │   │   │   ├── SourceTransaction.php
+│   │   │   │   ├── Stripe.php
+│   │   │   │   ├── StripeClient.php
+│   │   │   │   ├── StripeClientInterface.php
+│   │   │   │   ├── StripeObject.php
+│   │   │   │   ├── StripeStreamingClientInterface.php
+│   │   │   │   ├── Subscription.php
+│   │   │   │   ├── SubscriptionItem.php
+│   │   │   │   ├── SubscriptionSchedule.php
+│   │   │   │   ├── Tax
+│   │   │   │   ├── TaxCode.php
+│   │   │   │   ├── TaxId.php
+│   │   │   │   ├── TaxRate.php
+│   │   │   │   ├── Terminal
+│   │   │   │   ├── TestHelpers
+│   │   │   │   ├── Token.php
+│   │   │   │   ├── Topup.php
+│   │   │   │   ├── Transfer.php
+│   │   │   │   ├── TransferReversal.php
+│   │   │   │   ├── Treasury
+│   │   │   │   ├── UsageRecord.php
+│   │   │   │   ├── UsageRecordSummary.php
+│   │   │   │   ├── Util
+│   │   │   │   ├── Webhook.php
+│   │   │   │   ├── WebhookEndpoint.php
+│   │   │   │   └── WebhookSignature.php
+│   │   │   ├── CHANGELOG.md
+│   │   │   ├── composer.json
+│   │   │   ├── data
+│   │   │   ├── init.php
+│   │   │   ├── lib
+│   │   │   ├── LICENSE
+│   │   │   ├── OPENAPI_VERSION
+│   │   │   ├── README.md
+│   │   │   └── VERSION
+│   │   ├── woothemes-FlexSlider/
+│   │   │   ├── fonts/
+│   │   │   │   ├── flexslider-icon.eot
+│   │   │   │   ├── flexslider-icon.svg
+│   │   │   │   ├── flexslider-icon.ttf
+│   │   │   │   └── flexslider-icon.woff
+│   │   │   ├── images/
+│   │   │   │   └── bg_play_pause.png
+│   │   │   ├── flexslider.css
+│   │   │   ├── fonts
+│   │   │   ├── images
+│   │   │   ├── jquery.flexslider-min.js
+│   │   │   └── jquery.flexslider.js
+│   │   ├── beanstream-sdk
+│   │   ├── bgrins-spectrum
+│   │   ├── braintree-sdk
+│   │   ├── canjs
+│   │   ├── fancybox
+│   │   ├── jquery-flot
+│   │   ├── jquery-flot-dashes
+│   │   ├── jquery-tiptip
+│   │   ├── jquery.serializeJSON
+│   │   ├── kbwood
+│   │   ├── stripe-api
+│   │   └── woothemes-FlexSlider
+│   ├── assets
+│   ├── functions.php
+│   ├── images
+│   ├── includes
+│   ├── languages
+│   ├── license.txt
+│   ├── motopress-hotel-booking.php
+│   ├── plugin.php
+│   ├── readme.txt
+│   ├── template-functions.php
+│   ├── templates
+│   ├── vendors
+│   └── wpml-config.xml
+└── motopress-hotel-booking
