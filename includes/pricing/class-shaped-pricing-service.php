@@ -89,18 +89,7 @@ class Shaped_Pricing_Service
         }
 
         // Delegate to provider
-        try {
-            $result = $this->provider->quote($request);
-        } catch (Exception $e) {
-            // Log error and re-throw
-            error_log(sprintf(
-                'Shaped Pricing Service: Quote failed - %s (provider: %s)',
-                $e->getMessage(),
-                $this->provider->get_name()
-            ));
-
-            throw $e;
-        }
+        $result = $this->provider->quote($request);
 
         // Cache result
         $this->cache_result($cache_key, $result);
