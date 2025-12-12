@@ -61,9 +61,27 @@ class Shaped_Pricing_Rest_Api
                 define('SHAPED_NO_SESSION', true);
             }
 
-            // Remove any session-starting hooks that may have been added by other plugins
-            remove_all_actions('init', 1); // Re-add ourselves after removal
-            add_action('init', [__CLASS__, 'prevent_session_on_price_endpoint'], 1);
+            // Override session_start() to prevent any plugin from starting sessions
+            if (!function_exists('wp_session_start_override')) {
+                function wp_session_start_override() {
+                    // Do nothing - prevent session start
+                    return false;
+                }
+            }
+
+            // Disable WP Session Manager plugin for this request
+            add_filter('wp_session_manager_use_cookie', '__return_false', 999);
+
+            // Remove any session-related actions that may have been added
+            remove_action('init', 'wp_session_manager_initialize', 1);
+            remove_action('plugins_loaded', 'wp_session_manager_initialize', 1);
+
+            // Prevent PHP sessions
+            if (!headers_sent()) {
+                ini_set('session.use_cookies', '0');
+                ini_set('session.use_only_cookies', '0');
+                ini_set('session.cache_limiter', '');
+            }
         }
     }
 
