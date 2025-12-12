@@ -62,11 +62,8 @@ function shaped_init_pricing_service(array $config = []): ?Shaped_Pricing_Servic
             'currency'      => $config['currency'] ?? 'EUR',
         ]);
 
-        if ($provider->is_available()) {
-            error_log('Shaped Pricing Service: Initialized with RoomCloud provider');
-        } else {
+        if (!$provider->is_available()) {
             $provider = null;
-            error_log('Shaped Pricing Service: RoomCloud provider not available');
         }
     }
 
@@ -77,17 +74,13 @@ function shaped_init_pricing_service(array $config = []): ?Shaped_Pricing_Servic
             'currency'      => $config['currency'] ?? 'EUR',
         ]);
 
-        if ($provider->is_available()) {
-            error_log('Shaped Pricing Service: Initialized with MotoPress provider (stub)');
-        } else {
+        if (!$provider->is_available()) {
             $provider = null;
-            error_log('Shaped Pricing Service: MotoPress provider not available');
         }
     }
 
     // No provider available
     if ($provider === null) {
-        error_log('Shaped Pricing Service: No pricing provider available');
         return null;
     }
 
