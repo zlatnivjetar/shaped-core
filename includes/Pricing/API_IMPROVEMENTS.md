@@ -11,14 +11,29 @@ The `/wp-json/shaped/v1/price` endpoint has been upgraded to be:
 
 ## Changes Made
 
-### 1. Session Prevention (`includes/Pricing/RestApi.php:42-68`)
+### 1. Session Prevention (`mu-plugins/shaped-no-session-on-price-api.php` + `includes/Pricing/RestApi.php:42-86`)
 
-**Problem**: WordPress or plugins may start sessions, which creates `WP_SESSION_COOKIE`, hurting caching and potentially triggering bot detection heuristics.
+**Problem**: WordPress or plugins (like WP Session Manager) start sessions, which creates `WP_SESSION_COOKIE`, hurting caching and potentially triggering bot detection heuristics.
 
-**Solution**: Added `prevent_session_on_price_endpoint()` method that:
-- Detects requests to `/wp-json/shaped/v1/price*`
-- Sets `SHAPED_NO_SESSION` constant to signal other code
-- Runs early on `init` hook (priority 1)
+**Solution**: Two-tier approach for maximum effectiveness:
+
+**Primary (MU-Plugin)**: `mu-plugins/shaped-no-session-on-price-api.php`
+- Runs on `muplugins_loaded` (before all plugins)
+- Disables PHP sessions via `ini_set()`
+- Adds filters to disable WP Session Manager
+- Removes session initialization hooks
+
+**Fallback (Plugin)**: `includes/Pricing/RestApi.php:42-86`
+- Runs on `init` hook (priority 1)
+- Additional session prevention if MU-plugin isn't installed
+- Sets `SHAPED_NO_SESSION` constant
+
+**Installation Required**:
+```bash
+cp mu-plugins/shaped-no-session-on-price-api.php /path/to/wp-content/mu-plugins/
+```
+
+Without the MU-plugin, sessions may still be created by WP Session Manager or other plugins that initialize early.
 
 ### 2. Transient Caching (`includes/Pricing/RestApi.php:285-298, 325-342`)
 
@@ -258,15 +273,20 @@ Enable `SHAPED_PRICE_API_REQUIRE_KEY` if:
 ## Files Modified
 
 1. `includes/Pricing/RestApi.php` - Main endpoint implementation
-2. `robots.txt.example` - Recommended robots.txt configuration
 
 ## Files Created
 
-1. `includes/Pricing/API_IMPROVEMENTS.md` - This documentation
+1. `mu-plugins/shaped-no-session-on-price-api.php` - Must-use plugin to prevent sessions (CRITICAL - must be installed)
+2. `includes/Pricing/API_IMPROVEMENTS.md` - This documentation
+3. `robots.txt.example` - Recommended robots.txt configuration
+4. `wp-config-additions.php` - Configuration examples
 
 ## Migration Checklist
 
 - [ ] Deploy updated code
+- [ ] **CRITICAL**: Copy `mu-plugins/shaped-no-session-on-price-api.php` to `wp-content/mu-plugins/`
+  - Create the directory if it doesn't exist: `mkdir -p wp-content/mu-plugins`
+  - Without this, sessions will still be created!
 - [ ] Copy `robots.txt.example` to WordPress root as `robots.txt` (if not using custom robots.txt already)
 - [ ] Test endpoint without session cookies (curl test #1)
 - [ ] Test caching behavior (curl test #2)
@@ -280,21 +300,27 @@ Enable `SHAPED_PRICE_API_REQUIRE_KEY` if:
 
 ### Session cookies still appearing
 
-**Cause**: Another plugin/theme starting sessions before our hook runs.
+**Cause**: The MU-plugin is not installed or another plugin is starting sessions before it runs.
 
-**Solution**: Check for other session-starting code and disable it, or add a mu-plugin to prevent sessions earlier:
+**Solution**:
 
-```php
-// wp-content/mu-plugins/shaped-no-session.php
-<?php
-add_action('init', function() {
-    if (strpos($_SERVER['REQUEST_URI'] ?? '', '/wp-json/shaped/v1/price') !== false) {
-        if (!defined('SHAPED_NO_SESSION')) {
-            define('SHAPED_NO_SESSION', true);
-        }
-    }
-}, 1);
-```
+1. **Install the MU-plugin** (most common fix):
+   ```bash
+   # From plugin root directory
+   mkdir -p /path/to/wp-content/mu-plugins
+   cp mu-plugins/shaped-no-session-on-price-api.php /path/to/wp-content/mu-plugins/
+   ```
+
+2. **Verify MU-plugin is loaded**:
+   - Go to WordPress admin → Plugins → Must-Use
+   - You should see "Shaped - Prevent Sessions on Price API"
+
+3. **Check for conflicts**:
+   - Look for other session-starting plugins (WP Session Manager, WooCommerce, etc.)
+   - Check if they have settings to disable sessions on REST endpoints
+
+4. **Last resort - Disable session plugin**:
+   If sessions are still created and not needed elsewhere, temporarily disable WP Session Manager or similar plugins to test.
 
 ### Cache not working
 
