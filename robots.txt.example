@@ -1,0 +1,21 @@
+# Shaped Core - Recommended robots.txt Configuration
+#
+# This file should be placed in your WordPress root directory (public_html/)
+# as robots.txt (without the .example extension)
+#
+# This configuration allows crawlers to access the WordPress REST API
+# while protecting sensitive admin areas.
+
+User-agent: *
+Disallow: /wp-admin/
+Disallow: /wp-includes/
+Allow: /wp-admin/admin-ajax.php
+Allow: /wp-json/
+
+# Optional: Prevent crawling of specific REST endpoints
+# Uncomment the following line if you want to block the price endpoint from search engines
+# (Note: The endpoint already returns X-Robots-Tag: noindex header)
+# Disallow: /wp-json/shaped/v1/price
+
+# Sitemap (replace with your actual sitemap URL)
+# Sitemap: https://yoursite.com/sitemap.xml
