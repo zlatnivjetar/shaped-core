@@ -23,6 +23,7 @@ require_once __DIR__ . '/class-roomcloud-pricing-provider.php';
 require_once __DIR__ . '/class-motopress-pricing-provider.php';
 require_once __DIR__ . '/class-shaped-pricing-service.php';
 require_once __DIR__ . '/class-rest-api.php';
+require_once __DIR__ . '/class-official-prices-page.php';
 
 /**
  * Global pricing service instance
@@ -139,3 +140,10 @@ function shaped_get_price_quote(array $params): ?Shaped_Price_Result
  * Registers /wp-json/shaped/v1/price and /wp-json/shaped/v1/price-html
  */
 Shaped_Pricing_Rest_Api::init();
+
+/**
+ * Initialize Official Prices Page
+ *
+ * Registers shortcode and page-specific schema
+ */
+Shaped_Official_Prices_Page::init();

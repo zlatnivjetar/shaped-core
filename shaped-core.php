@@ -264,7 +264,11 @@ function shaped_activate() {
             'studio-apartment'          => 20,
         ]);
     }
-    
+
+    // Create Official Prices page
+    require_once SHAPED_DIR . 'includes/pricing/class-official-prices-page.php';
+    Shaped_Official_Prices_Page::create_page();
+
     // Trigger module activation hooks
     if (SHAPED_ENABLE_ROOMCLOUD) {
         do_action('shaped_activate_module_roomcloud');
@@ -272,7 +276,7 @@ function shaped_activate() {
     if (SHAPED_ENABLE_REVIEWS) {
         do_action('shaped_activate_module_reviews');
     }
-    
+
     flush_rewrite_rules();
 }
 
