@@ -45,23 +45,6 @@ add_action('muplugins_loaded', function() {
         define('SHAPED_NO_SESSION', true);
     }
 
-    // NUCLEAR OPTION: Strip Set-Cookie header for WP_SESSION_COOKIE
-    // This runs after all headers are set but before they're sent
-    add_action('send_headers', function() {
-        header_register_callback(function() {
-            if (!headers_sent()) {
-                $headers = headers_list();
-                header_remove();
-                foreach ($headers as $header) {
-                    // Skip WP_SESSION_COOKIE - re-add everything else
-                    if (stripos($header, 'Set-Cookie: WP_SESSION_COOKIE') === false) {
-                        header($header);
-                    }
-                }
-            }
-        });
-    }, 1);
-
     // Prevent PHP sessions at the PHP level
     if (!headers_sent()) {
         ini_set('session.use_cookies', '0');
