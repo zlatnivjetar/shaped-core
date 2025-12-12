@@ -140,7 +140,7 @@ add_action('plugins_loaded', function() {
     Shaped_Admin::init();
 
     // ─── Pricing Service (unified pricing API) ───
-    require_once SHAPED_DIR . 'includes/Pricing/init.php';
+    require_once SHAPED_DIR . 'includes/pricing/init.php';
     shaped_init_pricing_service();
 
     // Load email handlers (procedural)

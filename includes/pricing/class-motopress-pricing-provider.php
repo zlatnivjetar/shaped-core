@@ -324,6 +324,7 @@ class Shaped_MotoPress_Pricing_Provider implements Shaped_Pricing_Provider_Inter
             'best_rate'      => $best_rate,
             'other_options'  => $other_options,
             'source'         => 'motopress',
+            'provider'       => 'shaped',
             'generated_at'   => gmdate('c'),
         ]);
     }

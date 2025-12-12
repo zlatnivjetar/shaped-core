@@ -11,7 +11,7 @@ The `/wp-json/shaped/v1/price` endpoint has been upgraded to be:
 
 ## Changes Made
 
-### 1. Session Prevention (`mu-plugins/shaped-no-session-on-price-api.php` + `includes/Pricing/RestApi.php:42-86`)
+### 1. Session Prevention (`mu-plugins/shaped-no-session-on-price-api.php` + `includes/pricing/class-rest-api.php:42-86`)
 
 **Problem**: WordPress or plugins (like WP Session Manager) start sessions, which creates `WP_SESSION_COOKIE`, hurting caching and potentially triggering bot detection heuristics.
 
@@ -23,7 +23,7 @@ The `/wp-json/shaped/v1/price` endpoint has been upgraded to be:
 - Adds filters to disable WP Session Manager
 - Removes session initialization hooks
 
-**Fallback (Plugin)**: `includes/Pricing/RestApi.php:42-86`
+**Fallback (Plugin)**: `includes/pricing/class-rest-api.php:42-86`
 - Runs on `init` hook (priority 1)
 - Additional session prevention if MU-plugin isn't installed
 - Sets `SHAPED_NO_SESSION` constant
@@ -35,7 +35,7 @@ cp mu-plugins/shaped-no-session-on-price-api.php /path/to/wp-content/mu-plugins/
 
 Without the MU-plugin, sessions may still be created by WP Session Manager or other plugins that initialize early.
 
-### 2. Transient Caching (`includes/Pricing/RestApi.php:285-298, 325-342`)
+### 2. Transient Caching (`includes/pricing/class-rest-api.php:285-298, 325-342`)
 
 **Implementation**:
 - **Cache Key**: MD5 hash of serialized parameters (checkin, checkout, adults, children, room_type, locale)
@@ -55,7 +55,7 @@ X-Shaped-Cache: HIT|MISS
 - Reduces database load
 - Debug header shows cache status
 
-### 3. Strict Validation (`includes/Pricing/RestApi.php:178-238`)
+### 3. Strict Validation (`includes/pricing/class-rest-api.php:178-238`)
 
 **Enhanced Date Validation**:
 - Strict regex check for `YYYY-MM-DD` format
@@ -69,7 +69,7 @@ X-Shaped-Cache: HIT|MISS
 - `401 Unauthorized` if API key required but missing/invalid
 - `503 Service Unavailable` if pricing service fails
 
-### 4. Optional Authentication (`includes/Pricing/RestApi.php:240-275`)
+### 4. Optional Authentication (`includes/pricing/class-rest-api.php:240-275`)
 
 **Configuration** (in `wp-config.php`):
 
@@ -272,12 +272,12 @@ Enable `SHAPED_PRICE_API_REQUIRE_KEY` if:
 
 ## Files Modified
 
-1. `includes/Pricing/RestApi.php` - Main endpoint implementation
+1. `includes/pricing/class-rest-api.php` - Main endpoint implementation
 
 ## Files Created
 
 1. `mu-plugins/shaped-no-session-on-price-api.php` - Must-use plugin to prevent sessions (CRITICAL - must be installed)
-2. `includes/Pricing/API_IMPROVEMENTS.md` - This documentation
+2. `includes/pricing/API_IMPROVEMENTS.md` - This documentation
 3. `robots.txt.example` - Recommended robots.txt configuration
 4. `wp-config-additions.php` - Configuration examples
 
