@@ -104,209 +104,46 @@ function shaped_send_confirmation_email( $booking_id ) {
 }
 
 function shaped_get_confirmation_template( $data ) {
-    ob_start();
-    ?>
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Booking Confirmed - Preelook Apartments</title>
-        <style>
-            @media only screen and (max-width: 600px) {
-                .container { width: 100% !important; margin: 16px 0 !important; }
-                .content-padding { padding: 24px 16px !important; }
-                .header-padding { padding: 24px 16px !important; }
-                .section-padding { padding: 16px !important; }
-                h1 { font-size: 28px !important; }
-                .total-price { font-size: 28px !important; }
-            }
-        </style>
-    </head>
-    <body style="margin: 0; padding: 0; font-family: 'DM Sans', Arial, sans-serif; line-height: 1.5;">
-        
-        <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-                <td align="center">
-                    <table class="container" width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; max-width: 600px; margin: 0 auto; margin-top: 0 !important; margin-bottom: 0 !important;">
-                        
-                        <!-- Header -->
-                        <tr>
-                            <td class="header-padding" style="background: linear-gradient(135deg, <?php echo shaped_brand_color('primary'); ?> 0%, <?php echo shaped_brand_color('secondary'); ?> 100%); padding: 32px; text-align: center;">
-                                <h1 style="margin: 0 0 8px 0; color: <?php echo shaped_brand_color('textInverse'); ?>; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.2;">Booking Confirmed!</h1>
-                                <p style="margin: 0; color: <?php echo shaped_brand_color('textInverse'); ?>; font-size: 18px; opacity: 0.95;">Your seaside escape awaits</p>
-                            </td>
-                        </tr>
-                        
-                        <!-- Main Content -->
-                        <tr>
-                            <td class="content-padding" style="padding: 32px;">
-                                
-                                <!-- Greeting -->
-                                <p style="margin: 0 0 24px 0; font-size: 16px; color: <?php echo shaped_brand_color('textPrimary'); ?>;">
-                                    Dear <strong><?php echo esc_html( $data['customer_first'] ); ?></strong>,
-                                </p>
+    // Build content using reusable blocks
+    $content = '';
 
-                                <p style="margin: 0 0 32px 0; font-size: 16px; color: <?php echo shaped_brand_color('textMuted'); ?>; line-height: 1.5;">
-                                    Thank you for choosing Preelook Apartments! We're excited to welcome you to the beautiful seaside town of Rijeka, just steps from the Adriatic Sea.
-                                </p>
-                                
-                                <!-- Booking Details -->
-                                <div style="background: #fffbf0; border-radius: 8px; padding: 24px; margin: 0 0 24px 0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                                    <h2 style="margin: 0 0 16px 0; font-size: 20px; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-weight: 700;">📋 Booking Details</h2>
-                                    
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-                                        <tr>
-                                            <td style="padding: 8px 0; color: <?php echo shaped_brand_color('textMuted'); ?>; font-size: 14px; font-weight: 600;">Booking ID:</td>
-                                            <td style="padding: 8px 0; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-size: 14px; font-weight: 600; text-align: right;">#<?php echo esc_html( $data['booking_id'] ); ?></td>
-                                        </tr>
-                                        <tr class="mobile-stack">
-                                            <td style="padding: 8px 0; color: <?php echo shaped_brand_color('textMuted'); ?>; font-size: 14px; font-weight: 600;">Check-in:</td>
-                                            <td class="mobile-right" style="padding: 8px 0; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-size: 14px; text-align: right;">
-                                                <strong><?php echo esc_html( $data['check_in'] ); ?></strong><br><span style="font-weight: 600;">from 16:00</span>
-                                            </td>
-                                        </tr>
-                                        <tr class="mobile-stack">
-                                            <td style="padding: 8px 0; color: <?php echo shaped_brand_color('textMuted'); ?>; font-size: 14px; font-weight: 600;">Check-out:</td>
-                                            <td class="mobile-right" style="padding: 8px 0; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-size: 14px; text-align: right;">
-                                                <strong><?php echo esc_html( $data['check_out'] ); ?></strong><br><span style="font-weight: 600;">until 11:00</span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding: 8px 0; color: <?php echo shaped_brand_color('textMuted'); ?>; font-size: 14px; font-weight: 600;">Accommodation:</td>
-                                            <td style="padding: 8px 0; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-size: 14px; font-weight: 600; text-align: right;"><?php echo esc_html( $data['room_list'] ); ?></td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="2" style="padding: 16px 0 0 0; border-top: 1px solid <?php echo shaped_brand('colors.border.default'); ?>;">
-                                                <table width="100%" cellpadding="0" cellspacing="0">
-                                                    <tr>
-                                                        <td style="color: <?php echo shaped_brand_color('textPrimary'); ?>; font-size: 16px; font-weight: 700;">Total Paid:</td>
-                                                        <td style="text-align: right;">
-                                                            <span class="total-price" style="color: <?php echo shaped_brand_color('primary'); ?>; font-size: 24px; font-weight: 700;"><?php echo esc_html( $data['total_paid'] ); ?></span>
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </div>
-                                
-                                <!-- Getting Here -->
-                                <div style="background: #f8f8f8; border-radius: 8px; padding: 24px; margin: 0 0 24px 0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                                    <h3 style="margin: 0 0 16px 0; font-size: 18px; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-weight: 700;">📍 Getting Here</h3>
-                                    <p style="margin: 0 0 12px 0; font-size: 14px; color: <?php echo shaped_brand_color('textPrimary'); ?>; line-height: 1.5;">
-                                        <strong>Address:</strong><br>
-                                        <a href="https://maps.app.goo.gl/Zn5MTHb858g4aEUL8" style="color: <?php echo shaped_brand_color('primary'); ?>; font-weight: 600;">Preluk 4, 51000 Rijeka, Croatia</a>
-                                    </p>
-                                    <p style="margin: 0; font-size: 14px; color: <?php echo shaped_brand_color('textPrimary'); ?>; line-height: 1.5;">
-                                        <strong>Check-in:</strong><br>
-                                        <span style="color: <?php echo shaped_brand_color('textMuted'); ?>;">Visit us at the hotel reception upon arrival. We'll personally show you to your apartment and ensure you feel right at home.</span>
-                                    </p>
-                                </div>
-                                
-                                <!-- Explore the Area -->
-                                <div style="background: #f8f8f8; border-radius: 8px; padding: 24px; margin: 0 0 24px 0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                                    <h3 style="margin: 0 0 16px 0; font-size: 18px; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-weight: 700;">✨ Explore the Area</h3>
-                                    <p style="margin: 0 0 16px 0; font-size: 14px; color: <?php echo shaped_brand_color('textMuted'); ?>; line-height: 1.5;">
-                                        Discover the charm of Croatian coastline right from your doorstep:
-                                    </p>
+    // Greeting
+    $content .= shaped_email_block_greeting($data['customer_first']);
 
-                                    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0;">
-                                        <tr class="mobile-stack">
-                                            <td style="padding: 8px 0; vertical-align: top; width: 70%;">
-                                                <a href="https://maps.app.goo.gl/KtRTD5gGpsNEPGQC9" style="color: <?php echo shaped_brand_color('primary'); ?>;"><strong style="font-size: 14px;">Volosko harbour</strong></a><br>
-                                                <span style="color: <?php echo shaped_brand_color('textMuted'); ?>; font-size: 13px; line-height: 1.5;">Cozy fishing port with seafront cafés.</span>
-                                            </td>
-                                            <td class="mobile-right" style="padding: 8px 0; text-align: right; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-size: 13px; font-weight: 600; vertical-align: top; width: 30%;">
-                                                1.5 km
-                                            </td>
-                                        </tr>
-                                        <tr class="mobile-stack">
-                                            <td style="padding: 8px 0; vertical-align: top;">
-                                                <a href="https://maps.app.goo.gl/1uMSDEgY3NebzP14A" style="color: <?php echo shaped_brand_color('primary'); ?>;"><strong style="font-size: 14px;">Opatija centre</strong></a><br>
-                                                <span style="color: <?php echo shaped_brand_color('textMuted'); ?>; font-size: 13px; line-height: 1.5;">Stroll the Lungomare and grand villas.</span>
-                                            </td>
-                                            <td class="mobile-right" style="padding: 8px 0; text-align: right; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-size: 13px; font-weight: 600; vertical-align: top;">
-                                                4 km
-                                            </td>
-                                        </tr>
-                                        <tr class="mobile-stack">
-                                            <td style="padding: 8px 0; vertical-align: top;">
-                                                <a href="https://maps.app.goo.gl/S4R7E1fhw7ZWtE6B8" style="color: <?php echo shaped_brand_color('primary'); ?>;"><strong style="font-size: 14px;">Kastav old town</strong></a><br>
-                                                <span style="color: <?php echo shaped_brand_color('textMuted'); ?>; font-size: 13px; line-height: 1.5;">Medieval lanes, wine bars, and sunset vistas.</span>
-                                            </td>
-                                            <td class="mobile-right" style="padding: 8px 0; text-align: right; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-size: 13px; font-weight: 600; vertical-align: top;">
-                                                9 km
-                                            </td>
-                                        </tr>
-                                        <tr class="mobile-stack">
-                                            <td style="padding: 8px 0; vertical-align: top;">
-                                                <a href="https://maps.app.goo.gl/p6o888sxkrCvTF9TA" style="color: <?php echo shaped_brand_color('primary'); ?>;"><strong style="font-size: 14px;">Rijeka city centre</strong></a><br>
-                                                <span style="color: <?php echo shaped_brand_color('textMuted'); ?>; font-size: 13px; line-height: 1.5;">Korzo buzzes with shops and markets.</span>
-                                            </td>
-                                            <td class="mobile-right" style="padding: 8px 0; text-align: right; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-size: 13px; font-weight: 600; vertical-align: top;">
-                                                10 km
-                                            </td>
-                                        </tr>
-                                        <tr class="mobile-stack">
-                                            <td style="padding: 8px 0; vertical-align: top;">
-                                                <a href="https://maps.app.goo.gl/VHFgMMstrHfo81Ht8" style="color: <?php echo shaped_brand_color('primary'); ?>;"><strong style="font-size: 14px;">Trsat Castle</strong></a><br>
-                                                <span style="color: <?php echo shaped_brand_color('textMuted'); ?>; font-size: 13px; line-height: 1.5;">Hill-top fortress with sweeping bay views.</span>
-                                            </td>
-                                            <td class="mobile-right" style="padding: 8px 0; text-align: right; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-size: 13px; font-weight: 600; vertical-align: top;">
-                                                14 km
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </div>
-                                
-                                <!-- Contact & Next Steps -->
-                                <div style="background: #f8f8f8; border-radius: 8px; padding: 24px; margin: 0 0 32px 0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
-                                    <h3 style="margin: 0 0 16px 0; font-size: 18px; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-weight: 700;">📞 Need Help?</h3>
-                                    <p style="margin: 0 0 16px 0; font-size: 14px; color: <?php echo shaped_brand_color('textMuted'); ?>; line-height: 1.5;">
-                                        We're here to ensure your perfect stay. Contact us anytime:
-                                    </p>
-                                    <p style="margin: 0; font-size: 14px; color: <?php echo shaped_brand_color('textPrimary'); ?>; line-height: 1.7;">
-                                        <strong>Phone:</strong> <a href="tel:+38591613309" style="color: <?php echo shaped_brand_color('primary'); ?>; font-weight: 600;">+385 91 613 3609</a><br>
-                                        <strong>Email:</strong> <a href="mailto:info@preelook.com" style="color: <?php echo shaped_brand_color('primary'); ?>; font-weight: 600;">info@preelook.com</a>
-                                    </p>
-                                </div>
+    // Intro
+    $content .= shaped_email_block_intro(
+        "Thank you for choosing Preelook Apartments! We're excited to welcome you to the beautiful seaside town of Rijeka, just steps from the Adriatic Sea."
+    );
 
-                                <!-- Closing Message -->
-                                <div style="text-align: center; padding: 24px; background: #fffbf0; border-radius: 8px; margin: 0;">
-                                    <p style="margin: 0 0 12px 0; font-size: 16px; color: <?php echo shaped_brand_color('textPrimary'); ?>; line-height: 1.5;">
-                                        We're looking forward to hosting you in beautiful Rijeka!
-                                    </p>
-                                    <p style="margin: 0; font-size: 16px; color: <?php echo shaped_brand_color('primary'); ?>; font-weight: 600; line-height: 1.5;">
-                                        Warm regards,<br>
-                                        The Preelook Team
-                                    </p>
-                                </div>
-                                
-                            </td>
-                        </tr>
-                        
-                        <!-- Footer -->
-                        <tr>
-                            <td style="background: #26272C; padding: 24px 32px; text-align: center;">
-                                <p style="margin: 0 0 8px 0; color: #ffffff; font-size: 14px; line-height: 1.5;">
-                                    Preelook Apartments | Rijeka, Croatia
-                                </p>
-                                <p style="margin: 0; color: #999999; font-size: 12px; line-height: 1.5;">
-                                    This is an automated confirmation email.
-                                </p>
-                            </td>
-                        </tr>
-                        
-                    </table>
-                </td>
-            </tr>
-        </table>
-        
-    </body>
-</html>
-    <?php
-    return ob_get_clean();
+    // Booking Details
+    $content .= shaped_email_render_booking_details([
+        'booking_id' => $data['booking_id'],
+        'check_in'   => $data['check_in'],
+        'check_out'  => $data['check_out'],
+        'room_list'  => $data['room_list'],
+        'total_paid' => $data['total_paid'],
+    ]);
+
+    // Getting Here
+    $content .= shaped_email_render_getting_here();
+
+    // Explore the Area
+    $content .= shaped_email_render_explore_area();
+
+    // Contact
+    $content .= shaped_email_render_contact();
+
+    // Closing
+    $content .= shaped_email_render_closing();
+
+    // Render full email
+    return shaped_render_email([
+        'title'       => 'Booking Confirmed - Preelook Apartments',
+        'header'      => 'Booking Confirmed!',
+        'subtitle'    => 'Your seaside escape awaits',
+        'content'     => $content,
+        'footer_text' => 'This is an automated confirmation email.',
+    ]);
 }
 
 function shaped_send_reservation_email($booking_id) {
@@ -369,110 +206,55 @@ function shaped_send_reservation_email($booking_id) {
 }
 
 function shaped_get_reservation_template($data) {
-    ob_start();
-    ?>
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Reservation Confirmed - Preelook Apartments</title>
-    </head>
-    <body style="margin: 0; padding: 0; font-family: 'DM Sans', Arial, sans-serif; line-height: 1.5;">
-        
-        <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-                <td align="center">
-                    <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; max-width: 600px; margin: 0 auto;">
-                        
-                        <!-- Header -->
-                        <tr>
-                            <td style="background: linear-gradient(135deg, <?php echo shaped_brand_color('primary'); ?> 0%, <?php echo shaped_brand_color('secondary'); ?> 100%); padding: 32px; text-align: center;">
-                                <h1 style="margin: 0 0 8px 0; color: <?php echo shaped_brand_color('textInverse'); ?>; font-size: 32px; font-weight: 700;">Reservation Confirmed!</h1>
-                                <p style="margin: 0; color: <?php echo shaped_brand_color('textInverse'); ?>; font-size: 18px; opacity: 0.95;">Card saved successfully</p>
-                            </td>
-                        </tr>
-                        
-                        <!-- Main Content -->
-                        <tr>
-                            <td style="padding: 32px;">
-                                
-                                <p style="margin: 0 0 24px 0; font-size: 16px; color: <?php echo shaped_brand_color('textPrimary'); ?>;">
-                                    Dear <strong><?php echo esc_html($data['customer_first']); ?></strong>,
-                                </p>
+    // Build content using reusable blocks
+    $content = '';
 
-                                <p style="margin: 0 0 32px 0; font-size: 16px; color: <?php echo shaped_brand_color('textMuted'); ?>; line-height: 1.5;">
-                                    Your reservation at Preelook Apartments has been confirmed! Your card has been securely saved.
-                                </p>
+    // Greeting
+    $content .= shaped_email_block_greeting($data['customer_first']);
 
-                                <!-- Booking Summary -->
-                                <div style="background: #f8f8f8; border-radius: 8px; padding: 24px; margin: 0 0 24px 0;">
-                                    <h2 style="margin: 0 0 16px 0; font-size: 20px; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-weight: 700;">📋 Booking #<?php echo esc_html($data['booking_id']); ?></h2>
+    // Intro
+    $content .= shaped_email_block_intro(
+        "Your reservation at Preelook Apartments has been confirmed! Your card has been securely saved."
+    );
 
-                                    <table width="100%" cellpadding="0" cellspacing="0">
-                                        <tr>
-                                            <td style="padding: 8px 0; color: <?php echo shaped_brand_color('textMuted'); ?>; font-size: 14px;">Check-in:</td>
-                                            <td style="padding: 8px 0; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-size: 14px; text-align: right;">
-                                                <strong><?php echo esc_html($data['check_in']); ?></strong>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding: 8px 0; color: <?php echo shaped_brand_color('textMuted'); ?>; font-size: 14px;">Check-out:</td>
-                                            <td style="padding: 8px 0; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-size: 14px; text-align: right;">
-                                                <strong><?php echo esc_html($data['check_out']); ?></strong>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                </div>
+    // Booking Summary
+    $content .= shaped_email_render_booking_summary([
+        'booking_id' => $data['booking_id'],
+        'check_in'   => $data['check_in'],
+        'check_out'  => $data['check_out'],
+    ]);
 
-                                <!-- Payment Info -->
-                                <div style="background: #fffbf0; border-radius: 8px; padding: 24px; margin: 0 0 24px 0; text-align: center;">
-                                    <p style="margin: 0 0 12px 0; font-size: 16px; color: <?php echo shaped_brand_color('textPrimary'); ?>;">
-                                        We'll charge <strong style="color: <?php echo shaped_brand_color('primary'); ?>; font-size: 20px;">€<?php echo esc_html($data['amount']); ?></strong>
-                                    </p>
-                                    <p style="margin: 0; font-size: 14px; color: <?php echo shaped_brand_color('textMuted'); ?>;">
-                                        on <strong><?php echo esc_html($data['charge_date']); ?></strong><br>
-                                        (7 days before your arrival)
-                                    </p>
-                                </div>
+    // Payment Info
+    $content .= shaped_email_block_payment_info(
+        '€' . $data['amount'],
+        $data['charge_date'],
+        '(7 days before your arrival)'
+    );
 
-                                <!-- Manage Link -->
-                                <div style="text-align: center; margin: 0 0 24px 0;">
-                                    <a href="<?php echo home_url('/manage-booking/?booking_id=' . $data['booking_id'] . '&token=' . md5($data['booking_id'] . $data['customer_email'])); ?>"
-                                       style="display: inline-block; background: <?php echo shaped_brand_color('primary'); ?>; color: <?php echo shaped_brand_color('textInverse'); ?>; padding: 14px 30px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 15px; letter-spacing:0.2px; text-transform:uppercase;">
-                                        Manage Booking
-                                    </a>
-                                    <p style="margin: 12px 0 0 0; font-size: 13px; color: #999999;">
-                                        Free cancellation until <?php echo esc_html($data['charge_date']); ?>
-                                    </p>
-                                </div>
+    // Manage Booking Button
+    $manage_url = shaped_email_get_manage_url($data['booking_id'], $data['customer_email']);
+    $content .= shaped_email_block_button(
+        'Manage Booking',
+        $manage_url,
+        'Free cancellation until ' . $data['charge_date']
+    );
 
-                                <p style="margin: 0; font-size: 14px; color: <?php echo shaped_brand_color('textMuted'); ?>; text-align: center; line-height: 1.5;">
-                                    You'll receive full booking details after payment is processed.<br>
-                                    Questions? Contact us at <a href="tel:+385916133609" style="color: <?php echo shaped_brand_color('primary'); ?>;">+385 91 613 3609</a>
-                                </p>
-                                
-                            </td>
-                        </tr>
-                        
-                        <!-- Footer -->
-                        <tr>
-                            <td style="background: #26272C; padding: 24px; text-align: center;">
-                                <p style="margin: 0; color: #ffffff; font-size: 14px;">
-                                    Preelook Apartments | Rijeka, Croatia
-                                </p>
-                            </td>
-                        </tr>
-                        
-                    </table>
-                </td>
-            </tr>
-        </table>
-        
-    </body>
-    </html>
-    <?php
-    return ob_get_clean();
+    // Footer note
+    $primary = shaped_brand_color('primary');
+    $text_muted = shaped_brand_color('textMuted');
+    $content .= '<p style="margin: 0; font-size: 14px; color: ' . $text_muted . '; text-align: center; line-height: 1.6;">';
+    $content .= "You'll receive full booking details after payment is processed.<br>";
+    $content .= 'Questions? Contact us at <a href="tel:+385916133609" style="color: ' . $primary . ';">+385 91 613 3609</a>';
+    $content .= '</p>';
+
+    // Render full email
+    return shaped_render_email([
+        'title'       => 'Reservation Confirmed - Preelook Apartments',
+        'header'      => 'Reservation Confirmed!',
+        'subtitle'    => 'Card saved successfully',
+        'content'     => $content,
+        'footer_text' => '',
+    ]);
 }
 
 function shaped_send_cancellation_email($booking_id, $is_refundable = false) {
@@ -508,82 +290,35 @@ function shaped_send_cancellation_email($booking_id, $is_refundable = false) {
 }
 
 function shaped_get_cancellation_template($data) {
-    ob_start();
-    ?>
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Booking Cancelled - Preelook Apartments</title>
-    </head>
-    <body style="margin: 0; padding: 0; font-family: 'DM Sans', Arial, sans-serif; line-height: 1.5;">
-        
-        <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-                <td align="center">
-                    <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; max-width: 600px; margin: 0 auto;">
-                        
-                        <!-- Header -->
-                        <tr>
-                            <td style="background: linear-gradient(135deg, <?php echo shaped_brand_color('primary'); ?> 0%, <?php echo shaped_brand_color('secondary'); ?> 100%); padding: 32px 30px; text-align: center;">
-                                <h1 style="margin: 0 0 8px 0; color: <?php echo shaped_brand_color('textInverse'); ?>; font-size: 32px; font-weight: 700;">Booking Cancelled</h1>
-                                <p style="margin: 0; color: <?php echo shaped_brand_color('textInverse'); ?>; font-size: 18px; opacity: 0.95;">We've processed your cancellation</p>
-                            </td>
-                        </tr>
-                        
-                        <!-- Main Content -->
-                        <tr>
-                            <td style="padding: 32px 30px;">
-                                
-                                <p style="margin: 0 0 24px 0; font-size: 16px; color: <?php echo shaped_brand_color('textPrimary'); ?>;">
-                                    Dear <strong><?php echo esc_html($data['customer_first']); ?></strong>,
-                                </p>
+    // Build content using reusable blocks
+    $content = '';
 
-                                <p style="margin: 0 0 32px 0; font-size: 16px; color: <?php echo shaped_brand_color('textMuted'); ?>; line-height: 1.6;">
-                                    Your booking <strong>#<?php echo esc_html($data['booking_id']); ?></strong> has been successfully cancelled.
-                                </p>
+    // Greeting
+    $content .= shaped_email_block_greeting($data['customer_first']);
 
-                            <?php if ($data['is_refundable']): ?>
-                            <!-- Refund Details -->
-                            <div style="background: #fffbf0; border-radius: 8px; padding: 24px; margin: 0 0 24px 0;">
-                                <h2 style="margin: 0 0 20px 0; font-size: 20px; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-weight: 700;">Cancellation Confirmed</h2>
-                                <p style="margin: 0; color: <?php echo shaped_brand_color('textPrimary'); ?>; font-size: 14px;">
-                                    You successfully cancelled your Preelook Apartments & Rooms booking.
-                                    Your card will not be charged.
-                                </p>
-                            </div>
-                            <?php endif; ?>
+    // Cancellation notice
+    $content .= shaped_email_block_intro(
+        'Your booking <strong>#' . esc_html($data['booking_id']) . '</strong> has been successfully cancelled.'
+    );
 
-                                <p style="margin: 0; font-size: 16px; color: <?php echo shaped_brand_color('primary'); ?>; font-weight: 600; text-align: center;">
-                                    We hope to welcome you to Preelook in the future.<br>
-                                    The Preelook Team
-                                </p>
-                                
-                            </td>
-                        </tr>
-                        
-                        <!-- Footer -->
-                        <tr>
-                            <td style="background: #26272C; padding: 24px 30px; text-align: center;">
-                                <p style="margin: 0 0 8px 0; color: #ffffff; font-size: 14px;">
-                                    Preelook Apartments | Rijeka, Croatia
-                                </p>
-                                <p style="margin: 0; color: #999999; font-size: 12px;">
-                                    This is an automated cancellation confirmation.
-                                </p>
-                            </td>
-                        </tr>
-                        
-                    </table>
-                </td>
-            </tr>
-        </table>
-        
-    </body>
-    </html>
-    <?php
-    return ob_get_clean();
+    // Refund card (if applicable)
+    $content .= shaped_email_render_cancellation_card($data['is_refundable']);
+
+    // Closing message
+    $content .= shaped_email_block_closing(
+        'We hope to welcome you to Preelook in the future.',
+        'The Preelook Team',
+        'neutral'
+    );
+
+    // Render full email
+    return shaped_render_email([
+        'title'       => 'Booking Cancelled - Preelook Apartments',
+        'header'      => 'Booking Cancelled',
+        'subtitle'    => "We've processed your cancellation",
+        'content'     => $content,
+        'footer_text' => 'This is an automated cancellation confirmation.',
+    ]);
 }
 
 /**
