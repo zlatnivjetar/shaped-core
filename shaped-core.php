@@ -143,6 +143,9 @@ add_action('plugins_loaded', function() {
     require_once SHAPED_DIR . 'includes/pricing/init.php';
     shaped_init_pricing_service();
 
+    // Load email rendering system
+    require_once SHAPED_DIR . 'includes/email/email-render.php';
+
     // Load email handlers (procedural)
     require_once SHAPED_DIR . 'core/email-handler.php';
     require_once SHAPED_DIR . 'core/email-handler-admin.php';
