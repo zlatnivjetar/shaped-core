@@ -28,7 +28,7 @@ function shaped_email_get_styles() {
         /* Base Typography */
         body, p, td, a, li {
             font-family: 'DM Sans', Arial, sans-serif;
-            font-size: 14px;
+            font-size: 16px;
             line-height: 1.6;
         }
 
@@ -231,10 +231,10 @@ function shaped_email_header($title, $subtitle = '') {
     ?>
                     <!-- Header -->
                     <tr>
-                        <td class="header-padding" style="background: linear-gradient(135deg, <?php echo $primary; ?> 0%, <?php echo $secondary; ?> 100%); padding: 32px; text-align: center;">
-                            <h1 style="margin: 0 0 8px 0; color: <?php echo $text_inverse; ?>; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.2;"><?php echo esc_html($title); ?></h1>
+                        <td class="header-padding" style="background: linear-gradient(135deg, <?php echo $primary; ?> 0%, <?php echo $secondary; ?> 100%); padding: 16px; text-align: center;">
+                            <h1 style="margin: 0 0 8px 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px; line-height: 1.2;"><?php echo esc_html($title); ?></h1>
                             <?php if ($subtitle): ?>
-                            <p style="margin: 0; color: <?php echo $text_inverse; ?>; font-size: 18px; opacity: 0.95;"><?php echo esc_html($subtitle); ?></p>
+                            <p style="margin: 0; color: #ffffff; font-size: 20px; opacity: 0.95;"><?php echo esc_html($subtitle); ?></p>
                             <?php endif; ?>
                         </td>
                     </tr>

@@ -786,8 +786,6 @@ class Shaped_Payment_Processor
                     update_post_meta($booking_id, '_shaped_payment_mode', 'delayed');
                 }
 
-                try { if (function_exists('shaped_send_payment_confirmation_email')) shaped_send_payment_confirmation_email($booking_id); } catch (\Throwable $e) {}
-
                 self::mark_event_processed($event_id);
             } catch (\Throwable $e) {
                 error_log('[Shaped Webhook] PI processing error: ' . $e->getMessage());

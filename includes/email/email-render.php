@@ -105,6 +105,70 @@ function shaped_email_render_booking_details($data) {
 }
 
 /**
+ * Render deposit booking details card
+ *
+ * Booking details section for deposit payments, showing deposit paid and balance due.
+ *
+ * @param array $data {
+ *     Booking information.
+ *
+ *     @type int    $booking_id    Booking ID
+ *     @type string $check_in      Check-in date (formatted)
+ *     @type string $check_out     Check-out date (formatted)
+ *     @type string $room_list     Accommodation name(s)
+ *     @type string $deposit_paid  Deposit amount paid (formatted with currency)
+ *     @type string $balance_due   Balance due on arrival (formatted with currency)
+ *     @type string $total_amount  Total booking amount (formatted with currency)
+ *     @type string $check_in_time Optional check-in time (default: "from 16:00")
+ *     @type string $check_out_time Optional check-out time (default: "until 11:00")
+ * }
+ * @return string Deposit booking details card HTML
+ */
+function shaped_email_render_deposit_details($data) {
+    $check_in_time = isset($data['check_in_time']) ? $data['check_in_time'] : 'from 16:00';
+    $check_out_time = isset($data['check_out_time']) ? $data['check_out_time'] : 'until 11:00';
+
+    $success = shaped_brand_color('success');
+    $primary = shaped_brand_color('primary');
+
+    $html = shaped_email_block_card_start('highlight');
+    $html .= shaped_email_block_section_title('Booking Details', '📋');
+    $html .= shaped_email_block_rows_start();
+    $html .= shaped_email_block_row('Booking ID:', '#' . $data['booking_id'], ['bold_value' => true]);
+    $html .= shaped_email_block_row('Check-in:', $data['check_in'], [
+        'bold_value'   => true,
+        'sub_text'     => $check_in_time,
+        'mobile_stack' => true,
+    ]);
+    $html .= shaped_email_block_row('Check-out:', $data['check_out'], [
+        'bold_value'   => true,
+        'sub_text'     => $check_out_time,
+        'mobile_stack' => true,
+    ]);
+    $html .= shaped_email_block_row('Accommodation:', $data['room_list'], ['bold_value' => true]);
+
+    // Deposit payment breakdown
+    $html .= shaped_email_block_total_divider();
+    $html .= '<tr><td colspan="2" style="padding: 12px 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 14px; color: ' . shaped_brand_color('textPrimary') . ';">Deposit Paid:</span>
+            <strong style="font-size: 16px; color: ' . $success . ';">' . esc_html($data['deposit_paid']) . '</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 14px; color: ' . shaped_brand_color('textPrimary') . ';">Balance Due on Arrival:</span>
+            <strong style="font-size: 16px; color: ' . $primary . ';">' . esc_html($data['balance_due']) . '</strong>
+        </div>
+        <div style="padding-top: 8px; border-top: 1px solid #e0e0e0; margin-top: 8px;"></div>
+    </td></tr>';
+    $html .= shaped_email_block_total_row('Total Booking Amount:', $data['total_amount']);
+
+    $html .= shaped_email_block_rows_end();
+    $html .= shaped_email_block_card_end();
+
+    return $html;
+}
+
+/**
  * Render "Getting Here" section
  *
  * Standard location and check-in instructions card.
