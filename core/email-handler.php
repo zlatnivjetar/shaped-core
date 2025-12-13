@@ -349,7 +349,7 @@ function shaped_send_deposit_confirmation_email($booking_id) {
         $check_in = $booking->getCheckInDate()->format('F j, Y');
         $check_out = $booking->getCheckOutDate()->format('F j, Y');
         $currency = MPHB()->settings()->currency()->getCurrencySymbol();
-        $deposit_amount = get_post_meta($booking_id, '_shaped_deposit_paid', true);
+        $deposit_amount = get_post_meta($booking_id, '_shaped_deposit_amount', true);
         $balance_due = get_post_meta($booking_id, '_shaped_balance_due', true);
 
         $room_type_ids = $booking->getReservedRoomTypeIds();
@@ -517,6 +517,12 @@ add_action( 'transition_post_status', function( $new_status, $old_status, $post 
         // Check if payment is complete
         $paid_amount = get_post_meta( $post->ID, '_mphb_paid_amount', true );
         $payment_verified = get_post_meta( $post->ID, '_mphb_payment_verified', true );
+        $payment_type = get_post_meta( $post->ID, '_shaped_payment_type', true );
+
+        // Skip if deposit payment (deposit email is sent separately)
+        if ( $payment_type === 'deposit' ) {
+            return;
+        }
 
         if ( ( $paid_amount > 0 || $payment_verified ) && ! get_post_meta( $post->ID, '_shaped_confirmation_sent', true ) ) {
             error_log( '[Shaped Email] Booking confirmed with payment, sending email' );

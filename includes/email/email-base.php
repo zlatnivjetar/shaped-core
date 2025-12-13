@@ -62,6 +62,19 @@ function shaped_email_get_styles() {
             text-decoration: none;
         }
 
+        /* Heading margins */
+        h2, h3 {
+            margin-top: 0;
+        }
+
+        h2 {
+            margin-bottom: 24px;
+        }
+
+        h3 {
+            margin-bottom: 24px;
+        }
+
         /* Mobile Responsive */
         @media only screen and (max-width: 600px) {
             /* Container adjustments */
@@ -99,11 +112,13 @@ function shaped_email_get_styles() {
             }
 
             h2 {
-                font-size: 18px !important;
+                font-size: 22px !important;
+                margin-bottom: 16px !important;
             }
 
             h3 {
-                font-size: 16px !important;
+                font-size: 18px !important;
+                margin-bottom: 16px !important;
             }
 
             /* Total price emphasis */
@@ -180,7 +195,7 @@ function shaped_email_start($title = 'Preelook Apartments') {
     <tr>
     <td align="center">
     <![endif]-->
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff;">
         <tr>
             <td align="center" style="padding: 24px 0;">
                 <table class="container" role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; max-width: 600px; margin: 0 auto;">
