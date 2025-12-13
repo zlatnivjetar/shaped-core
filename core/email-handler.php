@@ -79,8 +79,8 @@ function shaped_send_confirmation_email( $booking_id ) {
         // Set headers
         $headers = array(
             'Content-Type: text/html; charset=UTF-8',
-            'From: Preelook Apartments <info@test.preelook.com>',
-            'Reply-To: info@test.preelook.com'
+            'From: Preelook Apartments <info@preelook.com>',
+            'Reply-To: info@preelook.com'
         );
         
         // Send email
@@ -268,7 +268,7 @@ function shaped_get_confirmation_template( $data ) {
                                     </p>
                                     <p style="margin: 0; font-size: 14px; color: <?php echo shaped_brand_color('textPrimary'); ?>; line-height: 1.7;">
                                         <strong>Phone:</strong> <a href="tel:+38591613309" style="color: <?php echo shaped_brand_color('primary'); ?>; font-weight: 600;">+385 91 613 3609</a><br>
-                                        <strong>Email:</strong> <a href="mailto:info@test.preelook.com" style="color: <?php echo shaped_brand_color('primary'); ?>; font-weight: 600;">info@test.preelook.com</a>
+                                        <strong>Email:</strong> <a href="mailto:info@preelook.com" style="color: <?php echo shaped_brand_color('primary'); ?>; font-weight: 600;">info@preelook.com</a>
                                     </p>
                                 </div>
 
@@ -349,8 +349,8 @@ function shaped_send_reservation_email($booking_id) {
         
         $headers = [
             'Content-Type: text/html; charset=UTF-8',
-            'From: Preelook Apartments <info@test.preelook.com>',
-            'Reply-To: info@test.preelook.com'
+            'From: Preelook Apartments <info@preelook.com>',
+            'Reply-To: info@preelook.com'
         ];
         
         $sent = wp_mail($to, $subject, $message, $headers);
@@ -493,8 +493,8 @@ function shaped_send_cancellation_email($booking_id, $is_refundable = false) {
     // FIX: Add proper headers like confirmation email
     $headers = [
         'Content-Type: text/html; charset=UTF-8',
-        'From: Preelook Apartments <info@test.preelook.com>',
-        'Reply-To: info@test.preelook.com'
+        'From: Preelook Apartments <info@preelook.com>',
+        'Reply-To: info@preelook.com'
     ];
     
     $sent = wp_mail($to, $subject, $message, $headers);
@@ -641,14 +641,14 @@ function shaped_send_deposit_confirmation_email($booking_id) {
         $message .= "Google Maps: https://maps.app.goo.gl/Zn5MTHb858g4aEUL8\n\n";
         $message .= "NEED HELP?\n";
         $message .= "Phone: +385 91 613 3609\n";
-        $message .= "Email: info@test.preelook.com\n\n";
+        $message .= "Email: info@preelook.com\n\n";
         $message .= "We're looking forward to welcoming you to Preelook Apartments!\n\n";
         $message .= "Warm regards,\n";
         $message .= "The Preelook Team";
 
         $headers = [
-            'From: Preelook Apartments <info@test.preelook.com>',
-            'Reply-To: info@test.preelook.com'
+            'From: Preelook Apartments <info@preelook.com>',
+            'Reply-To: info@preelook.com'
         ];
 
         $sent = wp_mail($to, $subject, $message, $headers);
@@ -704,13 +704,13 @@ function shaped_send_payment_confirmation_email($booking_id) {
         $message .= "Check-in time: from 16:00\n\n";
         $message .= "CONTACT US:\n";
         $message .= "Phone: +385 91 613 3609\n";
-        $message .= "Email: info@test.preelook.com\n\n";
+        $message .= "Email: info@preelook.com\n\n";
         $message .= "Warm regards,\n";
         $message .= "The Preelook Team";
 
         $headers = [
-            'From: Preelook Apartments <info@test.preelook.com>',
-            'Reply-To: info@test.preelook.com'
+            'From: Preelook Apartments <info@preelook.com>',
+            'Reply-To: info@preelook.com'
         ];
 
         $sent = wp_mail($to, $subject, $message, $headers);
@@ -767,14 +767,14 @@ function shaped_send_payment_failed_email($booking_id) {
         $message .= "- Bank declined the transaction\n\n";
         $message .= "CONTACT US URGENTLY:\n";
         $message .= "Phone: +385 91 613 3609\n";
-        $message .= "Email: info@test.preelook.com\n\n";
+        $message .= "Email: info@preelook.com\n\n";
         $message .= "We're here to help resolve this quickly.\n\n";
         $message .= "Regards,\n";
         $message .= "The Preelook Team";
 
         $headers = [
-            'From: Preelook Apartments <info@test.preelook.com>',
-            'Reply-To: info@test.preelook.com'
+            'From: Preelook Apartments <info@preelook.com>',
+            'Reply-To: info@preelook.com'
         ];
 
         $sent = wp_mail($to, $subject, $message, $headers);

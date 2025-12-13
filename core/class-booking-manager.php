@@ -274,7 +274,7 @@ class Shaped_Booking_Manager
                 <p style="color: ' . shaped_brand_color('textMuted') . '; font-size: 0.875rem; margin: 0;">
                     If you need assistance, please contact us at<br>
                     <a href="tel:+385916133609" style="color: ' . shaped_brand_color('primary') . '; text-decoration: none;">+385 91 613 3609</a> or
-                    <a href="mailto:info@test.preelook.com" style="color: ' . shaped_brand_color('primary') . '; text-decoration: none;">info@test.preelook.com</a>
+                    <a href="mailto:info@preelook.com" style="color: ' . shaped_brand_color('primary') . '; text-decoration: none;">info@preelook.com</a>
                 </p>
             </div>';
         }
@@ -401,7 +401,7 @@ class Shaped_Booking_Manager
                 <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin: 0; font-size: 0.875rem;">
                     Questions? Contact us at<br>
                     <a href="tel:+385916133609" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;">+385 91 613 3609</a> or
-                    <a href="mailto:info@test.preelook.com" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;">info@test.preelook.com</a>
+                    <a href="mailto:info@preelook.com" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;">info@preelook.com</a>
                 </p>
             </div>
         </div>
@@ -738,7 +738,7 @@ class Shaped_Booking_Manager
                 </p>
                 <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin-top: 24px; font-size: 0.875rem;">
                     Questions? Contact us at <a href="tel:+385916133609" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;">+385 91 613 3609</a> or
-                    <a href="mailto:info@test.preelook.com" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;">info@test.preelook.com</a>
+                    <a href="mailto:info@preelook.com" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;">info@preelook.com</a>
                 </p>
             </div>
         </div>

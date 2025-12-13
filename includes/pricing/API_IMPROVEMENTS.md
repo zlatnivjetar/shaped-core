@@ -120,7 +120,7 @@ Allow: /wp-json/
 ### Test 1: No Session Cookie
 
 ```bash
-curl -i "https://test.preelook.com/wp-json/shaped/v1/price?checkin=2026-01-01&checkout=2026-01-02&adults=2"
+curl -i "https://preelook.com/wp-json/shaped/v1/price?checkin=2026-01-01&checkout=2026-01-02&adults=2"
 ```
 
 **Expected**:
@@ -134,7 +134,7 @@ curl -i "https://test.preelook.com/wp-json/shaped/v1/price?checkin=2026-01-01&ch
 Run the same command twice within 60 seconds:
 
 ```bash
-curl -i "https://test.preelook.com/wp-json/shaped/v1/price?checkin=2026-01-01&checkout=2026-01-02&adults=2"
+curl -i "https://preelook.com/wp-json/shaped/v1/price?checkin=2026-01-01&checkout=2026-01-02&adults=2"
 ```
 
 **Expected Second Call**:
@@ -144,7 +144,7 @@ curl -i "https://test.preelook.com/wp-json/shaped/v1/price?checkin=2026-01-01&ch
 ### Test 3: Invalid Date Range
 
 ```bash
-curl -i "https://test.preelook.com/wp-json/shaped/v1/price?checkin=2026-01-02&checkout=2026-01-01&adults=2"
+curl -i "https://preelook.com/wp-json/shaped/v1/price?checkin=2026-01-02&checkout=2026-01-01&adults=2"
 ```
 
 **Expected**:
@@ -154,7 +154,7 @@ curl -i "https://test.preelook.com/wp-json/shaped/v1/price?checkin=2026-01-02&ch
 ### Test 4: Invalid Date Format
 
 ```bash
-curl -i "https://test.preelook.com/wp-json/shaped/v1/price?checkin=01/01/2026&checkout=01/02/2026&adults=2"
+curl -i "https://preelook.com/wp-json/shaped/v1/price?checkin=01/01/2026&checkout=01/02/2026&adults=2"
 ```
 
 **Expected**:
@@ -164,7 +164,7 @@ curl -i "https://test.preelook.com/wp-json/shaped/v1/price?checkin=01/01/2026&ch
 ### Test 5: Past Date
 
 ```bash
-curl -i "https://test.preelook.com/wp-json/shaped/v1/price?checkin=2020-01-01&checkout=2020-01-02&adults=2"
+curl -i "https://preelook.com/wp-json/shaped/v1/price?checkin=2020-01-01&checkout=2020-01-02&adults=2"
 ```
 
 **Expected**:
@@ -175,14 +175,14 @@ curl -i "https://test.preelook.com/wp-json/shaped/v1/price?checkin=2020-01-01&ch
 
 **With valid key**:
 ```bash
-curl -i -H "X-Shaped-Key: your-secret-key" "https://test.preelook.com/wp-json/shaped/v1/price?checkin=2026-01-01&checkout=2026-01-02&adults=2"
+curl -i -H "X-Shaped-Key: your-secret-key" "https://preelook.com/wp-json/shaped/v1/price?checkin=2026-01-01&checkout=2026-01-02&adults=2"
 ```
 
 **Expected**: HTTP 200 OK
 
 **Without key** (if `SHAPED_PRICE_API_REQUIRE_KEY` is true):
 ```bash
-curl -i "https://test.preelook.com/wp-json/shaped/v1/price?checkin=2026-01-01&checkout=2026-01-02&adults=2"
+curl -i "https://preelook.com/wp-json/shaped/v1/price?checkin=2026-01-01&checkout=2026-01-02&adults=2"
 ```
 
 **Expected**: HTTP 401 Unauthorized
@@ -193,14 +193,14 @@ Different parameters should create different cache entries:
 
 ```bash
 # Different dates
-curl "https://test.preelook.com/wp-json/shaped/v1/price?checkin=2026-01-01&checkout=2026-01-02&adults=2"
-curl "https://test.preelook.com/wp-json/shaped/v1/price?checkin=2026-02-01&checkout=2026-02-02&adults=2"
+curl "https://preelook.com/wp-json/shaped/v1/price?checkin=2026-01-01&checkout=2026-01-02&adults=2"
+curl "https://preelook.com/wp-json/shaped/v1/price?checkin=2026-02-01&checkout=2026-02-02&adults=2"
 
 # Different adults count
-curl "https://test.preelook.com/wp-json/shaped/v1/price?checkin=2026-01-01&checkout=2026-01-02&adults=4"
+curl "https://preelook.com/wp-json/shaped/v1/price?checkin=2026-01-01&checkout=2026-01-02&adults=4"
 
 # Different room type
-curl "https://test.preelook.com/wp-json/shaped/v1/price?checkin=2026-01-01&checkout=2026-01-02&adults=2&room_type=deluxe"
+curl "https://preelook.com/wp-json/shaped/v1/price?checkin=2026-01-01&checkout=2026-01-02&adults=2&room_type=deluxe"
 ```
 
 Each should show `X-Shaped-Cache: MISS` on first call, then `HIT` on repeated calls with same params.

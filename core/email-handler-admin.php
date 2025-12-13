@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define the administrator's email address for easy updating
-define( 'SHAPED_ADMIN_EMAIL', 'info@test.preelook.com' );
+define( 'SHAPED_ADMIN_EMAIL', 'info@preelook.com' );
 
 /**
  * Send a notification to the admin when a new booking is confirmed.

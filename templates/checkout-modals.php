@@ -148,7 +148,7 @@ Neither party liable for failure to perform obligations due to circumstances bey
 <h3>9.1 Complaint Procedure</h3>
 <ul>
  	<li>Report issues immediately to reception/management</li>
- 	<li>Written complaints: info@test.preelook.com</li>
+ 	<li>Written complaints: info@preelook.com</li>
  	<li>Response within 72 hours</li>
 </ul>
 <h3>9.2 Applicable Law</h3>
@@ -199,9 +199,9 @@ Preluk 4, 51000, Rijeka, Hrvatska
 <br>
 Phone: +385 91 6125 689
 <br>
-Email: info@test.preelook.com
+Email: info@preelook.com
 <br>
-Website: test.preelook.com
+Website: preelook.com
 <h3>11.5 Emergency Contacts</h3>
 Emergency Services: 112<br>
 Property Emergency: +385 91 6125 689
@@ -221,11 +221,11 @@ Property Emergency: +385 91 6125 689
         <h2 class="checkoutmodalheading">Privacy Policy</h2>
         <div class="mphb-modal-body" id="privacy-content">
             <strong>Effective Date:</strong> 09.09.2025 <br>
-<strong>Website:</strong> test.preelook.com <br>
+<strong>Website:</strong> preelook.com <br>
 <strong>Legal Entity:</strong> Vigilo j.d.o.o <br>
 <strong>VAT:</strong> 10083013956 <br>
 <strong>Address:</strong> Preluk 4, 51000, Rijeka, Hrvatska <br>
-<strong>Email:</strong> info@test.preelook.com <br>
+<strong>Email:</strong> info@preelook.com <br>
 <strong>Phone:</strong> +385 91 6125 689 <br><br>
 
 At Preelook Apartments, we value your privacy and are committed to protecting your personal data. This Privacy Policy explains what information we collect, why we need it, how we use it, who we share it with, and your rights under the General Data Protection Regulation (GDPR).
@@ -233,7 +233,7 @@ At Preelook Apartments, we value your privacy and are committed to protecting yo
 <hr />
 
 <h2>1. Data Controller</h2>
-For GDPR purposes, the data controller is <strong>Vigilo j.d.o.o</strong>, located at <strong>Preluk 4, 51000, Rijeka, Hrvatska</strong>. You can contact us about privacy matters at <strong>info@test.preelook.com</strong>. <br><br>
+For GDPR purposes, the data controller is <strong>Vigilo j.d.o.o</strong>, located at <strong>Preluk 4, 51000, Rijeka, Hrvatska</strong>. You can contact us about privacy matters at <strong>info@preelook.com</strong>. <br><br>
 
 The Croatian Data Protection Authority (AZOP - Agencija za zaštitu osobnih podataka) supervises data protection compliance. You may contact AZOP if you believe your privacy rights have been violated: <a href="https://azop.hr/">azop.hr</a><br>
 
@@ -348,7 +348,7 @@ Under GDPR, you have the right to:
  	<li><strong>Withdraw consent</strong> at any time (for consent-based processing)</li>
  	<li><strong>Lodge a complaint</strong> with AZOP</li>
 </ul>
-To exercise these rights, contact us at <strong>info@test.preelook.com</strong>. We'll respond within 30 days.
+To exercise these rights, contact us at <strong>info@preelook.com</strong>. We'll respond within 30 days.
 
 <hr />
 
@@ -383,7 +383,7 @@ If you book through an online travel agency (OTA), they act as an independent da
 
 <h2>13. Additional Information</h2>
 <h3>Data Protection Officer</h3>
-We are not required to appoint a DPO under GDPR. For privacy matters, please contact us at info@test.preelook.com.
+We are not required to appoint a DPO under GDPR. For privacy matters, please contact us at info@preelook.com.
 
 <hr />
 
@@ -397,7 +397,7 @@ For any privacy-related questions or to exercise your rights: <br>
 
 <strong>Vigilo j.d.o.o</strong> <br>
 <strong>Preluk 4, 51000, Rijeka, Hrvatska</strong> <br>
-<strong>Email:</strong> info@test.preelook.com <br>
+<strong>Email:</strong> info@preelook.com <br>
 <strong>Phone:</strong> +385 91 6125 689 <br>
 
 <hr />
