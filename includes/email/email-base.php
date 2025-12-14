@@ -92,7 +92,7 @@ function shaped_email_get_styles() {
 
             /* Improved mobile spacing */
             .content-padding {
-                padding: 24px 16px !important;
+                padding: 24px 0px !important;
             }
 
             .header-padding {
@@ -298,7 +298,7 @@ function shaped_email_content_start() {
     ?>
                     <!-- Main Content -->
                     <tr>
-                        <td class="content-padding" style="padding: 32px;">
+                        <td class="content-padding" style="padding: 24px 16px;">
     <?php
     return ob_get_clean();
 }
