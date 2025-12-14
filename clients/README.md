@@ -5,7 +5,7 @@ This directory contains client-specific brand configuration overrides for multi-
 ## Structure
 
 ```
-CLIENTS/
+clients/
 ├── README.md                    # This file
 ├── preelook/
 │   └── brand.json              # Preelook-specific overrides
@@ -16,7 +16,7 @@ CLIENTS/
 ## How It Works
 
 1. **Base Configuration**: The base `config/brand.json` contains default brand colors and design tokens
-2. **Client Overrides**: Each client can have a `CLIENTS/[client-name]/brand.json` that overrides specific values
+2. **Client Overrides**: Each client can have a `clients/[client-name]/brand.json` that overrides specific values
 3. **Deep Merge**: Client values are merged into the base config, only changing what's different
 
 ## Setting Up a New Client
@@ -24,12 +24,12 @@ CLIENTS/
 ### Step 1: Create Client Directory
 
 ```bash
-mkdir CLIENTS/[client-name]
+mkdir clients/[client-name]
 ```
 
 ### Step 2: Create brand.json
 
-Create `CLIENTS/[client-name]/brand.json` with only the values you want to override:
+Create `clients/[client-name]/brand.json` with only the values you want to override:
 
 ```json
 {
@@ -161,7 +161,7 @@ var_dump($color); // Should output your brand color
 
 When setting up a new client:
 
-- [ ] Create `CLIENTS/[client-name]/` directory
+- [ ] Create `clients/[client-name]/` directory
 - [ ] Copy `brand.json` template and modify colors
 - [ ] Set `SHAPED_CLIENT` constant in `wp-config.php`
 - [ ] Test color retrieval with test script

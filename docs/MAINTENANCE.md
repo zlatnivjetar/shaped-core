@@ -350,7 +350,7 @@ docs/
 ├── SHORTCODES_GUIDE.md    # All shortcodes
 ├── CUSTOMIZATION_GUIDE.md # Extension examples
 ├── DEBUGGING.md           # Troubleshooting
-└── CLIENTS/               # Client-specific docs
+└── clients/               # Client-specific docs
     └── [CLIENT_NAME].md
 ```
 
@@ -358,7 +358,7 @@ docs/
 
 ## Client Documentation
 
-When setting up a new property, create `docs/CLIENTS/[PROPERTY_NAME].md`:
+When setting up a new property, create `docs/clients/[PROPERTY_NAME].md`:
 
 ```markdown
 # Client: [Property Name]

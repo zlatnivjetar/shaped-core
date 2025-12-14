@@ -322,7 +322,7 @@ JS Colors Count: 15
 
 **Set up a test client with different colors:**
 
-1. Create `CLIENTS/test-client/brand.json`:
+1. Create `clients/test-client/brand.json`:
 ```json
 {
   "colors": {
@@ -472,7 +472,7 @@ console.log(ShapedBrand.primary); // Should output: #2563EB (blue, not gold)
 
 ### Test 18: README Accuracy
 
-**Follow CLIENTS/README.md instructions:**
+**Follow clients/README.md instructions:**
 
 1. [ ] Create a new client using documented steps
 2. [ ] Verify all code examples work
