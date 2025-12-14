@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
  * @return string HTML greeting
  */
 function shaped_email_block_greeting($name) {
-    $text_primary = shaped_brand_color('textPrimary');
+    $text_primary = shaped_brand_color('textPrimary') ?: '#26272C';
     ob_start();
     ?>
                                 <p style="margin: 0 0 24px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
@@ -37,7 +37,7 @@ function shaped_email_block_greeting($name) {
  * @return string HTML paragraph
  */
 function shaped_email_block_intro($text) {
-    $text_muted = shaped_brand_color('textMuted');
+    $text_muted = shaped_brand_color('textMuted') ?: '#666666';
     ob_start();
     ?>
                                 <p style="margin: 0 0 32px 0; font-size: 16px; color: <?php echo $text_muted; ?>; line-height: 1.6;">
@@ -90,7 +90,7 @@ function shaped_email_block_card_end() {
  * @return string Section title HTML
  */
 function shaped_email_block_section_title($title, $emoji = '', $size = 'large') {
-    $text_primary = shaped_brand_color('textPrimary');
+    $text_primary = shaped_brand_color('textPrimary') ?: '#26272C';
     $font_size = $size === 'large' ? '20px' : '18px';
     $display_title = $emoji ? $emoji . ' ' . $title : $title;
 
@@ -109,7 +109,7 @@ function shaped_email_block_section_title($title, $emoji = '', $size = 'large') 
  * @return string Section title HTML
  */
 function shaped_email_block_section_title_h3($title, $emoji = '') {
-    $text_primary = shaped_brand_color('textPrimary');
+    $text_primary = shaped_brand_color('textPrimary') ?: '#26272C';
     $display_title = $emoji ? $emoji . ' ' . $title : $title;
 
     ob_start();
@@ -155,8 +155,8 @@ function shaped_email_block_rows_end() {
  * @return string Row HTML
  */
 function shaped_email_block_row($label, $value, $options = []) {
-    $text_muted = shaped_brand_color('textMuted');
-    $text_primary = shaped_brand_color('textPrimary');
+    $text_muted = shaped_brand_color('textMuted') ?: '#666666';
+    $text_primary = shaped_brand_color('textPrimary') ?: '#26272C';
 
     $bold_value = isset($options['bold_value']) ? $options['bold_value'] : false;
     $sub_text = isset($options['sub_text']) ? $options['sub_text'] : '';
@@ -201,8 +201,8 @@ function shaped_email_block_total_divider() {
  * @return string Total row HTML
  */
 function shaped_email_block_total_row($label, $value) {
-    $text_primary = shaped_brand_color('textPrimary');
-    $primary = shaped_brand_color('primary');
+    $text_primary = shaped_brand_color('textPrimary') ?: '#26272C';
+    $primary = shaped_brand_color('primary') ?: '#D1AF5D';
 
     ob_start();
     ?>
@@ -225,8 +225,8 @@ function shaped_email_block_total_row($label, $value) {
  * @return string Button HTML
  */
 function shaped_email_block_button($text, $url, $subtext = '') {
-    $primary = shaped_brand_color('primary');
-    $text_inverse = shaped_brand_color('textInverse');
+    $primary = shaped_brand_color('primary') ?: '#D1AF5D';
+    $text_inverse = shaped_brand_color('textInverse') ?: '#FFFFFF';
 
     ob_start();
     ?>
@@ -253,9 +253,9 @@ function shaped_email_block_button($text, $url, $subtext = '') {
  * @return string Paragraph HTML
  */
 function shaped_email_block_paragraph($text, $variant = 'muted') {
-    $text_muted = shaped_brand_color('textMuted');
-    $text_primary = shaped_brand_color('textPrimary');
-    $primary = shaped_brand_color('primary');
+    $text_muted = shaped_brand_color('textMuted') ?: '#666666';
+    $text_primary = shaped_brand_color('textPrimary') ?: '#26272C';
+    $primary = shaped_brand_color('primary') ?: '#D1AF5D';
 
     $color = $variant === 'primary' ? $text_primary : $text_muted;
     $align = $variant === 'center' ? 'center' : 'left';
@@ -281,8 +281,8 @@ function shaped_email_block_paragraph($text, $variant = 'muted') {
  * @return string Address HTML
  */
 function shaped_email_block_address($label, $address, $url = '') {
-    $text_primary = shaped_brand_color('textPrimary');
-    $text_dark = shaped_brand_color('textDark');
+    $text_primary = shaped_brand_color('textPrimary') ?: '#26272C';
+    $text_dark = shaped_brand_color('textDark') ?: '#26272C';
 
     ob_start();
     ?>
@@ -306,8 +306,8 @@ function shaped_email_block_address($label, $address, $url = '') {
  * @return string Contact HTML
  */
 function shaped_email_block_contact($phone, $email) {
-    $text_primary = shaped_brand_color('textPrimary');
-    $text_dark = shaped_brand_color('textDark');
+    $text_primary = shaped_brand_color('textPrimary') ?: '#26272C';
+    $text_dark = shaped_brand_color('textDark') ?: '#26272C';
 
     ob_start();
     ?>
@@ -329,9 +329,9 @@ function shaped_email_block_contact($phone, $email) {
  * @return string Location row HTML
  */
 function shaped_email_block_explore_item($name, $description, $distance, $url) {
-    $text_primary = shaped_brand_color('textPrimary');
-    $text_muted = shaped_brand_color('textMuted');
-    $text_dark = shaped_brand_color('textDark');
+    $text_primary = shaped_brand_color('textPrimary') ?: '#26272C';
+    $text_muted = shaped_brand_color('textMuted') ?: '#666666';
+    $text_dark = shaped_brand_color('textDark') ?: '#26272C';
 
     ob_start();
     ?>
@@ -355,7 +355,7 @@ function shaped_email_block_explore_item($name, $description, $distance, $url) {
  * @return string Closing message HTML
  */
 function shaped_email_block_closing($message, $signature = 'Warm regards,<br>The Preelook Team', $variant = 'highlight') {
-    $text_primary = shaped_brand_color('textPrimary');
+    $text_primary = shaped_brand_color('textPrimary') ?: '#26272C';
     $bg = $variant === 'highlight' ? '#fffbf0' : '#f8f8f8';
 
     ob_start();
@@ -381,8 +381,8 @@ function shaped_email_block_closing($message, $signature = 'Warm regards,<br>The
  * @return string Payment info HTML
  */
 function shaped_email_block_payment_info($amount, $date, $note = '') {
-    $text_primary = shaped_brand_color('textPrimary');
-    $text_muted = shaped_brand_color('textMuted');
+    $text_primary = shaped_brand_color('textPrimary') ?: '#26272C';
+    $text_muted = shaped_brand_color('textMuted') ?: '#666666';
 
     ob_start();
     ?>
@@ -407,9 +407,9 @@ function shaped_email_block_payment_info($amount, $date, $note = '') {
  * @return string Paragraph HTML
  */
 function shaped_email_block_text($text, $variant = 'muted') {
-    $text_muted = shaped_brand_color('textMuted');
-    $text_primary = shaped_brand_color('textPrimary');
-    $primary = shaped_brand_color('primary');
+    $text_muted = shaped_brand_color('textMuted') ?: '#666666';
+    $text_primary = shaped_brand_color('textPrimary') ?: '#26272C';
+    $primary = shaped_brand_color('primary') ?: '#D1AF5D';
 
     $color = $variant === 'primary' ? $text_primary : $text_muted;
     $align = 'left';

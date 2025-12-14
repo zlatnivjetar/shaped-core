@@ -128,8 +128,9 @@ function shaped_email_render_deposit_details($data) {
     $check_in_time = isset($data['check_in_time']) ? $data['check_in_time'] : 'from 16:00';
     $check_out_time = isset($data['check_out_time']) ? $data['check_out_time'] : 'until 11:00';
 
-    $success = shaped_brand_color('success');
-    $primary = shaped_brand_color('primary');
+    $success = shaped_brand_color('success') ?: '#4C9155';
+    $primary = shaped_brand_color('primary') ?: '#D1AF5D';
+    $text_primary = shaped_brand_color('textPrimary') ?: '#26272C';
 
     $html = shaped_email_block_card_start('highlight');
     $html .= shaped_email_block_section_title('Booking Details', '📋');
@@ -151,12 +152,12 @@ function shaped_email_render_deposit_details($data) {
     $html .= shaped_email_block_total_divider();
     $html .= '<tr><td colspan="2" style="padding: 16px 0;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span style="font-size: 14px; color: ' . shaped_brand_color('textPrimary') . ';">Deposit Paid: </span>
+            <span style="font-size: 14px; color: ' . $text_primary . ';">Deposit Paid: </span>
             <strong style="font-size: 16px; color: ' . $primary . ';">' . esc_html($data['deposit_paid']) . '</strong>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span style="font-size: 14px; color: ' . shaped_brand_color('textPrimary') . ';">Balance Due on Arrival:</span>
-            <strong style="font-size: 16px; color: ' . shaped_brand_color('textPrimary') . ';">' . esc_html($data['balance_due']) . '</strong>
+            <span style="font-size: 14px; color: ' . $text_primary . ';">Balance Due on Arrival:</span>
+            <strong style="font-size: 16px; color: ' . $text_primary . ';">' . esc_html($data['balance_due']) . '</strong>
         </div>
         <div style="padding-top: 8px; border-top: 1px solid #e0e0e0; margin-top: 8px;"></div>
     </td></tr>';
@@ -191,8 +192,8 @@ function shaped_email_render_getting_here($options = []) {
 
     $options = wp_parse_args($options, $defaults);
 
-    $text_primary = shaped_brand_color('textPrimary');
-    $text_muted = shaped_brand_color('textMuted');
+    $text_primary = shaped_brand_color('textPrimary') ?: '#26272C';
+    $text_muted = shaped_brand_color('textMuted') ?: '#666666';
 
     $html = shaped_email_block_card_start('neutral');
     $html .= shaped_email_block_section_title_h3('Getting Here', '📍');
@@ -257,7 +258,7 @@ function shaped_email_render_explore_area($locations = []) {
         ];
     }
 
-    $text_muted = shaped_brand_color('textMuted');
+    $text_muted = shaped_brand_color('textMuted') ?: '#666666';
 
     $html = shaped_email_block_card_start('neutral');
     $html .= shaped_email_block_section_title_h3('Explore the Area', '✨');
@@ -311,7 +312,7 @@ function shaped_email_render_contact($options = []) {
 
     $options = wp_parse_args($options, $defaults);
 
-    $text_muted = shaped_brand_color('textMuted');
+    $text_muted = shaped_brand_color('textMuted') ?: '#666666';
 
     $html = shaped_email_block_card_start('neutral', '32px');
     $html .= shaped_email_block_section_title_h3($options['title'], '📞');
@@ -381,7 +382,7 @@ function shaped_email_render_cancellation_card($is_refundable = false) {
         return '';
     }
 
-    $text_primary = shaped_brand_color('textPrimary');
+    $text_primary = shaped_brand_color('textPrimary') ?: '#26272C';
 
     $html = shaped_email_block_card_start('highlight');
     $html .= shaped_email_block_section_title('Cancellation Confirmed', '');
