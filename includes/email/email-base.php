@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
  * Get email base styles
  *
  * Returns CSS styles for responsive typography and spacing.
- * Desktop: 14px body text | Mobile: 16px body text
+ * Desktop: 16px body text | Mobile: 16px body text
  *
  * @return string CSS styles
  */
