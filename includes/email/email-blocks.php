@@ -282,13 +282,14 @@ function shaped_email_block_paragraph($text, $variant = 'muted') {
  */
 function shaped_email_block_address($label, $address, $url = '') {
     $text_primary = shaped_brand_color('textPrimary');
+    $text_dark = shaped_brand_color('textDark');
 
     ob_start();
     ?>
                                     <p style="margin: 0 0 12px 0; font-size: 14px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
                                         <strong><?php echo esc_html($label); ?></strong><br>
                                         <?php if ($url): ?>
-                                        <a href="<?php echo esc_url($url); ?>" style="color: <?php echo $text_primary; ?>; font-weight: 600;"><?php echo esc_html($address); ?></a>
+                                        <a href="<?php echo esc_url($url); ?>" style="color: <?php echo $text_dark; ?>; font-size: 16px; font-weight: 700;"><?php echo esc_html($address); ?></a>
                                         <?php else: ?>
                                         <?php echo esc_html($address); ?>
                                         <?php endif; ?>
@@ -306,12 +307,13 @@ function shaped_email_block_address($label, $address, $url = '') {
  */
 function shaped_email_block_contact($phone, $email) {
     $text_primary = shaped_brand_color('textPrimary');
+    $text_dark = shaped_brand_color('textDark');
 
     ob_start();
     ?>
                                     <p style="margin: 0; font-size: 14px; color: <?php echo $text_primary; ?>; line-height: 1.8;">
-                                        <strong>Phone:</strong> <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', $phone)); ?>" style="color: <?php echo $text_primary; ?>; font-weight: 600;"><?php echo esc_html($phone); ?></a><br>
-                                        <strong>Email:</strong> <a href="mailto:<?php echo esc_attr($email); ?>" style="color: <?php echo $text_primary; ?>; font-weight: 600;"><?php echo esc_html($email); ?></a>
+                                        <strong>Phone:</strong> <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', $phone)); ?>" style="color: <?php echo $text_dark; ?>; font-size: 16px; font-weight: 700;"><?php echo esc_html($phone); ?></a><br>
+                                        <strong>Email:</strong> <a href="mailto:<?php echo esc_attr($email); ?>" style="color: <?php echo $text_dark; ?>; font-size: 16px; font-weight: 700;"><?php echo esc_html($email); ?></a>
                                     </p>
     <?php
     return ob_get_clean();
@@ -329,12 +331,13 @@ function shaped_email_block_contact($phone, $email) {
 function shaped_email_block_explore_item($name, $description, $distance, $url) {
     $text_primary = shaped_brand_color('textPrimary');
     $text_muted = shaped_brand_color('textMuted');
+    $text_dark = shaped_brand_color('textDark');
 
     ob_start();
     ?>
                                         <tr class="mobile-stack">
                                             <td style="padding: 10px 0; vertical-align: top; width: 70%;">
-                                                <a href="<?php echo esc_url($url); ?>" style="color: <?php echo $text_primary; ?>;"><strong style="font-size: 14px;"><?php echo esc_html($name); ?></strong></a><br>
+                                                <a href="<?php echo esc_url($url); ?>" style="color: <?php echo $text_dark; ?>; font-size: 16px; font-weight: 700;"><?php echo esc_html($name); ?></a><br>
                                                 <span style="color: <?php echo $text_muted; ?>; font-size: 13px; line-height: 1.5;"><?php echo esc_html($description); ?></span>
                                             </td>
                                             <td class="mobile-right" style="padding: 10px 0; text-align: right; color: <?php echo $text_primary; ?>; font-size: 13px; font-weight: 600; vertical-align: top; width: 30%;">
