@@ -41,7 +41,7 @@ class Shaped_RC_Webhook_Handler
      */
     public function register_webhook_endpoint()
     {
-        register_rest_route('preelook/v1', '/roomcloud-webhook', [
+        register_rest_route('shaped/v1', '/roomcloud-webhook', [
             'methods' => 'POST',
             'callback' => [$this, 'handle_webhook'],
             'permission_callback' => '__return_true', // Validate credentials from XML body
@@ -168,7 +168,7 @@ class Shaped_RC_Webhook_Handler
         
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<Response>' . "\n";
-        $xml .= '  <hotel id="' . esc_attr($hotel_id) . '" description="Preelook Apartments" />' . "\n";
+        $xml .= '  <hotel id="' . esc_attr($hotel_id) . '" description="' . esc_attr(shaped_brand('company.name', 'Hotel')) . '" />' . "\n";
         $xml .= '</Response>';
         
         Shaped_RC_Error_Logger::log_info('Responded to getHotels', [

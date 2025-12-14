@@ -273,8 +273,8 @@ class Shaped_Booking_Manager
                 </p>
                 <p style="color: ' . shaped_brand_color('textMuted') . '; font-size: 0.875rem; margin: 0;">
                     If you need assistance, please contact us at<br>
-                    <a href="tel:+385916133609" style="color: ' . shaped_brand_color('primary') . '; text-decoration: none;">+385 91 613 3609</a> or
-                    <a href="mailto:info@preelook.com" style="color: ' . shaped_brand_color('primary') . '; text-decoration: none;">info@preelook.com</a>
+                    <a href="tel:' . esc_attr(preg_replace('/[^0-9+]/', '', shaped_brand('contact.phone', ''))) . '" style="color: ' . shaped_brand_color('primary') . '; text-decoration: none;">' . esc_html(shaped_brand('contact.phone', '')) . '</a> or
+                    <a href="mailto:' . esc_attr(shaped_brand('contact.email', '')) . '" style="color: ' . shaped_brand_color('primary') . '; text-decoration: none;">' . esc_html(shaped_brand('contact.email', '')) . '</a>
                 </p>
             </div>';
         }
@@ -400,8 +400,8 @@ class Shaped_Booking_Manager
             <div style="text-align: center; margin-top:24px">
                 <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin: 0; font-size: 0.875rem;">
                     Questions? Contact us at<br>
-                    <a href="tel:+385916133609" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;">+385 91 613 3609</a> or
-                    <a href="mailto:info@preelook.com" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;">info@preelook.com</a>
+                    <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', shaped_brand('contact.phone', ''))); ?>" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;"><?php echo esc_html(shaped_brand('contact.phone', '')); ?></a> or
+                    <a href="mailto:<?php echo esc_attr(shaped_brand('contact.email', '')); ?>" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;"><?php echo esc_html(shaped_brand('contact.email', '')); ?></a>
                 </p>
             </div>
         </div>
@@ -723,10 +723,10 @@ class Shaped_Booking_Manager
                 <div style="background: #fafafa; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; padding: 24px; border-radius: 8px;">
                     <h2 style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Getting Here</h2>
                     <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin-bottom: 12px; line-height: 1.5;">
-                        <strong style="color: <?php shaped_brand_color_e('textPrimary'); ?>;">Address:</strong> Preluk 4, 51000 Rijeka, Croatia
+                        <strong style="color: <?php shaped_brand_color_e('textPrimary'); ?>;">Address:</strong> <?php echo esc_html(shaped_brand('contact.address', '')); ?>
                     </p>
                     <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin: 0; line-height: 1.5;">
-                        Visit us at the hotel reception upon arrival. We'll personally show you to your apartment and ensure you feel right at home.
+                        <?php echo esc_html(shaped_brand('email.checkInInstructions', 'Visit us at reception upon arrival.')); ?>
                     </p>
                 </div>
             </div>
@@ -737,8 +737,8 @@ class Shaped_Booking_Manager
                     We've sent details to <strong><?php echo esc_html($customer->getEmail()); ?></strong>
                 </p>
                 <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin-top: 24px; font-size: 0.875rem;">
-                    Questions? Contact us at <a href="tel:+385916133609" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;">+385 91 613 3609</a> or
-                    <a href="mailto:info@preelook.com" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;">info@preelook.com</a>
+                    Questions? Contact us at <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', shaped_brand('contact.phone', ''))); ?>" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;"><?php echo esc_html(shaped_brand('contact.phone', '')); ?></a> or
+                    <a href="mailto:<?php echo esc_attr(shaped_brand('contact.email', '')); ?>" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;"><?php echo esc_html(shaped_brand('contact.email', '')); ?></a>
                 </p>
             </div>
         </div>
