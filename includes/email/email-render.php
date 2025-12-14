@@ -84,12 +84,10 @@ function shaped_email_render_booking_details($data) {
     $html .= shaped_email_block_row('Check-in:', $data['check_in'], [
         'bold_value'   => true,
         'sub_text'     => $check_in_time,
-        'mobile_stack' => true,
     ]);
     $html .= shaped_email_block_row('Check-out:', $data['check_out'], [
         'bold_value'   => true,
         'sub_text'     => $check_out_time,
-        'mobile_stack' => true,
     ]);
     $html .= shaped_email_block_row('Accommodation:', $data['room_list'], ['bold_value' => true]);
 
@@ -139,12 +137,10 @@ function shaped_email_render_deposit_details($data) {
     $html .= shaped_email_block_row('Check-in:', $data['check_in'], [
         'bold_value'   => true,
         'sub_text'     => $check_in_time,
-        'mobile_stack' => true,
     ]);
     $html .= shaped_email_block_row('Check-out:', $data['check_out'], [
         'bold_value'   => true,
         'sub_text'     => $check_out_time,
-        'mobile_stack' => true,
     ]);
     $html .= shaped_email_block_row('Accommodation:', $data['room_list'], ['bold_value' => true]);
 

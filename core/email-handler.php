@@ -41,8 +41,8 @@ function shaped_send_confirmation_email( $booking_id ) {
         }
         
         // Get booking details
-        $check_in = $booking->getCheckInDate()->format( 'F j, Y' );
-        $check_out = $booking->getCheckOutDate()->format( 'F j, Y' );
+        $check_in = $booking->getCheckInDate()->format( 'd.m.Y' );
+        $check_out = $booking->getCheckOutDate()->format( 'd.m.Y' );
         $currency = MPHB()->settings()->currency()->getCurrencySymbol();
         
         // Get room details
@@ -164,8 +164,8 @@ function shaped_send_reservation_email($booking_id) {
         }
         
         // Get basic details
-        $check_in = $booking->getCheckInDate()->format('F j, Y');
-        $check_out = $booking->getCheckOutDate()->format('F j, Y');
+        $check_in = $booking->getCheckInDate()->format('d.m.Y');
+        $check_out = $booking->getCheckOutDate()->format('d.m.Y');
         $charge_date = get_post_meta($booking_id, '_shaped_charge_date', true);
         $pending_amount = get_post_meta($booking_id, '_stripe_pending_amount', true);
         
@@ -346,8 +346,8 @@ function shaped_send_deposit_confirmation_email($booking_id) {
         }
 
         // Get deposit details
-        $check_in = $booking->getCheckInDate()->format('F j, Y');
-        $check_out = $booking->getCheckOutDate()->format('F j, Y');
+        $check_in = $booking->getCheckInDate()->format('d.m.Y');
+        $check_out = $booking->getCheckOutDate()->format('d.m.Y');
         $currency = MPHB()->settings()->currency()->getCurrencySymbol();
         $deposit_amount = get_post_meta($booking_id, '_shaped_deposit_amount', true);
         $balance_due = get_post_meta($booking_id, '_shaped_balance_due', true);
@@ -459,7 +459,7 @@ function shaped_send_payment_failed_email($booking_id) {
         $customer = $booking->getCustomer();
         if (!$customer || !$customer->getEmail()) return false;
 
-        $check_in = $booking->getCheckInDate()->format('F j, Y');
+        $check_in = $booking->getCheckInDate()->format('d.m.Y');
         $currency = MPHB()->settings()->currency()->getCurrencySymbol();
         $pending_amount = get_post_meta($booking_id, '_stripe_pending_amount', true);
 
