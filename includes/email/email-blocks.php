@@ -285,7 +285,7 @@ function shaped_email_block_address($label, $address, $url = '') {
 
     ob_start();
     ?>
-                                    <p style="margin: 0 0 12px 0; font-size: 14px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
+                                    <p style="margin: 0 0 12px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
                                         <strong><?php echo esc_html($label); ?></strong><br>
                                         <?php if ($url): ?>
                                         <a href="<?php echo esc_url($url); ?>" style="color: <?php echo $text_primary; ?>; font-weight: 700;"><?php echo esc_html($address); ?></a>
@@ -309,7 +309,7 @@ function shaped_email_block_contact($phone, $email) {
 
     ob_start();
     ?>
-                                    <p style="margin: 0; font-size: 14px; color: <?php echo $text_primary; ?>; line-height: 1.8;">
+                                    <p style="margin: 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.8;">
                                         <strong>Phone:</strong> <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', $phone)); ?>" style="color: <?php echo $text_primary; ?>; font-weight: 700;"><?php echo esc_html($phone); ?></a><br>
                                         <strong>Email:</strong> <a href="mailto:<?php echo esc_attr($email); ?>" style="color: <?php echo $text_primary; ?>; font-weight: 700;"><?php echo esc_html($email); ?></a>
                                     </p>
@@ -335,7 +335,7 @@ function shaped_email_block_explore_item($name, $description, $distance, $url) {
                                         <tr>
                                             <td style="padding: 10px 0; vertical-align: top;">
                                                 <a href="<?php echo esc_url($url); ?>" style="color: <?php echo $text_primary; ?>; font-weight: 700;"><?php echo esc_html($name); ?></a><br>
-                                                <span style="color: <?php echo $text_muted; ?>; font-size: 13px; line-height: 1.5;"><?php echo esc_html($description); ?></span><br>
+                                                <span style="color: <?php echo $text_muted; ?>; font-size: 16px; line-height: 1.5;"><?php echo esc_html($description); ?></span><br>
                                                 <span style="color: <?php echo $text_primary; ?>; font-size: 13px; font-weight: 600; margin-top: 4px; display: inline-block;"><?php echo esc_html($distance); ?></span>
                                             </td>
                                         </tr>

@@ -200,7 +200,7 @@ function shaped_email_render_getting_here($options = []) {
 
     ob_start();
     ?>
-                                    <p style="margin: 0; font-size: 14px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
+                                    <p style="margin: 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
                                         <strong>Check-in:</strong><br>
                                         <span style="color: <?php echo $text_muted; ?>;"><?php echo esc_html($options['instructions']); ?></span>
                                     </p>
@@ -264,7 +264,7 @@ function shaped_email_render_explore_area($locations = []) {
 
     ob_start();
     ?>
-                                    <p style="margin: 0 0 16px 0; font-size: 14px; color: <?php echo $text_muted; ?>; line-height: 1.6;">
+                                    <p style="margin: 0 0 16px 0; font-size: 16px; color: <?php echo $text_muted; ?>; line-height: 1.6;">
                                         Discover the charm of Croatian coastline right from your doorstep:
                                     </p>
     <?php
@@ -318,7 +318,7 @@ function shaped_email_render_contact($options = []) {
 
     ob_start();
     ?>
-                                    <p style="margin: 0 0 16px 0; font-size: 14px; color: <?php echo $text_muted; ?>; line-height: 1.6;">
+                                    <p style="margin: 0 0 16px 0; font-size: 16px; color: <?php echo $text_muted; ?>; line-height: 1.6;">
                                         <?php echo esc_html($options['intro']); ?>
                                     </p>
     <?php
