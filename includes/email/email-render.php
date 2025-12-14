@@ -156,7 +156,7 @@ function shaped_email_render_deposit_details($data) {
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <span style="font-size: 14px; color: ' . shaped_brand_color('textPrimary') . ';">Balance Due on Arrival:</span>
-            <strong style="font-size: 16px; color: ' . $primary . ';">' . esc_html($data['balance_due']) . '</strong>
+            <strong style="font-size: 16px; color: ' . shaped_brand_color('textPrimary') . ';">' . esc_html($data['balance_due']) . '</strong>
         </div>
         <div style="padding-top: 8px; border-top: 1px solid #e0e0e0; margin-top: 8px;"></div>
     </td></tr>';
