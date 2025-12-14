@@ -114,7 +114,7 @@ function shaped_email_block_section_title_h3($title, $emoji = '') {
 
     ob_start();
     ?>
-                                    <h3 style="margin: 0 0 160px 0; font-size: 18px; color: <?php echo $text_primary; ?>; font-weight: 700;"><?php echo esc_html($display_title); ?></h3>
+                                    <h3 style="margin: 0 0 16px 0; font-size: 18px; color: <?php echo $text_primary; ?>; font-weight: 700;"><?php echo esc_html($display_title); ?></h3>
     <?php
     return ob_get_clean();
 }
