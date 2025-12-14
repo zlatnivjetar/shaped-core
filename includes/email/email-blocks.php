@@ -187,7 +187,7 @@ function shaped_email_block_total_divider() {
     ob_start();
     ?>
                                         <tr>
-                                            <td colspan="2" style="padding: 16px 0 0 0; border-top: 1px solid <?php echo $border_color; ?>;"></td>
+                                            <td colspan="2" style="padding: 32px 0 0 0; border-top: 1px solid <?php echo $border_color; ?>;"></td>
                                         </tr>
     <?php
     return ob_get_clean();
