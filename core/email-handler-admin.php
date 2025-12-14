@@ -9,8 +9,22 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-// Define the administrator's email address for easy updating
-define( 'SHAPED_ADMIN_EMAIL', 'info@preelook.com' );
+/**
+ * Get admin email address from brand config
+ * Falls back to WordPress admin email if not configured
+ */
+function shaped_get_admin_email() {
+    $admin_email = shaped_email_config('email', '');
+    if (empty($admin_email)) {
+        $admin_email = get_option('admin_email');
+    }
+    return $admin_email;
+}
+
+// Define constant for backward compatibility (uses brand config)
+if (!defined('SHAPED_ADMIN_EMAIL')) {
+    define('SHAPED_ADMIN_EMAIL', shaped_get_admin_email());
+}
 
 /**
  * Send a notification to the admin when a new booking is confirmed.
@@ -72,18 +86,18 @@ function shaped_send_admin_confirmation_email( $booking_id ) {
             'total_paid'      => $currency . number_format( $total_paid, 2 ),
         ) );
         
-        // Fix: Use WordPress default sender or site domain
-        $site_email = get_option('admin_email');
+        // Get sender details from brand config
+        $from_name = shaped_email_config('from_name', get_bloginfo('name'));
         $site_domain = parse_url(home_url(), PHP_URL_HOST);
-        $from_email = 'bookings@' . $site_domain; // Or use $site_email
-        
+        $from_email = 'bookings@' . $site_domain;
+
         $headers = array(
             'Content-Type: text/html; charset=UTF-8',
-            'From: Preelook Bookings <' . $from_email . '>',
+            'From: ' . $from_name . ' Bookings <' . $from_email . '>',
             'Reply-To: ' . $customer->getEmail(),
             'X-Mailer: PHP/' . phpversion(),
             'MIME-Version: 1.0',
-            'X-Priority: 3',  // Normal priority
+            'X-Priority: 3',
         );
 
         $sent = wp_mail( $to, $subject, $message, $headers );
@@ -159,12 +173,13 @@ function shaped_send_admin_reservation_email( $booking_id ) {
             'charge_date'     => $charge_date_formatted,
         ) );
         
+        $from_name = shaped_email_config('from_name', get_bloginfo('name'));
         $site_domain = parse_url(home_url(), PHP_URL_HOST);
         $from_email = 'bookings@' . $site_domain;
-        
+
         $headers = array(
             'Content-Type: text/html; charset=UTF-8',
-            'From: Preelook Bookings <' . $from_email . '>',
+            'From: ' . $from_name . ' Bookings <' . $from_email . '>',
             'Reply-To: ' . $customer->getEmail(),
             'X-Mailer: PHP/' . phpversion(),
             'MIME-Version: 1.0',
@@ -172,7 +187,7 @@ function shaped_send_admin_reservation_email( $booking_id ) {
         );
 
         $sent = wp_mail( $to, $subject, $message, $headers );
-        
+
         if ( $sent ) {
             error_log( '[Shaped Admin Email] Reservation notification successfully sent to ' . $to );
         } else {
@@ -222,17 +237,18 @@ function shaped_send_admin_cancellation_email( $booking_id, $refund_amount, $ref
             'refund_amount'     => $currency . number_format( $refund_amount, 2 ),
             'refund_percentage' => $refund_percentage,
         ) );
-            
+
+        $from_name = shaped_email_config('from_name', get_bloginfo('name'));
         $site_domain = parse_url(home_url(), PHP_URL_HOST);
         $from_email = 'bookings@' . $site_domain;
-        
+
         $headers = array(
             'Content-Type: text/html; charset=UTF-8',
-            'From: Preelook Bookings <' . $from_email . '>',
+            'From: ' . $from_name . ' Bookings <' . $from_email . '>',
             'Reply-To: ' . $customer->getEmail(),
             'X-Mailer: PHP/' . phpversion(),
             'MIME-Version: 1.0',
-            'X-Priority: 3',  // Normal priority
+            'X-Priority: 3',
         );
 
         $sent = wp_mail( $to, $subject, $message, $headers );
@@ -323,6 +339,224 @@ function shaped_get_admin_cancellation_template( $data ) {
             <p><strong>Refund Amount:</strong> <strong style="color: #c00;"><?php echo esc_html( $data['refund_amount'] ); ?></strong></p>
             <p><strong>Refund Percentage:</strong> <?php echo esc_html( $data['refund_percentage'] ); ?>%</p>
             <p style="font-size: 12px; color: #666;">The calendar has been updated and the room is now available for booking.</p>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Send admin notification when deposit payment is received
+ *
+ * @param int $booking_id The booking ID
+ * @return bool True if sent successfully
+ */
+function shaped_send_admin_deposit_email( $booking_id ) {
+    try {
+        error_log( '[Shaped Admin Email] Starting admin deposit notification for booking #' . $booking_id );
+
+        $booking = MPHB()->getBookingRepository()->findById( $booking_id, true );
+        if ( ! $booking ) {
+            error_log( '[Shaped Admin Email] Booking not found: #' . $booking_id );
+            return false;
+        }
+
+        $customer = $booking->getCustomer();
+        if ( ! $customer ) {
+            error_log( '[Shaped Admin Email] No customer found for booking #' . $booking_id );
+            return false;
+        }
+
+        // Gather booking details
+        $check_in = $booking->getCheckInDate()->format( 'F j, Y' );
+        $check_out = $booking->getCheckOutDate()->format( 'F j, Y' );
+        $currency = MPHB()->settings()->currency()->getCurrencySymbol();
+        $room_type_ids = $booking->getReservedRoomTypeIds();
+        $room_names = array_map( 'get_the_title', $room_type_ids );
+        $room_list = implode( ', ', $room_names );
+
+        // Get deposit details
+        $deposit_amount = (float) get_post_meta( $booking_id, '_shaped_deposit_paid', true );
+        $balance_due = (float) get_post_meta( $booking_id, '_shaped_balance_due', true );
+        $total_price = (float) $booking->getTotalPrice();
+
+        // Fallback if meta not set
+        if ( $deposit_amount <= 0 ) {
+            $deposit_amount = (float) get_post_meta( $booking_id, '_mphb_paid_amount', true );
+        }
+        if ( $balance_due <= 0 && $deposit_amount > 0 ) {
+            $balance_due = $total_price - $deposit_amount;
+        }
+
+        $to = SHAPED_ADMIN_EMAIL;
+        $subject = '💰 Deposit Received: #' . $booking_id;
+
+        $message = shaped_get_admin_deposit_template( array(
+            'booking_id'      => $booking_id,
+            'customer_name'   => $customer->getFirstName() . ' ' . $customer->getLastName(),
+            'customer_email'  => $customer->getEmail(),
+            'customer_phone'  => $customer->getPhone(),
+            'check_in'        => $check_in,
+            'check_out'       => $check_out,
+            'room_list'       => $room_list,
+            'deposit_paid'    => $currency . number_format( $deposit_amount, 2 ),
+            'balance_due'     => $currency . number_format( $balance_due, 2 ),
+            'total_amount'    => $currency . number_format( $total_price, 2 ),
+        ) );
+
+        $from_name = shaped_email_config('from_name', get_bloginfo('name'));
+        $site_domain = parse_url( home_url(), PHP_URL_HOST );
+        $from_email = 'bookings@' . $site_domain;
+
+        $headers = array(
+            'Content-Type: text/html; charset=UTF-8',
+            'From: ' . $from_name . ' Bookings <' . $from_email . '>',
+            'Reply-To: ' . $customer->getEmail()
+        );
+
+        $sent = wp_mail( $to, $subject, $message, $headers );
+
+        if ( $sent ) {
+            error_log( '[Shaped Admin Email] Deposit notification successfully sent to ' . $to );
+        } else {
+            error_log( '[Shaped Admin Email] FAILED to send deposit notification to ' . $to );
+        }
+
+        return $sent;
+
+    } catch ( Exception $e ) {
+        error_log( '[Shaped Admin Email] ERROR in deposit notification: ' . $e->getMessage() );
+        return false;
+    }
+}
+
+function shaped_get_admin_deposit_template( $data ) {
+    ob_start();
+    ?>
+    <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333; max-width: 600px; border: 1px solid #ddd; border-radius: 5px; margin: 20px auto;">
+        <div style="background-color: #D1AF5D; color: white; padding: 15px; border-radius: 5px 5px 0 0;">
+            <h2 style="margin: 0;">Deposit Received: #<?php echo esc_html( $data['booking_id'] ); ?></h2>
+        </div>
+        <div style="padding: 20px;">
+            <h3 style="margin-top: 0;">Payment Details:</h3>
+            <p><strong>Deposit Paid:</strong> <strong style="color: #2e7d32;"><?php echo esc_html( $data['deposit_paid'] ); ?></strong></p>
+            <p><strong>Balance Due:</strong> <strong style="color: #D1AF5D;"><?php echo esc_html( $data['balance_due'] ); ?></strong> (at check-in)</p>
+            <p><strong>Total Booking:</strong> <?php echo esc_html( $data['total_amount'] ); ?></p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Booking Details:</h3>
+            <p><strong>Accommodation:</strong> <?php echo esc_html( $data['room_list'] ); ?></p>
+            <p><strong>Check-in:</strong> <?php echo esc_html( $data['check_in'] ); ?></p>
+            <p><strong>Check-out:</strong> <?php echo esc_html( $data['check_out'] ); ?></p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Customer Details:</h3>
+            <p><strong>Name:</strong> <?php echo esc_html( $data['customer_name'] ); ?></p>
+            <p><strong>Email:</strong> <a href="mailto:<?php echo esc_attr( $data['customer_email'] ); ?>"><?php echo esc_html( $data['customer_email'] ); ?></a></p>
+            <p><strong>Phone:</strong> <?php echo esc_html( $data['customer_phone'] ); ?></p>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Send admin notification when a scheduled payment fails
+ *
+ * @param int $booking_id The booking ID
+ * @return bool True if sent successfully
+ */
+function shaped_send_admin_payment_failed_email( $booking_id ) {
+    try {
+        error_log( '[Shaped Admin Email] Starting admin payment failed notification for booking #' . $booking_id );
+
+        $booking = MPHB()->getBookingRepository()->findById( $booking_id, true );
+        if ( ! $booking ) {
+            error_log( '[Shaped Admin Email] Booking not found: #' . $booking_id );
+            return false;
+        }
+
+        $customer = $booking->getCustomer();
+        if ( ! $customer ) {
+            error_log( '[Shaped Admin Email] No customer found for booking #' . $booking_id );
+            return false;
+        }
+
+        // Gather booking details
+        $check_in = $booking->getCheckInDate()->format( 'F j, Y' );
+        $check_out = $booking->getCheckOutDate()->format( 'F j, Y' );
+        $currency = MPHB()->settings()->currency()->getCurrencySymbol();
+        $room_type_ids = $booking->getReservedRoomTypeIds();
+        $room_names = array_map( 'get_the_title', $room_type_ids );
+        $room_list = implode( ', ', $room_names );
+
+        // Get pending amount
+        $pending_amount = (float) get_post_meta( $booking_id, '_stripe_pending_amount', true );
+        if ( $pending_amount <= 0 ) {
+            $pending_amount = (float) $booking->getTotalPrice();
+        }
+
+        $to = SHAPED_ADMIN_EMAIL;
+        $subject = '⚠️ Payment Failed: #' . $booking_id . ' - Action Required';
+
+        $message = shaped_get_admin_payment_failed_template( array(
+            'booking_id'      => $booking_id,
+            'customer_name'   => $customer->getFirstName() . ' ' . $customer->getLastName(),
+            'customer_email'  => $customer->getEmail(),
+            'customer_phone'  => $customer->getPhone(),
+            'check_in'        => $check_in,
+            'check_out'       => $check_out,
+            'room_list'       => $room_list,
+            'amount_due'      => $currency . number_format( $pending_amount, 2 ),
+        ) );
+
+        $from_name = shaped_email_config('from_name', get_bloginfo('name'));
+        $site_domain = parse_url( home_url(), PHP_URL_HOST );
+        $from_email = 'bookings@' . $site_domain;
+
+        $headers = array(
+            'Content-Type: text/html; charset=UTF-8',
+            'From: ' . $from_name . ' Bookings <' . $from_email . '>',
+            'Reply-To: ' . $customer->getEmail()
+        );
+
+        $sent = wp_mail( $to, $subject, $message, $headers );
+
+        if ( $sent ) {
+            error_log( '[Shaped Admin Email] Payment failed notification successfully sent to ' . $to );
+        } else {
+            error_log( '[Shaped Admin Email] FAILED to send payment failed notification to ' . $to );
+        }
+
+        return $sent;
+
+    } catch ( Exception $e ) {
+        error_log( '[Shaped Admin Email] ERROR in payment failed notification: ' . $e->getMessage() );
+        return false;
+    }
+}
+
+function shaped_get_admin_payment_failed_template( $data ) {
+    ob_start();
+    ?>
+    <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333; max-width: 600px; border: 1px solid #ddd; border-radius: 5px; margin: 20px auto;">
+        <div style="background-color: #c00; color: white; padding: 15px; border-radius: 5px 5px 0 0;">
+            <h2 style="margin: 0;">⚠️ Payment Failed: #<?php echo esc_html( $data['booking_id'] ); ?></h2>
+        </div>
+        <div style="padding: 20px;">
+            <p style="background: #FFF5F5; padding: 15px; border-radius: 5px; border-left: 4px solid #c00; margin: 0 0 20px 0;">
+                <strong>Action Required:</strong> The scheduled payment for this booking has failed. Please contact the customer immediately.
+            </p>
+            <h3 style="margin-top: 0;">Payment Details:</h3>
+            <p><strong>Amount Due:</strong> <strong style="color: #c00;"><?php echo esc_html( $data['amount_due'] ); ?></strong></p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Booking Details:</h3>
+            <p><strong>Accommodation:</strong> <?php echo esc_html( $data['room_list'] ); ?></p>
+            <p><strong>Check-in:</strong> <?php echo esc_html( $data['check_in'] ); ?></p>
+            <p><strong>Check-out:</strong> <?php echo esc_html( $data['check_out'] ); ?></p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Customer Details:</h3>
+            <p><strong>Name:</strong> <?php echo esc_html( $data['customer_name'] ); ?></p>
+            <p><strong>Email:</strong> <a href="mailto:<?php echo esc_attr( $data['customer_email'] ); ?>"><?php echo esc_html( $data['customer_email'] ); ?></a></p>
+            <p><strong>Phone:</strong> <?php echo esc_html( $data['customer_phone'] ); ?></p>
         </div>
     </div>
     <?php
