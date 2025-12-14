@@ -842,18 +842,21 @@ Manually register a class for autoloading.
 
 | Function | When Sent |
 |----------|-----------|
-| `shaped_send_confirmation_email($booking_id)` | Payment completed (full or deposit) |
+| `shaped_send_confirmation_email($booking_id)` | Full payment completed (immediate or scheduled charge) |
+| `shaped_send_deposit_confirmation_email($booking_id)` | Deposit payment completed |
 | `shaped_send_reservation_email($booking_id)` | Card saved (delayed mode) |
-| `shaped_send_cancellation_email($booking_id, $refund, $fee)` | Booking cancelled |
-| `shaped_send_payment_failed_email($booking_id)` | Charge failed |
+| `shaped_send_cancellation_email($booking_id, $refund)` | Booking cancelled |
+| `shaped_send_payment_failed_email($booking_id)` | Scheduled charge failed |
 
 ### Admin Emails (`email-handler-admin.php`)
 
 | Function | When Sent |
 |----------|-----------|
-| `shaped_send_admin_confirmation_email($booking_id)` | New booking received |
-| `shaped_send_admin_reservation_email($booking_id)` | Reservation created |
+| `shaped_send_admin_confirmation_email($booking_id)` | Full payment received |
+| `shaped_send_admin_deposit_email($booking_id)` | Deposit payment received |
+| `shaped_send_admin_reservation_email($booking_id)` | Card saved (reservation created) |
 | `shaped_send_admin_cancellation_email($booking_id, $refund, $fee)` | Booking cancelled |
+| `shaped_send_admin_payment_failed_email($booking_id)` | Scheduled charge failed |
 
 ### Email Template Structure
 

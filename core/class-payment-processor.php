@@ -658,9 +658,16 @@ class Shaped_Payment_Processor
                         } catch (\Throwable $e) {}
                     }
 
-                    // Send confirmation emails
-                    try { if (function_exists('shaped_send_confirmation_email')) shaped_send_confirmation_email($booking_id); } catch (\Throwable $e) {}
-                    try { if (function_exists('shaped_send_admin_confirmation_email')) shaped_send_admin_confirmation_email($booking_id); } catch (\Throwable $e) {}
+                    // Send appropriate emails based on payment mode
+                    if ($payment_type === 'deposit' || $payment_mode === 'deposit') {
+                        // Deposit payment - send deposit confirmation emails
+                        try { if (function_exists('shaped_send_deposit_confirmation_email')) shaped_send_deposit_confirmation_email($booking_id); } catch (\Throwable $e) {}
+                        try { if (function_exists('shaped_send_admin_deposit_email')) shaped_send_admin_deposit_email($booking_id); } catch (\Throwable $e) {}
+                    } else {
+                        // Full payment - send regular confirmation emails
+                        try { if (function_exists('shaped_send_confirmation_email')) shaped_send_confirmation_email($booking_id); } catch (\Throwable $e) {}
+                        try { if (function_exists('shaped_send_admin_confirmation_email')) shaped_send_admin_confirmation_email($booking_id); } catch (\Throwable $e) {}
+                    }
 
                     self::mark_session_processed($session_id);
 
@@ -885,8 +892,12 @@ class Shaped_Payment_Processor
         } catch (\Stripe\Exception\CardException $e) {
             error_log('[Shaped Charge] Payment failed: ' . $e->getMessage());
             update_post_meta($booking_id, '_shaped_payment_status', 'charge_failed');
+            // Send failure notifications to guest and admin
             if (function_exists('shaped_send_payment_failed_email')) {
                 shaped_send_payment_failed_email($booking_id);
+            }
+            if (function_exists('shaped_send_admin_payment_failed_email')) {
+                shaped_send_admin_payment_failed_email($booking_id);
             }
         } catch (\Throwable $e) {
             error_log('[Shaped Charge] Error: ' . $e->getMessage());

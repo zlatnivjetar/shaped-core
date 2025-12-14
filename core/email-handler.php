@@ -359,8 +359,6 @@ function shaped_send_payment_failed_email($booking_id) {
         // Get email config
         $from_name = shaped_email_config('from_name', get_bloginfo('name'));
         $from_email = shaped_email_config('from_email', get_option('admin_email'));
-        $phone = shaped_email_config('phone', '');
-        $contact_email = shaped_email_config('email', $from_email);
 
         $check_in = $booking->getCheckInDate()->format('d.m.Y');
         $currency = MPHB()->settings()->currency()->getCurrencySymbol();
@@ -369,30 +367,15 @@ function shaped_send_payment_failed_email($booking_id) {
         $to = $customer->getEmail();
         $subject = 'Payment Failed - Action Required #' . $booking_id . ' - ' . $from_name;
 
-        // Plain text message
-        $message = "Dear " . $customer->getFirstName() . ",\n\n";
-        $message .= "We attempted to charge your payment for booking #" . $booking_id . " but the payment was unsuccessful.\n\n";
-        $message .= "BOOKING DETAILS:\n";
-        $message .= "Booking ID: #" . $booking_id . "\n";
-        $message .= "Amount Due: " . $currency . number_format($pending_amount, 2) . "\n";
-        $message .= "Check-in: " . $check_in . "\n\n";
-        $message .= "WHAT HAPPENS NEXT:\n";
-        $message .= "Your booking is at risk of cancellation. Please contact us immediately to resolve this payment issue.\n\n";
-        $message .= "Common reasons for payment failure:\n";
-        $message .= "- Insufficient funds\n";
-        $message .= "- Expired card\n";
-        $message .= "- Card limit exceeded\n";
-        $message .= "- Bank declined the transaction\n\n";
-        $message .= "CONTACT US URGENTLY:\n";
-        if ($phone) {
-            $message .= "Phone: " . $phone . "\n";
-        }
-        $message .= "Email: " . $contact_email . "\n\n";
-        $message .= "We're here to help resolve this quickly.\n\n";
-        $message .= "Regards,\n";
-        $message .= "The " . $from_name . " Team";
+        $message = shaped_get_payment_failed_template([
+            'booking_id' => $booking_id,
+            'customer_first' => $customer->getFirstName(),
+            'check_in' => $check_in,
+            'amount_due' => $currency . number_format($pending_amount, 2),
+        ]);
 
         $headers = [
+            'Content-Type: text/html; charset=UTF-8',
             'From: ' . $from_name . ' <' . $from_email . '>',
             'Reply-To: ' . $from_email
         ];
@@ -409,6 +392,226 @@ function shaped_send_payment_failed_email($booking_id) {
         error_log('[Shaped Email] ERROR in payment failed notification: ' . $e->getMessage());
         return false;
     }
+}
+
+/**
+ * Get styled HTML template for payment failed email
+ *
+ * @param array $data Email data
+ * @return string HTML email content
+ */
+function shaped_get_payment_failed_template($data) {
+    $content = '';
+    $company_name = shaped_email_config('company_name', 'our property');
+    $phone = shaped_email_config('phone', '');
+    $contact_email = shaped_email_config('email', '');
+    $signature = shaped_email_config('signature', 'The Team');
+
+    // Greeting
+    $content .= shaped_email_block_greeting($data['customer_first']);
+
+    // Alert intro
+    $content .= shaped_email_block_intro(
+        'We attempted to charge your payment for booking <strong>#' . esc_html($data['booking_id']) . '</strong> but the payment was unsuccessful.'
+    );
+
+    // Payment details card
+    $content .= shaped_email_block_card_start('highlight');
+    $content .= shaped_email_block_section_title('Payment Details', '💳');
+    $content .= shaped_email_block_rows_start();
+    $content .= shaped_email_block_row('Booking ID:', '#' . $data['booking_id'], ['bold_value' => true]);
+    $content .= shaped_email_block_row('Amount Due:', $data['amount_due'], ['bold_value' => true]);
+    $content .= shaped_email_block_row('Check-in:', $data['check_in'], ['bold_value' => true]);
+    $content .= shaped_email_block_rows_end();
+    $content .= shaped_email_block_card_end();
+
+    // Warning card
+    $text_primary = shaped_email_color('textPrimary', '#26272C');
+    $text_muted = shaped_email_color('textMuted', '#666666');
+    $content .= '<div style="background: #FFF5F5; border-left: 4px solid #b83c2e; border-radius: 8px; padding: 20px; margin: 0 0 24px 0;">';
+    $content .= '<p style="margin: 0 0 12px 0; font-size: 16px; color: ' . $text_primary . '; font-weight: 700;">⚠️ Action Required</p>';
+    $content .= '<p style="margin: 0 0 12px 0; font-size: 14px; color: ' . $text_muted . '; line-height: 1.6;">Your booking is at risk of cancellation. Please contact us immediately to resolve this payment issue.</p>';
+    $content .= '<p style="margin: 0; font-size: 14px; color: ' . $text_muted . '; line-height: 1.6;"><strong>Common reasons:</strong> Insufficient funds, expired card, card limit exceeded, or bank declined the transaction.</p>';
+    $content .= '</div>';
+
+    // Contact section
+    $content .= shaped_email_render_contact([
+        'title' => 'Contact Us Urgently',
+        'intro' => "We're here to help resolve this quickly:",
+        'phone' => $phone,
+        'email' => $contact_email,
+    ]);
+
+    // Closing
+    $content .= shaped_email_block_closing(
+        'Please reach out as soon as possible to keep your booking.',
+        $signature,
+        'neutral'
+    );
+
+    return shaped_render_email([
+        'title'       => 'Payment Failed - ' . $company_name,
+        'header'      => 'Payment Failed',
+        'subtitle'    => 'Action required',
+        'content'     => $content,
+        'footer_text' => '',
+    ]);
+}
+
+/**
+ * Send deposit confirmation email to guest
+ * Sent when deposit payment is successfully processed
+ *
+ * @param int $booking_id The booking ID
+ * @return bool True if sent successfully
+ */
+function shaped_send_deposit_confirmation_email($booking_id) {
+    try {
+        error_log('[Shaped Email] Starting deposit confirmation for booking #' . $booking_id);
+
+        $booking = MPHB()->getBookingRepository()->findById($booking_id, true);
+        if (!$booking) return false;
+
+        $customer = $booking->getCustomer();
+        if (!$customer || !$customer->getEmail()) return false;
+
+        // Prevent duplicate sends
+        $already_sent = get_post_meta($booking_id, '_shaped_deposit_confirmation_sent', true);
+        if ($already_sent) {
+            error_log('[Shaped Email] Deposit confirmation already sent on ' . $already_sent);
+            return false;
+        }
+
+        // Get booking details
+        $check_in = $booking->getCheckInDate()->format('d.m.Y');
+        $check_out = $booking->getCheckOutDate()->format('d.m.Y');
+        $currency = MPHB()->settings()->currency()->getCurrencySymbol();
+
+        $room_type_ids = $booking->getReservedRoomTypeIds();
+        $room_names = array_map('get_the_title', $room_type_ids);
+        $room_list = implode(', ', $room_names);
+
+        // Get deposit details
+        $deposit_amount = (float) get_post_meta($booking_id, '_shaped_deposit_paid', true);
+        $balance_due = (float) get_post_meta($booking_id, '_shaped_balance_due', true);
+        $total_price = (float) $booking->getTotalPrice();
+
+        // Fallback if meta not set
+        if ($deposit_amount <= 0) {
+            $deposit_amount = (float) get_post_meta($booking_id, '_mphb_paid_amount', true);
+        }
+        if ($balance_due <= 0 && $deposit_amount > 0) {
+            $balance_due = $total_price - $deposit_amount;
+        }
+
+        // Get email config
+        $from_name = shaped_email_config('from_name', get_bloginfo('name'));
+        $from_email = shaped_email_config('from_email', get_option('admin_email'));
+
+        $to = $customer->getEmail();
+        $subject = 'Deposit Received #' . $booking_id . ' - ' . $from_name;
+
+        $message = shaped_get_deposit_confirmation_template([
+            'booking_id' => $booking_id,
+            'customer_first' => $customer->getFirstName(),
+            'check_in' => $check_in,
+            'check_out' => $check_out,
+            'room_list' => $room_list,
+            'deposit_paid' => $currency . number_format($deposit_amount, 2),
+            'balance_due' => $currency . number_format($balance_due, 2),
+            'total_amount' => $currency . number_format($total_price, 2),
+        ]);
+
+        $headers = [
+            'Content-Type: text/html; charset=UTF-8',
+            'From: ' . $from_name . ' <' . $from_email . '>',
+            'Reply-To: ' . $from_email
+        ];
+
+        $sent = wp_mail($to, $subject, $message, $headers);
+
+        if ($sent) {
+            update_post_meta($booking_id, '_shaped_deposit_confirmation_sent', current_time('mysql'));
+            error_log('[Shaped Email] Deposit confirmation sent to ' . $to);
+        }
+
+        return $sent;
+
+    } catch (Exception $e) {
+        error_log('[Shaped Email] ERROR in deposit confirmation: ' . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * Get styled HTML template for deposit confirmation email
+ *
+ * @param array $data Email data
+ * @return string HTML email content
+ */
+function shaped_get_deposit_confirmation_template($data) {
+    $content = '';
+    $company_name = shaped_email_config('company_name', 'our property');
+    $company_location = shaped_email_config('company_location', '');
+    $check_in_time = shaped_email_config('check_in_time', 'from 16:00');
+    $check_out_time = shaped_email_config('check_out_time', 'until 11:00');
+
+    // Greeting
+    $content .= shaped_email_block_greeting($data['customer_first']);
+
+    // Intro
+    $intro_text = "Thank you for choosing " . $company_name . "! We've successfully received your deposit payment.";
+    if ($company_location) {
+        $intro_text .= " We're excited to welcome you to the beautiful " . $company_location . ".";
+    }
+    $content .= shaped_email_block_intro($intro_text);
+
+    // Booking Details Card
+    $content .= shaped_email_block_card_start('highlight');
+    $content .= shaped_email_block_section_title('Booking Details', '📋');
+    $content .= shaped_email_block_rows_start();
+    $content .= shaped_email_block_row('Booking ID:', '#' . $data['booking_id'], ['bold_value' => true]);
+    $content .= shaped_email_block_row('Check-in:', $data['check_in'], [
+        'bold_value' => true,
+        'sub_text' => $check_in_time,
+    ]);
+    $content .= shaped_email_block_row('Check-out:', $data['check_out'], [
+        'bold_value' => true,
+        'sub_text' => $check_out_time,
+    ]);
+    $content .= shaped_email_block_row('Accommodation:', $data['room_list'], ['bold_value' => true]);
+    $content .= shaped_email_block_rows_end();
+    $content .= shaped_email_block_card_end();
+
+    // Payment Summary Card
+    $content .= shaped_email_block_card_start('neutral');
+    $content .= shaped_email_block_section_title('Payment Summary', '💰');
+    $content .= shaped_email_block_rows_start();
+    $content .= shaped_email_block_row('Deposit Paid:', $data['deposit_paid'], ['bold_value' => true]);
+    $content .= shaped_email_block_row('Balance Due at Check-in:', $data['balance_due'], ['bold_value' => true]);
+    $content .= shaped_email_block_total_divider();
+    $content .= shaped_email_block_total_row('Total Booking Value:', $data['total_amount']);
+    $content .= shaped_email_block_rows_end();
+    $content .= shaped_email_block_card_end();
+
+    // Getting Here
+    $content .= shaped_email_render_getting_here();
+
+    // Contact
+    $content .= shaped_email_render_contact();
+
+    // Closing
+    $content .= shaped_email_render_closing();
+
+    // Render full email
+    $tagline = shaped_email_config('company_tagline', 'Your stay awaits');
+    return shaped_render_email([
+        'title'       => 'Deposit Received - ' . $company_name,
+        'header'      => 'Deposit Received!',
+        'subtitle'    => $tagline,
+        'content'     => $content,
+        'footer_text' => '',
+    ]);
 }
 
 add_action( 'transition_post_status', function( $new_status, $old_status, $post ) {
