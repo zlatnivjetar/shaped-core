@@ -531,7 +531,7 @@ class Shaped_Payment_Processor
 
     public function register_webhook_route(): void
     {
-        register_rest_route('preelook/v1', '/stripe-webhook', [
+        register_rest_route('shaped/v1', '/stripe-webhook', [
             'methods'             => 'POST',
             'callback'            => [$this, 'handle_stripe_webhook'],
             'permission_callback' => '__return_true',

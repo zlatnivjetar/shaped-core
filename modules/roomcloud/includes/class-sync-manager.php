@@ -230,13 +230,14 @@ class Shaped_RC_Sync_Manager
             "- Room: %s (upgraded!)\n\n" .
             "We look forward to welcoming you!\n\n" .
             "Best regards,\n" .
-            "Preelook Apartments",
+            "%s",
             $customer->getFirstName(),
             $original_name,
             $new_name,
             $booking->getCheckInDate()->format('F j, Y'),
             $booking->getCheckOutDate()->format('F j, Y'),
-            $new_name
+            $new_name,
+            shaped_brand('company.name', 'The Hotel Team')
         );
         
         wp_mail($to, $subject, $message);
@@ -286,10 +287,11 @@ class Shaped_RC_Sync_Manager
             "Please reply to this email and we'll make it right.\n\n" .
             "Again, our sincere apologies for this inconvenience.\n\n" .
             "Best regards,\n" .
-            "Preelook Apartments",
+            "%s",
             $customer->getFirstName(),
             $booking->getCheckInDate()->format('F j, Y'),
-            $booking->getCheckOutDate()->format('F j, Y')
+            $booking->getCheckOutDate()->format('F j, Y'),
+            shaped_brand('company.name', 'The Hotel Team')
         );
         
         wp_mail($to, $subject, $message);
