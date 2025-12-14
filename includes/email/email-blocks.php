@@ -67,7 +67,7 @@ function shaped_email_block_card_start($variant = 'neutral', $margin_bottom = '2
 
     ob_start();
     ?>
-                                <div style="background: <?php echo $bg; ?>; border-radius: 8px; padding: 24px; margin: 0 0 <?php echo esc_attr($margin_bottom); ?> 0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+                                <div style="background: <?php echo $bg; ?>; border-radius: 8px; padding: 24px; margin: 0 0 <?php echo esc_attr($margin_bottom); ?> 0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); border: 1px solid #E0E0E0;">
     <?php
     return ob_get_clean();
 }
@@ -282,14 +282,13 @@ function shaped_email_block_paragraph($text, $variant = 'muted') {
  */
 function shaped_email_block_address($label, $address, $url = '') {
     $text_primary = shaped_brand_color('textPrimary');
-    $primary = shaped_brand_color('primary');
 
     ob_start();
     ?>
                                     <p style="margin: 0 0 12px 0; font-size: 14px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
                                         <strong><?php echo esc_html($label); ?></strong><br>
                                         <?php if ($url): ?>
-                                        <a href="<?php echo esc_url($url); ?>" style="color: <?php echo $primary; ?>; font-weight: 600;"><?php echo esc_html($address); ?></a>
+                                        <a href="<?php echo esc_url($url); ?>" style="color: <?php echo $text_primary; ?>; font-weight: 600;"><?php echo esc_html($address); ?></a>
                                         <?php else: ?>
                                         <?php echo esc_html($address); ?>
                                         <?php endif; ?>
@@ -307,13 +306,12 @@ function shaped_email_block_address($label, $address, $url = '') {
  */
 function shaped_email_block_contact($phone, $email) {
     $text_primary = shaped_brand_color('textPrimary');
-    $primary = shaped_brand_color('primary');
 
     ob_start();
     ?>
                                     <p style="margin: 0; font-size: 14px; color: <?php echo $text_primary; ?>; line-height: 1.8;">
-                                        <strong>Phone:</strong> <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', $phone)); ?>" style="color: <?php echo $primary; ?>; font-weight: 600;"><?php echo esc_html($phone); ?></a><br>
-                                        <strong>Email:</strong> <a href="mailto:<?php echo esc_attr($email); ?>" style="color: <?php echo $primary; ?>; font-weight: 600;"><?php echo esc_html($email); ?></a>
+                                        <strong>Phone:</strong> <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', $phone)); ?>" style="color: <?php echo $text_primary; ?>; font-weight: 600;"><?php echo esc_html($phone); ?></a><br>
+                                        <strong>Email:</strong> <a href="mailto:<?php echo esc_attr($email); ?>" style="color: <?php echo $text_primary; ?>; font-weight: 600;"><?php echo esc_html($email); ?></a>
                                     </p>
     <?php
     return ob_get_clean();
@@ -331,13 +329,12 @@ function shaped_email_block_contact($phone, $email) {
 function shaped_email_block_explore_item($name, $description, $distance, $url) {
     $text_primary = shaped_brand_color('textPrimary');
     $text_muted = shaped_brand_color('textMuted');
-    $primary = shaped_brand_color('primary');
 
     ob_start();
     ?>
                                         <tr class="mobile-stack">
                                             <td style="padding: 10px 0; vertical-align: top; width: 70%;">
-                                                <a href="<?php echo esc_url($url); ?>" style="color: <?php echo $primary; ?>;"><strong style="font-size: 14px;"><?php echo esc_html($name); ?></strong></a><br>
+                                                <a href="<?php echo esc_url($url); ?>" style="color: <?php echo $text_primary; ?>;"><strong style="font-size: 14px;"><?php echo esc_html($name); ?></strong></a><br>
                                                 <span style="color: <?php echo $text_muted; ?>; font-size: 13px; line-height: 1.5;"><?php echo esc_html($description); ?></span>
                                             </td>
                                             <td class="mobile-right" style="padding: 10px 0; text-align: right; color: <?php echo $text_primary; ?>; font-size: 13px; font-weight: 600; vertical-align: top; width: 30%;">
@@ -358,7 +355,6 @@ function shaped_email_block_explore_item($name, $description, $distance, $url) {
  */
 function shaped_email_block_closing($message, $signature = 'Warm regards,<br>The Preelook Team', $variant = 'highlight') {
     $text_primary = shaped_brand_color('textPrimary');
-    $primary = shaped_brand_color('primary');
     $bg = $variant === 'highlight' ? '#fffbf0' : '#f8f8f8';
 
     ob_start();
@@ -367,7 +363,7 @@ function shaped_email_block_closing($message, $signature = 'Warm regards,<br>The
                                     <p style="margin: 0 0 12px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
                                         <?php echo esc_html($message); ?>
                                     </p>
-                                    <p style="margin: 0; font-size: 16px; color: <?php echo $primary; ?>; font-weight: 600; line-height: 1.6;">
+                                    <p style="margin: 0; font-size: 16px; color: <?php echo $text_primary; ?>; font-weight: 600; line-height: 1.6;">
                                         <?php echo wp_kses_post($signature); ?>
                                     </p>
                                 </div>
@@ -386,13 +382,12 @@ function shaped_email_block_closing($message, $signature = 'Warm regards,<br>The
 function shaped_email_block_payment_info($amount, $date, $note = '') {
     $text_primary = shaped_brand_color('textPrimary');
     $text_muted = shaped_brand_color('textMuted');
-    $primary = shaped_brand_color('primary');
 
     ob_start();
     ?>
                                 <div style="background: #fffbf0; border-radius: 8px; padding: 24px; margin: 0 0 24px 0; text-align: center;">
                                     <p style="margin: 0 0 12px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
-                                        We'll charge <strong style="color: <?php echo $primary; ?>; font-size: 20px;"><?php echo esc_html($amount); ?></strong>
+                                        We'll charge <strong style="color: <?php echo $text_primary; ?>; font-size: 20px;"><?php echo esc_html($amount); ?></strong>
                                     </p>
                                     <p style="margin: 0; font-size: 14px; color: <?php echo $text_muted; ?>; line-height: 1.6;">
                                         on <strong><?php echo esc_html($date); ?></strong>
