@@ -658,19 +658,9 @@ class Shaped_Payment_Processor
                         } catch (\Throwable $e) {}
                     }
 
-                    // Emails - different for deposit vs full
-                    if ($payment_type === 'deposit' || $payment_mode === 'deposit') {
-                        try { if (function_exists('shaped_send_deposit_confirmation_email')) shaped_send_deposit_confirmation_email($booking_id); } catch (\Throwable $e) {}
-                        try { if (function_exists('shaped_send_admin_deposit_email')) shaped_send_admin_deposit_email($booking_id); } catch (\Throwable $e) {}
-                        // Fallback to regular confirmation if deposit-specific doesn't exist
-                        if (!function_exists('shaped_send_deposit_confirmation_email')) {
-                            try { if (function_exists('shaped_send_confirmation_email')) shaped_send_confirmation_email($booking_id); } catch (\Throwable $e) {}
-                            try { if (function_exists('shaped_send_admin_confirmation_email')) shaped_send_admin_confirmation_email($booking_id); } catch (\Throwable $e) {}
-                        }
-                    } else {
-                        try { if (function_exists('shaped_send_confirmation_email')) shaped_send_confirmation_email($booking_id); } catch (\Throwable $e) {}
-                        try { if (function_exists('shaped_send_admin_confirmation_email')) shaped_send_admin_confirmation_email($booking_id); } catch (\Throwable $e) {}
-                    }
+                    // Send confirmation emails
+                    try { if (function_exists('shaped_send_confirmation_email')) shaped_send_confirmation_email($booking_id); } catch (\Throwable $e) {}
+                    try { if (function_exists('shaped_send_admin_confirmation_email')) shaped_send_admin_confirmation_email($booking_id); } catch (\Throwable $e) {}
 
                     self::mark_session_processed($session_id);
 
