@@ -494,15 +494,19 @@ function shaped_send_deposit_confirmation_email($booking_id) {
         // Get deposit details
         $deposit_amount = (float) get_post_meta($booking_id, '_shaped_deposit_paid', true);
         $balance_due = (float) get_post_meta($booking_id, '_shaped_balance_due', true);
-        $total_price = (float) $booking->getTotalPrice();
 
         // Fallback if meta not set
         if ($deposit_amount <= 0) {
             $deposit_amount = (float) get_post_meta($booking_id, '_mphb_paid_amount', true);
         }
         if ($balance_due <= 0 && $deposit_amount > 0) {
-            $balance_due = $total_price - $deposit_amount;
+            $total_from_booking = (float) $booking->getTotalPrice();
+            $balance_due = $total_from_booking - $deposit_amount;
         }
+
+        // Calculate total price as deposit + balance to get the correct discounted amount
+        // This ensures we show the actual amount customer pays, not the undiscounted price
+        $total_price = $deposit_amount + $balance_due;
 
         // Get email config
         $from_name = shaped_email_config('from_name', get_bloginfo('name'));
