@@ -282,13 +282,14 @@ function shaped_email_block_paragraph($text, $variant = 'muted') {
  */
 function shaped_email_block_address($label, $address, $url = '') {
     $text_primary = shaped_brand_color('textPrimary');
+    $text_dark = shaped_brand_color('textDark');
 
     ob_start();
     ?>
                                     <p style="margin: 0 0 12px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
                                         <strong><?php echo esc_html($label); ?></strong><br>
                                         <?php if ($url): ?>
-                                        <a href="<?php echo esc_url($url); ?>" style="color: <?php echo $text_primary; ?>; font-weight: 700;"><?php echo esc_html($address); ?></a>
+                                        <a href="<?php echo esc_url($url); ?>" style="color: <?php echo $text_dark; ?>; font-size: 16px; font-weight: 700;"><?php echo esc_html($address); ?></a>
                                         <?php else: ?>
                                         <?php echo esc_html($address); ?>
                                         <?php endif; ?>
@@ -306,6 +307,7 @@ function shaped_email_block_address($label, $address, $url = '') {
  */
 function shaped_email_block_contact($phone, $email) {
     $text_primary = shaped_brand_color('textPrimary');
+    $text_dark = shaped_brand_color('textDark');
 
     ob_start();
     ?>
@@ -329,6 +331,7 @@ function shaped_email_block_contact($phone, $email) {
 function shaped_email_block_explore_item($name, $description, $distance, $url) {
     $text_primary = shaped_brand_color('textPrimary');
     $text_muted = shaped_brand_color('textMuted');
+    $text_dark = shaped_brand_color('textDark');
 
     ob_start();
     ?>
