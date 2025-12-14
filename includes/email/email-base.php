@@ -58,9 +58,9 @@ function shaped_email_get_styles() {
 
         /* Link styling */
         a {
-            color: <?php echo shaped_brand_color('textPrimary'); ?> !important;
-            text-decoration: none !important;
-            font-weight: 700 !important;
+            color: <?php echo shaped_brand_color('textPrimary') ?: '#26272C'; ?>;
+            text-decoration: none;
+            font-weight: 700;
         }
 
         /* Heading margins */
@@ -239,9 +239,9 @@ function shaped_email_end() {
  * @return string Header HTML
  */
 function shaped_email_header($title, $subtitle = '') {
-    $primary = shaped_brand_color('primary');
-    $secondary = shaped_brand_color('secondary');
-    $text_inverse = shaped_brand_color('textInverse');
+    $primary = shaped_brand_color('primary') ?: '#D1AF5D';
+    $secondary = shaped_brand_color('secondary') ?: '#94772E';
+    $text_inverse = shaped_brand_color('textInverse') ?: '#FFFFFF';
 
     ob_start();
     ?>
