@@ -9,21 +9,15 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-/**
- * Get admin email address from brand config
- * Falls back to WordPress admin email if not configured
- */
-function shaped_get_admin_email() {
+// Use brand config email as admin email, with fallback to helper function
+if (!defined('SHAPED_ADMIN_EMAIL')) {
     $admin_email = shaped_email_config('email', '');
     if (empty($admin_email)) {
-        $admin_email = get_option('admin_email');
+        $admin_email = function_exists('shaped_get_admin_email')
+            ? shaped_get_admin_email()
+            : get_option('admin_email');
     }
-    return $admin_email;
-}
-
-// Define constant for backward compatibility (uses brand config)
-if (!defined('SHAPED_ADMIN_EMAIL')) {
-    define('SHAPED_ADMIN_EMAIL', shaped_get_admin_email());
+    define('SHAPED_ADMIN_EMAIL', $admin_email);
 }
 
 /**
