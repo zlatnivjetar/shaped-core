@@ -58,8 +58,9 @@ function shaped_email_get_styles() {
 
         /* Link styling */
         a {
-            color: <?php echo shaped_brand_color('primary'); ?>;
+            color: <?php echo shaped_brand_color('textPrimary'); ?>;
             text-decoration: none;
+            font-weight: 700;
         }
 
         /* Heading margins */
