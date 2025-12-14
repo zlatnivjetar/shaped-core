@@ -149,10 +149,10 @@ function shaped_email_render_deposit_details($data) {
 
     // Deposit payment breakdown
     $html .= shaped_email_block_total_divider();
-    $html .= '<tr><td colspan="2" style="padding: 12px 0;">
+    $html .= '<tr><td colspan="2" style="padding: 16px 0;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span style="font-size: 14px; color: ' . shaped_brand_color('textPrimary') . ';">Deposit Paid:</span>
-            <strong style="font-size: 16px; color: ' . $success . ';">' . esc_html($data['deposit_paid']) . '</strong>
+            <span style="font-size: 14px; color: ' . shaped_brand_color('textPrimary') . ';">Deposit Paid: </span>
+            <strong style="font-size: 16px; color: ' . $primary . ';">' . esc_html($data['deposit_paid']) . '</strong>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <span style="font-size: 14px; color: ' . shaped_brand_color('textPrimary') . ';">Balance Due on Arrival:</span>
