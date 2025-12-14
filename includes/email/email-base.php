@@ -90,7 +90,7 @@ function shaped_email_get_styles() {
 
             /* Improved mobile spacing */
             .content-padding {
-                padding: 24px 0px !important;
+                padding: 24px 8px !important;
             }
 
             .header-padding {
