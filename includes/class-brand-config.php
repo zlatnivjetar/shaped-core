@@ -252,7 +252,7 @@ class Shaped_Brand_Config
      * @return string
      */
     private function get_clients_dir() {
-        return dirname(SHAPED_PLUGIN_FILE) . '/CLIENTS';
+        return dirname(SHAPED_PLUGIN_FILE) . '/clients';
     }
 
     /**

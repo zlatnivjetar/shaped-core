@@ -507,7 +507,7 @@ When customizing for a new property:
 - [ ] Add custom modal types if needed
 - [ ] Configure review provider links
 - [ ] Test payment flow end-to-end
-- [ ] Document customizations in [CLIENTS/](CLIENTS/) folder
+- [ ] Document customizations in [clients/](clients/) folder
 
 ---
 

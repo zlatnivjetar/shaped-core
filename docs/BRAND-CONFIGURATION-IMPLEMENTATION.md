@@ -30,7 +30,7 @@ This implementation adds a centralized brand configuration system to support mul
 ```
 Base Config (brand.json)
     ↓
-Client Override (CLIENTS/[client]/brand.json) [optional]
+Client Override (clients/[client]/brand.json) [optional]
     ↓
 PHP Helpers (shaped_brand_color(), etc.)
     ↓
@@ -83,7 +83,7 @@ shaped_brand_e($path, $default)        // Echo value (template helper)
 <div style="color: <?php shaped_brand_color_e('primary'); ?>;">
 ```
 
-#### 3. `CLIENTS/README.md`
+#### 3. `clients/README.md`
 **Purpose:** Documentation for setting up new clients
 
 **Contains:**
@@ -273,7 +273,7 @@ box-shadow:
 ### New Files (4)
 1. `includes/class-brand-config.php` - 260 lines
 2. `config/brand-helpers.php` - 245 lines
-3. `CLIENTS/README.md` - 215 lines
+3. `clients/README.md` - 215 lines
 4. `test-brand-config.php` - 145 lines
 
 ### Modified Files (3)
@@ -293,10 +293,10 @@ box-shadow:
 
 1. Create client directory:
 ```bash
-mkdir -p CLIENTS/preelook
+mkdir -p clients/preelook
 ```
 
-2. Create `CLIENTS/preelook/brand.json`:
+2. Create `clients/preelook/brand.json`:
 ```json
 {
   "colors": {
@@ -318,10 +318,10 @@ define('SHAPED_CLIENT', 'preelook');
 
 1. Create client directory:
 ```bash
-mkdir -p CLIENTS/new-client
+mkdir -p clients/new-client
 ```
 
-2. Create minimal override `CLIENTS/new-client/brand.json`:
+2. Create minimal override `clients/new-client/brand.json`:
 ```json
 {
   "colors": {
@@ -343,8 +343,8 @@ define('SHAPED_CLIENT', 'new-client');
 ### Auto-Detection by Domain
 
 The system automatically detects clients based on domain:
-- `preelook.com` → loads `CLIENTS/preelook/brand.json`
-- `acme-hotel.com` → looks for `CLIENTS/acme-hotel/brand.json`
+- `preelook.com` → loads `clients/preelook/brand.json`
+- `acme-hotel.com` → looks for `clients/acme-hotel/brand.json`
 
 ---
 
