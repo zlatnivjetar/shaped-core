@@ -842,10 +842,8 @@ Manually register a class for autoloading.
 
 | Function | When Sent |
 |----------|-----------|
-| `shaped_send_confirmation_email($booking_id)` | Payment completed |
+| `shaped_send_confirmation_email($booking_id)` | Payment completed (full or deposit) |
 | `shaped_send_reservation_email($booking_id)` | Card saved (delayed mode) |
-| `shaped_send_deposit_confirmation_email($booking_id)` | Deposit paid |
-| `shaped_send_payment_confirmation_email($booking_id)` | Delayed payment executed |
 | `shaped_send_cancellation_email($booking_id, $refund, $fee)` | Booking cancelled |
 | `shaped_send_payment_failed_email($booking_id)` | Charge failed |
 
@@ -855,7 +853,6 @@ Manually register a class for autoloading.
 |----------|-----------|
 | `shaped_send_admin_confirmation_email($booking_id)` | New booking received |
 | `shaped_send_admin_reservation_email($booking_id)` | Reservation created |
-| `shaped_send_admin_deposit_email($booking_id)` | Deposit received |
 | `shaped_send_admin_cancellation_email($booking_id, $refund, $fee)` | Booking cancelled |
 
 ### Email Template Structure

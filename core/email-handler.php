@@ -59,10 +59,14 @@ function shaped_send_confirmation_email( $booking_id ) {
             $total_paid = (float) $booking->getTotalPrice();
         }
         
+        // Get email config
+        $from_name = shaped_email_config('from_name', get_bloginfo('name'));
+        $from_email = shaped_email_config('from_email', get_option('admin_email'));
+
         // Email setup
         $to = $customer->getEmail();
-        $subject = 'Booking Confirmed #' . $booking_id . ' - Preelook Apartments';
-        
+        $subject = 'Booking Confirmed #' . $booking_id . ' - ' . $from_name;
+
         // Build professional HTML email
         $message = shaped_get_confirmation_template( array(
             'booking_id' => $booking_id,
@@ -71,16 +75,16 @@ function shaped_send_confirmation_email( $booking_id ) {
             'check_in' => $check_in,
             'check_out' => $check_out,
             'room_list' => $room_list,
-            'total_paid' => $currency . number_format( $total_paid, 2 ), // Changed key name
+            'total_paid' => $currency . number_format( $total_paid, 2 ),
             'customer_email' => $customer->getEmail(),
             'customer_phone' => $customer->getPhone()
         ));
-        
+
         // Set headers
         $headers = array(
             'Content-Type: text/html; charset=UTF-8',
-            'From: Preelook Apartments <info@preelook.com>',
-            'Reply-To: info@preelook.com'
+            'From: ' . $from_name . ' <' . $from_email . '>',
+            'Reply-To: ' . $from_email
         );
         
         // Send email
@@ -106,14 +110,18 @@ function shaped_send_confirmation_email( $booking_id ) {
 function shaped_get_confirmation_template( $data ) {
     // Build content using reusable blocks
     $content = '';
+    $company_name = shaped_email_config('company_name', 'our property');
+    $company_location = shaped_email_config('company_location', '');
 
     // Greeting
     $content .= shaped_email_block_greeting($data['customer_first']);
 
     // Intro
-    $content .= shaped_email_block_intro(
-        "Thank you for choosing Preelook Apartments! We're excited to welcome you to the beautiful seaside town of Rijeka, just steps from the Adriatic Sea."
-    );
+    $intro_text = "Thank you for choosing " . $company_name . "!";
+    if ($company_location) {
+        $intro_text .= " We're excited to welcome you to the beautiful " . $company_location . ".";
+    }
+    $content .= shaped_email_block_intro($intro_text);
 
     // Booking Details
     $content .= shaped_email_render_booking_details([
@@ -127,9 +135,6 @@ function shaped_get_confirmation_template( $data ) {
     // Getting Here
     $content .= shaped_email_render_getting_here();
 
-    // Explore the Area
-    $content .= shaped_email_render_explore_area();
-
     // Contact
     $content .= shaped_email_render_contact();
 
@@ -137,12 +142,13 @@ function shaped_get_confirmation_template( $data ) {
     $content .= shaped_email_render_closing();
 
     // Render full email
+    $tagline = shaped_email_config('company_tagline', 'Your stay awaits');
     return shaped_render_email([
-        'title'       => 'Booking Confirmed - Preelook Apartments',
+        'title'       => 'Booking Confirmed - ' . $company_name,
         'header'      => 'Booking Confirmed!',
-        'subtitle'    => 'Your seaside escape awaits',
+        'subtitle'    => $tagline,
         'content'     => $content,
-        'footer_text' => 'This is an automated confirmation email.',
+        'footer_text' => '',
     ]);
 }
 
@@ -170,10 +176,14 @@ function shaped_send_reservation_email($booking_id) {
         $pending_amount = get_post_meta($booking_id, '_stripe_pending_amount', true);
         
         $charge_date_formatted = date('F j, Y', strtotime($charge_date));
-        
+
+        // Get email config
+        $from_name = shaped_email_config('from_name', get_bloginfo('name'));
+        $from_email = shaped_email_config('from_email', get_option('admin_email'));
+
         $to = $customer->getEmail();
-        $subject = 'Reservation Confirmed #' . $booking_id . ' - Preelook Apartments';
-        
+        $subject = 'Reservation Confirmed #' . $booking_id . ' - ' . $from_name;
+
         $message = shaped_get_reservation_template([
             'booking_id' => $booking_id,
             'customer_first' => $customer->getFirstName(),
@@ -183,11 +193,11 @@ function shaped_send_reservation_email($booking_id) {
             'amount' => number_format($pending_amount, 2),
             'customer_email' => $customer->getEmail()
         ]);
-        
+
         $headers = [
             'Content-Type: text/html; charset=UTF-8',
-            'From: Preelook Apartments <info@preelook.com>',
-            'Reply-To: info@preelook.com'
+            'From: ' . $from_name . ' <' . $from_email . '>',
+            'Reply-To: ' . $from_email
         ];
         
         $sent = wp_mail($to, $subject, $message, $headers);
@@ -208,13 +218,15 @@ function shaped_send_reservation_email($booking_id) {
 function shaped_get_reservation_template($data) {
     // Build content using reusable blocks
     $content = '';
+    $company_name = shaped_email_config('company_name', 'our property');
+    $phone = shaped_email_config('phone', '');
 
     // Greeting
     $content .= shaped_email_block_greeting($data['customer_first']);
 
     // Intro
     $content .= shaped_email_block_intro(
-        "Your reservation at Preelook Apartments has been confirmed! Your card has been securely saved."
+        "Your reservation at " . $company_name . " has been confirmed! Your card has been securely saved."
     );
 
     // Booking Summary
@@ -240,16 +252,19 @@ function shaped_get_reservation_template($data) {
     );
 
     // Footer note
-    $primary = shaped_brand_color('primary');
-    $text_muted = shaped_brand_color('textMuted');
+    $primary = shaped_email_color('primary', '#D1AF5D');
+    $text_muted = shaped_email_color('textMuted', '#666666');
     $content .= '<p style="margin: 0; font-size: 14px; color: ' . $text_muted . '; text-align: center; line-height: 1.6;">';
     $content .= "You'll receive full booking details after payment is processed.<br>";
-    $content .= 'Questions? Contact us at <a href="tel:+385916133609" style="color: ' . $primary . ';">+385 91 613 3609</a>';
+    if ($phone) {
+        $phone_clean = preg_replace('/[^0-9+]/', '', $phone);
+        $content .= 'Questions? Contact us at <a href="tel:' . $phone_clean . '" style="color: ' . $primary . ';">' . esc_html($phone) . '</a>';
+    }
     $content .= '</p>';
 
     // Render full email
     return shaped_render_email([
-        'title'       => 'Reservation Confirmed - Preelook Apartments',
+        'title'       => 'Reservation Confirmed - ' . $company_name,
         'header'      => 'Reservation Confirmed!',
         'subtitle'    => 'Card saved successfully',
         'content'     => $content,
@@ -260,38 +275,41 @@ function shaped_get_reservation_template($data) {
 function shaped_send_cancellation_email($booking_id, $is_refundable = false) {
     $booking = MPHB()->getBookingRepository()->findById($booking_id);
     $customer = $booking->getCustomer();
-    
+
+    // Get email config
+    $from_name = shaped_email_config('from_name', get_bloginfo('name'));
+    $from_email = shaped_email_config('from_email', get_option('admin_email'));
+
     $to = $customer->getEmail();
-    $subject = 'Booking Cancelled #' . $booking_id . ' - Preelook Apartments';
-    
-    $currency = MPHB()->settings()->currency()->getCurrencySymbol();
-    
+    $subject = 'Booking Cancelled #' . $booking_id . ' - ' . $from_name;
+
     $message = shaped_get_cancellation_template([
         'booking_id' => $booking_id,
         'customer_first' => $customer->getFirstName(),
         'is_refundable' => $is_refundable
     ]);
-    
-    // FIX: Add proper headers like confirmation email
+
     $headers = [
         'Content-Type: text/html; charset=UTF-8',
-        'From: Preelook Apartments <info@preelook.com>',
-        'Reply-To: info@preelook.com'
+        'From: ' . $from_name . ' <' . $from_email . '>',
+        'Reply-To: ' . $from_email
     ];
-    
+
     $sent = wp_mail($to, $subject, $message, $headers);
-    
+
     if ($sent) {
         update_post_meta($booking_id, '_shaped_cancellation_sent', current_time('mysql'));
         error_log('[Shaped] Cancellation email sent for booking #' . $booking_id);
     }
-    
+
     return $sent;
 }
 
 function shaped_get_cancellation_template($data) {
     // Build content using reusable blocks
     $content = '';
+    $company_name = shaped_email_config('company_name', 'our property');
+    $signature = shaped_email_config('signature', 'The Team');
 
     // Greeting
     $content .= shaped_email_block_greeting($data['customer_first']);
@@ -306,141 +324,20 @@ function shaped_get_cancellation_template($data) {
 
     // Closing message
     $content .= shaped_email_block_closing(
-        'We hope to welcome you to Preelook in the future.',
-        'The Preelook Team',
+        'We hope to welcome you in the future.',
+        $signature,
         'neutral'
     );
 
     // Render full email
     return shaped_render_email([
-        'title'       => 'Booking Cancelled - Preelook Apartments',
+        'title'       => 'Booking Cancelled - ' . $company_name,
         'header'      => 'Booking Cancelled',
         'subtitle'    => "We've processed your cancellation",
         'content'     => $content,
         'footer_text' => 'This is an automated cancellation confirmation.',
     ]);
 }
-
-/**
- * Send deposit confirmation email to guest
- * Sent when deposit payment is successfully processed
- *
- * @param int $booking_id The booking ID
- * @return bool True if sent successfully
- */
-function shaped_send_deposit_confirmation_email($booking_id) {
-    try {
-        error_log('[Shaped Email] Starting deposit confirmation for booking #' . $booking_id);
-
-        $booking = MPHB()->getBookingRepository()->findById($booking_id, true);
-        if (!$booking) return false;
-
-        $customer = $booking->getCustomer();
-        if (!$customer || !$customer->getEmail()) return false;
-
-        // Prevent duplicate sends
-        $already_sent = get_post_meta($booking_id, '_shaped_deposit_confirmation_sent', true);
-        if ($already_sent) {
-            error_log('[Shaped Email] Deposit confirmation already sent on ' . $already_sent);
-            return false;
-        }
-
-        // Get deposit details
-        $check_in = $booking->getCheckInDate()->format('d.m.Y');
-        $check_out = $booking->getCheckOutDate()->format('d.m.Y');
-        $currency = MPHB()->settings()->currency()->getCurrencySymbol();
-        $deposit_amount = get_post_meta($booking_id, '_shaped_deposit_amount', true);
-        $balance_due = get_post_meta($booking_id, '_shaped_balance_due', true);
-
-        $room_type_ids = $booking->getReservedRoomTypeIds();
-        $room_names = array_map('get_the_title', $room_type_ids);
-        $room_list = implode(', ', $room_names);
-
-        $to = $customer->getEmail();
-        $subject = 'Deposit Received #' . $booking_id . ' - Preelook Apartments';
-
-        // Build professional HTML email
-        $message = shaped_get_deposit_confirmation_template([
-            'booking_id' => $booking_id,
-            'customer_name' => $customer->getFirstName() . ' ' . $customer->getLastName(),
-            'customer_first' => $customer->getFirstName(),
-            'check_in' => $check_in,
-            'check_out' => $check_out,
-            'room_list' => $room_list,
-            'deposit_paid' => $currency . number_format($deposit_amount, 2),
-            'balance_due' => $currency . number_format($balance_due, 2),
-            'total_amount' => $currency . number_format($deposit_amount + $balance_due, 2),
-            'customer_email' => $customer->getEmail(),
-            'customer_phone' => $customer->getPhone()
-        ]);
-
-        // Set headers
-        $headers = [
-            'Content-Type: text/html; charset=UTF-8',
-            'From: Preelook Apartments <info@preelook.com>',
-            'Reply-To: info@preelook.com'
-        ];
-
-        $sent = wp_mail($to, $subject, $message, $headers);
-
-        if ($sent) {
-            update_post_meta($booking_id, '_shaped_deposit_confirmation_sent', current_time('mysql'));
-            error_log('[Shaped Email] Deposit confirmation sent to ' . $to);
-        }
-
-        return $sent;
-
-    } catch (Exception $e) {
-        error_log('[Shaped Email] ERROR in deposit confirmation: ' . $e->getMessage());
-        return false;
-    }
-}
-
-function shaped_get_deposit_confirmation_template($data) {
-    // Build content using reusable blocks
-    $content = '';
-
-    // Greeting
-    $content .= shaped_email_block_greeting($data['customer_first']);
-
-    // Intro
-    $content .= shaped_email_block_intro(
-        "Thank you for choosing Preelook Apartments! We've successfully received your deposit payment. We're excited to welcome you to the beautiful seaside town of Rijeka, just steps from the Adriatic Sea."
-    );
-
-    // Deposit Payment Details
-    $content .= shaped_email_render_deposit_details([
-        'booking_id' => $data['booking_id'],
-        'check_in'   => $data['check_in'],
-        'check_out'  => $data['check_out'],
-        'room_list'  => $data['room_list'],
-        'deposit_paid' => $data['deposit_paid'],
-        'balance_due' => $data['balance_due'],
-        'total_amount' => $data['total_amount'],
-    ]);
-
-    // Getting Here
-    $content .= shaped_email_render_getting_here();
-
-    // Explore the Area
-    $content .= shaped_email_render_explore_area();
-
-    // Contact
-    $content .= shaped_email_render_contact();
-
-    // Closing
-    $content .= shaped_email_render_closing();
-
-    // Render full email
-    return shaped_render_email([
-        'title'       => 'Deposit Received - Preelook Apartments',
-        'header'      => 'Deposit Received!',
-        'subtitle'    => 'Your booking is confirmed',
-        'content'     => $content,
-        'footer_text' => 'This is an automated confirmation email.',
-    ]);
-}
-
 
 /**
  * Send payment failed email to guest (delayed charge failed)
@@ -459,12 +356,18 @@ function shaped_send_payment_failed_email($booking_id) {
         $customer = $booking->getCustomer();
         if (!$customer || !$customer->getEmail()) return false;
 
+        // Get email config
+        $from_name = shaped_email_config('from_name', get_bloginfo('name'));
+        $from_email = shaped_email_config('from_email', get_option('admin_email'));
+        $phone = shaped_email_config('phone', '');
+        $contact_email = shaped_email_config('email', $from_email);
+
         $check_in = $booking->getCheckInDate()->format('d.m.Y');
         $currency = MPHB()->settings()->currency()->getCurrencySymbol();
         $pending_amount = get_post_meta($booking_id, '_stripe_pending_amount', true);
 
         $to = $customer->getEmail();
-        $subject = 'Payment Failed - Action Required #' . $booking_id . ' - Preelook Apartments';
+        $subject = 'Payment Failed - Action Required #' . $booking_id . ' - ' . $from_name;
 
         // Plain text message
         $message = "Dear " . $customer->getFirstName() . ",\n\n";
@@ -481,15 +384,17 @@ function shaped_send_payment_failed_email($booking_id) {
         $message .= "- Card limit exceeded\n";
         $message .= "- Bank declined the transaction\n\n";
         $message .= "CONTACT US URGENTLY:\n";
-        $message .= "Phone: +385 91 613 3609\n";
-        $message .= "Email: info@preelook.com\n\n";
+        if ($phone) {
+            $message .= "Phone: " . $phone . "\n";
+        }
+        $message .= "Email: " . $contact_email . "\n\n";
         $message .= "We're here to help resolve this quickly.\n\n";
         $message .= "Regards,\n";
-        $message .= "The Preelook Team";
+        $message .= "The " . $from_name . " Team";
 
         $headers = [
-            'From: Preelook Apartments <info@preelook.com>',
-            'Reply-To: info@preelook.com'
+            'From: ' . $from_name . ' <' . $from_email . '>',
+            'Reply-To: ' . $from_email
         ];
 
         $sent = wp_mail($to, $subject, $message, $headers);

@@ -1,4 +1,25 @@
 {
+  "company": {
+    "name": "Preelook Apartments",
+    "tagline": "Your seaside escape awaits",
+    "location": "Rijeka, Croatia"
+  },
+  "contact": {
+    "phone": "+385 91 613 3609",
+    "email": "info@preelook.com",
+    "address": "Preluk 4, 51000 Rijeka, Croatia",
+    "mapsUrl": "https://maps.app.goo.gl/Zn5MTHb858g4aEUL8"
+  },
+  "email": {
+    "fromName": "Preelook Apartments",
+    "fromEmail": "info@preelook.com",
+    "footerText": "This is an automated confirmation email.",
+    "checkInInstructions": "Visit us at the hotel reception upon arrival. We'll personally show you to your apartment and ensure you feel right at home.",
+    "checkInTime": "from 16:00",
+    "checkOutTime": "until 11:00",
+    "closingMessage": "We're looking forward to hosting you in beautiful Rijeka!",
+    "signature": "Warm regards,<br>The Preelook Team"
+  },
   "colors": {
     "brand": {
       "primary": "#D1AF5D",
