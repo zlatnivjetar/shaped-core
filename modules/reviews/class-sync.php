@@ -24,7 +24,16 @@ class Sync {
     public function __construct() {
         $this->supabase_url = defined('SUPABASE_URL') ? SUPABASE_URL : '';
         $this->supabase_key = defined('SUPABASE_SERVICE_KEY') ? SUPABASE_SERVICE_KEY : '';
-        $this->table_name   = apply_filters('shaped/reviews/table_name', 'shaped_reviews');
+
+        // Get table name from brand config or use default
+        $default_table = 'shaped_reviews';
+        if (function_exists('shaped_brand')) {
+            $brand_table = shaped_brand('integrations.supabase.reviewsTable');
+            if ($brand_table) {
+                $default_table = $brand_table;
+            }
+        }
+        $this->table_name = apply_filters('shaped/reviews/table_name', $default_table);
 
         // Admin actions
         add_action('admin_menu', [$this, 'add_admin_menu']);
