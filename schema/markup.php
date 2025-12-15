@@ -155,44 +155,52 @@ final class Shaped_Schema {
     }
 
     private function default_config(): array {
+        // Pull configuration from brand config (single source of truth)
+        $company_name = function_exists('shaped_brand') ? shaped_brand('company.name') : get_bloginfo('name');
+        $phone = function_exists('shaped_brand') ? shaped_brand('contact.phone') : '';
+        $email = function_exists('shaped_brand') ? shaped_brand('contact.email') : '';
+        $address = function_exists('shaped_brand') ? shaped_brand('contact.address') : [];
+        $coords = function_exists('shaped_brand') ? shaped_brand('contact.coordinates') : [];
+        $schema = function_exists('shaped_brand') ? shaped_brand('schema') : [];
+
+        // Build amenities from brand config
+        $amenities = [];
+        $brand_amenities = $schema['amenities'] ?? [];
+        foreach ($brand_amenities as $amenity) {
+            $amenities[] = [
+                '@type' => 'LocationFeatureSpecification',
+                'name'  => $amenity['name'] ?? '',
+                'value' => $amenity['value'] ?? true,
+            ];
+        }
+
         return [
-            'site_name'   => get_bloginfo('name'),
-            'lodging_type' => 'LodgingBusiness',
-            'name'        => 'Preelook Apartments & Rooms',
-            'telephone'   => '+385916125689',
-            'email'       => 'info@preelook.com',
-            'currency'    => 'EUR',
-            'payment_accepted' => ['Credit Card', 'Debit Card'],
-            'price_range' => '€€',
-            'checkin_time'  => '14:00',
-            'checkout_time' => '10:00',
-            'pets_allowed'  => false,
-            'images' => [], // absolute URLs only
-            'same_as' => [], // Google Maps, Instagram, Facebook, etc.
-            'address' => [
-                '@type' => 'PostalAddress',
-                'streetAddress'   => 'Preluk 4',
-                'addressLocality' => 'Rijeka',
-                'postalCode'      => '51000',
-                'addressCountry'  => 'HR',
-            ],
-            'geo' => [
-                '@type' => 'GeoCoordinates',
-                'latitude'  => 45.3438,
-                'longitude' => 14.3360,
-            ],
-            'amenities' => [
-                [
-                    '@type' => 'LocationFeatureSpecification',
-                    'name'  => 'Free Parking',
-                    'value' => true,
-                ],
-                [
-                    '@type' => 'LocationFeatureSpecification',
-                    'name'  => 'Free WiFi',
-                    'value' => true,
-                ],
-            ],
+            'site_name'        => get_bloginfo('name'),
+            'lodging_type'     => $schema['lodgingType'] ?? 'LodgingBusiness',
+            'name'             => $company_name,
+            'telephone'        => str_replace(' ', '', $phone),
+            'email'            => $email,
+            'currency'         => $schema['currency'] ?? 'EUR',
+            'payment_accepted' => $schema['paymentAccepted'] ?? ['Credit Card', 'Debit Card'],
+            'price_range'      => $schema['priceRange'] ?? '€€',
+            'checkin_time'     => $schema['checkinTime'] ?? '14:00',
+            'checkout_time'    => $schema['checkoutTime'] ?? '10:00',
+            'pets_allowed'     => $schema['petsAllowed'] ?? false,
+            'images'           => [], // absolute URLs only
+            'same_as'          => $schema['sameAs'] ?? [],
+            'address' => is_array($address) ? [
+                '@type'           => 'PostalAddress',
+                'streetAddress'   => $address['street'] ?? '',
+                'addressLocality' => $address['city'] ?? '',
+                'postalCode'      => $address['postalCode'] ?? '',
+                'addressCountry'  => $address['countryCode'] ?? '',
+            ] : null,
+            'geo' => !empty($coords) ? [
+                '@type'     => 'GeoCoordinates',
+                'latitude'  => $coords['latitude'] ?? 0,
+                'longitude' => $coords['longitude'] ?? 0,
+            ] : null,
+            'amenities' => $amenities,
         ];
     }
 }
