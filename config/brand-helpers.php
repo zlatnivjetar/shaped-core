@@ -201,3 +201,91 @@ function shaped_brand_color_e($key) {
 function shaped_brand_e($path, $default = null) {
     echo esc_attr(shaped_brand($path, $default));
 }
+
+/**
+ * Get full brand configuration array
+ *
+ * @return array Complete brand configuration
+ */
+function shaped_brand_all() {
+    return Shaped_Brand_Config::instance()->get_all();
+}
+
+/* =========================================================================
+ * LEGAL CONTENT HELPERS
+ * ========================================================================= */
+
+/**
+ * Get path to client legal content directory
+ *
+ * @param string|null $client Client identifier (uses current if null)
+ * @return string Path to legal directory
+ */
+function shaped_legal_path($client = null) {
+    if ($client === null) {
+        $client = shaped_brand_client();
+    }
+
+    if ($client) {
+        return SHAPED_DIR . 'clients/' . $client . '/legal/';
+    }
+
+    return SHAPED_DIR . 'clients/_template/legal/';
+}
+
+/**
+ * Check if legal content exists for a specific type
+ *
+ * @param string $type Legal content type ('terms' or 'privacy')
+ * @param string|null $client Client identifier (uses current if null)
+ * @return bool
+ */
+function shaped_has_legal_content($type, $client = null) {
+    $path = shaped_legal_path($client) . $type . '.php';
+    return file_exists($path);
+}
+
+/**
+ * Render legal content
+ *
+ * Loads legal content from client's legal directory.
+ * Falls back to template if client content doesn't exist.
+ *
+ * @param string $type Legal content type ('terms' or 'privacy')
+ * @return void
+ */
+function shaped_render_legal_content($type) {
+    $client = shaped_brand_client();
+    $client_path = shaped_legal_path($client) . $type . '.php';
+    $template_path = SHAPED_DIR . 'clients/_template/legal/' . $type . '.php';
+
+    // Make brand config available to the template
+    $brand = shaped_brand_all();
+
+    // Try client-specific content first
+    if (file_exists($client_path)) {
+        include $client_path;
+        return;
+    }
+
+    // Fall back to template
+    if (file_exists($template_path)) {
+        include $template_path;
+        return;
+    }
+
+    // Final fallback: show placeholder
+    echo '<p><em>Legal content not configured. Please add <code>' . esc_html($type) . '.php</code> to your client\'s legal directory.</em></p>';
+}
+
+/**
+ * Get legal content as string (for use in APIs, etc.)
+ *
+ * @param string $type Legal content type ('terms' or 'privacy')
+ * @return string HTML content
+ */
+function shaped_get_legal_content($type) {
+    ob_start();
+    shaped_render_legal_content($type);
+    return ob_get_clean();
+}

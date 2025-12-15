@@ -258,14 +258,28 @@ register_activation_hook(__FILE__, 'shaped_activate');
 register_deactivation_hook(__FILE__, 'shaped_deactivate');
 
 function shaped_activate() {
-    // Set default options if not exists
+    // Set default discounts if not exists
+    // Fetch room types dynamically from MotoPress (if available)
+    // Otherwise start with empty array - admin can configure later
     if (!get_option('shaped_discounts')) {
-        update_option('shaped_discounts', [
-            'deluxe-studio-apartment'   => 15,
-            'superior-studio-apartment' => 15,
-            'deluxe-double-room'        => 10,
-            'studio-apartment'          => 20,
+        $discounts = [];
+
+        // Try to fetch room types from MotoPress
+        $room_types = get_posts([
+            'post_type'      => 'mphb_room_type',
+            'posts_per_page' => -1,
+            'post_status'    => 'publish',
+            'fields'         => 'ids',
         ]);
+
+        if (!empty($room_types)) {
+            foreach ($room_types as $post_id) {
+                $slug = sanitize_title(get_the_title($post_id));
+                $discounts[$slug] = 0; // Default 0% discount, admin configures via UI
+            }
+        }
+
+        update_option('shaped_discounts', $discounts);
     }
 
     // Create Official Prices page

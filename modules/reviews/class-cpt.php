@@ -16,9 +16,9 @@ class CPT {
 
     /**
      * Post type name
-     * Using original name for backward compatibility with existing data
+     * Filterable for multi-client deployments
      */
-    const POST_TYPE = 'preelook_review';
+    const POST_TYPE = 'shaped_review';
 
     /**
      * Register post type and taxonomies

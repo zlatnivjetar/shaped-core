@@ -24,7 +24,7 @@ class Sync {
     public function __construct() {
         $this->supabase_url = defined('SUPABASE_URL') ? SUPABASE_URL : '';
         $this->supabase_key = defined('SUPABASE_SERVICE_KEY') ? SUPABASE_SERVICE_KEY : '';
-        $this->table_name   = apply_filters('shaped/reviews/table_name', 'preelook_reviews');
+        $this->table_name   = apply_filters('shaped/reviews/table_name', 'shaped_reviews');
 
         // Admin actions
         add_action('admin_menu', [$this, 'add_admin_menu']);

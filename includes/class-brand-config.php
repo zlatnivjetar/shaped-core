@@ -96,14 +96,16 @@ class Shaped_Brand_Config
         if (isset($_SERVER['HTTP_HOST'])) {
             $domain = $_SERVER['HTTP_HOST'];
 
-            // Add domain mapping here as needed
-            if (strpos($domain, 'preelook.com') !== false) {
-                return 'preelook';
+            // Extract domain name without TLD as potential client name
+            // e.g., "acme-hotel.com" -> "acme-hotel"
+            // e.g., "www.acme-hotel.com" -> "acme-hotel"
+            $parts = explode('.', $domain);
+
+            // Remove 'www' if present
+            if ($parts[0] === 'www' && count($parts) > 1) {
+                array_shift($parts);
             }
 
-            // Extract first part of domain as potential client name
-            // e.g., "acme-hotel.com" -> "acme-hotel"
-            $parts = explode('.', $domain);
             if (count($parts) > 0) {
                 $potential_client = $parts[0];
 
