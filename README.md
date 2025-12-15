@@ -209,7 +209,7 @@ Check:
 
 ### Stripe webhook 400 errors
 1. Verify `SHAPED_STRIPE_WEBHOOK` matches Stripe dashboard
-2. Check webhook URL: `https://yoursite.com/wp-json/preelook/v1/stripe-webhook`
+2. Check webhook URL: `https://yoursite.com/wp-json/shaped/v1/stripe-webhook`
 3. Review `[Shaped Webhook]` entries in error log
 
 ---
