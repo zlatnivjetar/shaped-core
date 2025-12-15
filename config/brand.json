@@ -1,37 +1,39 @@
 {
+  "_comment": "Base brand configuration. Client-specific overrides go in clients/{client}/brand.json",
+
   "company": {
-    "name": "Preelook Apartments",
-    "tagline": "Your seaside escape awaits",
-    "location": "Rijeka, Croatia",
-    "legalEntity": "Vigilo j.d.o.o",
-    "vatId": "10083013956",
-    "jurisdiction": "Croatia"
+    "name": "Property Name",
+    "tagline": "Your tagline here",
+    "location": "City, Country",
+    "legalEntity": "Your Legal Entity",
+    "vatId": "",
+    "jurisdiction": "Country"
   },
   "contact": {
-    "phone": "+385 91 613 3609",
-    "email": "info@preelook.com",
+    "phone": "",
+    "email": "info@example.com",
     "address": {
-      "street": "Preluk 4",
-      "city": "Rijeka",
-      "postalCode": "51000",
-      "country": "Croatia",
-      "countryCode": "HR"
+      "street": "",
+      "city": "",
+      "postalCode": "",
+      "country": "",
+      "countryCode": ""
     },
-    "mapsUrl": "https://maps.app.goo.gl/Zn5MTHb858g4aEUL8",
+    "mapsUrl": "",
     "coordinates": {
-      "latitude": 45.3438,
-      "longitude": 14.3360
+      "latitude": 0,
+      "longitude": 0
     }
   },
   "email": {
-    "fromName": "Preelook Apartments",
-    "fromEmail": "info@preelook.com",
+    "fromName": "Property Name",
+    "fromEmail": "info@example.com",
     "footerText": "This is an automated confirmation email.",
-    "checkInInstructions": "Visit us at the hotel reception upon arrival. We'll personally show you to your apartment and ensure you feel right at home.",
-    "checkInTime": "from 16:00",
+    "checkInInstructions": "Please contact us for check-in details.",
+    "checkInTime": "from 14:00",
     "checkOutTime": "until 11:00",
-    "closingMessage": "We're looking forward to hosting you in beautiful Rijeka!",
-    "signature": "Warm regards,<br>The Preelook Team"
+    "closingMessage": "We look forward to hosting you!",
+    "signature": "Warm regards,<br>The Team"
   },
   "schema": {
     "lodgingType": "LodgingBusiness",
@@ -39,47 +41,46 @@
     "currency": "EUR",
     "paymentAccepted": ["Credit Card", "Debit Card"],
     "checkinTime": "14:00",
-    "checkoutTime": "10:00",
+    "checkoutTime": "11:00",
     "petsAllowed": false,
     "amenities": [
-      { "name": "Free Parking", "value": true },
       { "name": "Free WiFi", "value": true }
     ],
     "sameAs": []
   },
   "colors": {
     "brand": {
-      "primary": "#D1AF5D",
-      "primaryHover": "#C39937",
-      "secondary": "#94772E"
+      "primary": "#2563EB",
+      "primaryHover": "#1D4ED8",
+      "secondary": "#1E40AF"
     },
     "surface": {
-      "page": "#FBFAF9",
-      "alt": "#fafafa",
-      "card": "#ffffff"
+      "page": "#FFFFFF",
+      "alt": "#F9FAFB",
+      "card": "#FFFFFF"
     },
     "border": {
-      "default": "#e0e0e0"
+      "default": "#E5E7EB"
     },
     "text": {
-      "primary": "#141310",
-      "muted": "#666666",
-      "inverse": "#ffffff",
-      "onAccent": "#ffffff"
+      "primary": "#111827",
+      "muted": "#6B7280",
+      "inverse": "#FFFFFF",
+      "onAccent": "#FFFFFF"
     },
     "semantic": {
-      "success": "#4C9155",
-      "error": "#b83c2e",
-      "warning": "#E69500"
+      "success": "#10B981",
+      "error": "#EF4444",
+      "warning": "#F59E0B"
     },
     "overlay": {
-      "scrim": "rgba(20, 19, 16, 0.5)"
+      "scrim": "rgba(0, 0, 0, 0.5)"
     }
   },
   "type": {
     "baseSize": 16,
-    "heading": { "family": "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif" },
-    "body": { "family": "'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif" }
+    "heading": { "family": "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" },
+    "body": { "family": "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }
   },
   "radius": {
     "sm": 4,
@@ -96,17 +97,17 @@
   "booking": {
     "colors": {
       "price": {
-        "primary": "#D1AF5D",
-        "muted": "#999999"
+        "primary": "#2563EB",
+        "muted": "#9CA3AF"
       },
       "badge": {
-        "urgency": { "bg": "#FCEEEE", "text": "#b83c2e" },
-        "discount": { "bg": "#4C9155", "text": "#ffffff" }
+        "urgency": { "bg": "#FEF2F2", "text": "#EF4444" },
+        "discount": { "bg": "#10B981", "text": "#FFFFFF" }
       }
     },
     "card": {
       "radius": "8px",
-      "shadow": "0 8px 32px rgba(20, 19, 16, 0.12)"
+      "shadow": "0 4px 16px rgba(0, 0, 0, 0.1)"
     }
   }
 }

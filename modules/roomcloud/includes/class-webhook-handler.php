@@ -41,7 +41,7 @@ class Shaped_RC_Webhook_Handler
      */
     public function register_webhook_endpoint()
     {
-        register_rest_route('shaped/v1', '/roomcloud-webhook', [
+        register_rest_route('preelook/v1', '/roomcloud-webhook', [
             'methods' => 'POST',
             'callback' => [$this, 'handle_webhook'],
             'permission_callback' => '__return_true', // Validate credentials from XML body

@@ -1,0 +1,63 @@
+{
+  "_comment": "Preelook-specific overrides. Base values inherited from config/brand.json",
+
+  "company": {
+    "name": "Preelook Apartments",
+    "tagline": "Your seaside escape awaits",
+    "location": "Rijeka, Croatia",
+    "legalEntity": "Vigilo j.d.o.o",
+    "vatId": "10083013956",
+    "jurisdiction": "Croatia"
+  },
+  "contact": {
+    "phone": "+385 91 613 3609",
+    "email": "info@preelook.com",
+    "address": {
+      "street": "Preluk 4",
+      "city": "Rijeka",
+      "postalCode": "51000",
+      "country": "Croatia",
+      "countryCode": "HR"
+    },
+    "mapsUrl": "https://maps.app.goo.gl/Zn5MTHb858g4aEUL8",
+    "coordinates": {
+      "latitude": 45.3438,
+      "longitude": 14.3360
+    }
+  },
+  "email": {
+    "fromName": "Preelook Apartments",
+    "fromEmail": "info@preelook.com",
+    "checkInInstructions": "Visit us at the hotel reception upon arrival. We'll personally show you to your apartment and ensure you feel right at home.",
+    "checkInTime": "from 16:00",
+    "checkOutTime": "until 11:00",
+    "closingMessage": "We're looking forward to hosting you in beautiful Rijeka!",
+    "signature": "Warm regards,<br>The Preelook Team"
+  },
+  "schema": {
+    "lodgingType": "LodgingBusiness",
+    "priceRange": "€€",
+    "currency": "EUR",
+    "checkinTime": "16:00",
+    "checkoutTime": "11:00",
+    "petsAllowed": true,
+    "amenities": [
+      { "name": "Free Parking", "value": true },
+      { "name": "Free WiFi", "value": true },
+      { "name": "Air Conditioning", "value": true },
+      { "name": "Kitchen", "value": true }
+    ]
+  },
+  "colors": {
+    "brand": {
+      "primary": "#D1AF5D",
+      "primaryHover": "#C39937",
+      "secondary": "#94772E"
+    }
+  },
+  "integrations": {
+    "supabase": {
+      "reviewsTable": "preelook_reviews"
+    }
+  }
+}
