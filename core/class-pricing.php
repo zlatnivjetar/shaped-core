@@ -18,9 +18,10 @@ class Shaped_Pricing {
     /**
      * Option keys
      */
-    const OPT_DISCOUNTS       = 'shaped_discounts';
-    const OPT_PAYMENT_MODE    = 'shaped_payment_mode';      // 'scheduled' | 'deposit'
-    const OPT_DEPOSIT_PERCENT = 'shaped_deposit_percent';   // int 1-100
+    const OPT_DISCOUNTS                     = 'shaped_discounts';
+    const OPT_PAYMENT_MODE                  = 'shaped_payment_mode';                  // 'scheduled' | 'deposit'
+    const OPT_DEPOSIT_PERCENT               = 'shaped_deposit_percent';               // int 1-100
+    const OPT_SCHEDULED_CHARGE_THRESHOLD    = 'shaped_scheduled_charge_threshold';    // int 0-60 days
 
     /**
      * Room type slugs (customize per property)
@@ -119,6 +120,14 @@ class Shaped_Pricing {
     }
 
     /**
+     * Sanitize scheduled charge threshold days
+     */
+    public static function sanitize_scheduled_threshold($input): int {
+        $val = intval($input);
+        return max(0, min(60, $val));
+    }
+
+    /**
      * Register settings
      */
     public static function register_settings(): void {
@@ -138,6 +147,12 @@ class Shaped_Pricing {
             'type'              => 'integer',
             'sanitize_callback' => [__CLASS__, 'sanitize_deposit_percent'],
             'default'           => 30,
+        ]);
+
+        register_setting('shaped_pricing_group', self::OPT_SCHEDULED_CHARGE_THRESHOLD, [
+            'type'              => 'integer',
+            'sanitize_callback' => [__CLASS__, 'sanitize_scheduled_threshold'],
+            'default'           => 7,
         ]);
     }
 
@@ -180,10 +195,11 @@ class Shaped_Pricing {
             return;
         }
 
-        $discounts       = get_option(self::OPT_DISCOUNTS, self::discount_defaults());
-        $payment_mode    = get_option(self::OPT_PAYMENT_MODE, 'scheduled');
-        $deposit_percent = get_option(self::OPT_DEPOSIT_PERCENT, 30);
-        $room_types      = self::fetch_room_types();
+        $discounts           = get_option(self::OPT_DISCOUNTS, self::discount_defaults());
+        $payment_mode        = get_option(self::OPT_PAYMENT_MODE, 'scheduled');
+        $deposit_percent     = get_option(self::OPT_DEPOSIT_PERCENT, 30);
+        $scheduled_threshold = get_option(self::OPT_SCHEDULED_CHARGE_THRESHOLD, 7);
+        $room_types          = self::fetch_room_types();
 
         if (empty($room_types)) {
             ?>
@@ -212,15 +228,15 @@ class Shaped_Pricing {
 
                     <fieldset style="margin-bottom: 20px;">
                         <label style="display: block; margin-bottom: 12px; padding: 16px; background: <?php echo $payment_mode === 'scheduled' ? '#f0f7f0' : '#f9f9f9'; ?>; border: 2px solid <?php echo $payment_mode === 'scheduled' ? '#4C9155' : '#ddd'; ?>; border-radius: 4px; cursor: pointer;">
-                            <input type="radio" 
-                                   name="<?php echo esc_attr(self::OPT_PAYMENT_MODE); ?>" 
-                                   value="scheduled" 
+                            <input type="radio"
+                                   name="<?php echo esc_attr(self::OPT_PAYMENT_MODE); ?>"
+                                   value="scheduled"
                                    <?php checked($payment_mode, 'scheduled'); ?>
                                    style="margin-right: 8px;">
                             <strong>Scheduled Charge</strong>
-                            <span style="display: block; margin-left: 24px; margin-top: 4px; color: #666;">
-                                Bookings &lt;7 days out: charge full amount immediately<br>
-                                Bookings ≥7 days out: save card, charge automatically 7 days before check-in
+                            <span id="scheduled-mode-description" style="display: block; margin-left: 24px; margin-top: 4px; color: #666;">
+                                Bookings &lt;<span class="threshold-days"><?php echo esc_html($scheduled_threshold); ?></span> days out: charge full amount immediately<br>
+                                Bookings ≥<span class="threshold-days"><?php echo esc_html($scheduled_threshold); ?></span> days out: save card, charge automatically <span class="threshold-days"><?php echo esc_html($scheduled_threshold); ?></span> days before check-in
                             </span>
                         </label>
 
@@ -236,6 +252,26 @@ class Shaped_Pricing {
                             </span>
                         </label>
                     </fieldset>
+
+                    <!-- Scheduled Charge Threshold Days -->
+                    <div id="scheduled-settings" style="margin-top: 16px; padding: 16px; background: #f0f7f0; border: 1px solid #4C9155; border-radius: 4px; <?php echo $payment_mode !== 'scheduled' ? 'display: none;' : ''; ?>">
+                        <label for="scheduled-threshold" style="font-weight: 600; display: block; margin-bottom: 8px;">
+                            Charge later if check-in is at least (days) away
+                        </label>
+                        <input type="number"
+                               id="scheduled-threshold"
+                               name="<?php echo esc_attr(self::OPT_SCHEDULED_CHARGE_THRESHOLD); ?>"
+                               value="<?php echo esc_attr($scheduled_threshold); ?>"
+                               min="0"
+                               max="60"
+                               step="1"
+                               style="width: 80px;">
+                        <span>days</span>
+                        <p class="description" style="margin-top: 8px;">
+                            If check-in is sooner than this, charge 100% immediately. If equal or greater, save card and charge at T-<?php echo esc_html($scheduled_threshold); ?> days.<br>
+                            <em>Example: 7 days threshold = charge on booking if &lt;7 days out, otherwise charge 7 days before arrival.</em>
+                        </p>
+                    </div>
 
                     <!-- Deposit Percentage -->
                     <div id="deposit-settings" style="margin-top: 16px; padding: 16px; background: #fffbf0; border: 1px solid #D1AF5D; border-radius: 4px; <?php echo $payment_mode !== 'deposit' ? 'display: none;' : ''; ?>">
@@ -302,11 +338,29 @@ class Shaped_Pricing {
             (function() {
                 const modeInputs = document.querySelectorAll('input[name="<?php echo esc_js(self::OPT_PAYMENT_MODE); ?>"]');
                 const depositSettings = document.getElementById('deposit-settings');
-                
+                const scheduledSettings = document.getElementById('scheduled-settings');
+                const thresholdInput = document.getElementById('scheduled-threshold');
+                const thresholdSpans = document.querySelectorAll('.threshold-days');
+
+                // Update threshold display when input changes
+                if (thresholdInput) {
+                    thresholdInput.addEventListener('input', function() {
+                        thresholdSpans.forEach(span => {
+                            span.textContent = this.value;
+                        });
+                        // Update the help text
+                        const helpText = document.querySelector('#scheduled-settings .description');
+                        if (helpText) {
+                            helpText.innerHTML = 'If check-in is sooner than this, charge 100% immediately. If equal or greater, save card and charge at T-' + this.value + ' days.<br><em>Example: ' + this.value + ' days threshold = charge on booking if &lt;' + this.value + ' days out, otherwise charge ' + this.value + ' days before arrival.</em>';
+                        }
+                    });
+                }
+
                 modeInputs.forEach(input => {
                     input.addEventListener('change', function() {
                         depositSettings.style.display = this.value === 'deposit' ? 'block' : 'none';
-                        
+                        scheduledSettings.style.display = this.value === 'scheduled' ? 'block' : 'none';
+
                         document.querySelectorAll('fieldset label').forEach(label => {
                             const radio = label.querySelector('input[type="radio"]');
                             if (radio && radio.checked) {
@@ -324,12 +378,12 @@ class Shaped_Pricing {
 
             <div class="shaped-pricing-info" style="background: #fff; padding: 24px; border: 1px solid #ccd0d4; border-radius: 4px;">
                 <h3 style="margin-top: 0;">How it works</h3>
-                
+
                 <h4>Scheduled Charge Mode</h4>
                 <ol>
-                    <li>Guest books ≥7 days before check-in → saves card, charged 7 days before arrival</li>
-                    <li>Guest books &lt;7 days before check-in → charged full amount immediately</li>
-                    <li>Free cancellation until 7 days before check-in</li>
+                    <li>Guest books ≥<?php echo esc_html($scheduled_threshold); ?> days before check-in → saves card, charged <?php echo esc_html($scheduled_threshold); ?> days before arrival</li>
+                    <li>Guest books &lt;<?php echo esc_html($scheduled_threshold); ?> days before check-in → charged full amount immediately</li>
+                    <li>Free cancellation until <?php echo esc_html($scheduled_threshold); ?> days before check-in</li>
                 </ol>
 
                 <h4>Deposit Mode</h4>
@@ -376,11 +430,27 @@ class Shaped_Pricing {
 
     /**
      * Get deposit percentage
-     * 
+     *
      * @return int 1-100
      */
     public static function get_deposit_percent(): int {
         return (int) get_option(self::OPT_DEPOSIT_PERCENT, 30);
+    }
+
+    /**
+     * Get scheduled charge threshold days
+     *
+     * For Scheduled-Charge mode:
+     * - If check-in is < threshold days away → charge 100% immediately
+     * - If check-in is >= threshold days away → save card, charge at T-threshold days
+     *
+     * @return int 0-60, default 7
+     */
+    public static function get_scheduled_threshold_days(): int {
+        $val = get_option(self::OPT_SCHEDULED_CHARGE_THRESHOLD, 7);
+        $val = intval($val);
+        // Clamp to valid range for safety
+        return max(0, min(60, $val));
     }
 
     /**
@@ -407,9 +477,10 @@ class Shaped_Pricing {
      */
     public static function localize_config(): void {
         $config = [
-            'discounts'      => self::get_discounts(),
-            'paymentMode'    => self::get_payment_mode(),
-            'depositPercent' => self::get_deposit_percent(),
+            'discounts'               => self::get_discounts(),
+            'paymentMode'             => self::get_payment_mode(),
+            'depositPercent'          => self::get_deposit_percent(),
+            'scheduledThresholdDays'  => self::get_scheduled_threshold_days(),
         ];
 
         if (!defined('SHAPED_DISCOUNTS')) {

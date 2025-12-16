@@ -90,10 +90,13 @@ class Shaped_Payment_Processor
         $check_in   = $booking->getCheckInDate();
         $check_out  = $booking->getCheckOutDate();
 
+        // Get configurable threshold (default 7 days)
+        $threshold_days = class_exists('Shaped_Pricing') ? Shaped_Pricing::get_scheduled_threshold_days() : 7;
+
         // Normalize to 16:00 check-in and compute charge date
         $check_in_datetime = clone $check_in;
         $check_in_datetime->setTime(16, 0, 0);
-        $charge_date = (clone $check_in_datetime)->modify('-7 days');
+        $charge_date = (clone $check_in_datetime)->modify('-' . $threshold_days . ' days');
 
         // Deltas (days)
         $now               = new DateTime('now', $check_in_datetime->getTimezone());
@@ -110,7 +113,7 @@ class Shaped_Payment_Processor
         } elseif ($property_mode === 'deposit') {
             $mode = 'deposit';
         } else {
-            $mode = ($days_until < 7) ? 'immediate' : 'delayed';
+            $mode = ($days_until < $threshold_days) ? 'immediate' : 'delayed';
         }
 
         // Status & Amount
@@ -134,7 +137,7 @@ class Shaped_Payment_Processor
             $amount = $stored_amount;
         }
 
-        $is_immediate = ($mode === 'immediate' || $mode === 'deposit' || $days_until < 7 || $is_charged);
+        $is_immediate = ($mode === 'immediate' || $mode === 'deposit' || $days_until < $threshold_days || $is_charged);
 
         $actual_charge_status = 'pending';
         if ($is_charged || $payment_status === 'completed') {
@@ -163,6 +166,7 @@ class Shaped_Payment_Processor
             'payment_type'      => $payment_type ?: 'full',
             'deposit_amount'    => $deposit_amount,
             'balance_due'       => $balance_due,
+            'threshold_days'    => $threshold_days,
         ];
     }
 
@@ -296,6 +300,9 @@ class Shaped_Payment_Processor
         // Get property-wide payment mode
         $property_mode = class_exists('Shaped_Pricing') ? Shaped_Pricing::get_payment_mode() : 'scheduled';
 
+        // Get configurable threshold (default 7 days)
+        $threshold_days = class_exists('Shaped_Pricing') ? Shaped_Pricing::get_scheduled_threshold_days() : 7;
+
         // Determine payment mode
         $check_in           = $booking->getCheckInDate();
         $check_in_datetime  = clone $check_in;
@@ -307,10 +314,10 @@ class Shaped_Payment_Processor
         if ($property_mode === 'deposit') {
             $payment_mode = 'deposit';
         } else {
-            $payment_mode = ($days_until_checkin < 7) ? 'immediate' : 'delayed';
+            $payment_mode = ($days_until_checkin < $threshold_days) ? 'immediate' : 'delayed';
         }
 
-        $charge_date = (clone $check_in_datetime)->modify('-7 days')->format('Y-m-d');
+        $charge_date = (clone $check_in_datetime)->modify('-' . $threshold_days . ' days')->format('Y-m-d');
 
         // Mark checkout started
         if (!get_post_meta($booking_id, '_shaped_checkout_started', true)) {
@@ -697,11 +704,14 @@ class Shaped_Payment_Processor
                             ? Shaped_Pricing::calculate_final_amount($booking)
                             : (float) $booking->getTotalPrice();
 
-                        // Charge date (7 days before, 16:00 Europe/Zagreb => convert to UTC)
+                        // Get configurable threshold (default 7 days)
+                        $threshold_days = class_exists('Shaped_Pricing') ? Shaped_Pricing::get_scheduled_threshold_days() : 7;
+
+                        // Charge date (threshold days before, 16:00 Europe/Zagreb => convert to UTC)
                         $tz               = new DateTimeZone('Europe/Zagreb');
                         $check_in         = $booking->getCheckInDate();
                         $check_in_dt      = clone $check_in; $check_in_dt->setTimezone($tz); $check_in_dt->setTime(16, 0, 0);
-                        $charge_dt        = clone $check_in_dt; $charge_dt->modify('-7 days'); $charge_dt->setTime(16, 0, 0);
+                        $charge_dt        = clone $check_in_dt; $charge_dt->modify('-' . $threshold_days . ' days'); $charge_dt->setTime(16, 0, 0);
                         $charge_dt->setTimezone(new DateTimeZone('UTC'));
                         $charge_ts  = $charge_dt->getTimestamp();
                         $charge_iso = $charge_dt->format('Y-m-d\TH:i:s\Z');
