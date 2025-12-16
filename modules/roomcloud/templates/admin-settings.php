@@ -253,11 +253,14 @@ class Shaped_RC_Admin_Settings
                 <h2>Webhook Configuration</h2>
                 <p>Provide this URL to RoomCloud support for receiving OTA bookings:</p>
                 <code style="background: #f5f5f5; padding: 10px; display: block; margin: 10px 0;">
-                    <?php echo esc_url(rest_url('preelook/v1/roomcloud-webhook')); ?>
+                    <?php echo esc_url(rest_url('shaped/v1/roomcloud-webhook')); ?>
                 </code>
                 <p class="description">
                     RoomCloud will POST reservation data to this endpoint.<br>
                     Security: Request validation via required fields (simple mode for testing).
+                </p>
+                <p class="description">
+                    <strong>Backward compatibility:</strong> The legacy endpoint <code><?php echo esc_url(rest_url('preelook/v1/roomcloud-webhook')); ?></code> is still supported.
                 </p>
             </div>
             
