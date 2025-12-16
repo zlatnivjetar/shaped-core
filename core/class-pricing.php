@@ -213,90 +213,92 @@ class Shaped_Pricing {
             return;
         }
         ?>
-        <div class="wrap shaped-pricing-wrap">
+        <div class="wrap shaped-admin-wrap shaped-pricing-wrap">
             <h1>Shaped Direct Booking Settings</h1>
 
             <form method="post" action="options.php">
                 <?php settings_fields('shaped_pricing_group'); ?>
 
                 <!-- Payment Mode Section -->
-                <div class="shaped-section" style="background: #fff; padding: 24px; border: 1px solid #ccd0d4; border-radius: 4px; margin-bottom: 24px;">
-                    <h2 style="margin-top: 0; padding-bottom: 12px; border-bottom: 2px solid #D1AF5D;">Payment Mode</h2>
-                    <p class="description" style="margin-bottom: 16px;">
+                <div class="shaped-admin-section">
+                    <h2>Payment Mode</h2>
+                    <p class="description">
                         Choose how guests pay when booking directly.
                     </p>
 
-                    <fieldset style="margin-bottom: 20px;">
-                        <label style="display: block; margin-bottom: 12px; padding: 16px; background: <?php echo $payment_mode === 'scheduled' ? '#f0f7f0' : '#f9f9f9'; ?>; border: 2px solid <?php echo $payment_mode === 'scheduled' ? '#4C9155' : '#ddd'; ?>; border-radius: 4px; cursor: pointer;">
-                            <input type="radio"
-                                   name="<?php echo esc_attr(self::OPT_PAYMENT_MODE); ?>"
-                                   value="scheduled"
-                                   <?php checked($payment_mode, 'scheduled'); ?>
-                                   style="margin-right: 8px;">
-                            <strong>Scheduled Charge</strong>
-                            <span id="scheduled-mode-description" style="display: block; margin-left: 24px; margin-top: 4px; color: #666;">
-                                Bookings &lt;<span class="threshold-days"><?php echo esc_html($scheduled_threshold); ?></span> days out: charge full amount immediately<br>
-                                Bookings ≥<span class="threshold-days"><?php echo esc_html($scheduled_threshold); ?></span> days out: save card, charge automatically <span class="threshold-days"><?php echo esc_html($scheduled_threshold); ?></span> days before check-in
-                            </span>
-                        </label>
+                    <fieldset class="shaped-option-group">
+                        <!-- Scheduled Charge Option -->
+                        <div class="shaped-option-item<?php echo $payment_mode === 'scheduled' ? ' is-selected' : ''; ?>" data-mode="scheduled">
+                            <label class="shaped-option-label<?php echo $payment_mode === 'scheduled' ? ' is-selected' : ''; ?>">
+                                <input type="radio"
+                                       name="<?php echo esc_attr(self::OPT_PAYMENT_MODE); ?>"
+                                       value="scheduled"
+                                       <?php checked($payment_mode, 'scheduled'); ?>>
+                                <strong>Scheduled Charge</strong>
+                                <span id="scheduled-mode-description" class="option-description">
+                                    Bookings &lt;<span class="threshold-days"><?php echo esc_html($scheduled_threshold); ?></span> days out: charge full amount immediately<br>
+                                    Bookings ≥<span class="threshold-days"><?php echo esc_html($scheduled_threshold); ?></span> days out: save card, charge automatically <span class="threshold-days"><?php echo esc_html($scheduled_threshold); ?></span> days before check-in
+                                </span>
+                            </label>
 
-                        <label style="display: block; padding: 16px; background: <?php echo $payment_mode === 'deposit' ? '#f0f7f0' : '#f9f9f9'; ?>; border: 2px solid <?php echo $payment_mode === 'deposit' ? '#4C9155' : '#ddd'; ?>; border-radius: 4px; cursor: pointer;">
-                            <input type="radio" 
-                                   name="<?php echo esc_attr(self::OPT_PAYMENT_MODE); ?>" 
-                                   value="deposit" 
-                                   <?php checked($payment_mode, 'deposit'); ?>
-                                   style="margin-right: 8px;">
-                            <strong>Deposit</strong>
-                            <span style="display: block; margin-left: 24px; margin-top: 4px; color: #666;">
-                                All bookings: charge deposit percentage immediately, guest pays balance on arrival
-                            </span>
-                        </label>
+                            <!-- Scheduled Charge Threshold Days (nested under Scheduled option) -->
+                            <div id="scheduled-settings" class="shaped-settings-panel shaped-settings-panel--success<?php echo $payment_mode === 'scheduled' ? ' is-visible' : ''; ?>">
+                                <label for="scheduled-threshold">
+                                    Charge later if check-in is at least (days) away
+                                </label>
+                                <input type="number"
+                                       id="scheduled-threshold"
+                                       name="<?php echo esc_attr(self::OPT_SCHEDULED_CHARGE_THRESHOLD); ?>"
+                                       value="<?php echo esc_attr($scheduled_threshold); ?>"
+                                       min="0"
+                                       max="60"
+                                       step="1">
+                                <span>days</span>
+                                <p class="description">
+                                    If check-in is sooner than this, charge 100% immediately. If equal or greater, save card and charge at T-<span class="threshold-days-help"><?php echo esc_html($scheduled_threshold); ?></span> days.<br>
+                                    <em>Example: <span class="threshold-days-example"><?php echo esc_html($scheduled_threshold); ?></span> days threshold = charge on booking if &lt;<span class="threshold-days-example"><?php echo esc_html($scheduled_threshold); ?></span> days out, otherwise charge <span class="threshold-days-example"><?php echo esc_html($scheduled_threshold); ?></span> days before arrival.</em>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Deposit Option -->
+                        <div class="shaped-option-item<?php echo $payment_mode === 'deposit' ? ' is-selected' : ''; ?>" data-mode="deposit">
+                            <label class="shaped-option-label<?php echo $payment_mode === 'deposit' ? ' is-selected' : ''; ?>">
+                                <input type="radio"
+                                       name="<?php echo esc_attr(self::OPT_PAYMENT_MODE); ?>"
+                                       value="deposit"
+                                       <?php checked($payment_mode, 'deposit'); ?>>
+                                <strong>Deposit</strong>
+                                <span class="option-description">
+                                    All bookings: charge deposit percentage immediately, guest pays balance on arrival
+                                </span>
+                            </label>
+
+                            <!-- Deposit Percentage (nested under Deposit option) -->
+                            <div id="deposit-settings" class="shaped-settings-panel shaped-settings-panel--primary<?php echo $payment_mode === 'deposit' ? ' is-visible' : ''; ?>">
+                                <label for="deposit-percent">
+                                    Deposit Percentage
+                                </label>
+                                <input type="number"
+                                       id="deposit-percent"
+                                       name="<?php echo esc_attr(self::OPT_DEPOSIT_PERCENT); ?>"
+                                       value="<?php echo esc_attr($deposit_percent); ?>"
+                                       min="1"
+                                       max="100"
+                                       step="1">
+                                <span>%</span>
+                                <p class="description">
+                                    Example: 30% deposit on €200 booking = €60 charged now, €140 due on arrival
+                                </p>
+                            </div>
+                        </div>
                     </fieldset>
-
-                    <!-- Scheduled Charge Threshold Days -->
-                    <div id="scheduled-settings" style="margin-top: 16px; padding: 16px; background: #f0f7f0; border: 1px solid #4C9155; border-radius: 4px; <?php echo $payment_mode !== 'scheduled' ? 'display: none;' : ''; ?>">
-                        <label for="scheduled-threshold" style="font-weight: 600; display: block; margin-bottom: 8px;">
-                            Charge later if check-in is at least (days) away
-                        </label>
-                        <input type="number"
-                               id="scheduled-threshold"
-                               name="<?php echo esc_attr(self::OPT_SCHEDULED_CHARGE_THRESHOLD); ?>"
-                               value="<?php echo esc_attr($scheduled_threshold); ?>"
-                               min="0"
-                               max="60"
-                               step="1"
-                               style="width: 80px;">
-                        <span>days</span>
-                        <p class="description" style="margin-top: 8px;">
-                            If check-in is sooner than this, charge 100% immediately. If equal or greater, save card and charge at T-<?php echo esc_html($scheduled_threshold); ?> days.<br>
-                            <em>Example: 7 days threshold = charge on booking if &lt;7 days out, otherwise charge 7 days before arrival.</em>
-                        </p>
-                    </div>
-
-                    <!-- Deposit Percentage -->
-                    <div id="deposit-settings" style="margin-top: 16px; padding: 16px; background: #fffbf0; border: 1px solid #D1AF5D; border-radius: 4px; <?php echo $payment_mode !== 'deposit' ? 'display: none;' : ''; ?>">
-                        <label for="deposit-percent" style="font-weight: 600; display: block; margin-bottom: 8px;">
-                            Deposit Percentage
-                        </label>
-                        <input type="number" 
-                               id="deposit-percent"
-                               name="<?php echo esc_attr(self::OPT_DEPOSIT_PERCENT); ?>" 
-                               value="<?php echo esc_attr($deposit_percent); ?>" 
-                               min="1" 
-                               max="100" 
-                               step="1"
-                               style="width: 80px;">
-                        <span>%</span>
-                        <p class="description" style="margin-top: 8px;">
-                            Example: 30% deposit on €200 booking = €60 charged now, €140 due on arrival
-                        </p>
-                    </div>
                 </div>
 
                 <!-- Discounts Section -->
-                <div class="shaped-section" style="background: #fff; padding: 24px; border: 1px solid #ccd0d4; border-radius: 4px; margin-bottom: 24px;">
-                    <h2 style="margin-top: 0; padding-bottom: 12px; border-bottom: 2px solid #D1AF5D;">Direct Booking Discounts</h2>
-                    <p class="description" style="margin-bottom: 16px;">
+                <div class="shaped-admin-section">
+                    <h2>Direct Booking Discounts</h2>
+                    <p class="description">
                         Set the discount percentage guests receive when booking directly vs OTAs.
                     </p>
 
@@ -337,38 +339,45 @@ class Shaped_Pricing {
             <script>
             (function() {
                 const modeInputs = document.querySelectorAll('input[name="<?php echo esc_js(self::OPT_PAYMENT_MODE); ?>"]');
+                const optionItems = document.querySelectorAll('.shaped-option-item');
                 const depositSettings = document.getElementById('deposit-settings');
                 const scheduledSettings = document.getElementById('scheduled-settings');
                 const thresholdInput = document.getElementById('scheduled-threshold');
                 const thresholdSpans = document.querySelectorAll('.threshold-days');
+                const thresholdHelpSpans = document.querySelectorAll('.threshold-days-help, .threshold-days-example');
 
                 // Update threshold display when input changes
                 if (thresholdInput) {
                     thresholdInput.addEventListener('input', function() {
+                        const val = this.value;
+                        // Update all threshold displays
                         thresholdSpans.forEach(span => {
-                            span.textContent = this.value;
+                            span.textContent = val;
                         });
-                        // Update the help text
-                        const helpText = document.querySelector('#scheduled-settings .description');
-                        if (helpText) {
-                            helpText.innerHTML = 'If check-in is sooner than this, charge 100% immediately. If equal or greater, save card and charge at T-' + this.value + ' days.<br><em>Example: ' + this.value + ' days threshold = charge on booking if &lt;' + this.value + ' days out, otherwise charge ' + this.value + ' days before arrival.</em>';
-                        }
+                        thresholdHelpSpans.forEach(span => {
+                            span.textContent = val;
+                        });
                     });
                 }
 
                 modeInputs.forEach(input => {
                     input.addEventListener('change', function() {
-                        depositSettings.style.display = this.value === 'deposit' ? 'block' : 'none';
-                        scheduledSettings.style.display = this.value === 'scheduled' ? 'block' : 'none';
+                        const selectedMode = this.value;
 
-                        document.querySelectorAll('fieldset label').forEach(label => {
-                            const radio = label.querySelector('input[type="radio"]');
-                            if (radio && radio.checked) {
-                                label.style.background = '#f0f7f0';
-                                label.style.borderColor = '#4C9155';
-                            } else if (radio) {
-                                label.style.background = '#f9f9f9';
-                                label.style.borderColor = '#ddd';
+                        // Update option item and label states
+                        optionItems.forEach(item => {
+                            const itemMode = item.dataset.mode;
+                            const label = item.querySelector('.shaped-option-label');
+                            const panel = item.querySelector('.shaped-settings-panel');
+
+                            if (itemMode === selectedMode) {
+                                item.classList.add('is-selected');
+                                label.classList.add('is-selected');
+                                if (panel) panel.classList.add('is-visible');
+                            } else {
+                                item.classList.remove('is-selected');
+                                label.classList.remove('is-selected');
+                                if (panel) panel.classList.remove('is-visible');
                             }
                         });
                     });
@@ -376,8 +385,8 @@ class Shaped_Pricing {
             })();
             </script>
 
-            <div class="shaped-pricing-info" style="background: #fff; padding: 24px; border: 1px solid #ccd0d4; border-radius: 4px;">
-                <h3 style="margin-top: 0;">How it works</h3>
+            <div class="shaped-admin-info">
+                <h3>How it works</h3>
 
                 <h4>Scheduled Charge Mode</h4>
                 <ol>
