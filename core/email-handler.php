@@ -237,10 +237,11 @@ function shaped_get_reservation_template($data) {
     ]);
 
     // Payment Info
+    $threshold_days = class_exists('Shaped_Pricing') ? Shaped_Pricing::get_scheduled_threshold_days() : 7;
     $content .= shaped_email_block_payment_info(
         '€' . $data['amount'],
         $data['charge_date'],
-        '(7 days before your arrival)'
+        '(' . $threshold_days . ' days before your arrival)'
     );
 
     // Manage Booking Button

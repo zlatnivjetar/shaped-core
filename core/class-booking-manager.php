@@ -485,11 +485,13 @@ class Shaped_Booking_Manager
                         has been cancelled.
                     </p>
                 </div>
-            <?php else: ?>
+            <?php else:
+                $threshold_days = class_exists('Shaped_Pricing') ? Shaped_Pricing::get_scheduled_threshold_days() : 7;
+            ?>
                 <div style="background: #fff5f5; border: 1px solid #f8d7da; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
                     <p style="color: <?php shaped_brand_color_e('error'); ?>; margin: 0;">
                         Your payment of <strong>€<?php echo number_format((float)$pending_amount, 2); ?></strong> was already processed.
-                        Per our cancellation policy, bookings cancelled within 7 days of check-in are non-refundable.
+                        Per our cancellation policy, bookings cancelled within <?php echo esc_html($threshold_days); ?> days of check-in are non-refundable.
                     </p>
                 </div>
             <?php endif; ?>
@@ -708,9 +710,11 @@ class Shaped_Booking_Manager
                             <p style="color: <?php shaped_brand_color_e('textPrimary'); ?>; margin-bottom: 8px; line-height: 1.5;">
                                 Thank you for booking with us. You'll receive a receipt by email shortly.
                             </p>
-                        <?php else: ?>
+                        <?php else:
+                            $threshold_days = isset($context['threshold_days']) ? $context['threshold_days'] : 7;
+                        ?>
                             <p style="color: <?php shaped_brand_color_e('textPrimary'); ?>; margin-bottom: 8px; line-height: 1.5;">
-                                Your card has been securely saved and will be charged <strong>7 days before check-in</strong>
+                                Your card has been securely saved and will be charged <strong><?php echo esc_html($threshold_days); ?> days before check-in</strong>
                                 (<?php echo $context['charge_date']->format('F j, Y'); ?>).
                             </p>
                         <?php endif; ?>

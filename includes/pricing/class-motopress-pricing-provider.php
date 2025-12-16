@@ -273,10 +273,11 @@ class Shaped_MotoPress_Pricing_Provider implements Shaped_Pricing_Provider_Inter
     {
         $payment_mode = Shaped_Pricing::get_payment_mode();
 
-        // Scheduled mode: refundable up to 7 days before checkin
+        // Scheduled mode: refundable up to threshold days before checkin
         if ($payment_mode === 'scheduled') {
+            $threshold_days = Shaped_Pricing::get_scheduled_threshold_days();
             $days_until_checkin = $this->get_days_until($request->checkin);
-            return $days_until_checkin >= 7;
+            return $days_until_checkin >= $threshold_days;
         }
 
         // Deposit mode: typically non-refundable
