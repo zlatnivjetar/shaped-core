@@ -329,7 +329,7 @@ class Shaped_Payment_Processor
 
         // Stripe client
         shaped_load_stripe_sdk();
-        $stripe = new \Stripe\StripeClient(SHAPED_STRIPE_SECRET);
+        $stripe = new \Stripe\StripeClient(shaped_get_stripe_secret());
 
         // Reuse existing open session
         $existing_session_id = get_post_meta($payment_id, '_shaped_stripe_session_id', true);
@@ -557,7 +557,7 @@ class Shaped_Payment_Processor
         shaped_load_stripe_sdk();
 
         try {
-            $event = \Stripe\Webhook::constructEvent($payload, $sig_header, SHAPED_STRIPE_WEBHOOK);
+            $event = \Stripe\Webhook::constructEvent($payload, $sig_header, shaped_get_stripe_webhook());
             $event_id = isset($event->id) ? (string) $event->id : '';
 
             if (self::event_already_processed($event_id)) {
@@ -680,7 +680,7 @@ class Shaped_Payment_Processor
 
                 // === SETUP MODE (delayed charge) ===
                 } elseif ($session->mode === 'setup') {
-                    $stripe = new \Stripe\StripeClient(SHAPED_STRIPE_SECRET);
+                    $stripe = new \Stripe\StripeClient(shaped_get_stripe_secret());
 
                     try {
                         $setup_intent      = $stripe->setupIntents->retrieve($session->setup_intent);
@@ -848,7 +848,7 @@ class Shaped_Payment_Processor
         }
 
         shaped_load_stripe_sdk();
-        $stripe = new \Stripe\StripeClient(SHAPED_STRIPE_SECRET);
+        $stripe = new \Stripe\StripeClient(shaped_get_stripe_secret());
 
         try {
             if (!$payment_method_id) {
@@ -931,7 +931,7 @@ class Shaped_Payment_Processor
 
         try {
             shaped_load_stripe_sdk();
-            $stripe = new \Stripe\StripeClient(SHAPED_STRIPE_SECRET);
+            $stripe = new \Stripe\StripeClient(shaped_get_stripe_secret());
             $stripe->paymentMethods->detach($payment_method_id);
             delete_post_meta($booking_id, '_stripe_payment_method_id');
             error_log('[Shaped] Payment method detached for booking #' . $booking_id);

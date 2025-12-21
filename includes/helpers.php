@@ -93,6 +93,44 @@ function shaped_log(string $message, string $level = 'info'): void {
 }
 
 /* =========================================================================
+ * STRIPE CREDENTIAL HELPERS
+ * ========================================================================= */
+
+/**
+ * Get Stripe secret key
+ *
+ * Priority: 1) Constants  2) Setup Wizard database storage
+ *
+ * @return string Stripe secret key or empty string
+ */
+function shaped_get_stripe_secret(): string {
+    // If Setup Wizard class exists, use its getter (handles constant + DB priority)
+    if (class_exists('Shaped_Setup_Wizard')) {
+        return Shaped_Setup_Wizard::get_stripe_secret();
+    }
+
+    // Fall back to constant
+    return defined('SHAPED_STRIPE_SECRET') ? SHAPED_STRIPE_SECRET : '';
+}
+
+/**
+ * Get Stripe webhook secret
+ *
+ * Priority: 1) Constants  2) Setup Wizard database storage
+ *
+ * @return string Stripe webhook secret or empty string
+ */
+function shaped_get_stripe_webhook(): string {
+    // If Setup Wizard class exists, use its getter (handles constant + DB priority)
+    if (class_exists('Shaped_Setup_Wizard')) {
+        return Shaped_Setup_Wizard::get_stripe_webhook();
+    }
+
+    // Fall back to constant
+    return defined('SHAPED_STRIPE_WEBHOOK') ? SHAPED_STRIPE_WEBHOOK : '';
+}
+
+/* =========================================================================
  * AMENITY ICON HELPERS
  * ========================================================================= */
 
