@@ -1,7 +1,7 @@
 # Core Modules Reference
 
-> **Last generated:** 2025-12-08
-> **Related entry:** [CLAUDE.md#IMPL-001](CLAUDE.md#2025-12-08-impl-001--initial-plugin-architecture)
+> **Last generated:** 2025-12-21
+> **Related entries:** [CLAUDE.md#IMPL-001](CLAUDE.md#2025-12-08-impl-001--initial-plugin-architecture), [CLAUDE.md#IMPL-002](CLAUDE.md#2025-12-21-impl-002--setup-wizard--config-health)
 
 Deep-dive documentation for each core class in shaped-core.
 
@@ -9,14 +9,148 @@ Deep-dive documentation for each core class in shaped-core.
 
 ## Table of Contents
 
-1. [Shaped_Pricing](#shaped_pricing)
-2. [Shaped_Payment_Processor](#shaped_payment_processor)
-3. [Shaped_Booking_Manager](#shaped_booking_manager)
-4. [Shaped_Assets](#shaped_assets)
-5. [Shaped_Admin](#shaped_admin)
-6. [Shaped_Amenity_Mapper](#shaped_amenity_mapper)
-7. [Shaped_Loader](#shaped_loader)
-8. [Email Handlers](#email-handlers)
+1. [Shaped_Setup_Wizard](#shaped_setup_wizard)
+2. [Shaped_Pricing](#shaped_pricing)
+3. [Shaped_Payment_Processor](#shaped_payment_processor)
+4. [Shaped_Booking_Manager](#shaped_booking_manager)
+5. [Shaped_Assets](#shaped_assets)
+6. [Shaped_Admin](#shaped_admin)
+7. [Shaped_Amenity_Mapper](#shaped_amenity_mapper)
+8. [Shaped_Loader](#shaped_loader)
+9. [Email Handlers](#email-handlers)
+
+---
+
+## Shaped_Setup_Wizard
+
+**File:** `includes/class-setup-wizard.php` (~800 lines)
+**Purpose:** Multi-step setup wizard for quick client configuration
+**Added:** 2.1.0 (IMPL-002)
+
+### Overview
+
+The setup wizard provides a guided interface for configuring:
+- Stripe credentials (with live API validation)
+- Payment mode (Scheduled Charge vs Deposit)
+- Room discounts
+- Modal page assignments
+
+Also provides a **Config Health Dashboard** showing configuration status.
+
+### Database Options
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `shaped_stripe_secret_key` | string | Encrypted Stripe secret key |
+| `shaped_stripe_webhook_secret` | string | Encrypted Stripe webhook secret |
+| `shaped_setup_complete` | bool | Whether wizard has been completed |
+| `shaped_setup_dismissed` | bool | Whether wizard notice dismissed |
+
+### Key Methods
+
+#### `init()`
+
+```php
+public static function init(): void
+```
+
+Registers admin menu, activation redirect, and AJAX handlers.
+
+---
+
+#### `get_stripe_secret()`
+
+```php
+public static function get_stripe_secret(): string
+```
+
+Get Stripe secret key with priority chain: Constants → Environment → Database.
+
+**Returns:** Stripe secret key or empty string
+
+**Example:**
+```php
+$secret = Shaped_Setup_Wizard::get_stripe_secret();
+// or use helper function:
+$secret = shaped_get_stripe_secret();
+```
+
+---
+
+#### `get_stripe_webhook()`
+
+```php
+public static function get_stripe_webhook(): string
+```
+
+Get Stripe webhook secret with priority chain: Constants → Environment → Database.
+
+**Returns:** Stripe webhook secret or empty string
+
+---
+
+#### `is_setup_complete()`
+
+```php
+public static function is_setup_complete(): bool
+```
+
+Check if setup is complete (either marked complete or all critical settings configured).
+
+---
+
+#### `stripe_uses_constants()`
+
+```php
+public static function stripe_uses_constants(): bool
+```
+
+Check if Stripe credentials are coming from wp-config.php constants.
+
+---
+
+#### `get_health_checks()`
+
+```php
+private static function get_health_checks(): array
+```
+
+Get health check results for the Config Health dashboard.
+
+**Returns:** Array of check results with status, label, details, action URL
+
+---
+
+### Admin Pages
+
+| Page | Menu Location | Purpose |
+|------|---------------|---------|
+| Setup Wizard | Hidden (access via URL) | Multi-step configuration |
+| Config Health | Shaped Core submenu | Configuration status dashboard |
+
+### Security
+
+- Stripe keys encrypted with `openssl_encrypt()` using WordPress salts
+- Keys masked in UI (only last 4 characters shown)
+- Constants in wp-config.php always take priority (can't be overwritten)
+
+### Wizard Steps
+
+1. **Stripe Credentials** - Enter/validate keys
+2. **Payment Mode** - Choose Scheduled Charge or Deposit
+3. **Room Discounts** - Set per-room discount percentages
+4. **Modal Pages** - Assign booking terms and privacy pages
+5. **Complete** - Summary with next steps
+
+### Helper Functions
+
+```php
+// Get Stripe secret key (respects priority chain)
+shaped_get_stripe_secret(): string
+
+// Get Stripe webhook secret (respects priority chain)
+shaped_get_stripe_webhook(): string
+```
 
 ---
 
@@ -40,6 +174,7 @@ The pricing class manages:
 | `shaped_discounts` | array | `['room-slug' => percentage]` |
 | `shaped_payment_mode` | string | `'scheduled'` or `'deposit'` |
 | `shaped_deposit_percent` | int | 1-100 |
+| `shaped_scheduled_charge_threshold` | int | Days before check-in to charge (0-60, default 7) |
 
 ### Key Methods
 
@@ -227,9 +362,11 @@ The payment processor handles:
 
 | Mode | When | What Happens |
 |------|------|--------------|
-| **Immediate** | < 7 days to check-in | Full payment charged now |
-| **Delayed** | ≥ 7 days to check-in | Card saved, charge 7 days before |
+| **Immediate** | < N days to check-in | Full payment charged now |
+| **Delayed** | ≥ N days to check-in | Card saved, charge N days before |
 | **Deposit** | Deposit mode enabled | Deposit charged now, balance on arrival |
+
+**N** = `shaped_scheduled_charge_threshold` option (configurable, default 7 days).
 
 ### Post Meta Keys
 
@@ -355,11 +492,11 @@ Fallback scheduler that catches missed charges. Runs daily via WP-Cron.
 
 ### Payment Flow Diagrams
 
-**Immediate Payment (< 7 days):**
+**Immediate Payment (< N days):**
 ```
 Guest selects dates
        ↓
-Check-in < 7 days away
+Check-in < N days away (N = threshold setting)
        ↓
 Create Stripe PaymentIntent session
        ↓
@@ -374,11 +511,11 @@ do_action('shaped_payment_completed', $id, 'immediate')
 Send confirmation email
 ```
 
-**Delayed Payment (≥ 7 days):**
+**Delayed Payment (≥ N days):**
 ```
 Guest selects dates
        ↓
-Check-in ≥ 7 days away
+Check-in ≥ N days away (N = threshold setting)
        ↓
 Create Stripe SetupIntent session
        ↓
@@ -388,9 +525,9 @@ Webhook: checkout.session.completed
        ↓
 Save payment method to booking
        ↓
-Schedule charge 7 days before check-in
+Schedule charge N days before check-in
        ↓
-[7 days before check-in]
+[N days before check-in]
        ↓
 WP-Cron: shaped_charge_single_booking
        ↓
@@ -402,6 +539,8 @@ do_action('shaped_payment_completed', $id, 'delayed')
        ↓
 Send payment confirmation email
 ```
+
+*N = `shaped_scheduled_charge_threshold` (default 7 days, configurable via Setup Wizard or admin)*
 
 ### Hooks Triggered
 

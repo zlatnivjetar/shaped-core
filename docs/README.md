@@ -1,13 +1,15 @@
 # shaped-core Documentation
 
-> **Last generated:** 2025-12-08
-> **Plugin version:** 2.0.0
+> **Last generated:** 2025-12-21
+> **Plugin version:** 2.1.0
 
 Welcome to the shaped-core documentation. This is a WordPress plugin for boutique hospitality booking sites, providing Stripe payments, booking management, and modular integrations.
 
 ---
 
 ## Quick Start
+
+**Setting up a new client?** Run the **Setup Wizard** (auto-launches on activation) or access at Admin → Shaped Core → Config Health → Run Setup Wizard.
 
 **New to shaped-core?** Follow this reading order:
 
@@ -21,6 +23,8 @@ Welcome to the shaped-core documentation. This is a WordPress plugin for boutiqu
 **Setting up RoomCloud?** → [ROOMCLOUD_INTEGRATION.md](ROOMCLOUD_INTEGRATION.md)
 
 **Adding shortcodes?** → [SHORTCODES_GUIDE.md](SHORTCODES_GUIDE.md)
+
+**Check configuration status?** → Admin → Shaped Core → **Config Health**
 
 ---
 
@@ -79,9 +83,11 @@ See [CUSTOMIZATION_GUIDE.md](CUSTOMIZATION_GUIDE.md) for full examples.
 
 | Mode | When | What Happens |
 |------|------|--------------|
-| Immediate | < 7 days to check-in | Full payment now |
-| Delayed | ≥ 7 days to check-in | Card saved, charged 7 days before |
+| Immediate | < N days to check-in | Full payment now |
+| Delayed | ≥ N days to check-in | Card saved, charged N days before |
 | Deposit | Deposit mode enabled | Deposit now, balance on arrival |
+
+**N** = Scheduled charge threshold (configurable, default 7 days). Set via Setup Wizard or Admin → Shaped Pricing.
 
 See [CORE_MODULES.md#shaped_payment_processor](CORE_MODULES.md#shaped_payment_processor) for details.
 
@@ -102,6 +108,7 @@ See [MAINTENANCE.md](MAINTENANCE.md) for the complete workflow.
 
 | Date | ID | Feature |
 |------|-----|---------|
+| 2025-12-21 | IMPL-002 | Setup Wizard & Config Health |
 | 2025-12-08 | IMPL-001 | Initial Plugin Architecture |
 
 *Full history in [CLAUDE.md](CLAUDE.md)*
@@ -119,10 +126,12 @@ See [MAINTENANCE.md](MAINTENANCE.md) for the complete workflow.
 
 ### Configuration
 
-Essential constants for `wp-config.php`:
+**Recommended:** Use the **Setup Wizard** for quick configuration (auto-launches on activation).
+
+**Alternative:** Define constants in `wp-config.php` (takes priority over wizard settings):
 
 ```php
-// Stripe
+// Stripe (optional if using Setup Wizard)
 define('SHAPED_STRIPE_SECRET', 'sk_live_...');
 define('SHAPED_STRIPE_WEBHOOK', 'whsec_...');
 
@@ -135,10 +144,14 @@ define('SHAPED_ENABLE_ROOMCLOUD', false);
 define('SHAPED_ENABLE_REVIEWS', true);
 ```
 
+**Credential Priority:** Constants → Environment Variables → Database (Setup Wizard)
+
 ### Common Tasks
 
 | Task | Guide |
 |------|-------|
+| Set up new client | Admin → Setup Wizard (auto-launches on activation) |
+| Check configuration | Admin → Shaped Core → Config Health |
 | Add a discount | [CUSTOMIZATION_GUIDE.md#pricing-customization](CUSTOMIZATION_GUIDE.md#pricing-customization) |
 | Override emails | [CUSTOMIZATION_GUIDE.md#email-customization](CUSTOMIZATION_GUIDE.md#email-customization) |
 | Add a shortcode | [SHORTCODES_GUIDE.md](SHORTCODES_GUIDE.md) |
@@ -159,10 +172,11 @@ define('SHAPED_ENABLE_REVIEWS', true);
 
 | Metric | Value |
 |--------|-------|
-| Plugin Version | 2.0.0 |
-| PHP Files | ~60 |
-| Lines of Code | ~5,700 |
+| Plugin Version | 2.1.0 |
+| PHP Files | ~63 |
+| Lines of Code | ~7,600 |
 | Hooks (Filters) | 11 |
 | Hooks (Actions) | 8 |
 | Shortcodes | 13 |
+| Admin Pages | 4 (Pricing, Settings, Config Health, Setup Wizard) |
 | Documentation Files | 10 |
