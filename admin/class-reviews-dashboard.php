@@ -86,20 +86,20 @@ class Shaped_Reviews_Dashboard {
     /**
      * Fix parent file highlighting for dashboard
      */
-    public static function fix_parent_file(string $parent_file): string {
+    public static function fix_parent_file(?string $parent_file): string {
         $page = $_GET['page'] ?? '';
 
         if ($page === 'shaped-reviews-dashboard') {
             return 'edit.php?post_type=shaped_review';
         }
 
-        return $parent_file;
+        return $parent_file ?? '';
     }
 
     /**
      * Fix submenu file highlighting for dashboard
      */
-    public static function fix_submenu_file(string $submenu_file, string $parent_file): string {
+    public static function fix_submenu_file(?string $submenu_file, ?string $parent_file): ?string {
         $page = $_GET['page'] ?? '';
 
         if ($page === 'shaped-reviews-dashboard') {
