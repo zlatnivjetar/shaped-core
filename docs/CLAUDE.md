@@ -2,8 +2,8 @@
 
 **Purpose:** Track all features, hooks, classes, and changes made to shaped-core. Auto-updated by Claude Code. All documentation is generated from and references this log.
 
-**Last synchronized with docs:** 2025-12-08
-**Total implementations:** 1
+**Last synchronized with docs:** 2025-12-21
+**Total implementations:** 2
 
 ---
 
@@ -50,6 +50,87 @@
 ---
 
 ## Implementation Entries
+
+---
+
+### 2025-12-21 IMPL-002 – Setup Wizard & Config Health
+
+**Status:** Complete
+**Category:** Core
+
+**Files Changed:**
+- `includes/class-setup-wizard.php` (NEW - ~800 lines)
+- `assets/css/admin-setup-wizard.css` (NEW - wizard styling)
+- `assets/js/admin-setup-wizard.js` (NEW - step navigation, validation)
+- `includes/helpers.php` (added Stripe credential helper functions)
+- `core/class-payment-processor.php` (updated to use helper functions)
+- `shaped-core.php` (integrated wizard, updated admin notices)
+
+**What was added:**
+
+**New Class:**
+- `Shaped_Setup_Wizard` — Multi-step configuration wizard with health dashboard
+
+**Key Methods:**
+- `Shaped_Setup_Wizard::get_stripe_secret()` — Get Stripe key with priority chain
+- `Shaped_Setup_Wizard::get_stripe_webhook()` — Get webhook secret with priority chain
+- `Shaped_Setup_Wizard::is_setup_complete()` — Check setup status
+- `Shaped_Setup_Wizard::stripe_uses_constants()` — Check if using wp-config constants
+- `Shaped_Setup_Wizard::get_health_checks()` — Get configuration status checks
+
+**Helper Functions:**
+- `shaped_get_stripe_secret()` — Get Stripe secret key (constant > env > database)
+- `shaped_get_stripe_webhook()` — Get webhook secret (constant > env > database)
+
+**Admin Pages:**
+- Setup Wizard — Multi-step configuration (hidden from menu, auto-launches)
+- Config Health — Dashboard showing configuration status (Shaped Core submenu)
+
+**Database Options:**
+- `shaped_stripe_secret_key` — Encrypted Stripe secret key
+- `shaped_stripe_webhook_secret` — Encrypted Stripe webhook secret
+- `shaped_setup_complete` — Boolean, setup wizard completed
+- `shaped_setup_dismissed` — Boolean, setup notice dismissed
+- `shaped_scheduled_charge_threshold` — Days threshold for scheduled charges (0-60)
+
+**Wizard Steps:**
+1. Stripe Credentials (with live API validation)
+2. Payment Mode (Scheduled Charge vs Deposit, configurable threshold)
+3. Room Discounts (per-room percentages)
+4. Modal Pages (booking terms, privacy policy)
+5. Complete (summary with next steps)
+
+**Security Features:**
+- Stripe keys encrypted with AES-256-CBC using WordPress salts
+- Keys masked in UI (only last 4 characters shown)
+- Constants in wp-config.php always take priority
+- Live Stripe API validation before saving
+
+**Where to find it in docs:**
+- CORE_MODULES.md#shaped_setup_wizard
+- CUSTOMIZATION_GUIDE.md#quick-setup-setup-wizard
+- docs/README.md (Quick Start section)
+
+**Example usage:**
+
+```php
+// Get Stripe credentials (respects priority chain)
+$secret = shaped_get_stripe_secret();
+$webhook = shaped_get_stripe_webhook();
+
+// Check if setup is complete
+if (Shaped_Setup_Wizard::is_setup_complete()) {
+    // Plugin is fully configured
+}
+
+// Check if using constants
+if (Shaped_Setup_Wizard::stripe_uses_constants()) {
+    // Credentials from wp-config.php
+}
+```
+
+**Related to:** IMPL-001 (extends core architecture)
+**Blocked by:** None
 
 ---
 
@@ -218,14 +299,15 @@ add_filter('shaped/provider_badge/providers', function($providers) {
 
 | ID | Date | Feature | Status | Category |
 |----|------|---------|--------|----------|
+| IMPL-002 | 2025-12-21 | Setup Wizard & Config Health | Complete | Core |
 | IMPL-001 | 2025-12-08 | Initial Plugin Architecture | Complete | Core |
 
 ---
 
 ## Statistics
 
-- **Total Implementations:** 1
-- **Complete:** 1
+- **Total Implementations:** 2
+- **Complete:** 2
 - **In Progress:** 0
 - **Blocked:** 0
 
@@ -233,7 +315,7 @@ add_filter('shaped/provider_badge/providers', function($providers) {
 
 | Category | Count |
 |----------|-------|
-| Core | 1 |
+| Core | 2 |
 | Pricing | 0 |
 | Payments | 0 |
 | Bookings | 0 |

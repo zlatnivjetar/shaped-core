@@ -16,6 +16,7 @@ shaped-core/
 ├── includes/                    # Infrastructure
 │   ├── class-loader.php         # PSR-4-ish autoloader
 │   ├── class-assets.php         # Conditional CSS/JS loading
+│   ├── class-setup-wizard.php   # Setup wizard & config health
 │   ├── helpers.php              # Utility functions
 │   └── compat-functions.php     # Backward compatibility wrappers
 │
@@ -77,19 +78,31 @@ mv /path/to/wp-content/mu-plugins/stripe-php /path/to/wp-content/plugins/shaped-
 
 Or keep it in mu-plugins - the plugin checks both locations.
 
-### 4. Update wp-config.php (if needed)
-Ensure these constants are set:
+### 4. Run Setup Wizard (Recommended)
+
+After activation, the Setup Wizard will launch automatically to configure:
+1. **Stripe Credentials** - Secret key and webhook secret (with live API validation)
+2. **Payment Mode** - Scheduled Charge or Deposit
+3. **Room Discounts** - Per-room direct booking discounts
+4. **Modal Pages** - Booking terms, privacy policy pages
+
+Access anytime at: **Admin → Shaped Core → Config Health → Run Setup Wizard**
+
+### 5. Update wp-config.php (Alternative)
+For production, define constants directly (takes priority over wizard settings):
 ```php
-// Required: Stripe credentials
+// Stripe credentials (optional if using Setup Wizard)
 define('SHAPED_STRIPE_SECRET', 'sk_live_xxx');
 define('SHAPED_STRIPE_WEBHOOK', 'whsec_xxx');
 
 // Optional: Enable modules
 define('SHAPED_ENABLE_ROOMCLOUD', true);  // false by default
-define('SHAPED_ENABLE_REVIEWS', true);    // false by default
+define('SHAPED_ENABLE_REVIEWS', true);    // true by default
 ```
 
-### 5. Verify After Migration
+**Note:** Constants in wp-config.php always take priority over database values from the Setup Wizard.
+
+### 6. Verify After Migration
 1. Deactivate and reactivate the plugin
 2. Check for PHP errors in `wp-content/debug.log`
 3. Test:
@@ -234,6 +247,13 @@ Check:
 ---
 
 ## Version History
+
+- **2.1.0** - Setup Wizard & Configuration
+  - Setup Wizard for quick client configuration
+  - Config Health dashboard showing configuration status
+  - Stripe credentials can be stored in database (encrypted)
+  - Configurable scheduled charge threshold (0-60 days)
+  - Helper functions `shaped_get_stripe_secret()` and `shaped_get_stripe_webhook()`
 
 - **2.0.0** - Refactored architecture
   - Single entry point (`shaped-core.php`)

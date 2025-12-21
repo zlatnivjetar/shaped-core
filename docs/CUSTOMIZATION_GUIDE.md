@@ -1,7 +1,7 @@
 # Customization Guide
 
-> **Last generated:** 2025-12-08
-> **Related entry:** [CLAUDE.md#IMPL-001](CLAUDE.md#2025-12-08-impl-001--initial-plugin-architecture)
+> **Last generated:** 2025-12-21
+> **Related entries:** [CLAUDE.md#IMPL-001](CLAUDE.md#2025-12-08-impl-001--initial-plugin-architecture), [CLAUDE.md#IMPL-002](CLAUDE.md#2025-12-21-impl-002--setup-wizard--config-health)
 
 How to extend shaped-core without editing core files.
 
@@ -9,18 +9,59 @@ How to extend shaped-core without editing core files.
 
 ## Table of Contents
 
-1. [Philosophy](#philosophy)
-2. [Using Hooks](#using-hooks)
+1. [Quick Setup (Setup Wizard)](#quick-setup-setup-wizard)
+2. [Philosophy](#philosophy)
+3. [Using Hooks](#using-hooks)
    - [Filter Hooks](#filter-hooks)
    - [Action Hooks](#action-hooks)
-3. [Common Customizations](#common-customizations)
+4. [Common Customizations](#common-customizations)
    - [Pricing Customization](#pricing-customization)
    - [Email Customization](#email-customization)
    - [Payment Customization](#payment-customization)
    - [UI Customization](#ui-customization)
-4. [Creating a Child Plugin](#creating-a-child-plugin)
-5. [Client-Specific Settings](#client-specific-settings)
-6. [Module Configuration](#module-configuration)
+5. [Creating a Child Plugin](#creating-a-child-plugin)
+6. [Client-Specific Settings](#client-specific-settings)
+7. [Module Configuration](#module-configuration)
+
+---
+
+## Quick Setup (Setup Wizard)
+
+For new client deployments, use the **Setup Wizard** for quick configuration:
+
+1. **Automatic Launch:** Wizard auto-launches on plugin activation
+2. **Manual Access:** Admin → Shaped Core → Config Health → Run Setup Wizard
+
+### What the Wizard Configures
+
+| Step | Settings |
+|------|----------|
+| Stripe Credentials | Secret key, webhook secret (with live validation) |
+| Payment Mode | Scheduled Charge vs Deposit, threshold days |
+| Room Discounts | Per-room direct booking discount percentages |
+| Modal Pages | Booking terms, privacy policy page assignments |
+
+### Configuration Health Dashboard
+
+After setup, check configuration status at **Admin → Shaped Core → Config Health**:
+
+- Green/red status for all critical settings
+- Quick links to fix issues
+- Environment information display
+
+### Credential Priority
+
+Stripe credentials can come from multiple sources (in priority order):
+
+1. **Constants** in `wp-config.php` (highest priority)
+2. **Environment variables** (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`)
+3. **Database** via Setup Wizard (encrypted storage)
+
+```php
+// Get credentials programmatically (respects priority)
+$secret = shaped_get_stripe_secret();
+$webhook = shaped_get_stripe_webhook();
+```
 
 ---
 
@@ -417,14 +458,30 @@ add_action('shaped_payment_completed', function($booking_id) {
 
 ## Client-Specific Settings
 
+### Setup Wizard (Recommended)
+
+For most settings, use the **Setup Wizard** which provides a guided interface:
+
+| Setting | Wizard Step | Admin Page |
+|---------|-------------|------------|
+| Stripe keys | Step 1 | N/A (wizard only) |
+| Payment mode | Step 2 | Shaped Pricing |
+| Room discounts | Step 3 | Shaped Pricing |
+| Modal pages | Step 4 | Shaped Core |
+
+Access: Admin → Shaped Core → Config Health → Run Setup Wizard
+
 ### Using wp-config.php
+
+For production deployments or when constants are preferred:
 
 ```php
 // Shaped Core settings
 define('SHAPED_ENABLE_ROOMCLOUD', true);
 define('SHAPED_ENABLE_REVIEWS', true);
 
-// Stripe credentials
+// Stripe credentials (optional if using Setup Wizard)
+// Constants take priority over wizard database storage
 define('SHAPED_STRIPE_SECRET', 'sk_live_...');
 define('SHAPED_STRIPE_WEBHOOK', 'whsec_...');
 
@@ -445,7 +502,7 @@ define('SUPABASE_SERVICE_KEY', '...');
 
 ### WordPress Options
 
-Some settings are stored as WordPress options:
+Some settings are stored as WordPress options (configurable via Setup Wizard or admin pages):
 
 ```php
 // Get/set discounts
@@ -459,6 +516,22 @@ update_option('shaped_payment_mode', 'deposit');
 // Get/set deposit percentage
 $percent = get_option('shaped_deposit_percent', 30);
 update_option('shaped_deposit_percent', 25);
+
+// Get/set scheduled charge threshold (days)
+$threshold = get_option('shaped_scheduled_charge_threshold', 7);
+update_option('shaped_scheduled_charge_threshold', 14);
+```
+
+### Helper Functions
+
+Use these functions to get credentials that respect the priority chain:
+
+```php
+// Get Stripe secret key (constant > env > database)
+$secret = shaped_get_stripe_secret();
+
+// Get Stripe webhook secret (constant > env > database)
+$webhook = shaped_get_stripe_webhook();
 ```
 
 ---
@@ -499,11 +572,20 @@ add_action('shaped_activate_module_reviews', function() {
 
 When customizing for a new property:
 
-- [ ] Create child plugin or mu-plugin file
-- [ ] Set up pricing discounts via filter
+**Initial Setup (use Setup Wizard):**
+- [ ] Run Setup Wizard (auto-launches on activation)
+- [ ] Configure Stripe credentials
+- [ ] Set payment mode and threshold
+- [ ] Configure room discounts
+- [ ] Assign modal pages
+- [ ] Verify at Config Health dashboard
+
+**Advanced Customization:**
+- [ ] Create child plugin or mu-plugin file (if needed)
+- [ ] Set up additional pricing discounts via filter
 - [ ] Configure email sender details
 - [ ] Set up external integrations (CRM, analytics)
-- [ ] Configure wp-config.php constants
+- [ ] Configure wp-config.php constants (for production)
 - [ ] Add custom modal types if needed
 - [ ] Configure review provider links
 - [ ] Test payment flow end-to-end
