@@ -151,6 +151,12 @@ add_action('plugins_loaded', function() {
     Shaped_Pricing::init();
     Shaped_Admin::init();
 
+    // ─── Admin View System ───
+    Shaped_Role_Manager::init();
+    Shaped_Menu_Controller::init();
+    Shaped_Noise_Control::init();
+    Shaped_Reviews_Dashboard::init();
+
     // ─── Setup Wizard ───
     require_once SHAPED_DIR . 'includes/class-setup-wizard.php';
     Shaped_Setup_Wizard::init();
@@ -307,6 +313,16 @@ function shaped_activate() {
     // Create Official Prices page
     require_once SHAPED_DIR . 'includes/pricing/class-official-prices-page.php';
     Shaped_Official_Prices_Page::create_page();
+
+    // Create custom roles for admin view system
+    require_once SHAPED_DIR . 'admin/class-role-manager.php';
+    Shaped_Role_Manager::create_roles();
+
+    // Grant shaped_view_ops capability to administrators
+    $admin_role = get_role('administrator');
+    if ($admin_role) {
+        $admin_role->add_cap('shaped_view_ops');
+    }
 
     // Trigger module activation hooks
     if (SHAPED_ENABLE_ROOMCLOUD) {
