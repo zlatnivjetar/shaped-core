@@ -27,6 +27,12 @@ class Shaped_Loader {
         'Shaped_Admin'              => 'includes/class-admin.php',
         'Shaped_Amenity_Mapper'     => 'includes/class-amenity-mapper.php',
 
+        // Admin classes
+        'Shaped_Role_Manager'       => 'admin/class-role-manager.php',
+        'Shaped_Menu_Controller'    => 'admin/class-menu-controller.php',
+        'Shaped_Noise_Control'      => 'admin/class-noise-control.php',
+        'Shaped_Reviews_Dashboard'  => 'admin/class-reviews-dashboard.php',
+
         // Schema
         'Shaped_Schema_Markup'      => 'schema/class-markup.php',
     ];
