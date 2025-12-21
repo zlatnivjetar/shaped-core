@@ -3,8 +3,8 @@
  * Menu Controller
  * Manages admin menu structure for operators vs administrators
  *
- * Operators see: Shaped Ops, Pages, Media, Profile
- * Admins see: Shaped Ops + Shaped System (with all tools)
+ * Operators see: Shaped Ops, Guest Reviews, Pages, Media, Profile
+ * Admins see: Everything (full WordPress admin) + Shaped Ops + Shaped System
  *
  * @package Shaped_Core
  * @subpackage Admin
@@ -17,24 +17,31 @@ if (!defined('ABSPATH')) {
 class Shaped_Menu_Controller {
 
     /**
-     * Pages that operators are allowed to access
+     * Pages that operators are allowed to access (top-level menu slugs)
      */
     const OPERATOR_ALLOWLIST = [
-        'shaped-ops',           // Our main ops menu
-        'edit.php?post_type=page',  // Pages
-        'upload.php',           // Media
-        'profile.php',          // User profile
+        'shaped-ops',                       // Our main ops menu
+        'edit.php?post_type=shaped_review', // Guest Reviews (with dashboard)
+        'edit.php?post_type=page',          // Pages
+        'upload.php',                       // Media
+        'profile.php',                      // User profile
     ];
 
     /**
      * Initialize menu controller
      */
     public static function init(): void {
-        // Run late to capture all registered menus
+        // Register menus early
         add_action('admin_menu', [__CLASS__, 'register_menus'], 9);
+
+        // Restructure menus late (after all plugins register theirs)
         add_action('admin_menu', [__CLASS__, 'restructure_menus'], 999);
 
-        // Redirect unauthorized access
+        // Fix menu highlighting for our custom submenu links
+        add_filter('parent_file', [__CLASS__, 'fix_parent_file']);
+        add_filter('submenu_file', [__CLASS__, 'fix_submenu_file'], 10, 2);
+
+        // Restrict access for operators
         add_action('admin_init', [__CLASS__, 'restrict_admin_access']);
     }
 
@@ -57,7 +64,7 @@ class Shaped_Menu_Controller {
                 2
             );
 
-            // Ops submenus
+            // Ops submenus - use actual page slugs for proper highlighting
             add_submenu_page(
                 'shaped-ops',
                 'Overview',
@@ -72,7 +79,8 @@ class Shaped_Menu_Controller {
                 'Reservations',
                 'Reservations',
                 'shaped_view_ops',
-                'edit.php?post_type=mphb_booking'
+                'shaped-ops-reservations',
+                [__CLASS__, 'redirect_to_reservations']
             );
 
             add_submenu_page(
@@ -80,7 +88,8 @@ class Shaped_Menu_Controller {
                 'Inventory',
                 'Inventory',
                 'shaped_view_ops',
-                'edit.php?post_type=mphb_room_type'
+                'shaped-ops-inventory',
+                [__CLASS__, 'redirect_to_inventory']
             );
 
             add_submenu_page(
@@ -88,15 +97,8 @@ class Shaped_Menu_Controller {
                 'Pricing',
                 'Pricing',
                 'shaped_view_ops',
-                'admin.php?page=shaped-pricing'
-            );
-
-            add_submenu_page(
-                'shaped-ops',
-                'Reviews',
-                'Reviews',
-                'shaped_view_ops',
-                'admin.php?page=shaped-reviews-dashboard'
+                'shaped-ops-pricing',
+                [__CLASS__, 'redirect_to_pricing']
             );
         }
 
@@ -127,7 +129,8 @@ class Shaped_Menu_Controller {
                 'Settings',
                 'Settings',
                 'manage_options',
-                'admin.php?page=shaped-settings'
+                'shaped-system-settings',
+                [__CLASS__, 'redirect_to_settings']
             );
 
             add_submenu_page(
@@ -135,7 +138,8 @@ class Shaped_Menu_Controller {
                 'Setup Wizard',
                 'Setup Wizard',
                 'manage_options',
-                'admin.php?page=shaped-setup-wizard'
+                'shaped-system-wizard',
+                [__CLASS__, 'redirect_to_wizard']
             );
 
             add_submenu_page(
@@ -143,22 +147,21 @@ class Shaped_Menu_Controller {
                 'Config Health',
                 'Config Health',
                 'manage_options',
-                'admin.php?page=shaped-config-health'
+                'shaped-system-health',
+                [__CLASS__, 'redirect_to_health']
             );
 
-            // Integrations section
+            // Integrations
             if (defined('SHAPED_ENABLE_ROOMCLOUD') && SHAPED_ENABLE_ROOMCLOUD) {
                 add_submenu_page(
                     'shaped-system',
-                    'RoomCloud',
+                    'Integrations',
                     'Integrations',
                     'manage_options',
-                    'admin.php?page=shaped-roomcloud'
+                    'shaped-system-integrations',
+                    [__CLASS__, 'redirect_to_integrations']
                 );
             }
-
-            // Third-party tools - only add if they exist
-            self::add_third_party_links();
 
             // WordPress core tools
             add_submenu_page(
@@ -166,7 +169,8 @@ class Shaped_Menu_Controller {
                 'Plugins',
                 'Plugins',
                 'manage_options',
-                'plugins.php'
+                'shaped-system-plugins',
+                [__CLASS__, 'redirect_to_plugins']
             );
 
             add_submenu_page(
@@ -174,7 +178,8 @@ class Shaped_Menu_Controller {
                 'Tools',
                 'Tools',
                 'manage_options',
-                'tools.php'
+                'shaped-system-tools',
+                [__CLASS__, 'redirect_to_tools']
             );
 
             add_submenu_page(
@@ -182,81 +187,23 @@ class Shaped_Menu_Controller {
                 'Updates',
                 'Updates',
                 'manage_options',
-                'update-core.php'
+                'shaped-system-updates',
+                [__CLASS__, 'redirect_to_updates']
             );
         }
-    }
-
-    /**
-     * Add third-party plugin links to System menu
-     */
-    private static function add_third_party_links(): void {
-        global $menu;
-
-        // Map of plugin slugs to labels
-        $third_party = [
-            'rank-math'       => 'SEO',
-            'complianz'       => 'GDPR',
-            'wp-mail-smtp'    => 'Email',
-            'litespeed'       => 'Cache',
-        ];
-
-        foreach ($third_party as $slug => $label) {
-            // Check if the plugin's menu page exists
-            if (self::menu_page_exists($slug)) {
-                add_submenu_page(
-                    'shaped-system',
-                    $label,
-                    $label,
-                    'manage_options',
-                    'admin.php?page=' . $slug
-                );
-            }
-        }
-    }
-
-    /**
-     * Check if a menu page exists
-     */
-    private static function menu_page_exists(string $slug): bool {
-        global $submenu, $menu;
-
-        // Check top-level menus
-        if ($menu) {
-            foreach ($menu as $item) {
-                if (isset($item[2]) && $item[2] === $slug) {
-                    return true;
-                }
-            }
-        }
-
-        // Check submenus
-        if ($submenu) {
-            foreach ($submenu as $parent => $items) {
-                foreach ($items as $item) {
-                    if (isset($item[2]) && $item[2] === $slug) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
     }
 
     /**
      * Restructure menus based on user role
      */
     public static function restructure_menus(): void {
-        global $menu, $submenu;
-
         $is_admin = current_user_can('manage_options');
 
         if ($is_admin) {
-            // For admins: remove old top-level Shaped menus (they're now in Shaped System)
+            // For admins: just remove redundant Shaped menus
             self::remove_redundant_admin_menus();
         } else {
-            // For operators: allowlist approach - remove everything not allowed
+            // For operators: allowlist approach
             self::apply_operator_allowlist();
         }
     }
@@ -265,16 +212,10 @@ class Shaped_Menu_Controller {
      * Remove old Shaped menus that are now consolidated under Shaped System
      */
     private static function remove_redundant_admin_menus(): void {
-        // Remove old standalone menus (now in Shaped System submenu)
-        remove_menu_page('shaped-settings');       // Old "Shaped Core"
-        remove_menu_page('shaped-pricing');        // Old "Shaped Pricing"
-        remove_menu_page('shaped-roomcloud');      // Old "RoomCloud" standalone
-
-        // Also remove third-party tools from top level (they're in System now)
-        remove_menu_page('rank-math');
-        remove_menu_page('complianz');
-        remove_menu_page('wp-mail-smtp');
-        remove_menu_page('litespeed');
+        // Remove old standalone Shaped menus (now accessible via Shaped System)
+        remove_menu_page('shaped-settings');
+        remove_menu_page('shaped-pricing');
+        remove_menu_page('shaped-roomcloud');
     }
 
     /**
@@ -310,6 +251,99 @@ class Shaped_Menu_Controller {
     }
 
     /**
+     * Fix parent file highlighting for pages accessed via Shaped menus
+     */
+    public static function fix_parent_file(string $parent_file): string {
+        global $pagenow, $typenow;
+
+        $page = $_GET['page'] ?? '';
+
+        // Shaped Ops parent highlighting
+        if ($pagenow === 'edit.php') {
+            if ($typenow === 'mphb_booking') {
+                return 'shaped-ops';
+            }
+            if ($typenow === 'mphb_room_type') {
+                return 'shaped-ops';
+            }
+        }
+
+        if ($page === 'shaped-pricing') {
+            return 'shaped-ops';
+        }
+
+        // Shaped System parent highlighting
+        $system_pages = [
+            'shaped-settings',
+            'shaped-setup-wizard',
+            'shaped-config-health',
+            'shaped-roomcloud',
+        ];
+
+        if (in_array($page, $system_pages, true)) {
+            return 'shaped-system';
+        }
+
+        if ($pagenow === 'plugins.php' || $pagenow === 'tools.php' || $pagenow === 'update-core.php') {
+            // Only for admins viewing via system menu context
+            if (current_user_can('manage_options') && isset($_GET['from']) && $_GET['from'] === 'shaped-system') {
+                return 'shaped-system';
+            }
+        }
+
+        return $parent_file;
+    }
+
+    /**
+     * Fix submenu file highlighting
+     */
+    public static function fix_submenu_file(string $submenu_file, string $parent_file): string {
+        global $pagenow, $typenow;
+
+        $page = $_GET['page'] ?? '';
+
+        // Shaped Ops submenu highlighting
+        if ($parent_file === 'shaped-ops') {
+            if ($pagenow === 'edit.php' && $typenow === 'mphb_booking') {
+                return 'shaped-ops-reservations';
+            }
+            if ($pagenow === 'edit.php' && $typenow === 'mphb_room_type') {
+                return 'shaped-ops-inventory';
+            }
+            if ($page === 'shaped-pricing') {
+                return 'shaped-ops-pricing';
+            }
+        }
+
+        // Shaped System submenu highlighting
+        if ($parent_file === 'shaped-system') {
+            if ($page === 'shaped-settings') {
+                return 'shaped-system-settings';
+            }
+            if ($page === 'shaped-setup-wizard') {
+                return 'shaped-system-wizard';
+            }
+            if ($page === 'shaped-config-health') {
+                return 'shaped-system-health';
+            }
+            if ($page === 'shaped-roomcloud') {
+                return 'shaped-system-integrations';
+            }
+            if ($pagenow === 'plugins.php') {
+                return 'shaped-system-plugins';
+            }
+            if ($pagenow === 'tools.php') {
+                return 'shaped-system-tools';
+            }
+            if ($pagenow === 'update-core.php') {
+                return 'shaped-system-updates';
+            }
+        }
+
+        return $submenu_file;
+    }
+
+    /**
      * Restrict admin page access for operators
      */
     public static function restrict_admin_access(): void {
@@ -330,15 +364,17 @@ class Shaped_Menu_Controller {
 
         // Allowed pagenow values
         $allowed_pages = [
-            'index.php',        // Dashboard
-            'profile.php',      // Profile
-            'upload.php',       // Media
-            'media-new.php',    // Upload media
-            'edit.php',         // Posts/Pages list
-            'post.php',         // Edit post
-            'post-new.php',     // New post
-            'admin.php',        // Admin pages (checked via page param)
-            'admin-ajax.php',   // AJAX
+            'index.php',
+            'profile.php',
+            'upload.php',
+            'media-new.php',
+            'edit.php',
+            'post.php',
+            'post-new.php',
+            'edit-tags.php',
+            'term.php',
+            'admin.php',
+            'admin-ajax.php',
         ];
 
         // Allowed post types
@@ -356,6 +392,9 @@ class Shaped_Menu_Controller {
         // Allowed admin.php pages
         $allowed_admin_pages = [
             'shaped-ops',
+            'shaped-ops-reservations',
+            'shaped-ops-inventory',
+            'shaped-ops-pricing',
             'shaped-pricing',
             'shaped-reviews-dashboard',
             'shaped-reviews-sync',
@@ -365,10 +404,13 @@ class Shaped_Menu_Controller {
         $is_allowed = false;
 
         if (in_array($pagenow, $allowed_pages, true)) {
-            // Further check for post types
             if ($pagenow === 'edit.php' || $pagenow === 'post.php' || $pagenow === 'post-new.php') {
                 $check_type = $post_type ?: (isset($_GET['post']) ? get_post_type(absint($_GET['post'])) : 'post');
                 $is_allowed = in_array($check_type, $allowed_post_types, true);
+            } elseif ($pagenow === 'edit-tags.php' || $pagenow === 'term.php') {
+                // Allow taxonomy pages for allowed post types
+                $taxonomy = $_GET['taxonomy'] ?? '';
+                $is_allowed = !empty($taxonomy);
             } elseif ($pagenow === 'admin.php') {
                 $is_allowed = in_array($page, $allowed_admin_pages, true);
             } else {
@@ -382,19 +424,65 @@ class Shaped_Menu_Controller {
         }
     }
 
-    /**
-     * Render Ops Dashboard
-     */
+    // ─── Redirect callbacks ───
+
+    public static function redirect_to_reservations(): void {
+        wp_safe_redirect(admin_url('edit.php?post_type=mphb_booking'));
+        exit;
+    }
+
+    public static function redirect_to_inventory(): void {
+        wp_safe_redirect(admin_url('edit.php?post_type=mphb_room_type'));
+        exit;
+    }
+
+    public static function redirect_to_pricing(): void {
+        wp_safe_redirect(admin_url('admin.php?page=shaped-pricing'));
+        exit;
+    }
+
+    public static function redirect_to_settings(): void {
+        wp_safe_redirect(admin_url('admin.php?page=shaped-settings'));
+        exit;
+    }
+
+    public static function redirect_to_wizard(): void {
+        wp_safe_redirect(admin_url('admin.php?page=shaped-setup-wizard'));
+        exit;
+    }
+
+    public static function redirect_to_health(): void {
+        wp_safe_redirect(admin_url('admin.php?page=shaped-config-health'));
+        exit;
+    }
+
+    public static function redirect_to_integrations(): void {
+        wp_safe_redirect(admin_url('admin.php?page=shaped-roomcloud'));
+        exit;
+    }
+
+    public static function redirect_to_plugins(): void {
+        wp_safe_redirect(admin_url('plugins.php'));
+        exit;
+    }
+
+    public static function redirect_to_tools(): void {
+        wp_safe_redirect(admin_url('tools.php'));
+        exit;
+    }
+
+    public static function redirect_to_updates(): void {
+        wp_safe_redirect(admin_url('update-core.php'));
+        exit;
+    }
+
+    // ─── Page renderers ───
+
     public static function render_ops_dashboard(): void {
-        // Load dashboard page
         require_once SHAPED_DIR . 'admin/pages/ops-dashboard.php';
     }
 
-    /**
-     * Render System Dashboard
-     */
     public static function render_system_dashboard(): void {
-        // Load system dashboard page
         require_once SHAPED_DIR . 'admin/pages/system-dashboard.php';
     }
 }
