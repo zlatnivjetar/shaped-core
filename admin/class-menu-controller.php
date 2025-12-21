@@ -253,7 +253,7 @@ class Shaped_Menu_Controller {
     /**
      * Fix parent file highlighting for pages accessed via Shaped menus
      */
-    public static function fix_parent_file(string $parent_file): string {
+    public static function fix_parent_file(?string $parent_file): string {
         global $pagenow, $typenow;
 
         $page = $_GET['page'] ?? '';
@@ -291,13 +291,13 @@ class Shaped_Menu_Controller {
             }
         }
 
-        return $parent_file;
+        return $parent_file ?? '';
     }
 
     /**
      * Fix submenu file highlighting
      */
-    public static function fix_submenu_file(string $submenu_file, string $parent_file): string {
+    public static function fix_submenu_file(?string $submenu_file, ?string $parent_file): ?string {
         global $pagenow, $typenow;
 
         $page = $_GET['page'] ?? '';
