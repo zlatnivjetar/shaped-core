@@ -701,14 +701,15 @@ public function ajax_get_calendar_inventory()
             $current->modify('+1 day');
         }
 
-        // If no data found for any date, fail safe - return 0 to block overselling
+        // If no data found for any date, return null to let MPHB handle it
+        // (This allows bookings for dates beyond the RoomCloud inventory horizon)
         if (!$has_data) {
-            self::rc_debug_log('No RoomCloud data found for stay', [
+            self::rc_debug_log('No RoomCloud data found for stay - letting MPHB handle', [
                 'roomcloud_id' => $roomcloud_id,
                 'from_date' => $from_date->format('Y-m-d'),
                 'to_date' => $to_date->format('Y-m-d'),
             ]);
-            return 0; // Fail safe: block rather than oversell
+            return null;
         }
 
         return $min_units;
@@ -824,12 +825,12 @@ public function ajax_get_calendar_inventory()
         $rc_free_stay = self::get_min_availability_for_stay($roomcloud_id, $from_date, $to_date);
 
         if ($rc_free_stay === null) {
-            // No data - fail safe by blocking (set count to 0)
-            self::rc_debug_log('No availability data - fail safe blocking', [
+            // No data for this date range - let MPHB handle it
+            // (Allows bookings for dates beyond RoomCloud inventory horizon)
+            self::rc_debug_log('No availability data - letting MPHB handle', [
                 'room_type_id' => $room_type_id,
                 'roomcloud_id' => $roomcloud_id,
             ]);
-            $atts['count'] = 0;
             return $atts;
         }
 
@@ -891,8 +892,9 @@ public function ajax_get_calendar_inventory()
         $date_str = $requested_date->format('Y-m-d');
         $rc_free_day = self::get_availability($roomcloud_id, $date_str);
 
-        // If no data exists or availability is 0, block the day
-        if ($rc_free_day === null || $rc_free_day <= 0) {
+        // Only block if we have explicit data showing 0 availability
+        // If no data exists (null), let MPHB handle it (allows dates beyond inventory horizon)
+        if ($rc_free_day !== null && $rc_free_day <= 0) {
             $result['not_stay_in'] = true;
 
             self::rc_debug_log('Blocked day due to zero RoomCloud availability', [
