@@ -37,9 +37,9 @@ class Shaped_Menu_Controller {
         // Restructure menus late (after all plugins register theirs)
         add_action('admin_menu', [__CLASS__, 'restructure_menus'], 999);
 
-        // Fix menu highlighting for our custom submenu links
-        add_filter('parent_file', [__CLASS__, 'fix_parent_file']);
-        add_filter('submenu_file', [__CLASS__, 'fix_submenu_file'], 10, 2);
+        // Fix menu highlighting for our custom submenu links (high priority to run last)
+        add_filter('parent_file', [__CLASS__, 'fix_parent_file'], 999);
+        add_filter('submenu_file', [__CLASS__, 'fix_submenu_file'], 999, 2);
 
         // Restrict access for operators
         add_action('admin_init', [__CLASS__, 'restrict_admin_access']);

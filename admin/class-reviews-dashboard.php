@@ -23,9 +23,9 @@ class Shaped_Reviews_Dashboard {
         // Reorder submenus to put Dashboard first
         add_action('admin_menu', [__CLASS__, 'reorder_submenu'], 999);
 
-        // Fix menu highlighting when on dashboard
-        add_filter('parent_file', [__CLASS__, 'fix_parent_file']);
-        add_filter('submenu_file', [__CLASS__, 'fix_submenu_file'], 10, 2);
+        // Fix menu highlighting when on dashboard (priority 998, before Menu Controller's 999)
+        add_filter('parent_file', [__CLASS__, 'fix_parent_file'], 998);
+        add_filter('submenu_file', [__CLASS__, 'fix_submenu_file'], 998, 2);
     }
 
     /**
