@@ -35,14 +35,24 @@ class Shaped_RC_Availability_Manager
     {
         // Hook into WP_Query to exclude unavailable rooms
         add_action('pre_get_posts', [$this, 'filter_room_type_query'], 999, 1);
-        
+
         // Ajax endpoint for JavaScript to get availability
         add_action('wp_ajax_shaped_rc_get_availability', [$this, 'ajax_get_availability']);
         add_action('wp_ajax_nopriv_shaped_rc_get_availability', [$this, 'ajax_get_availability']);
-          add_action('wp_ajax_shaped_rc_get_calendar_inventory', [$this, 'ajax_get_calendar_inventory']);
-    add_action('wp_ajax_nopriv_shaped_rc_get_calendar_inventory', [$this, 'ajax_get_calendar_inventory']);
+        add_action('wp_ajax_shaped_rc_get_calendar_inventory', [$this, 'ajax_get_calendar_inventory']);
+        add_action('wp_ajax_nopriv_shaped_rc_get_calendar_inventory', [$this, 'ajax_get_calendar_inventory']);
+
         // Block individual room page bookings when unavailable
         add_filter('mphb_room_available', [$this, 'filter_individual_room_availability'], 10, 3);
+
+        // TASK 1: Stay-level availability gating - cap room count based on RoomCloud inventory
+        add_filter('mphb_search_rooms_atts', [$this, 'filter_search_rooms_atts_for_roomcloud'], 10, 2);
+
+        // TASK 2: Per-day calendar disabling - block days with zero availability
+        add_filter('mphb_get_booking_rules_for_date', [$this, 'filter_booking_rules_for_roomcloud'], 10, 3);
+
+        // Enable the not_stay_in rules flag when RoomCloud is active
+        add_filter('mphb_has_not_stay_in_rules', [$this, 'enable_not_stay_in_rules']);
     }
     
     /**
@@ -603,5 +613,296 @@ public function ajax_get_calendar_inventory()
         }
         
         return $summary;
+    }
+
+    // =========================================================================
+    // ROOMCLOUD AVAILABILITY GATING FILTERS
+    // =========================================================================
+
+    /**
+     * Get room mapping from option or fall back to static mapping
+     *
+     * @return array [room_slug => roomcloud_id]
+     */
+    public static function get_room_mapping(): array
+    {
+        $option_mapping = get_option('shaped_rc_room_mapping', []);
+
+        // If option is set and not empty, use it
+        if (!empty($option_mapping) && is_array($option_mapping)) {
+            return $option_mapping;
+        }
+
+        // Fall back to static mapping
+        return self::$room_mapping;
+    }
+
+    /**
+     * Get RoomCloud ID for an MPHB room type ID
+     *
+     * @param int $room_type_id MPHB room type post ID
+     * @return string|null RoomCloud room ID or null if not mapped
+     */
+    public static function get_roomcloud_id_for_room_type(int $room_type_id): ?string
+    {
+        if ($room_type_id <= 0) {
+            return null;
+        }
+
+        // Get the room slug from the post
+        $room_slug = get_post_field('post_name', $room_type_id);
+
+        if (empty($room_slug)) {
+            return null;
+        }
+
+        // Get the mapping
+        $mapping = self::get_room_mapping();
+
+        return isset($mapping[$room_slug]) ? $mapping[$room_slug] : null;
+    }
+
+    /**
+     * Get minimum availability across a date range for a RoomCloud room
+     *
+     * @param string $roomcloud_id RoomCloud room ID
+     * @param DateTime $from_date Check-in date (inclusive)
+     * @param DateTime $to_date Check-out date (exclusive)
+     * @return int|null Minimum available units across the stay, or null if no data
+     */
+    public static function get_min_availability_for_stay(string $roomcloud_id, DateTime $from_date, DateTime $to_date): ?int
+    {
+        $inventory = self::get_inventory();
+
+        if (!isset($inventory[$roomcloud_id])) {
+            return null;
+        }
+
+        $room_inventory = $inventory[$roomcloud_id];
+        $min_units = PHP_INT_MAX;
+        $has_data = false;
+
+        $current = clone $from_date;
+
+        // Check each night from check-in (inclusive) to check-out (exclusive)
+        while ($current < $to_date) {
+            $date_str = $current->format('Y-m-d');
+
+            if (isset($room_inventory[$date_str])) {
+                $has_data = true;
+                $min_units = min($min_units, intval($room_inventory[$date_str]));
+
+                // Early exit: if we find 0 availability, no point checking further
+                if ($min_units === 0) {
+                    break;
+                }
+            }
+
+            $current->modify('+1 day');
+        }
+
+        // If no data found for any date, fail safe - return 0 to block overselling
+        if (!$has_data) {
+            self::rc_debug_log('No RoomCloud data found for stay', [
+                'roomcloud_id' => $roomcloud_id,
+                'from_date' => $from_date->format('Y-m-d'),
+                'to_date' => $to_date->format('Y-m-d'),
+            ]);
+            return 0; // Fail safe: block rather than oversell
+        }
+
+        return $min_units;
+    }
+
+    /**
+     * Get availability for a specific room type and date
+     *
+     * @param int $room_type_id MPHB room type post ID
+     * @param DateTime $date The date to check
+     * @return int|null Available units for that date, or null if no mapping
+     */
+    public static function get_availability_for_room_type_date(int $room_type_id, DateTime $date): ?int
+    {
+        $roomcloud_id = self::get_roomcloud_id_for_room_type($room_type_id);
+
+        if ($roomcloud_id === null) {
+            return null;
+        }
+
+        $date_str = $date->format('Y-m-d');
+        return self::get_availability($roomcloud_id, $date_str);
+    }
+
+    /**
+     * Debug logging helper - only logs when WP_DEBUG is enabled
+     *
+     * @param string $message Log message
+     * @param array $context Additional context data
+     */
+    private static function rc_debug_log(string $message, array $context = []): void
+    {
+        if (!defined('WP_DEBUG') || !WP_DEBUG) {
+            return;
+        }
+
+        $log_entry = '[Shaped RC Gating] ' . $message;
+
+        if (!empty($context)) {
+            $log_entry .= ' | ' . wp_json_encode($context);
+        }
+
+        error_log($log_entry);
+    }
+
+    /**
+     * Enable not_stay_in rules when RoomCloud is active
+     *
+     * @param bool $has_rules Current value
+     * @return bool
+     */
+    public function enable_not_stay_in_rules(bool $has_rules): bool
+    {
+        if (shaped_is_roomcloud_active()) {
+            return true;
+        }
+
+        return $has_rules;
+    }
+
+    /**
+     * TASK 1: Filter search rooms attributes to cap count based on RoomCloud availability
+     *
+     * This ensures MPHB never returns more free room IDs than RoomCloud allows for the stay.
+     *
+     * @param array $atts Search attributes
+     * @param array $defaults Default attributes
+     * @return array Modified attributes
+     */
+    public function filter_search_rooms_atts_for_roomcloud(array $atts, array $defaults): array
+    {
+        // Only apply when RoomCloud mode is enabled
+        if (!shaped_is_roomcloud_active()) {
+            return $atts;
+        }
+
+        // Only apply when searching for free rooms
+        if (!isset($atts['availability']) || $atts['availability'] !== 'free') {
+            return $atts;
+        }
+
+        // Only apply when room_type_id is a single positive integer
+        if (!isset($atts['room_type_id']) || !is_int($atts['room_type_id']) || $atts['room_type_id'] <= 0) {
+            // Could be array or 0 (all types) - skip
+            return $atts;
+        }
+
+        // Validate from_date and to_date are DateTime objects
+        if (!isset($atts['from_date']) || !($atts['from_date'] instanceof DateTime)) {
+            return $atts;
+        }
+
+        if (!isset($atts['to_date']) || !($atts['to_date'] instanceof DateTime)) {
+            return $atts;
+        }
+
+        $room_type_id = $atts['room_type_id'];
+        $from_date = $atts['from_date'];
+        $to_date = $atts['to_date'];
+
+        // Get RoomCloud ID for this room type
+        $roomcloud_id = self::get_roomcloud_id_for_room_type($room_type_id);
+
+        if ($roomcloud_id === null) {
+            // No mapping - let MPHB handle it
+            self::rc_debug_log('No RoomCloud mapping for room type', [
+                'room_type_id' => $room_type_id,
+            ]);
+            return $atts;
+        }
+
+        // Compute minimum free units across the stay
+        $rc_free_stay = self::get_min_availability_for_stay($roomcloud_id, $from_date, $to_date);
+
+        if ($rc_free_stay === null) {
+            // No data - fail safe by blocking (set count to 0)
+            self::rc_debug_log('No availability data - fail safe blocking', [
+                'room_type_id' => $room_type_id,
+                'roomcloud_id' => $roomcloud_id,
+            ]);
+            $atts['count'] = 0;
+            return $atts;
+        }
+
+        $requested_count = isset($atts['count']) ? intval($atts['count']) : 0;
+
+        // Cap the count based on RoomCloud availability
+        if ($requested_count > 0) {
+            // Requested a specific count - cap it
+            $atts['count'] = min($requested_count, $rc_free_stay);
+        } else {
+            // Requested all (0) - limit to RoomCloud availability
+            $atts['count'] = $rc_free_stay;
+        }
+
+        self::rc_debug_log('Capped search room count', [
+            'room_type_id' => $room_type_id,
+            'roomcloud_id' => $roomcloud_id,
+            'from_date' => $from_date->format('Y-m-d'),
+            'to_date' => $to_date->format('Y-m-d'),
+            'rc_free_stay' => $rc_free_stay,
+            'requested_count' => $requested_count,
+            'capped_count' => $atts['count'],
+        ]);
+
+        return $atts;
+    }
+
+    /**
+     * TASK 2: Filter booking rules to block days with zero RoomCloud availability
+     *
+     * This makes 0-availability days unselectable in MPHB's calendar/datepicker logic.
+     *
+     * @param array $result Booking rules result
+     * @param int $room_type_original_id Room type original ID (for WPML compatibility)
+     * @param DateTime $requested_date The date being checked
+     * @return array Modified result
+     */
+    public function filter_booking_rules_for_roomcloud(array $result, int $room_type_original_id, DateTime $requested_date): array
+    {
+        // Only apply when RoomCloud mode is enabled
+        if (!shaped_is_roomcloud_active()) {
+            return $result;
+        }
+
+        // Only apply when we have a valid room type ID
+        if ($room_type_original_id <= 0) {
+            return $result;
+        }
+
+        // Get RoomCloud ID for this room type
+        $roomcloud_id = self::get_roomcloud_id_for_room_type($room_type_original_id);
+
+        if ($roomcloud_id === null) {
+            // No mapping - let MPHB handle it
+            return $result;
+        }
+
+        // Get availability for this specific date
+        $date_str = $requested_date->format('Y-m-d');
+        $rc_free_day = self::get_availability($roomcloud_id, $date_str);
+
+        // If no data exists or availability is 0, block the day
+        if ($rc_free_day === null || $rc_free_day <= 0) {
+            $result['not_stay_in'] = true;
+
+            self::rc_debug_log('Blocked day due to zero RoomCloud availability', [
+                'room_type_id' => $room_type_original_id,
+                'roomcloud_id' => $roomcloud_id,
+                'date' => $date_str,
+                'rc_free_day' => $rc_free_day,
+            ]);
+        }
+
+        return $result;
     }
 }
