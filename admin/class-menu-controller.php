@@ -114,7 +114,7 @@ class Shaped_Menu_Controller {
                 3
             );
 
-            // System submenus
+            // System submenus - ordered: Overview, RoomCloud, Setup Wizard, Config Health, Settings, Plugins, Tools, Updates
             add_submenu_page(
                 'shaped-system',
                 'System Overview',
@@ -124,14 +124,17 @@ class Shaped_Menu_Controller {
                 [__CLASS__, 'render_system_dashboard']
             );
 
-            add_submenu_page(
-                'shaped-system',
-                'Settings',
-                'Settings',
-                'manage_options',
-                'shaped-system-settings',
-                [__CLASS__, 'redirect_to_settings']
-            );
+            // RoomCloud (2nd place)
+            if (defined('SHAPED_ENABLE_ROOMCLOUD') && SHAPED_ENABLE_ROOMCLOUD) {
+                add_submenu_page(
+                    'shaped-system',
+                    'RoomCloud',
+                    'RoomCloud',
+                    'manage_options',
+                    'shaped-system-roomcloud',
+                    [__CLASS__, 'redirect_to_roomcloud']
+                );
+            }
 
             add_submenu_page(
                 'shaped-system',
@@ -151,17 +154,14 @@ class Shaped_Menu_Controller {
                 [__CLASS__, 'redirect_to_health']
             );
 
-            // Integrations
-            if (defined('SHAPED_ENABLE_ROOMCLOUD') && SHAPED_ENABLE_ROOMCLOUD) {
-                add_submenu_page(
-                    'shaped-system',
-                    'Integrations',
-                    'Integrations',
-                    'manage_options',
-                    'shaped-system-integrations',
-                    [__CLASS__, 'redirect_to_integrations']
-                );
-            }
+            add_submenu_page(
+                'shaped-system',
+                'Settings',
+                'Settings',
+                'manage_options',
+                'shaped-system-settings',
+                [__CLASS__, 'redirect_to_settings']
+            );
 
             // WordPress core tools
             add_submenu_page(
@@ -303,41 +303,28 @@ class Shaped_Menu_Controller {
         $page = $_GET['page'] ?? '';
 
         // Shaped Ops submenu highlighting
-        if ($parent_file === 'shaped-ops') {
-            if ($pagenow === 'edit.php' && $typenow === 'mphb_booking') {
-                return 'shaped-ops-reservations';
-            }
-            if ($pagenow === 'edit.php' && $typenow === 'mphb_room_type') {
-                return 'shaped-ops-inventory';
-            }
-            if ($page === 'shaped-pricing') {
-                return 'shaped-ops-pricing';
-            }
+        if ($pagenow === 'edit.php' && $typenow === 'mphb_booking') {
+            return 'shaped-ops-reservations';
+        }
+        if ($pagenow === 'edit.php' && $typenow === 'mphb_room_type') {
+            return 'shaped-ops-inventory';
+        }
+        if ($page === 'shaped-pricing') {
+            return 'shaped-ops-pricing';
         }
 
         // Shaped System submenu highlighting
-        if ($parent_file === 'shaped-system') {
-            if ($page === 'shaped-settings') {
-                return 'shaped-system-settings';
-            }
-            if ($page === 'shaped-setup-wizard') {
-                return 'shaped-system-wizard';
-            }
-            if ($page === 'shaped-config-health') {
-                return 'shaped-system-health';
-            }
-            if ($page === 'shaped-roomcloud') {
-                return 'shaped-system-integrations';
-            }
-            if ($pagenow === 'plugins.php') {
-                return 'shaped-system-plugins';
-            }
-            if ($pagenow === 'tools.php') {
-                return 'shaped-system-tools';
-            }
-            if ($pagenow === 'update-core.php') {
-                return 'shaped-system-updates';
-            }
+        if ($page === 'shaped-settings') {
+            return 'shaped-system-settings';
+        }
+        if ($page === 'shaped-setup-wizard') {
+            return 'shaped-system-wizard';
+        }
+        if ($page === 'shaped-config-health') {
+            return 'shaped-system-health';
+        }
+        if ($page === 'shaped-roomcloud') {
+            return 'shaped-system-roomcloud';
         }
 
         return $submenu_file;
@@ -456,7 +443,7 @@ class Shaped_Menu_Controller {
         exit;
     }
 
-    public static function redirect_to_integrations(): void {
+    public static function redirect_to_roomcloud(): void {
         wp_safe_redirect(admin_url('admin.php?page=shaped-roomcloud'));
         exit;
     }
