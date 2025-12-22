@@ -114,11 +114,9 @@ class Shaped_Menu_Controller {
                 3
             );
 
-            // System submenus - use direct links for proper highlighting
+            // System submenus - use add_submenu_page with redirects (same pattern as Shaped Ops)
             // Order: Overview, RoomCloud, Setup Wizard, Config Health, Settings, Plugins, Tools, Updates
-            global $submenu;
 
-            // Overview (registered normally as the main page)
             add_submenu_page(
                 'shaped-system',
                 'System Overview',
@@ -128,24 +126,71 @@ class Shaped_Menu_Controller {
                 [__CLASS__, 'render_system_dashboard']
             );
 
-            // RoomCloud (2nd place) - direct link
+            // RoomCloud (2nd place)
             if (defined('SHAPED_ENABLE_ROOMCLOUD') && SHAPED_ENABLE_ROOMCLOUD) {
-                $submenu['shaped-system'][] = ['RoomCloud', 'manage_options', 'admin.php?page=shaped-roomcloud'];
+                add_submenu_page(
+                    'shaped-system',
+                    'RoomCloud',
+                    'RoomCloud',
+                    'manage_options',
+                    'shaped-system-roomcloud',
+                    [__CLASS__, 'redirect_to_roomcloud']
+                );
             }
 
-            // Setup Wizard - direct link
-            $submenu['shaped-system'][] = ['Setup Wizard', 'manage_options', 'admin.php?page=shaped-setup-wizard'];
+            add_submenu_page(
+                'shaped-system',
+                'Setup Wizard',
+                'Setup Wizard',
+                'manage_options',
+                'shaped-system-wizard',
+                [__CLASS__, 'redirect_to_wizard']
+            );
 
-            // Config Health - direct link
-            $submenu['shaped-system'][] = ['Config Health', 'manage_options', 'admin.php?page=shaped-config-health'];
+            add_submenu_page(
+                'shaped-system',
+                'Config Health',
+                'Config Health',
+                'manage_options',
+                'shaped-system-health',
+                [__CLASS__, 'redirect_to_health']
+            );
 
-            // Settings - direct link
-            $submenu['shaped-system'][] = ['Settings', 'manage_options', 'admin.php?page=shaped-settings'];
+            add_submenu_page(
+                'shaped-system',
+                'Settings',
+                'Settings',
+                'manage_options',
+                'shaped-system-settings',
+                [__CLASS__, 'redirect_to_settings']
+            );
 
-            // WordPress core tools - direct links
-            $submenu['shaped-system'][] = ['Plugins', 'manage_options', 'plugins.php'];
-            $submenu['shaped-system'][] = ['Tools', 'manage_options', 'tools.php'];
-            $submenu['shaped-system'][] = ['Updates', 'manage_options', 'update-core.php'];
+            add_submenu_page(
+                'shaped-system',
+                'Plugins',
+                'Plugins',
+                'manage_options',
+                'shaped-system-plugins',
+                [__CLASS__, 'redirect_to_plugins']
+            );
+
+            add_submenu_page(
+                'shaped-system',
+                'Tools',
+                'Tools',
+                'manage_options',
+                'shaped-system-tools',
+                [__CLASS__, 'redirect_to_tools']
+            );
+
+            add_submenu_page(
+                'shaped-system',
+                'Updates',
+                'Updates',
+                'manage_options',
+                'shaped-system-updates',
+                [__CLASS__, 'redirect_to_updates']
+            );
         }
     }
 
@@ -269,27 +314,27 @@ class Shaped_Menu_Controller {
             return 'shaped-ops-pricing';
         }
 
-        // Shaped System submenu highlighting - return the exact submenu slug (URL)
+        // Shaped System submenu highlighting - return the registered submenu slug
         if ($page === 'shaped-settings') {
-            return 'admin.php?page=shaped-settings';
+            return 'shaped-system-settings';
         }
         if ($page === 'shaped-setup-wizard') {
-            return 'admin.php?page=shaped-setup-wizard';
+            return 'shaped-system-wizard';
         }
         if ($page === 'shaped-config-health') {
-            return 'admin.php?page=shaped-config-health';
+            return 'shaped-system-health';
         }
         if ($page === 'shaped-roomcloud') {
-            return 'admin.php?page=shaped-roomcloud';
+            return 'shaped-system-roomcloud';
         }
         if ($pagenow === 'plugins.php') {
-            return 'plugins.php';
+            return 'shaped-system-plugins';
         }
         if ($pagenow === 'tools.php') {
-            return 'tools.php';
+            return 'shaped-system-tools';
         }
         if ($pagenow === 'update-core.php') {
-            return 'update-core.php';
+            return 'shaped-system-updates';
         }
 
         return $submenu_file;
@@ -390,6 +435,41 @@ class Shaped_Menu_Controller {
 
     public static function redirect_to_pricing(): void {
         wp_safe_redirect(admin_url('admin.php?page=shaped-pricing'));
+        exit;
+    }
+
+    public static function redirect_to_roomcloud(): void {
+        wp_safe_redirect(admin_url('admin.php?page=shaped-roomcloud'));
+        exit;
+    }
+
+    public static function redirect_to_wizard(): void {
+        wp_safe_redirect(admin_url('admin.php?page=shaped-setup-wizard'));
+        exit;
+    }
+
+    public static function redirect_to_health(): void {
+        wp_safe_redirect(admin_url('admin.php?page=shaped-config-health'));
+        exit;
+    }
+
+    public static function redirect_to_settings(): void {
+        wp_safe_redirect(admin_url('admin.php?page=shaped-settings'));
+        exit;
+    }
+
+    public static function redirect_to_plugins(): void {
+        wp_safe_redirect(admin_url('plugins.php'));
+        exit;
+    }
+
+    public static function redirect_to_tools(): void {
+        wp_safe_redirect(admin_url('tools.php'));
+        exit;
+    }
+
+    public static function redirect_to_updates(): void {
+        wp_safe_redirect(admin_url('update-core.php'));
         exit;
     }
 
