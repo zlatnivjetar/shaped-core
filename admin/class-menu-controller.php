@@ -92,6 +92,18 @@ class Shaped_Menu_Controller {
                 [__CLASS__, 'redirect_to_inventory']
             );
 
+            // Availability calendar (only when RoomCloud is enabled)
+            if (defined('SHAPED_ENABLE_ROOMCLOUD') && SHAPED_ENABLE_ROOMCLOUD) {
+                add_submenu_page(
+                    'shaped-ops',
+                    'Availability',
+                    'Availability',
+                    'shaped_view_ops',
+                    'shaped-ops-availability',
+                    [__CLASS__, 'render_ops_availability']
+                );
+            }
+
             add_submenu_page(
                 'shaped-ops',
                 'Pricing',
@@ -391,6 +403,7 @@ class Shaped_Menu_Controller {
             'shaped-ops',
             'shaped-ops-reservations',
             'shaped-ops-inventory',
+            'shaped-ops-availability',
             'shaped-ops-pricing',
             'shaped-pricing',
             'shaped-reviews-dashboard',
@@ -477,6 +490,10 @@ class Shaped_Menu_Controller {
 
     public static function render_ops_dashboard(): void {
         require_once SHAPED_DIR . 'admin/pages/ops-dashboard.php';
+    }
+
+    public static function render_ops_availability(): void {
+        require_once SHAPED_DIR . 'admin/pages/ops-availability.php';
     }
 
     public static function render_system_dashboard(): void {
