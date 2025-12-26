@@ -420,10 +420,24 @@ function shaped_email_block_card_start($variant = 'neutral', $margin_bottom = '2
     ];
 
     $bg = isset($backgrounds[$variant]) ? $backgrounds[$variant] : $backgrounds['neutral'];
+    $primary = shaped_email_color('primary', '#D1AF5D');
+    $border_color = shaped_brand('colors.border.default', '#e5e5e5');
+
+    // Build border style based on variant
+    if ($variant === 'highlight') {
+        // Brand light background gets 4px border-left in brand main color
+        $border_style = "border: 1px solid {$border_color}; border-left: 4px solid {$primary};";
+    } elseif ($variant === 'default') {
+        // White background - no border needed
+        $border_style = "";
+    } else {
+        // Non-white backgrounds get 1px border
+        $border_style = "border: 1px solid {$border_color};";
+    }
 
     ob_start();
     ?>
-                                <div style="background: <?php echo $bg; ?>; border-radius: 8px; padding: 24px; margin: 0 0 <?php echo esc_attr($margin_bottom); ?> 0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); border: 1px solid #E0E0E0;">
+                                <div style="background: <?php echo $bg; ?>; border-radius: 8px; padding: 24px; margin: 0 0 <?php echo esc_attr($margin_bottom); ?> 0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); <?php echo $border_style; ?>">
     <?php
     return ob_get_clean();
 }
@@ -692,7 +706,18 @@ function shaped_email_block_contact($phone = '', $email = '') {
  */
 function shaped_email_block_closing($message = '', $signature = '', $variant = 'highlight') {
     $text_primary = shaped_email_color('textPrimary', '#26272C');
+    $primary = shaped_email_color('primary', '#D1AF5D');
+    $border_color = shaped_brand('colors.border.default', '#e5e5e5');
     $bg = $variant === 'highlight' ? '#fffbf0' : '#f8f8f8';
+
+    // Build border style based on variant
+    if ($variant === 'highlight') {
+        // Brand light background gets 4px border-left in brand main color
+        $border_style = "border: 1px solid {$border_color}; border-left: 4px solid {$primary};";
+    } else {
+        // Non-white backgrounds get 1px border
+        $border_style = "border: 1px solid {$border_color};";
+    }
 
     // Use config values if not provided
     if (empty($message)) {
@@ -704,7 +729,7 @@ function shaped_email_block_closing($message = '', $signature = '', $variant = '
 
     ob_start();
     ?>
-                                <div style="text-align: center; padding: 24px; background: <?php echo $bg; ?>; border-radius: 8px; margin: 0;">
+                                <div style="text-align: center; padding: 24px; background: <?php echo $bg; ?>; border-radius: 8px; margin: 0; <?php echo $border_style; ?>">
                                     <p style="margin: 0 0 12px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
                                         <?php echo esc_html($message); ?>
                                     </p>
@@ -727,10 +752,15 @@ function shaped_email_block_closing($message = '', $signature = '', $variant = '
 function shaped_email_block_payment_info($amount, $date, $note = '') {
     $text_primary = shaped_email_color('textPrimary', '#26272C');
     $text_muted = shaped_email_color('textMuted', '#666666');
+    $primary = shaped_email_color('primary', '#D1AF5D');
+    $border_color = shaped_brand('colors.border.default', '#e5e5e5');
+
+    // Brand light background gets 4px border-left in brand main color
+    $border_style = "border: 1px solid {$border_color}; border-left: 4px solid {$primary};";
 
     ob_start();
     ?>
-                                <div style="background: #fffbf0; border-radius: 8px; padding: 24px; margin: 0 0 24px 0; text-align: center;">
+                                <div style="background: #fffbf0; border-radius: 8px; padding: 24px; margin: 0 0 24px 0; text-align: center; <?php echo $border_style; ?>">
                                     <p style="margin: 0 0 12px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
                                         We'll charge <strong style="color: <?php echo $text_primary; ?>; font-size: 20px;"><?php echo esc_html($amount); ?></strong>
                                     </p>
