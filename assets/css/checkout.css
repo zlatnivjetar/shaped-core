@@ -586,6 +586,7 @@ abbr[title="Required"] {
 #mphb-price-details,
 #mphb-customer-details {
 	margin-top: 0rem !important;
+  display: none !important;
 }
 
 ul.mphb_sc_checkout-services-list.mphb_checkout-services-list {
