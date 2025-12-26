@@ -341,14 +341,11 @@ for ($i = 0; $i < $days; $i++) {
     font-size: 14px;
     font-weight: 600;
     cursor: default;
-    transition: transform 0.1s ease;
+    transition: filter 0.1s ease;
 }
 
 .availability-cell:hover {
-    transform: scale(1.1);
-    z-index: 5;
-    position: relative;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    filter: brightness(0.92);
 }
 
 .availability-cell.available {
