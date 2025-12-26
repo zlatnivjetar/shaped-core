@@ -423,21 +423,24 @@ function shaped_email_block_card_start($variant = 'neutral', $margin_bottom = '2
     $primary = shaped_email_color('primary', '#D1AF5D');
     $border_color = shaped_brand('colors.border.default', '#e5e5e5');
 
-    // Build border style based on variant
+    // Build border style and padding based on variant
     if ($variant === 'highlight') {
-        // Brand light background gets 4px border-left in brand main color
+        // Brand light background gets 4px border-left in brand main color + extra left padding
         $border_style = "border: 1px solid {$border_color}; border-left: 4px solid {$primary};";
+        $padding = "padding: 24px 24px 24px 21px;";
     } elseif ($variant === 'default') {
         // White background - no border needed
         $border_style = "";
+        $padding = "padding: 24px;";
     } else {
         // Non-white backgrounds get 1px border
         $border_style = "border: 1px solid {$border_color};";
+        $padding = "padding: 24px;";
     }
 
     ob_start();
     ?>
-                                <div style="background: <?php echo $bg; ?>; border-radius: 8px; padding: 24px; margin: 0 0 <?php echo esc_attr($margin_bottom); ?> 0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); <?php echo $border_style; ?>">
+                                <div style="background: <?php echo $bg; ?>; border-radius: 8px; <?php echo $padding; ?> margin: 0 0 <?php echo esc_attr($margin_bottom); ?> 0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); <?php echo $border_style; ?>">
     <?php
     return ob_get_clean();
 }
@@ -710,13 +713,15 @@ function shaped_email_block_closing($message = '', $signature = '', $variant = '
     $border_color = shaped_brand('colors.border.default', '#e5e5e5');
     $bg = $variant === 'highlight' ? '#fffbf0' : '#f8f8f8';
 
-    // Build border style based on variant
+    // Build border style and padding based on variant
     if ($variant === 'highlight') {
-        // Brand light background gets 4px border-left in brand main color
+        // Brand light background gets 4px border-left in brand main color + extra left padding
         $border_style = "border: 1px solid {$border_color}; border-left: 4px solid {$primary};";
+        $padding = "padding: 24px 24px 24px 21px;";
     } else {
         // Non-white backgrounds get 1px border
         $border_style = "border: 1px solid {$border_color};";
+        $padding = "padding: 24px;";
     }
 
     // Use config values if not provided
@@ -729,7 +734,7 @@ function shaped_email_block_closing($message = '', $signature = '', $variant = '
 
     ob_start();
     ?>
-                                <div style="text-align: center; padding: 24px; background: <?php echo $bg; ?>; border-radius: 8px; margin: 0; <?php echo $border_style; ?>">
+                                <div style="text-align: center; <?php echo $padding; ?> background: <?php echo $bg; ?>; border-radius: 8px; margin: 0; <?php echo $border_style; ?>">
                                     <p style="margin: 0 0 12px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
                                         <?php echo esc_html($message); ?>
                                     </p>
@@ -755,12 +760,12 @@ function shaped_email_block_payment_info($amount, $date, $note = '') {
     $primary = shaped_email_color('primary', '#D1AF5D');
     $border_color = shaped_brand('colors.border.default', '#e5e5e5');
 
-    // Brand light background gets 4px border-left in brand main color
+    // Brand light background gets 4px border-left in brand main color + extra left padding
     $border_style = "border: 1px solid {$border_color}; border-left: 4px solid {$primary};";
 
     ob_start();
     ?>
-                                <div style="background: #fffbf0; border-radius: 8px; padding: 24px; margin: 0 0 24px 0; text-align: center; <?php echo $border_style; ?>">
+                                <div style="background: #fffbf0; border-radius: 8px; padding: 24px 24px 24px 21px; margin: 0 0 24px 0; text-align: center; <?php echo $border_style; ?>">
                                     <p style="margin: 0 0 12px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
                                         We'll charge <strong style="color: <?php echo $text_primary; ?>; font-size: 20px;"><?php echo esc_html($amount); ?></strong>
                                     </p>
