@@ -1009,7 +1009,8 @@ class Shaped_Payment_Processor
             $charge_at  = get_post_meta($booking_id, '_shaped_charge_at', true);
 
             if ($charge_at && strtotime($charge_at) <= $now) {
-                $idempotency_key = 'fallback_' . $booking_id . '_' . time();
+                $idempotency_key = get_post_meta($booking_id, '_shaped_idempotency_key', true)
+                    ?: 'fallback_' . $booking_id . '_' . $charge_at;
                 error_log('[Shaped Fallback] Processing missed charge for booking #' . $booking_id);
                 $this->charge_single_booking($booking_id, $idempotency_key);
             }
