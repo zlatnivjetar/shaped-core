@@ -257,12 +257,11 @@
 .shaped-rates-indicator {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
+    justify-content: center;
+    gap: 0.25rem;
     color: var(--color-text-muted, #666666);
-    font-size: 0.875rem;
-    padding: 0 1.5rem;
-    margin-top: -0.5rem;
-    margin-bottom: 1rem;
+    font-size: 14px;
+    padding: 0 1.5rem 1rem;
     background: var(--color-surface-highlight, #fffbf0);
 }
 
@@ -576,8 +575,7 @@
 
     /* Rates Indicator Mobile */
     .shaped-rates-indicator {
-        font-size: 0.8125rem;
-        padding: 0 1.5rem;
-        margin-top: -0.25rem;
+        font-size: 13px;
+        padding: 0 1.5rem 0.75rem;
     }
 }

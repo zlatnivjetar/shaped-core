@@ -183,7 +183,7 @@ function shaped_render_rates_indicator(int $room_type_id): void {
         return;
     }
 
-    $rate_text = $rates_count === 1 ? __('rate available', 'shaped') : __('rates available', 'shaped');
+    $rate_text = $rates_count === 1 ? __('rate available at checkout', 'shaped') : __('rates available at checkout', 'shaped');
     ?>
     <div class="shaped-rates-indicator">
         <span class="rates-count"><?php echo esc_html($rates_count); ?></span>
