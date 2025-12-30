@@ -133,3 +133,74 @@ function shaped_render_room_price(int $room_type_id, string $room_slug, string $
     </div>
     <?php
 }
+
+/**
+ * Get count of available rates for a room type
+ *
+ * Queries MPHB rates (mphb_rate post type) associated with this room type.
+ * In MPHB, rates define pricing rules for different scenarios (seasons, length of stay, etc.)
+ *
+ * @param int $room_type_id Room type post ID
+ * @return int Number of rates available (minimum 1)
+ */
+function shaped_get_room_rates_count(int $room_type_id): int {
+    if (!function_exists('MPHB')) {
+        return 1;
+    }
+
+    // Query rates associated with this room type
+    $rates = get_posts([
+        'post_type'      => 'mphb_rate',
+        'posts_per_page' => -1,
+        'post_status'    => 'publish',
+        'meta_query'     => [
+            [
+                'key'   => 'mphb_room_type_id',
+                'value' => $room_type_id,
+            ]
+        ]
+    ]);
+
+    $count = count($rates);
+
+    // Return at least 1 (default rate always exists even if not stored as separate post)
+    return $count > 0 ? $count : 1;
+}
+
+/**
+ * Render the rates available indicator
+ *
+ * Displays "X rates available" below price, informing guests they can select rates at checkout.
+ *
+ * @param int $room_type_id Room type post ID
+ * @return void
+ */
+function shaped_render_rates_indicator(int $room_type_id): void {
+    $rates_count = shaped_get_room_rates_count($room_type_id);
+
+    // Only show if there are multiple rates
+    if ($rates_count <= 1) {
+        return;
+    }
+
+    $rate_text = $rates_count === 1 ? __('rate available', 'shaped') : __('rates available', 'shaped');
+    ?>
+    <div class="shaped-rates-indicator">
+        <span class="rates-count"><?php echo esc_html($rates_count); ?></span>
+        <span class="rates-text"><?php echo esc_html($rate_text); ?></span>
+    </div>
+    <?php
+}
+
+/**
+ * Hook into MPHB search results to show rates indicator after price
+ *
+ * This hooks into the book button action with priority 5 (before the button at priority 10)
+ * to inject the rates indicator between price and button.
+ */
+add_action('mphb_sc_search_results_render_book_button', function() {
+    $room_type_id = get_the_ID();
+    if ($room_type_id) {
+        shaped_render_rates_indicator($room_type_id);
+    }
+}, 5);

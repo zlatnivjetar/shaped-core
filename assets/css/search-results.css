@@ -253,6 +253,28 @@
     display: none;
 }
 
+/* Rates Available Indicator */
+.shaped-rates-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--color-text-muted, #666666);
+    font-size: 0.875rem;
+    padding: 0 1.5rem;
+    margin-top: -0.5rem;
+    margin-bottom: 1rem;
+    background: var(--color-surface-highlight, #fffbf0);
+}
+
+.shaped-rates-indicator .rates-count {
+    font-weight: 600;
+    color: var(--color-brand-primary, #D1AF5D);
+}
+
+.shaped-rates-indicator .rates-text {
+    color: var(--color-text-muted, #666666);
+}
+
 /* View Details Button */
 .mphb-view-details-button-wrapper {
     padding-top: 1.5rem;
@@ -550,5 +572,12 @@
     
     .mphb-price-discount-wrapper .mphb-price-period {
         font-size: .9375rem;
+    }
+
+    /* Rates Indicator Mobile */
+    .shaped-rates-indicator {
+        font-size: 0.8125rem;
+        padding: 0 1.5rem;
+        margin-top: -0.25rem;
     }
 }
