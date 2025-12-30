@@ -5,6 +5,32 @@
 ```
 shaped-core/
 ├── shaped-core.php              # Main plugin entry point
+├── uninstall.php                # Cleanup on plugin deletion
+│
+├── admin/                       # Admin UI & controllers
+│   ├── class-menu-controller.php    # Admin menu registration
+│   ├── class-noise-control.php      # Suppress unnecessary admin notices
+│   ├── class-reviews-dashboard.php  # Reviews admin interface
+│   ├── class-role-manager.php       # Custom roles & capabilities
+│   └── pages/                       # Admin page templates
+│       ├── ops-availability.php
+│       ├── ops-dashboard.php
+│       ├── reviews-dashboard.php
+│       └── system-dashboard.php
+│
+├── clients/                     # Client-specific overrides
+│   ├── _template/               # Template for new clients
+│   │   └── legal/
+│   │       ├── privacy.php
+│   │       └── terms.php
+│   └── [client-name]/           # Per-client customizations
+│       └── legal/
+│           ├── privacy.php
+│           └── terms.php
+│
+├── config/                      # Configuration
+│   ├── brand-helpers.php        # Brand/white-label helpers
+│   └── defaults.php             # Default settings
 │
 ├── core/                        # Core business logic
 │   ├── class-pricing.php        # Discounts, seasons, admin columns
@@ -13,25 +39,58 @@ shaped-core/
 │   ├── email-handler.php        # Guest emails (confirmation, reservation, cancellation)
 │   └── email-handler-admin.php  # Admin notification emails
 │
+├── docs/                        # Documentation
+│   └── wp-config-additions.php  # Example wp-config constants
+│
 ├── includes/                    # Infrastructure
-│   ├── class-loader.php         # PSR-4-ish autoloader
+│   ├── class-admin.php          # Admin functionality
+│   ├── class-amenity-mapper.php # Amenity icon/label mapping
 │   ├── class-assets.php         # Conditional CSS/JS loading
+│   ├── class-brand-config.php   # Brand configuration loader
+│   ├── class-loader.php         # PSR-4-ish autoloader
 │   ├── class-setup-wizard.php   # Setup wizard & config health
+│   ├── compat-functions.php     # Backward compatibility wrappers
 │   ├── helpers.php              # Utility functions
-│   └── compat-functions.php     # Backward compatibility wrappers
+│   ├── pricing-helpers.php      # Pricing calculation helpers
+│   ├── email/
+│   │   └── email-templates.php  # HTML email templates
+│   └── pricing/                 # Pricing system
+│       ├── init.php             # Pricing module bootstrap
+│       ├── interface-pricing-provider.php
+│       ├── class-shaped-pricing-service.php
+│       ├── class-price-request.php
+│       ├── class-price-result.php
+│       ├── class-rest-api.php   # /wp-json/shaped/v1/price endpoint
+│       ├── class-motopress-pricing-provider.php
+│       ├── class-roomcloud-pricing-provider.php
+│       └── class-official-prices-page.php
 │
 ├── assets/                      # Frontend assets
 │   ├── css/
+│   │   ├── admin-pricing.css    # Pricing admin styles
+│   │   ├── admin-setup-wizard.css
 │   │   ├── checkout.css         # Checkout page styles
+│   │   ├── cookie-banner.css    # GDPR cookie banner
+│   │   ├── design-tokens.css    # CSS custom properties
+│   │   ├── gallery-element.css  # Image gallery styles
+│   │   ├── guest-reviews.css    # Review display styles
+│   │   ├── modals.css           # Modal dialog styles
+│   │   ├── search-calendar.css  # Calendar picker styles
+│   │   ├── search-form.css      # Search form styles
 │   │   └── search-results.css   # Search results styles
 │   └── js/
-│       ├── checkout.js          # Pricing logic, availability, urgency badges
+│       ├── admin-setup-wizard.js
 │       ├── calendar-fix.js      # MPHB calendar fixes
+│       ├── checkout.js          # Pricing logic, availability, urgency badges
 │       ├── language-switch-fade.js  # WPML/Polylang transitions
 │       ├── leave-page-modal-popup.js
+│       ├── modals.js            # Modal dialog functionality
 │       └── provider-badge-stars.js
 │
 ├── shortcodes/
+│   ├── class-modal-link.php     # [shaped_modal_link]
+│   ├── class-provider-badge.php # [shaped_provider_badge]
+│   ├── room-cards.php           # [shaped_room_cards]
 │   ├── room-details.php         # [shaped_room_details]
 │   └── room-meta.php            # [shaped_meta key="..."]
 │
@@ -39,13 +98,41 @@ shaped-core/
 │   └── markup.php               # JSON-LD structured data
 │
 ├── templates/
-│   └── manage-booking.php       # Guest self-service template
+│   ├── amenities-example.php    # Amenities display example
+│   ├── checkout-modals.php      # Checkout modal content
+│   ├── facilities-replacement.php
+│   ├── manage-booking.php       # Guest self-service template
+│   ├── modal-wrapper.php        # Reusable modal wrapper
+│   ├── room-card-home.php       # Room card for homepage
+│   └── room-card-listing.php    # Room card for listings
 │
-├── modules/                     # Optional modules (add when needed)
-│   ├── roomcloud/               # RoomCloud integration
-│   │   └── module.php           # Module bootstrap
-│   └── reviews/                 # Reviews system
-│       └── module.php           # Module bootstrap
+├── modules/                     # Optional modules
+│   ├── reviews/                 # Reviews system
+│   │   ├── module.php           # Module bootstrap
+│   │   ├── assets.php           # Asset registration
+│   │   ├── class-admin.php      # Reviews admin
+│   │   ├── class-cpt.php        # Custom post type
+│   │   ├── class-sync.php       # External review sync
+│   │   ├── shortcodes.php       # Review shortcodes
+│   │   └── assets/
+│   │       ├── provider-badges.css
+│   │       └── reviews.css
+│   └── roomcloud/               # RoomCloud integration
+│       ├── module.php           # Module bootstrap
+│       ├── cli/
+│       │   └── class-cli.php    # WP-CLI commands
+│       ├── includes/
+│       │   ├── class-admin-settings.php
+│       │   ├── class-api.php
+│       │   ├── class-availability-manager.php
+│       │   ├── class-error-logger.php
+│       │   ├── class-sync-manager.php
+│       │   └── class-webhook-handler.php
+│       └── templates/
+│           └── admin-settings.php
+│
+├── mu-plugins/                  # Must-use plugins (copy to wp-content/mu-plugins)
+│   └── shaped-no-session-on-price-api.php  # Disable sessions on price API
 │
 └── vendor/                      # Third-party libraries
     └── stripe-php/              # Stripe PHP SDK
@@ -193,8 +280,17 @@ Assets load conditionally based on page context:
 |-------|----------|
 | `checkout.css/js` | Checkout page, search results |
 | `search-results.css` | Search results page |
+| `search-form.css` | Pages with search form |
+| `search-calendar.css` | Pages with date picker |
+| `modals.css/js` | Pages with modal dialogs |
+| `guest-reviews.css` | Pages displaying reviews |
+| `gallery-element.css` | Pages with image galleries |
+| `cookie-banner.css` | All frontend pages (GDPR) |
+| `design-tokens.css` | All frontend pages (CSS variables) |
 | `calendar-fix.js` | All pages (lightweight) |
 | `language-switch-fade.js` | Only if WPML/Polylang active |
+| `admin-pricing.css` | Admin pricing page |
+| `admin-setup-wizard.css/js` | Setup wizard page |
 
 ---
 
@@ -247,6 +343,18 @@ Check:
 ---
 
 ## Version History
+
+- **2.2.0** - Admin & Pricing Enhancements
+  - Admin dashboard with menu controller, role manager, noise control
+  - Pricing service with provider abstraction (MotoPress, RoomCloud)
+  - REST API for pricing (`/wp-json/shaped/v1/price`)
+  - Client-specific legal templates system
+  - Additional shortcodes: `[shaped_modal_link]`, `[shaped_provider_badge]`, `[shaped_room_cards]`
+  - Room card templates for homepage and listings
+  - Reviews module with external sync, CPT, admin dashboard
+  - RoomCloud module with CLI commands, availability manager, webhooks
+  - MU-plugin for session optimization on price API
+  - Design tokens CSS for consistent styling
 
 - **2.1.0** - Setup Wizard & Configuration
   - Setup Wizard for quick client configuration
