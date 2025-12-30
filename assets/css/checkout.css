@@ -806,7 +806,7 @@ input:focus,
 .trust-signals {
 	display: flex;
 	justify-content: center;
-	font-size:14px;
+	font-size:16px;
 	color: var(--color-text-muted, #666666);
 }
 
@@ -1096,6 +1096,10 @@ input:focus,
 	.mphb-room-rate-chooser-title {
     padding-bottom: .5rem !important;
 }
+
+  .trust-signals {
+    font-size: 15px;
+  }
 }
 
 /* ==========================================================================
