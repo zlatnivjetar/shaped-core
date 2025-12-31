@@ -176,7 +176,7 @@ abbr[title="Formatted as dd/mm/yyyy"] {
     
     .mphb-datepick.mphb_datepicker {
         padding: 8px 12px;
-        font-size: 0.9375rem; 
+        font-size: 1rem; 
         border-radius: 8px;
         height:48px;
     }
