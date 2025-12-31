@@ -103,6 +103,7 @@
         var state = {
             isLoading: false,
             isRendering: false,
+            isUpdating: false,
             checkInDate: null,
             loadedMonths: {}
         };
@@ -145,6 +146,10 @@
                 });
 
                 picker.on('selected', function(startDate, endDate) {
+                    // Prevent handling if we're already updating
+                    if (state.isUpdating) {
+                        return;
+                    }
                     handleDateSelection(startDate, endDate, checkInHidden, checkOutHidden, state);
                 });
 
@@ -326,6 +331,11 @@
      * Handle date selection
      */
     function handleDateSelection(startDate, endDate, checkInHidden, checkOutHidden, state) {
+        // Prevent re-entrancy from MPHB event handlers
+        if (state.isUpdating) {
+            return;
+        }
+
         if (!startDate) {
             checkInHidden.value = '';
             checkOutHidden.value = '';
@@ -341,8 +351,13 @@
             var endJs = endDate.toJSDate ? endDate.toJSDate() : endDate;
             checkOutHidden.value = formatDateYMD(endJs);
 
-            // Trigger MPHB form update
+            // Trigger MPHB form update with guard
+            state.isUpdating = true;
             triggerFormUpdate(checkInHidden, checkOutHidden);
+            // Reset flag after a short delay to allow MPHB handlers to complete
+            setTimeout(function() {
+                state.isUpdating = false;
+            }, 100);
         } else {
             checkOutHidden.value = '';
         }
