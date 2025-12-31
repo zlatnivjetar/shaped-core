@@ -62,6 +62,17 @@ class Shaped_Assets {
             );
         }
 
+        // MPHB Datepicker Chain - prevents auto-fill and chains check-in to checkout
+        if (file_exists(SHAPED_DIR . 'assets/js/mphb-datepicker-chain.js')) {
+            wp_enqueue_script(
+                'shaped-mphb-datepicker-chain',
+                SHAPED_URL . 'assets/js/mphb-datepicker-chain.js',
+                ['jquery'],
+                SHAPED_VERSION,
+                true
+            );
+        }
+
         if (file_exists(SHAPED_DIR . 'assets/js/language-switch-fade.js')) {
             wp_enqueue_script(
                 'shaped-language-switch-fade',
