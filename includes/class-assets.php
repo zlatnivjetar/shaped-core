@@ -358,7 +358,7 @@ class Shaped_Assets {
         wp_register_script(
             'shaped-litepicker-adapter',
             SHAPED_URL . 'assets/js/litepicker-adapter.js',
-            ['shaped-litepicker', 'mphb'],
+            ['shaped-litepicker', 'jquery'],
             SHAPED_VERSION,
             true
         );
@@ -366,7 +366,7 @@ class Shaped_Assets {
         wp_register_style(
             'shaped-litepicker',
             SHAPED_URL . 'assets/css/litepicker.css',
-            ['mphb'],
+            [],
             SHAPED_VERSION
         );
     }
