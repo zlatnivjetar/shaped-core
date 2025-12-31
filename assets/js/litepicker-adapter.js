@@ -41,6 +41,12 @@
      * Initialize Litepicker on all MPHB search forms
      */
     function initShapedLitepicker() {
+        // Check if Litepicker is available
+        if (typeof Litepicker === 'undefined') {
+            console.warn('Shaped Litepicker: Litepicker library not loaded');
+            return;
+        }
+
         // Check if MPHB is available
         if (typeof MPHB === 'undefined' || !MPHB._data) {
             console.warn('Shaped Litepicker: MPHB not available');
@@ -61,8 +67,8 @@
      * Initialize Litepicker on a single search form
      */
     function initLitepickerOnForm(form) {
-        var checkInInput = form.querySelector('input[id^="mphb_check_in_date"]');
-        var checkOutInput = form.querySelector('input[id^="mphb_check_out_date"]');
+        var checkInInput = form.querySelector('input[id^="mphb_check_in_date"]:not([type="hidden"])');
+        var checkOutInput = form.querySelector('input[id^="mphb_check_out_date"]:not([type="hidden"])');
 
         if (!checkInInput || !checkOutInput) {
             console.warn('Shaped Litepicker: Date inputs not found in form');
@@ -93,16 +99,15 @@
         pickerContainer.className = 'shaped-litepicker-container';
         form.appendChild(pickerContainer);
 
-        // Track loading state and current limitations
+        // Track state - use flag to prevent render loops
         var state = {
             isLoading: false,
-            minCheckOutDate: null,
-            maxCheckOutDate: null,
+            isRendering: false,
             checkInDate: null,
             loadedMonths: {}
         };
 
-        // Initialize Litepicker
+        // Initialize Litepicker with minimal config first
         var picker = new Litepicker({
             element: checkInInput,
             elementEnd: checkOutInput,
@@ -126,15 +131,6 @@
             firstDay: MPHB._data.settings.firstDay || 0,
             lang: getLanguageCode(),
 
-            // Lock unavailable days
-            lockDays: [],
-            lockDaysFilter: function(date1, date2, pickedDates) {
-                return isDateLocked(date1, state, pickedDates);
-            },
-
-            // Highlight date range
-            highlightedDays: [],
-
             // Event handlers
             setup: function(picker) {
                 picker.on('show', function() {
@@ -149,39 +145,16 @@
                 });
 
                 picker.on('selected', function(startDate, endDate) {
-                    handleDateSelection(startDate, endDate, checkInHidden, checkOutHidden, state, picker);
+                    handleDateSelection(startDate, endDate, checkInHidden, checkOutHidden, state);
                 });
 
                 picker.on('clear:selection', function() {
                     state.checkInDate = null;
-                    state.minCheckOutDate = null;
-                    state.maxCheckOutDate = null;
                     checkInHidden.value = '';
                     checkOutHidden.value = '';
                     checkInInput.value = '';
                     checkOutInput.value = '';
                 });
-
-                picker.on('preselect', function(startDate, endDate) {
-                    // When first date is picked, calculate checkout limitations
-                    if (startDate && !endDate) {
-                        state.checkInDate = startDate.toJSDate();
-                        calculateCheckOutLimitations(state.checkInDate, 0, state);
-                        picker.render();
-                    }
-                });
-            },
-
-            // Custom day renderer to add availability classes
-            onRenderDay: function(day) {
-                // This is called for each day in the calendar
-                var date = day.dateInstance;
-                if (!date) return;
-
-                var classes = getDayClasses(date, state);
-                if (classes.length) {
-                    day.classList.add(...classes);
-                }
             }
         });
 
@@ -243,7 +216,7 @@
 
         // Calculate date range
         var startLoadDate = new Date(year, month, 1);
-        startLoadDate.setDate(startLoadDate.getDate() - 1); // Day before for calculations
+        startLoadDate.setDate(startLoadDate.getDate() - 1);
 
         var endLoadDate = new Date(year, month + monthsCount + 1, 1);
 
@@ -254,12 +227,6 @@
         var cacheKey = roomTypeId.toString();
         if (!availabilityCache[cacheKey]) {
             availabilityCache[cacheKey] = {};
-        }
-
-        // Check if data is already cached
-        if (availabilityCache[cacheKey][formattedStart] && availabilityCache[cacheKey][formattedEnd]) {
-            state.loadedMonths[monthKey] = true;
-            return;
         }
 
         // Check if request is already in progress
@@ -303,13 +270,10 @@
                         Object.assign(availabilityCache[cacheKey], response.data);
                         state.loadedMonths[monthKey] = true;
 
-                        // Recalculate limitations if check-in is selected
-                        if (state.checkInDate) {
-                            calculateCheckOutLimitations(state.checkInDate, roomTypeId, state);
-                        }
-
-                        // Re-render picker to apply new availability data
-                        picker.render();
+                        // Update lock days based on availability - use setTimeout to avoid render loop
+                        setTimeout(function() {
+                            updateLockedDays(picker, roomTypeId);
+                        }, 0);
                     }
                 } catch (e) {
                     console.error('Shaped Litepicker: Error parsing response', e);
@@ -331,217 +295,37 @@
     }
 
     /**
-     * Check if a date should be locked
+     * Update locked days on the picker based on availability data
      */
-    function isDateLocked(date, state, pickedDates) {
-        var jsDate = date.toJSDate ? date.toJSDate() : date;
-        var formattedDate = formatDateYMD(jsDate);
-        var roomTypeId = '0';
-        var data = availabilityCache[roomTypeId] && availabilityCache[roomTypeId][formattedDate];
-
-        if (!data) {
-            return false; // Don't lock if no data yet
-        }
-
-        var status = data.roomTypeStatus;
-
-        // Check basic unavailability
-        if (status === STATUS.PAST ||
-            status === STATUS.BOOKED ||
-            status === STATUS.NOT_AVAILABLE) {
-
-            // For check-out mode, booked/not-available dates might still be valid checkout dates
-            if (state.checkInDate && pickedDates && pickedDates.length === 1) {
-                // We're selecting check-out
-                if (!data.isCheckOutNotAllowed) {
-                    return false; // Can checkout on this date
-                }
-            }
-            return true;
-        }
-
-        // Check advance booking rules
-        if (status === STATUS.EARLIER_MIN_ADVANCE || status === STATUS.LATER_MAX_ADVANCE) {
-            // These dates are blocked for check-in, but may be valid for checkout
-            if (state.checkInDate && pickedDates && pickedDates.length === 1) {
-                if (!data.isCheckOutNotAllowed) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        // If we're in check-in selection mode
-        if (!state.checkInDate || (pickedDates && pickedDates.length === 0)) {
-            // Lock dates where check-in is not allowed
-            if (data.isCheckInNotAllowed) {
-                return true;
-            }
-            if (data.isStayInNotAllowed) {
-                return true;
-            }
-        }
-
-        // If we're in check-out selection mode
-        if (state.checkInDate && pickedDates && pickedDates.length === 1) {
-            // Check if date is before min checkout
-            if (state.minCheckOutDate && jsDate < state.minCheckOutDate) {
-                return true;
-            }
-            // Check if date is after max checkout
-            if (state.maxCheckOutDate && jsDate > state.maxCheckOutDate) {
-                return true;
-            }
-            // Check if checkout is not allowed on this date
-            if (data.isCheckOutNotAllowed) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Get CSS classes for a day based on availability
-     */
-    function getDayClasses(date, state) {
-        var classes = [];
-        var formattedDate = formatDateYMD(date);
-        var roomTypeId = '0';
-        var data = availabilityCache[roomTypeId] && availabilityCache[roomTypeId][formattedDate];
-
-        if (!data) {
-            return classes;
-        }
-
-        var status = data.roomTypeStatus;
-
-        // Add status-based classes
-        if (status === STATUS.AVAILABLE) {
-            classes.push('shaped-date-available');
-        } else if (status === STATUS.BOOKED) {
-            classes.push('shaped-date-booked');
-        } else if (status === STATUS.NOT_AVAILABLE) {
-            classes.push('shaped-date-not-available');
-        } else if (status === STATUS.PAST) {
-            classes.push('shaped-date-past');
-        }
-
-        // Add rule-based classes
-        if (data.isCheckInNotAllowed) {
-            classes.push('shaped-no-checkin');
-        }
-        if (data.isCheckOutNotAllowed) {
-            classes.push('shaped-no-checkout');
-        }
-        if (data.isStayInNotAllowed) {
-            classes.push('shaped-no-stayin');
-        }
-
-        // Add min/max stay indicators when in checkout selection mode
-        if (state.checkInDate) {
-            if (state.minCheckOutDate && date < state.minCheckOutDate) {
-                classes.push('shaped-before-min-stay');
-            }
-            if (state.maxCheckOutDate && date > state.maxCheckOutDate) {
-                classes.push('shaped-after-max-stay');
-            }
-        }
-
-        return classes;
-    }
-
-    /**
-     * Calculate checkout date limitations based on check-in date
-     */
-    function calculateCheckOutLimitations(checkInDate, roomTypeId, state) {
-        var formattedCheckIn = formatDateYMD(checkInDate);
+    function updateLockedDays(picker, roomTypeId) {
         var cacheKey = roomTypeId.toString();
         var cache = availabilityCache[cacheKey] || {};
-        var data = cache[formattedCheckIn];
+        var lockedDays = [];
 
-        if (!data) {
-            state.minCheckOutDate = null;
-            state.maxCheckOutDate = null;
-            return;
-        }
+        // Build array of locked dates
+        for (var dateStr in cache) {
+            var data = cache[dateStr];
+            var status = data.roomTypeStatus;
 
-        // Calculate min checkout based on minStayNights
-        if (data.minStayNights) {
-            var minCheckout = new Date(checkInDate);
-            minCheckout.setDate(minCheckout.getDate() + data.minStayNights);
-            minCheckout.setHours(0, 0, 0, 1);
-            state.minCheckOutDate = minCheckout;
-        } else {
-            // Default: at least 1 night stay
-            var minCheckout = new Date(checkInDate);
-            minCheckout.setDate(minCheckout.getDate() + 1);
-            minCheckout.setHours(0, 0, 0, 1);
-            state.minCheckOutDate = minCheckout;
-        }
-
-        // Calculate max checkout based on maxStayNights and availability
-        var maxCheckout = null;
-        if (data.maxStayNights) {
-            maxCheckout = new Date(checkInDate);
-            maxCheckout.setDate(maxCheckout.getDate() + data.maxStayNights);
-            maxCheckout.setHours(23, 59, 59, 999);
-        }
-
-        // Walk forward to find the actual max checkout (limited by stay-in restrictions and bookings)
-        var processingDate = new Date(checkInDate);
-        processingDate.setDate(processingDate.getDate() + 1);
-
-        var foundMaxCheckout = null;
-        var iterationLimit = 365; // Safety limit
-        var iterations = 0;
-
-        while (iterations < iterationLimit) {
-            var formattedDate = formatDateYMD(processingDate);
-            var dateData = cache[formattedDate];
-
-            if (!dateData) {
-                break; // No more data available
+            // Lock unavailable dates
+            if (status === STATUS.PAST ||
+                status === STATUS.BOOKED ||
+                status === STATUS.NOT_AVAILABLE ||
+                status === STATUS.EARLIER_MIN_ADVANCE ||
+                status === STATUS.LATER_MAX_ADVANCE ||
+                data.isCheckInNotAllowed) {
+                lockedDays.push(dateStr);
             }
-
-            var isStayAllowed = !dateData.isStayInNotAllowed &&
-                                dateData.roomTypeStatus !== STATUS.BOOKED &&
-                                dateData.roomTypeStatus !== STATUS.NOT_AVAILABLE;
-
-            if (!isStayAllowed) {
-                // Can't stay on this date, but might be able to checkout
-                if (!dateData.isCheckOutNotAllowed) {
-                    foundMaxCheckout = new Date(processingDate);
-                }
-                break;
-            }
-
-            // Update max checkout if this date allows checkout
-            if (!dateData.isCheckOutNotAllowed) {
-                foundMaxCheckout = new Date(processingDate);
-            }
-
-            // Check against maxStayNights limit
-            if (maxCheckout && processingDate >= maxCheckout) {
-                break;
-            }
-
-            processingDate.setDate(processingDate.getDate() + 1);
-            iterations++;
         }
 
-        if (foundMaxCheckout) {
-            foundMaxCheckout.setHours(23, 59, 59, 999);
-            state.maxCheckOutDate = foundMaxCheckout;
-        } else {
-            state.maxCheckOutDate = maxCheckout;
-        }
+        // Update picker's locked days
+        picker.setLockDays(lockedDays);
     }
 
     /**
      * Handle date selection
      */
-    function handleDateSelection(startDate, endDate, checkInHidden, checkOutHidden, state, picker) {
+    function handleDateSelection(startDate, endDate, checkInHidden, checkOutHidden, state) {
         if (!startDate) {
             checkInHidden.value = '';
             checkOutHidden.value = '';
@@ -557,17 +341,10 @@
             var endJs = endDate.toJSDate ? endDate.toJSDate() : endDate;
             checkOutHidden.value = formatDateYMD(endJs);
 
-            // Reset limitations when full range is selected
-            state.minCheckOutDate = null;
-            state.maxCheckOutDate = null;
-
-            // Trigger MPHB form update if needed
+            // Trigger MPHB form update
             triggerFormUpdate(checkInHidden, checkOutHidden);
         } else {
             checkOutHidden.value = '';
-            // Calculate checkout limitations for the selected check-in date
-            calculateCheckOutLimitations(startJs, 0, state);
-            picker.render();
         }
     }
 
@@ -624,11 +401,8 @@
      * Convert MPHB date format to Litepicker format
      */
     function getMPHBDateFormat() {
-        // MPHB uses PHP date format, Litepicker uses different tokens
-        // Common formats: d/m/Y -> DD/MM/YYYY, Y-m-d -> YYYY-MM-DD
         var mphbFormat = MPHB._data.settings.dateFormat || 'DD/MM/YYYY';
 
-        // Convert from MPHB JS format to Litepicker format
         var format = mphbFormat
             .replace('dd', 'DD')
             .replace('d', 'D')
@@ -645,7 +419,6 @@
      */
     function getLanguageCode() {
         var lang = MPHB._data.settings.currentLanguage || document.documentElement.lang || 'en';
-        // Handle WordPress locale format (en_US -> en)
         return lang.split(/[-_]/)[0];
     }
 
