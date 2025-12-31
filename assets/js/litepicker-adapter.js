@@ -94,11 +94,6 @@
         var firstAvailableDate = form.getAttribute('data-first_available_check_in_date');
         var minDate = firstAvailableDate ? new Date(firstAvailableDate + 'T00:00:00') : new Date();
 
-        // Create a wrapper element for the picker
-        var pickerContainer = document.createElement('div');
-        pickerContainer.className = 'shaped-litepicker-container';
-        form.appendChild(pickerContainer);
-
         // Track state - use flag to prevent render loops
         var state = {
             isLoading: false,
@@ -108,12 +103,12 @@
             loadedMonths: {}
         };
 
-        // Initialize Litepicker
+        // Initialize Litepicker - let it append to body (default behavior)
         console.log('Shaped Litepicker: Initializing picker on form');
         var picker = new Litepicker({
             element: checkInInput,
             elementEnd: checkOutInput,
-            parentEl: pickerContainer,
+            // Don't use parentEl - let Litepicker append to body for proper positioning
             inlineMode: false,
             singleMode: false,
             allowRepick: true,
@@ -125,6 +120,12 @@
             autoApply: true,
             showTooltip: true,
             scrollToDate: true,
+            dropdowns: {
+                minYear: new Date().getFullYear(),
+                maxYear: new Date().getFullYear() + 2,
+                months: true,
+                years: true
+            },
             tooltipNumber: function(totalDays) {
                 return totalDays - 1;
             },
@@ -404,12 +405,13 @@
      * Show loading state on picker
      */
     function showLoadingState(picker) {
-        var container = picker.options.parentEl;
-        if (container && !container.querySelector('.shaped-loader')) {
+        // Litepicker creates its own container - find it via the picker's UI element
+        var pickerUI = picker.ui;
+        if (pickerUI && !pickerUI.querySelector('.shaped-loader')) {
             var loader = document.createElement('div');
             loader.className = 'shaped-loader';
             loader.innerHTML = '<div class="shaped-loader-spinner"></div>';
-            container.appendChild(loader);
+            pickerUI.appendChild(loader);
         }
     }
 
@@ -417,9 +419,9 @@
      * Hide loading state on picker
      */
     function hideLoadingState(picker) {
-        var container = picker.options.parentEl;
-        if (container) {
-            var loader = container.querySelector('.shaped-loader');
+        var pickerUI = picker.ui;
+        if (pickerUI) {
+            var loader = pickerUI.querySelector('.shaped-loader');
             if (loader) {
                 loader.remove();
             }
