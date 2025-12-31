@@ -108,11 +108,13 @@
             loadedMonths: {}
         };
 
-        // Initialize Litepicker with minimal config first
+        // Initialize Litepicker
+        console.log('Shaped Litepicker: Initializing picker on form');
         var picker = new Litepicker({
             element: checkInInput,
             elementEnd: checkOutInput,
             parentEl: pickerContainer,
+            inlineMode: false,
             singleMode: false,
             allowRepick: true,
             numberOfMonths: 2,
@@ -122,6 +124,7 @@
             separator: ' - ',
             autoApply: true,
             showTooltip: true,
+            scrollToDate: true,
             tooltipNumber: function(totalDays) {
                 return totalDays - 1;
             },
@@ -168,13 +171,24 @@
         form._shapedState = state;
 
         // Handle clicking on inputs to show picker
+        checkInInput.addEventListener('click', function(e) {
+            console.log('Shaped Litepicker: Check-in clicked, showing picker');
+            picker.show();
+        });
+
+        checkOutInput.addEventListener('click', function(e) {
+            console.log('Shaped Litepicker: Check-out clicked, showing picker');
+            picker.show();
+        });
+
+        // Also handle focus
         checkInInput.addEventListener('focus', function(e) {
-            e.preventDefault();
+            console.log('Shaped Litepicker: Check-in focused, showing picker');
             picker.show();
         });
 
         checkOutInput.addEventListener('focus', function(e) {
-            e.preventDefault();
+            console.log('Shaped Litepicker: Check-out focused, showing picker');
             picker.show();
         });
 
@@ -418,13 +432,19 @@
     function getMPHBDateFormat() {
         var mphbFormat = MPHB._data.settings.dateFormat || 'DD/MM/YYYY';
 
+        // Log original format for debugging
+        console.log('Shaped Litepicker: MPHB date format:', mphbFormat);
+
+        // Replace longer patterns first to avoid partial replacements
         var format = mphbFormat
+            .replace('yyyy', 'YYYY')
+            .replace('yy', 'YY')
             .replace('dd', 'DD')
             .replace('d', 'D')
             .replace('mm', 'MM')
-            .replace('m', 'M')
-            .replace('yy', 'YY')
-            .replace('yyyy', 'YYYY');
+            .replace('m', 'M');
+
+        console.log('Shaped Litepicker: Converted format:', format);
 
         return format;
     }
