@@ -43,13 +43,11 @@
     function initShapedLitepicker() {
         // Check if Litepicker is available
         if (typeof Litepicker === 'undefined') {
-            console.warn('Shaped Litepicker: Litepicker library not loaded');
             return;
         }
 
         // Check if MPHB is available
         if (typeof MPHB === 'undefined' || !MPHB._data) {
-            console.warn('Shaped Litepicker: MPHB not available');
             return;
         }
 
@@ -59,8 +57,6 @@
         searchForms.forEach(function(form) {
             initLitepickerOnForm(form);
         });
-
-        console.log('Shaped Litepicker: Initialized on', searchForms.length, 'form(s)');
     }
 
     /**
@@ -71,7 +67,6 @@
         var checkOutInput = form.querySelector('input[id^="mphb_check_out_date"]:not([type="hidden"])');
 
         if (!checkInInput || !checkOutInput) {
-            console.warn('Shaped Litepicker: Date inputs not found in form');
             return;
         }
 
@@ -83,7 +78,6 @@
         var checkOutHidden = form.querySelector('#mphb_check_out_date-' + uniqid + '-hidden');
 
         if (!checkInHidden || !checkOutHidden) {
-            console.warn('Shaped Litepicker: Hidden inputs not found');
             return;
         }
 
@@ -104,11 +98,9 @@
         };
 
         // Initialize Litepicker - let it append to body (default behavior)
-        console.log('Shaped Litepicker: Initializing picker on form');
         var picker = new Litepicker({
             element: checkInInput,
             elementEnd: checkOutInput,
-            // Don't use parentEl - let Litepicker append to body for proper positioning
             inlineMode: false,
             singleMode: false,
             allowRepick: true,
@@ -173,23 +165,19 @@
 
         // Handle clicking on inputs to show picker
         checkInInput.addEventListener('click', function(e) {
-            console.log('Shaped Litepicker: Check-in clicked, showing picker');
             picker.show();
         });
 
         checkOutInput.addEventListener('click', function(e) {
-            console.log('Shaped Litepicker: Check-out clicked, showing picker');
             picker.show();
         });
 
         // Also handle focus
         checkInInput.addEventListener('focus', function(e) {
-            console.log('Shaped Litepicker: Check-in focused, showing picker');
             picker.show();
         });
 
         checkOutInput.addEventListener('focus', function(e) {
-            console.log('Shaped Litepicker: Check-out focused, showing picker');
             picker.show();
         });
 
@@ -296,7 +284,7 @@
                         }, 0);
                     }
                 } catch (e) {
-                    console.error('Shaped Litepicker: Error parsing response', e);
+                    // Silent fail - availability just won't be shown
                 }
             }
 
@@ -308,7 +296,6 @@
             delete activeRequests[requestKey];
             state.isLoading = false;
             hideLoadingState(picker);
-            console.error('Shaped Litepicker: Request failed');
         };
 
         xhr.send();
@@ -405,7 +392,6 @@
      * Show loading state on picker
      */
     function showLoadingState(picker) {
-        // Litepicker creates its own container - find it via the picker's UI element
         var pickerUI = picker.ui;
         if (pickerUI && !pickerUI.querySelector('.shaped-loader')) {
             var loader = document.createElement('div');
@@ -434,9 +420,6 @@
     function getMPHBDateFormat() {
         var mphbFormat = MPHB._data.settings.dateFormat || 'DD/MM/YYYY';
 
-        // Log original format for debugging
-        console.log('Shaped Litepicker: MPHB date format:', mphbFormat);
-
         // Replace longer patterns first to avoid partial replacements
         var format = mphbFormat
             .replace('yyyy', 'YYYY')
@@ -445,8 +428,6 @@
             .replace('d', 'D')
             .replace('mm', 'MM')
             .replace('m', 'M');
-
-        console.log('Shaped Litepicker: Converted format:', format);
 
         return format;
     }
