@@ -377,6 +377,9 @@ class Shaped_Assets {
      * Runs at priority 100 to ensure MPHB assets are already enqueued
      */
     public function enqueue_litepicker(): void {
+        // TEMPORARILY DISABLED - debugging page hang
+        return;
+
         if (!$this->has_search_form() && !$this->is_search_results_page()) {
             return;
         }
