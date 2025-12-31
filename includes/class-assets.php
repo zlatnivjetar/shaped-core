@@ -14,6 +14,9 @@ class Shaped_Assets {
     
     public function __construct() {
         add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend'], 20);
+        add_action('wp_enqueue_scripts', [$this, 'register_litepicker'], 5);
+        add_action('wp_enqueue_scripts', [$this, 'enqueue_litepicker'], 100);
+        add_filter('body_class', [$this, 'add_litepicker_body_class']);
     }
     
     /**
@@ -334,5 +337,66 @@ class Shaped_Assets {
      */
     private function has_multilingual_plugin(): bool {
         return defined('ICL_SITEPRESS_VERSION') || defined('POLYLANG_VERSION');
+    }
+
+    /* =========================================================================
+     * LITEPICKER INTEGRATION
+     * ========================================================================= */
+
+    /**
+     * Register Litepicker scripts and styles
+     */
+    public function register_litepicker(): void {
+        wp_register_script(
+            'shaped-litepicker',
+            'https://cdn.jsdelivr.net/npm/litepicker@2.0.12/dist/litepicker.js',
+            [],
+            '2.0.12',
+            true
+        );
+
+        wp_register_script(
+            'shaped-litepicker-adapter',
+            SHAPED_URL . 'assets/js/litepicker-adapter.js',
+            ['shaped-litepicker', 'mphb'],
+            SHAPED_VERSION,
+            true
+        );
+
+        wp_register_style(
+            'shaped-litepicker',
+            SHAPED_URL . 'assets/css/litepicker.css',
+            ['mphb'],
+            SHAPED_VERSION
+        );
+    }
+
+    /**
+     * Enqueue Litepicker on appropriate pages
+     *
+     * Runs at priority 100 to ensure MPHB assets are already enqueued
+     */
+    public function enqueue_litepicker(): void {
+        if (!$this->has_search_form() && !$this->is_search_results_page()) {
+            return;
+        }
+
+        // Dequeue MPHB's datepicker theme
+        wp_dequeue_style('mphb-kbwood-datepick-theme');
+
+        wp_enqueue_script('shaped-litepicker');
+        wp_enqueue_script('shaped-litepicker-adapter');
+        wp_enqueue_style('shaped-litepicker');
+    }
+
+    /**
+     * Add body class for Litepicker styling hooks
+     *
+     * @param array $classes Existing body classes
+     * @return array Modified body classes
+     */
+    public function add_litepicker_body_class(array $classes): array {
+        $classes[] = 'shaped-litepicker-active';
+        return $classes;
     }
 }

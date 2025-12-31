@@ -1,0 +1,343 @@
+/**
+ * Shaped Core - Litepicker Styles
+ *
+ * Custom styling for Litepicker to match MPHB's design and add
+ * availability indicators.
+ */
+
+/* ==========================================================================
+   Container & Layout
+   ========================================================================== */
+
+.shaped-litepicker-container {
+    position: relative;
+    z-index: 9999;
+}
+
+.shaped-litepicker-container .litepicker {
+    font-family: inherit;
+    font-size: 14px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    background: #fff;
+}
+
+/* Header styling */
+.shaped-litepicker-container .litepicker .container__months {
+    border-radius: 8px;
+}
+
+.shaped-litepicker-container .litepicker .month-item-header {
+    padding: 10px 5px;
+    font-weight: 600;
+    color: #333;
+}
+
+.shaped-litepicker-container .litepicker .button-previous-month,
+.shaped-litepicker-container .litepicker .button-next-month {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.shaped-litepicker-container .litepicker .button-previous-month:hover,
+.shaped-litepicker-container .litepicker .button-next-month:hover {
+    opacity: 0.7;
+}
+
+/* Days of week header */
+.shaped-litepicker-container .litepicker .container__days .day-item:first-child {
+    color: inherit;
+}
+
+.shaped-litepicker-container .litepicker .container__days > div:not(.day-item) {
+    font-weight: 600;
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+}
+
+/* ==========================================================================
+   Day Cells - Base Styles
+   ========================================================================== */
+
+.shaped-litepicker-container .litepicker .container__days .day-item {
+    cursor: pointer;
+    border-radius: 50%;
+    transition: all 0.15s ease;
+    position: relative;
+    padding: 8px;
+    margin: 2px;
+}
+
+.shaped-litepicker-container .litepicker .container__days .day-item:hover:not(.is-locked) {
+    background-color: #f0f0f0;
+}
+
+/* ==========================================================================
+   Availability States
+   ========================================================================== */
+
+/* Available dates */
+.shaped-litepicker-container .litepicker .day-item.shaped-date-available {
+    color: #333;
+}
+
+/* Booked dates */
+.shaped-litepicker-container .litepicker .day-item.shaped-date-booked {
+    color: #ccc;
+    text-decoration: line-through;
+}
+
+/* Not available dates */
+.shaped-litepicker-container .litepicker .day-item.shaped-date-not-available {
+    color: #ccc;
+}
+
+/* Past dates */
+.shaped-litepicker-container .litepicker .day-item.shaped-date-past {
+    color: #ccc;
+}
+
+/* No check-in allowed indicator */
+.shaped-litepicker-container .litepicker .day-item.shaped-no-checkin::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 6px;
+    height: 6px;
+    background: #ff9800;
+    border-radius: 50%;
+}
+
+/* No checkout allowed indicator */
+.shaped-litepicker-container .litepicker .day-item.shaped-no-checkout::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 6px;
+    height: 6px;
+    background: #9c27b0;
+    border-radius: 50%;
+}
+
+/* Stay-in not allowed */
+.shaped-litepicker-container .litepicker .day-item.shaped-no-stayin {
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.05) 2px,
+        rgba(0, 0, 0, 0.05) 4px
+    );
+}
+
+/* Min stay indicator */
+.shaped-litepicker-container .litepicker .day-item.shaped-before-min-stay {
+    color: #999;
+}
+
+.shaped-litepicker-container .litepicker .day-item.shaped-before-min-stay::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 2px;
+    background: #ff5722;
+}
+
+/* Max stay indicator */
+.shaped-litepicker-container .litepicker .day-item.shaped-after-max-stay {
+    color: #999;
+}
+
+/* ==========================================================================
+   Selected & Range States
+   ========================================================================== */
+
+/* Selected start date */
+.shaped-litepicker-container .litepicker .day-item.is-start-date {
+    background-color: #1976d2 !important;
+    color: #fff !important;
+    border-radius: 50% !important;
+}
+
+/* Selected end date */
+.shaped-litepicker-container .litepicker .day-item.is-end-date {
+    background-color: #1976d2 !important;
+    color: #fff !important;
+    border-radius: 50% !important;
+}
+
+/* Range between start and end */
+.shaped-litepicker-container .litepicker .day-item.is-in-range {
+    background-color: rgba(25, 118, 210, 0.1);
+    border-radius: 0;
+}
+
+/* Range start with range */
+.shaped-litepicker-container .litepicker .day-item.is-start-date.is-in-range {
+    border-radius: 50% 0 0 50%;
+}
+
+/* Range end with range */
+.shaped-litepicker-container .litepicker .day-item.is-end-date.is-in-range {
+    border-radius: 0 50% 50% 0;
+}
+
+/* Single selected date (only start, no end yet) */
+.shaped-litepicker-container .litepicker .day-item.is-start-date:not(.is-in-range) {
+    border-radius: 50%;
+}
+
+/* ==========================================================================
+   Locked Days
+   ========================================================================== */
+
+.shaped-litepicker-container .litepicker .day-item.is-locked {
+    color: #ccc !important;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.shaped-litepicker-container .litepicker .day-item.is-locked:hover {
+    background-color: transparent;
+}
+
+/* ==========================================================================
+   Today Indicator
+   ========================================================================== */
+
+.shaped-litepicker-container .litepicker .day-item.is-today {
+    font-weight: 700;
+}
+
+.shaped-litepicker-container .litepicker .day-item.is-today:not(.is-start-date):not(.is-end-date) {
+    border: 2px solid #1976d2;
+}
+
+/* ==========================================================================
+   Tooltip
+   ========================================================================== */
+
+.shaped-litepicker-container .litepicker .container__tooltip {
+    background: #333;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   Loading State
+   ========================================================================== */
+
+.shaped-loader {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border-radius: 8px;
+}
+
+.shaped-loader-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #e0e0e0;
+    border-top-color: #1976d2;
+    border-radius: 50%;
+    animation: shaped-spin 0.8s linear infinite;
+}
+
+@keyframes shaped-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ==========================================================================
+   Hide MPHB's Original Datepicker
+   ========================================================================== */
+
+body.shaped-litepicker-active .datepick-popup {
+    display: none !important;
+}
+
+body.shaped-litepicker-active .mphb-datepick-popup {
+    display: none !important;
+}
+
+/* ==========================================================================
+   Input Styling
+   ========================================================================== */
+
+body.shaped-litepicker-active .mphb_sc_search-form input.mphb-datepick {
+    cursor: pointer;
+}
+
+body.shaped-litepicker-active .mphb_sc_search-form input.mphb-datepick:focus {
+    outline: 2px solid #1976d2;
+    outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    .shaped-litepicker-container .litepicker {
+        font-size: 12px;
+    }
+
+    .shaped-litepicker-container .litepicker .container__months {
+        flex-direction: column;
+    }
+
+    .shaped-litepicker-container .litepicker .container__days .day-item {
+        padding: 6px;
+        margin: 1px;
+    }
+}
+
+/* ==========================================================================
+   Theme Customization Variables
+   ========================================================================== */
+
+:root {
+    --shaped-primary-color: #1976d2;
+    --shaped-primary-light: rgba(25, 118, 210, 0.1);
+    --shaped-text-color: #333;
+    --shaped-text-muted: #999;
+    --shaped-disabled-color: #ccc;
+    --shaped-border-color: #e0e0e0;
+    --shaped-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Apply variables */
+.shaped-litepicker-container .litepicker .day-item.is-start-date,
+.shaped-litepicker-container .litepicker .day-item.is-end-date {
+    background-color: var(--shaped-primary-color) !important;
+}
+
+.shaped-litepicker-container .litepicker .day-item.is-in-range {
+    background-color: var(--shaped-primary-light);
+}
+
+.shaped-litepicker-container .litepicker .day-item.is-today:not(.is-start-date):not(.is-end-date) {
+    border-color: var(--shaped-primary-color);
+}
+
+.shaped-loader-spinner {
+    border-top-color: var(--shaped-primary-color);
+}
