@@ -387,6 +387,11 @@ class Shaped_Assets {
         wp_enqueue_script('shaped-litepicker');
         wp_enqueue_script('shaped-litepicker-adapter');
         wp_enqueue_style('shaped-litepicker');
+
+        // Pass booking rules to frontend
+        if (class_exists('Shaped_Booking_Rules')) {
+            wp_localize_script('shaped-litepicker-adapter', 'ShapedBookingRules', Shaped_Booking_Rules::get_rules());
+        }
     }
 
     /**

@@ -156,6 +156,7 @@ add_action('plugins_loaded', function() {
     Shaped_Menu_Controller::init();
     Shaped_Noise_Control::init();
     Shaped_Reviews_Dashboard::init();
+    Shaped_Booking_Rules::init();
 
     // ─── Setup Wizard ───
     require_once SHAPED_DIR . 'includes/class-setup-wizard.php';

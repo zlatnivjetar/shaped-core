@@ -4,6 +4,14 @@
  * Replaces MPHB's Keith Wood datepicker with Litepicker for a single
  * calendar popup with date range selection (like Booking.com).
  *
+ * Features:
+ * - Booking.com-style date selection:
+ *   - First click: always sets check-in date
+ *   - Second click: sets check-out (if after check-in)
+ *   - Third click (or click before/on check-in): resets and sets new check-in
+ * - Min/max nights validation with warnings
+ * - MPHB availability integration
+ *
  * Uses MPHB's existing AJAX endpoint (mphb_get_room_type_calendar_data)
  * for availability data.
  */
@@ -36,6 +44,25 @@
         EARLIER_MIN_ADVANCE: 'earlier-min-advance',
         LATER_MAX_ADVANCE: 'later-max-advance'
     };
+
+    /**
+     * Get booking rules from backend or use defaults
+     */
+    function getBookingRules() {
+        var defaults = {
+            minNights: 1,
+            maxNights: 30
+        };
+
+        if (typeof ShapedBookingRules !== 'undefined') {
+            return {
+                minNights: parseInt(ShapedBookingRules.minNights, 10) || defaults.minNights,
+                maxNights: parseInt(ShapedBookingRules.maxNights, 10) || defaults.maxNights
+            };
+        }
+
+        return defaults;
+    }
 
     /**
      * Initialize Litepicker on all MPHB search forms
@@ -88,42 +115,39 @@
         var firstAvailableDate = form.getAttribute('data-first_available_check_in_date');
         var minDate = firstAvailableDate ? new Date(firstAvailableDate + 'T00:00:00') : new Date();
 
-        // Track state - use flag to prevent render loops
+        // Get booking rules
+        var rules = getBookingRules();
+
+        // Track state for Booking.com-style selection
         var state = {
             isLoading: false,
             isRendering: false,
             isUpdating: false,
-            checkInDate: null,
+            checkInDate: null,      // Currently selected check-in date (JS Date)
+            checkOutDate: null,     // Currently selected check-out date (JS Date)
+            hasCompleteRange: false, // True when both dates are selected
             loadedMonths: {}
         };
 
-        // Initialize Litepicker - let it append to body (default behavior)
+        // Initialize Litepicker in single mode for full control over selection behavior
         var picker = new Litepicker({
             element: checkInInput,
             elementEnd: checkOutInput,
             inlineMode: false,
-            singleMode: false,
-            allowRepick: true,
+            singleMode: true,       // Single mode gives us full control
             numberOfMonths: 2,
             numberOfColumns: 2,
             minDate: minDate,
             format: getMPHBDateFormat(),
-            separator: ' - ',
             autoApply: true,
-            showTooltip: true,
+            showTooltip: false,     // We'll handle tooltips ourselves
             scrollToDate: true,
+            resetButton: true,
             dropdowns: {
                 minYear: new Date().getFullYear(),
                 maxYear: new Date().getFullYear() + 2,
                 months: true,
                 years: true
-            },
-            tooltipNumber: function(totalDays) {
-                return totalDays - 1;
-            },
-            tooltipText: {
-                one: 'night',
-                other: 'nights'
             },
             firstDay: MPHB._data.settings.firstDay || 0,
             lang: getLanguageCode(),
@@ -132,29 +156,45 @@
             setup: function(picker) {
                 picker.on('show', function() {
                     // Load availability data when picker opens
-                    var displayDate = picker.getDate() || new Date();
+                    var displayDate = state.checkInDate || picker.getDate() || new Date();
                     loadAvailabilityForMonths(displayDate, 2, 0, state, picker);
+
+                    // Re-render highlighting if we have dates selected
+                    if (state.checkInDate) {
+                        setTimeout(function() {
+                            updateDateHighlighting(picker, state);
+                        }, 50);
+                    }
                 });
 
                 picker.on('change:month', function(date, calendarIdx) {
                     // Load more data when navigating months
                     loadAvailabilityForMonths(date, 2, 0, state, picker);
+
+                    // Re-apply highlighting after month change
+                    setTimeout(function() {
+                        updateDateHighlighting(picker, state);
+                    }, 50);
                 });
 
-                picker.on('selected', function(startDate, endDate) {
+                picker.on('selected', function(date) {
                     // Prevent handling if we're already updating
                     if (state.isUpdating) {
                         return;
                     }
-                    handleDateSelection(startDate, endDate, checkInHidden, checkOutHidden, state);
+
+                    handleSingleDateClick(date, checkInHidden, checkOutHidden, checkInInput, checkOutInput, state, picker, rules, form);
                 });
 
                 picker.on('clear:selection', function() {
-                    state.checkInDate = null;
-                    checkInHidden.value = '';
-                    checkOutHidden.value = '';
-                    checkInInput.value = '';
-                    checkOutInput.value = '';
+                    resetSelection(state, checkInHidden, checkOutHidden, checkInInput, checkOutInput, form, picker);
+                });
+
+                // Handle render to apply custom highlighting
+                picker.on('render', function(ui) {
+                    setTimeout(function() {
+                        updateDateHighlighting(picker, state);
+                    }, 10);
                 });
             }
         });
@@ -185,8 +225,187 @@
         if (checkInHidden.value && checkOutHidden.value) {
             var startDate = new Date(checkInHidden.value + 'T00:00:00');
             var endDate = new Date(checkOutHidden.value + 'T00:00:00');
-            picker.setDateRange(startDate, endDate);
+            state.checkInDate = startDate;
+            state.checkOutDate = endDate;
+            state.hasCompleteRange = true;
+
+            // Update visible inputs
+            checkInInput.value = formatDateForDisplay(startDate);
+            checkOutInput.value = formatDateForDisplay(endDate);
+
+            // Validate existing selection
+            validateAndWarn(state, rules, form);
         }
+    }
+
+    /**
+     * Handle single date click with Booking.com-style behavior
+     *
+     * Booking.com behavior:
+     * 1. If no dates selected or have complete range: clicked date becomes new check-in
+     * 2. If only check-in selected: clicked date becomes check-out (if after check-in)
+     *    OR becomes new check-in (if on/before current check-in)
+     */
+    function handleSingleDateClick(date, checkInHidden, checkOutHidden, checkInInput, checkOutInput, state, picker, rules, form) {
+        if (state.isUpdating) {
+            return;
+        }
+
+        if (!date) {
+            return;
+        }
+
+        var clickedDate = date.toJSDate ? date.toJSDate() : date;
+
+        // Scenario 1: No check-in selected OR complete range exists -> set as new check-in
+        if (!state.checkInDate || state.hasCompleteRange) {
+            // Reset and set new check-in
+            state.checkInDate = clickedDate;
+            state.checkOutDate = null;
+            state.hasCompleteRange = false;
+
+            // Update inputs
+            checkInHidden.value = formatDateYMD(clickedDate);
+            checkOutHidden.value = '';
+            checkInInput.value = formatDateForDisplay(clickedDate);
+            checkOutInput.value = '';
+
+            hideWarning(form);
+            updateDateHighlighting(picker, state);
+            return;
+        }
+
+        // Scenario 2: Only check-in selected (waiting for check-out)
+        // If clicked date is AFTER check-in -> becomes check-out
+        // If clicked date is ON or BEFORE check-in -> becomes new check-in
+        if (clickedDate > state.checkInDate) {
+            // Set as check-out
+            state.checkOutDate = clickedDate;
+            state.hasCompleteRange = true;
+
+            // Update inputs
+            checkOutHidden.value = formatDateYMD(clickedDate);
+            checkOutInput.value = formatDateForDisplay(clickedDate);
+
+            // Validate the selection
+            validateAndWarn(state, rules, form);
+
+            // Trigger MPHB form update
+            state.isUpdating = true;
+            triggerFormUpdate(checkInHidden, checkOutHidden);
+            setTimeout(function() {
+                state.isUpdating = false;
+            }, 100);
+        } else {
+            // Clicked on or before check-in -> reset to this date as new check-in
+            state.checkInDate = clickedDate;
+            state.checkOutDate = null;
+            state.hasCompleteRange = false;
+
+            // Update inputs
+            checkInHidden.value = formatDateYMD(clickedDate);
+            checkOutHidden.value = '';
+            checkInInput.value = formatDateForDisplay(clickedDate);
+            checkOutInput.value = '';
+
+            hideWarning(form);
+        }
+
+        updateDateHighlighting(picker, state);
+    }
+
+    /**
+     * Reset selection state
+     */
+    function resetSelection(state, checkInHidden, checkOutHidden, checkInInput, checkOutInput, form, picker) {
+        state.checkInDate = null;
+        state.checkOutDate = null;
+        state.hasCompleteRange = false;
+        checkInHidden.value = '';
+        checkOutHidden.value = '';
+        checkInInput.value = '';
+        checkOutInput.value = '';
+        hideWarning(form);
+        clearDateHighlighting(picker);
+    }
+
+    /**
+     * Update visual highlighting for selected date range
+     */
+    function updateDateHighlighting(picker, state) {
+        // Clear existing highlighting first
+        clearDateHighlighting(picker);
+
+        if (!picker.ui) {
+            return;
+        }
+
+        var dayItems = picker.ui.querySelectorAll('.day-item');
+
+        dayItems.forEach(function(dayEl) {
+            var dateStr = dayEl.getAttribute('data-time');
+            if (!dateStr) return;
+
+            var dayDate = new Date(parseInt(dateStr, 10));
+
+            // Normalize to start of day for comparison
+            dayDate.setHours(0, 0, 0, 0);
+
+            var checkIn = state.checkInDate ? new Date(state.checkInDate.getTime()) : null;
+            var checkOut = state.checkOutDate ? new Date(state.checkOutDate.getTime()) : null;
+
+            if (checkIn) checkIn.setHours(0, 0, 0, 0);
+            if (checkOut) checkOut.setHours(0, 0, 0, 0);
+
+            // Check-in date
+            if (checkIn && dayDate.getTime() === checkIn.getTime()) {
+                dayEl.classList.add('shaped-check-in', 'is-start-date');
+            }
+
+            // Check-out date
+            if (checkOut && dayDate.getTime() === checkOut.getTime()) {
+                dayEl.classList.add('shaped-check-out', 'is-end-date');
+            }
+
+            // In-range dates
+            if (checkIn && checkOut && dayDate > checkIn && dayDate < checkOut) {
+                dayEl.classList.add('shaped-in-range', 'is-in-range');
+            }
+        });
+    }
+
+    /**
+     * Clear visual highlighting
+     */
+    function clearDateHighlighting(picker) {
+        if (!picker.ui) {
+            return;
+        }
+
+        var dayItems = picker.ui.querySelectorAll('.day-item');
+        dayItems.forEach(function(dayEl) {
+            dayEl.classList.remove('shaped-check-in', 'shaped-check-out', 'shaped-in-range', 'is-start-date', 'is-end-date', 'is-in-range');
+        });
+    }
+
+    /**
+     * Format date for display using MPHB format
+     */
+    function formatDateForDisplay(date) {
+        var format = getMPHBDateFormat();
+
+        var day = String(date.getDate()).padStart(2, '0');
+        var month = String(date.getMonth() + 1).padStart(2, '0');
+        var year = date.getFullYear();
+
+        // Handle common formats
+        return format
+            .replace('DD', day)
+            .replace('D', date.getDate())
+            .replace('MM', month)
+            .replace('M', date.getMonth() + 1)
+            .replace('YYYY', year)
+            .replace('YY', String(year).slice(-2));
     }
 
     /**
@@ -207,6 +426,83 @@
         popups.forEach(function(popup) {
             popup.remove();
         });
+    }
+
+    /**
+     * Calculate number of nights between two dates
+     */
+    function calculateNights(checkIn, checkOut) {
+        if (!checkIn || !checkOut) {
+            return 0;
+        }
+        var diffTime = checkOut.getTime() - checkIn.getTime();
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    /**
+     * Validate selection and show warning if needed
+     */
+    function validateAndWarn(state, rules, form) {
+        if (!state.checkInDate || !state.checkOutDate) {
+            hideWarning(form);
+            return;
+        }
+
+        var nights = calculateNights(state.checkInDate, state.checkOutDate);
+        var warnings = [];
+
+        if (nights < rules.minNights) {
+            warnings.push('Minimum stay is ' + rules.minNights + ' night' + (rules.minNights > 1 ? 's' : '') + '.');
+        }
+
+        if (nights > rules.maxNights) {
+            warnings.push('Maximum stay is ' + rules.maxNights + ' nights.');
+        }
+
+        if (warnings.length > 0) {
+            showWarning(form, warnings.join(' '));
+        } else {
+            hideWarning(form);
+        }
+    }
+
+    /**
+     * Show warning message near the form
+     */
+    function showWarning(form, message) {
+        var warningId = 'shaped-booking-warning';
+        var warning = form.querySelector('#' + warningId);
+
+        if (!warning) {
+            warning = document.createElement('div');
+            warning.id = warningId;
+            warning.className = 'shaped-booking-warning';
+            warning.style.cssText = 'background: #fff3cd; border: 1px solid #ffc107; color: #856404; padding: 10px 15px; margin: 10px 0; border-radius: 4px; font-size: 14px;';
+
+            // Insert after the date inputs wrapper or at the start of the form
+            var dateWrapper = form.querySelector('.mphb-reserve-dates-wrapper') ||
+                              form.querySelector('.mphb_sc_search-form-dates') ||
+                              form.querySelector('.mphb-datepicker');
+
+            if (dateWrapper) {
+                dateWrapper.parentNode.insertBefore(warning, dateWrapper.nextSibling);
+            } else {
+                form.insertBefore(warning, form.firstChild);
+            }
+        }
+
+        warning.textContent = message;
+        warning.style.display = 'block';
+    }
+
+    /**
+     * Hide warning message
+     */
+    function hideWarning(form) {
+        var warning = form.querySelector('#shaped-booking-warning');
+        if (warning) {
+            warning.style.display = 'none';
+        }
     }
 
     /**
@@ -330,42 +626,6 @@
     }
 
     /**
-     * Handle date selection
-     */
-    function handleDateSelection(startDate, endDate, checkInHidden, checkOutHidden, state) {
-        // Prevent re-entrancy from MPHB event handlers
-        if (state.isUpdating) {
-            return;
-        }
-
-        if (!startDate) {
-            checkInHidden.value = '';
-            checkOutHidden.value = '';
-            state.checkInDate = null;
-            return;
-        }
-
-        var startJs = startDate.toJSDate ? startDate.toJSDate() : startDate;
-        checkInHidden.value = formatDateYMD(startJs);
-        state.checkInDate = startJs;
-
-        if (endDate) {
-            var endJs = endDate.toJSDate ? endDate.toJSDate() : endDate;
-            checkOutHidden.value = formatDateYMD(endJs);
-
-            // Trigger MPHB form update with guard
-            state.isUpdating = true;
-            triggerFormUpdate(checkInHidden, checkOutHidden);
-            // Reset flag after a short delay to allow MPHB handlers to complete
-            setTimeout(function() {
-                state.isUpdating = false;
-            }, 100);
-        } else {
-            checkOutHidden.value = '';
-        }
-    }
-
-    /**
      * Trigger MPHB form update
      */
     function triggerFormUpdate(checkInHidden, checkOutHidden) {
@@ -466,7 +726,8 @@
     // Expose for debugging
     window.ShapedLitepicker = {
         cache: availabilityCache,
-        init: initShapedLitepicker
+        init: initShapedLitepicker,
+        getBookingRules: getBookingRules
     };
 
 })();
