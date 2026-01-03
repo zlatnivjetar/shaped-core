@@ -74,24 +74,6 @@ class Shaped_Menu_Controller {
                 [__CLASS__, 'render_ops_dashboard']
             );
 
-            add_submenu_page(
-                'shaped-ops',
-                'Reservations',
-                'Reservations',
-                'shaped_view_ops',
-                'shaped-ops-reservations',
-                [__CLASS__, 'redirect_to_reservations']
-            );
-
-            add_submenu_page(
-                'shaped-ops',
-                'Inventory',
-                'Inventory',
-                'shaped_view_ops',
-                'shaped-ops-inventory',
-                [__CLASS__, 'redirect_to_inventory']
-            );
-
             // Availability calendar (only when RoomCloud is enabled)
             if (defined('SHAPED_ENABLE_ROOMCLOUD') && SHAPED_ENABLE_ROOMCLOUD) {
                 add_submenu_page(
@@ -170,38 +152,11 @@ class Shaped_Menu_Controller {
 
             add_submenu_page(
                 'shaped-system',
-                'Settings',
-                'Settings',
+                'Shortcodes',
+                'Shortcodes',
                 'manage_options',
-                'shaped-system-settings',
-                [__CLASS__, 'redirect_to_settings']
-            );
-
-            add_submenu_page(
-                'shaped-system',
-                'Plugins',
-                'Plugins',
-                'manage_options',
-                'shaped-system-plugins',
-                [__CLASS__, 'redirect_to_plugins']
-            );
-
-            add_submenu_page(
-                'shaped-system',
-                'Tools',
-                'Tools',
-                'manage_options',
-                'shaped-system-tools',
-                [__CLASS__, 'redirect_to_tools']
-            );
-
-            add_submenu_page(
-                'shaped-system',
-                'Updates',
-                'Updates',
-                'manage_options',
-                'shaped-system-updates',
-                [__CLASS__, 'redirect_to_updates']
+                'shaped-system-shortcodes',
+                [__CLASS__, 'render_shortcodes_page']
             );
         }
     }
@@ -272,22 +227,12 @@ class Shaped_Menu_Controller {
         $page = $_GET['page'] ?? '';
 
         // Shaped Ops parent highlighting
-        if ($pagenow === 'edit.php') {
-            if ($typenow === 'mphb_booking') {
-                return 'shaped-ops';
-            }
-            if ($typenow === 'mphb_room_type') {
-                return 'shaped-ops';
-            }
-        }
-
         if ($page === 'shaped-pricing') {
             return 'shaped-ops';
         }
 
         // Shaped System parent highlighting
         $system_pages = [
-            'shaped-settings',
             'shaped-setup-wizard',
             'shaped-config-health',
             'shaped-roomcloud',
@@ -295,13 +240,6 @@ class Shaped_Menu_Controller {
 
         if (in_array($page, $system_pages, true)) {
             return 'shaped-system';
-        }
-
-        if ($pagenow === 'plugins.php' || $pagenow === 'tools.php' || $pagenow === 'update-core.php') {
-            // Only for admins viewing via system menu context
-            if (current_user_can('manage_options') && isset($_GET['from']) && $_GET['from'] === 'shaped-system') {
-                return 'shaped-system';
-            }
         }
 
         return $parent_file ?? '';
@@ -316,20 +254,11 @@ class Shaped_Menu_Controller {
         $page = $_GET['page'] ?? '';
 
         // Shaped Ops submenu highlighting
-        if ($pagenow === 'edit.php' && $typenow === 'mphb_booking') {
-            return 'shaped-ops-reservations';
-        }
-        if ($pagenow === 'edit.php' && $typenow === 'mphb_room_type') {
-            return 'shaped-ops-inventory';
-        }
         if ($page === 'shaped-pricing') {
             return 'shaped-ops-pricing';
         }
 
         // Shaped System submenu highlighting - return the registered submenu slug
-        if ($page === 'shaped-settings') {
-            return 'shaped-system-settings';
-        }
         if ($page === 'shaped-setup-wizard') {
             return 'shaped-system-wizard';
         }
@@ -338,15 +267,6 @@ class Shaped_Menu_Controller {
         }
         if ($page === 'shaped-roomcloud') {
             return 'shaped-system-roomcloud';
-        }
-        if ($pagenow === 'plugins.php') {
-            return 'shaped-system-plugins';
-        }
-        if ($pagenow === 'tools.php') {
-            return 'shaped-system-tools';
-        }
-        if ($pagenow === 'update-core.php') {
-            return 'shaped-system-updates';
         }
 
         return $submenu_file;
@@ -401,8 +321,6 @@ class Shaped_Menu_Controller {
         // Allowed admin.php pages
         $allowed_admin_pages = [
             'shaped-ops',
-            'shaped-ops-reservations',
-            'shaped-ops-inventory',
             'shaped-ops-availability',
             'shaped-ops-pricing',
             'shaped-pricing',
@@ -436,16 +354,6 @@ class Shaped_Menu_Controller {
 
     // ─── Redirect callbacks ───
 
-    public static function redirect_to_reservations(): void {
-        wp_safe_redirect(admin_url('edit.php?post_type=mphb_booking'));
-        exit;
-    }
-
-    public static function redirect_to_inventory(): void {
-        wp_safe_redirect(admin_url('edit.php?post_type=mphb_room_type'));
-        exit;
-    }
-
     public static function redirect_to_pricing(): void {
         wp_safe_redirect(admin_url('admin.php?page=shaped-pricing'));
         exit;
@@ -466,26 +374,6 @@ class Shaped_Menu_Controller {
         exit;
     }
 
-    public static function redirect_to_settings(): void {
-        wp_safe_redirect(admin_url('admin.php?page=shaped-settings'));
-        exit;
-    }
-
-    public static function redirect_to_plugins(): void {
-        wp_safe_redirect(admin_url('plugins.php'));
-        exit;
-    }
-
-    public static function redirect_to_tools(): void {
-        wp_safe_redirect(admin_url('tools.php'));
-        exit;
-    }
-
-    public static function redirect_to_updates(): void {
-        wp_safe_redirect(admin_url('update-core.php'));
-        exit;
-    }
-
     // ─── Page renderers ───
 
     public static function render_ops_dashboard(): void {
@@ -498,5 +386,9 @@ class Shaped_Menu_Controller {
 
     public static function render_system_dashboard(): void {
         require_once SHAPED_DIR . 'admin/pages/system-dashboard.php';
+    }
+
+    public static function render_shortcodes_page(): void {
+        require_once SHAPED_DIR . 'admin/pages/shortcodes.php';
     }
 }
