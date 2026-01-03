@@ -173,11 +173,38 @@ class Shaped_Admin {
     }
 
     /**
-     * Get modal page ID
+     * Get modal page ID by type
+     * Hardcoded to look up pages by title
      */
     public static function get_modal_page(string $key): int {
-        $modal_pages = get_option(self::OPT_MODAL_PAGES, []);
-        return isset($modal_pages[$key]) ? absint($modal_pages[$key]) : 0;
+        $page_titles = [
+            'booking-terms' => 'Terms and Conditions',
+            'privacy'       => 'Privacy Policy',
+        ];
+
+        if (!isset($page_titles[$key])) {
+            return 0;
+        }
+
+        $page = get_page_by_title($page_titles[$key], OBJECT, 'page');
+
+        if (!$page) {
+            // Fallback: try WP_Query for better compatibility
+            $query = new WP_Query([
+                'post_type'      => 'page',
+                'title'          => $page_titles[$key],
+                'post_status'    => 'publish',
+                'posts_per_page' => 1,
+            ]);
+
+            if ($query->have_posts()) {
+                return $query->posts[0]->ID;
+            }
+
+            return 0;
+        }
+
+        return $page->ID;
     }
 
     /**
