@@ -727,7 +727,11 @@ class Shaped_Booking_Manager
                 <div style="background: #fafafa; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; padding: 24px; border-radius: 8px;">
                     <h2 style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Getting Here</h2>
                     <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin-bottom: 12px; line-height: 1.5;">
-                        <strong style="color: <?php shaped_brand_color_e('textPrimary'); ?>;">Address:</strong> <?php echo esc_html(shaped_brand('contact.address', '')); ?>
+                        <strong style="color: <?php shaped_brand_color_e('textPrimary'); ?>;">Address:</strong> <?php
+                        $address_raw = shaped_brand('contact.address', '');
+                        $address_formatted = function_exists('shaped_email_format_address') ? shaped_email_format_address($address_raw) : $address_raw;
+                        echo esc_html($address_formatted);
+                        ?>
                     </p>
                     <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin: 0; line-height: 1.5;">
                         <?php echo esc_html(shaped_brand('email.checkInInstructions', 'Visit us at reception upon arrival.')); ?>
