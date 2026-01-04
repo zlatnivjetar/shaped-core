@@ -786,7 +786,7 @@ function shaped_email_block_closing($message = '', $signature = '', $variant = '
                                     </p>
                                     <?php if (!empty($logo_url)): ?>
                                     <div style="margin: 16px 0 0 0;">
-                                        <img src="<?php echo esc_url($logo_url); ?>" alt="Company Logo" style="max-width: 150px; height: auto; display: inline-block;" />
+                                        <img src="<?php echo esc_url($logo_url); ?>" alt="Company Logo" style="max-width: 80px; height: auto; display: inline-block;" />
                                     </div>
                                     <?php endif; ?>
                                 </div>
