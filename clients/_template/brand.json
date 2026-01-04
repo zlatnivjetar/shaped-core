@@ -33,7 +33,8 @@
     "checkInTime": "from 14:00",
     "checkOutTime": "until 11:00",
     "closingMessage": "We look forward to hosting you!",
-    "signature": "Warm regards,<br>The Team"
+    "signature": "Warm regards,<br>The Team",
+    "logoUrl": ""
   },
   "schema": {
     "lodgingType": "LodgingBusiness",
