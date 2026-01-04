@@ -42,6 +42,7 @@ function shaped_email_config($key, $fallback = '') {
         'check_out_time'    => 'email.checkOutTime',
         'closing_message'   => 'email.closingMessage',
         'signature'         => 'email.signature',
+        'logo_url'          => 'email.logoUrl',
     ];
 
     // Check if key has a mapped path
@@ -63,6 +64,44 @@ function shaped_email_config($key, $fallback = '') {
 function shaped_email_color($key, $fallback = '#26272C') {
     $color = shaped_brand_color($key);
     return $color !== null ? $color : $fallback;
+}
+
+/**
+ * Format address from brand config
+ *
+ * Handles both string and object address formats from brand.json
+ *
+ * @param mixed $address Address string or object
+ * @return string Formatted address string
+ */
+function shaped_email_format_address($address) {
+    // If address is already a string, return it
+    if (is_string($address)) {
+        return $address;
+    }
+
+    // If address is an array/object, format it
+    if (is_array($address)) {
+        $parts = [];
+
+        if (!empty($address['street'])) {
+            $parts[] = $address['street'];
+        }
+        if (!empty($address['city'])) {
+            $city_part = $address['city'];
+            if (!empty($address['postalCode'])) {
+                $city_part = $address['postalCode'] . ' ' . $city_part;
+            }
+            $parts[] = $city_part;
+        }
+        if (!empty($address['country'])) {
+            $parts[] = $address['country'];
+        }
+
+        return implode(', ', $parts);
+    }
+
+    return 'Address not configured';
 }
 
 /* ==========================================================================
@@ -705,9 +744,10 @@ function shaped_email_block_contact($phone = '', $email = '') {
  * @param string $message Main message (optional - uses config if empty)
  * @param string $signature Signature line (optional - uses config if empty)
  * @param string $variant Card style: 'highlight' or 'neutral'
+ * @param string $logo_url Logo URL (optional - uses config if empty)
  * @return string Closing message HTML
  */
-function shaped_email_block_closing($message = '', $signature = '', $variant = 'highlight') {
+function shaped_email_block_closing($message = '', $signature = '', $variant = 'highlight', $logo_url = null) {
     $text_primary = shaped_email_color('textPrimary', '#26272C');
     $primary = shaped_email_color('primary', '#D1AF5D');
     $border_color = shaped_brand('colors.border.default', '#e5e5e5');
@@ -731,6 +771,9 @@ function shaped_email_block_closing($message = '', $signature = '', $variant = '
     if (empty($signature)) {
         $signature = shaped_email_config('signature', 'Warm regards,<br>The Team');
     }
+    if ($logo_url === null) {
+        $logo_url = shaped_email_config('logo_url', '');
+    }
 
     ob_start();
     ?>
@@ -738,9 +781,14 @@ function shaped_email_block_closing($message = '', $signature = '', $variant = '
                                     <p style="margin: 0 0 12px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
                                         <?php echo esc_html($message); ?>
                                     </p>
-                                    <p style="margin: 0; font-size: 16px; color: <?php echo $text_primary; ?>; font-weight: 600; line-height: 1.6;">
+                                    <p style="margin: 0<?php if (!empty($logo_url)): ?> 0 16px 0<?php endif; ?>; font-size: 16px; color: <?php echo $text_primary; ?>; font-weight: 600; line-height: 1.6;">
                                         <?php echo wp_kses_post($signature); ?>
                                     </p>
+                                    <?php if (!empty($logo_url)): ?>
+                                    <div style="margin: 16px 0 0 0;">
+                                        <img src="<?php echo esc_url($logo_url); ?>" alt="Company Logo" style="max-width: 150px; height: auto; display: inline-block;" />
+                                    </div>
+                                    <?php endif; ?>
                                 </div>
     <?php
     return ob_get_clean();
@@ -890,8 +938,11 @@ function shaped_email_render_booking_details($data) {
  * @return string Getting here card HTML
  */
 function shaped_email_render_getting_here($options = []) {
+    $address_raw = shaped_email_config('address', 'Address not configured');
+    $address_formatted = shaped_email_format_address($address_raw);
+
     $defaults = [
-        'address'      => shaped_email_config('address', 'Address not configured'),
+        'address'      => $address_formatted,
         'maps_url'     => shaped_email_config('maps_url', ''),
         'instructions' => shaped_email_config('check_in_instructions', 'Please contact us for check-in instructions.'),
     ];

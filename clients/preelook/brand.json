@@ -32,7 +32,8 @@
     "checkInTime": "from 16:00",
     "checkOutTime": "until 11:00",
     "closingMessage": "We're looking forward to hosting you in beautiful Rijeka!",
-    "signature": "Warm regards,<br>The Preelook Team"
+    "signature": "Warm regards,<br>The Preelook Team",
+    "logoUrl": "https://example.com/path/to/preelook-logo.png"
   },
   "schema": {
     "lodgingType": "LodgingBusiness",
