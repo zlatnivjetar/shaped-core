@@ -21,13 +21,24 @@ class Shaped_Assets {
      */
     public function enqueue_frontend(): void {
 
-        // ─── Design Tokens (must load first) ───
+        // ─── Local Fonts (must load before design tokens) ───
+        // Self-hosted DM Sans fonts for performance and GDPR compliance
+        if (file_exists(SHAPED_DIR . 'assets/css/fonts.css')) {
+            wp_enqueue_style(
+                'shaped-fonts',
+                SHAPED_URL . 'assets/css/fonts.css',
+                [],
+                SHAPED_VERSION
+            );
+        }
+
+        // ─── Design Tokens (must load after fonts) ───
         // CSS custom properties used by all other stylesheets
         if (file_exists(SHAPED_DIR . 'assets/css/design-tokens.css')) {
             wp_enqueue_style(
                 'shaped-design-tokens',
                 SHAPED_URL . 'assets/css/design-tokens.css',
-                [],
+                ['shaped-fonts'],
                 SHAPED_VERSION
             );
         }
