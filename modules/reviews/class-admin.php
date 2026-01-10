@@ -17,19 +17,6 @@ if (!defined('ABSPATH')) {
 class Admin {
 
     /**
-     * Theme keywords for auto-assignment
-     */
-    private static array $theme_keywords = [
-        'easy-parking'    => ['parking', 'park', 'car space', 'garage', 'parken'],
-        'clean-place'     => ['clean', 'spotless', 'tidy', 'hygiene', 'pristine', 'sauber'],
-        'good-amenities'  => ['amenities', 'facilities', 'equipped', 'features', 'ausstattung'],
-        'great-breakfast' => ['breakfast', 'morning meal', 'coffee', 'frühstück', 'dejeuner'],
-        'well-equipped'   => ['equipped', 'appliances', 'everything needed', 'well-stocked', 'kitchen'],
-        'mixed-reviews'   => ['however', 'but', 'although', 'despite', 'unfortunately', 'could be better', 'leider'],
-        'some-challenges' => ['difficult', 'hard to find', 'unable', 'problem', 'issue', 'challenge', 'complicated']
-    ];
-
-    /**
      * Initialize admin hooks
      */
     public static function init(): void {
@@ -643,34 +630,6 @@ class Admin {
     }
 
     /**
-     * Auto-assign themes based on content
-     */
-    public static function auto_assign_themes(int $post_id): void {
-        if (get_post_type($post_id) !== CPT::POST_TYPE) {
-            return;
-        }
-
-        $content = get_post_field('post_content', $post_id);
-        $title = get_the_title($post_id);
-        $full_text = strtolower($title . ' ' . $content);
-
-        $assigned_themes = [];
-
-        foreach (self::$theme_keywords as $theme_slug => $keywords) {
-            foreach ($keywords as $keyword) {
-                if (strpos($full_text, $keyword) !== false) {
-                    $assigned_themes[] = $theme_slug;
-                    break;
-                }
-            }
-        }
-
-        if (!empty($assigned_themes)) {
-            wp_set_object_terms($post_id, $assigned_themes, 'review_themes', false);
-        }
-    }
-
-    /**
      * Migrate providers from meta to taxonomy (one-time)
      */
     public static function migrate_providers_to_taxonomy(): void {
@@ -686,21 +645,6 @@ class Admin {
                 $provider_slug = strtolower(str_replace(' ', '-', $provider));
                 wp_set_object_terms($review->ID, $provider_slug, 'review_provider');
             }
-        }
-    }
-
-    /**
-     * Assign themes to existing reviews (one-time)
-     */
-    public static function assign_themes_to_existing(): void {
-        $reviews = get_posts([
-            'post_type'      => CPT::POST_TYPE,
-            'posts_per_page' => -1,
-            'post_status'    => 'any'
-        ]);
-
-        foreach ($reviews as $review) {
-            self::auto_assign_themes($review->ID);
         }
     }
 

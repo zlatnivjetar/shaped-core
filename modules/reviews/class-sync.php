@@ -194,9 +194,6 @@ class Sync {
             wp_set_object_terms($post_id, $provider_slug, 'review_provider');
         }
 
-        // Auto-assign themes
-        Admin::auto_assign_themes($post_id);
-
         return true;
     }
 

@@ -107,46 +107,6 @@ class CPT {
                 wp_insert_term($name, 'review_provider', ['slug' => $slug]);
             }
         }
-
-        // Themes taxonomy
-        register_taxonomy('review_themes', self::POST_TYPE, [
-            'labels' => [
-                'name'          => 'Review Themes',
-                'singular_name' => 'Theme',
-                'all_items'     => 'All Themes',
-                'edit_item'     => 'Edit Theme',
-                'view_item'     => 'View Theme',
-                'update_item'   => 'Update Theme',
-                'add_new_item'  => 'Add New Theme',
-                'new_item_name' => 'New Theme Name',
-                'menu_name'     => 'Themes'
-            ],
-            'public'            => true,
-            'show_ui'           => true,
-            'show_in_menu'      => true,
-            'show_in_nav_menus' => true,
-            'show_in_rest'      => true,
-            'hierarchical'      => false,
-            'rewrite'           => ['slug' => 'review-theme'],
-            'query_var'         => true
-        ]);
-
-        // Create default theme terms
-        $themes = [
-            'easy-parking'    => 'Easy Parking',
-            'clean-place'     => 'Clean Place',
-            'good-amenities'  => 'Good Amenities',
-            'great-breakfast' => 'Great Breakfast',
-            'mixed-reviews'   => 'Mixed Reviews',
-            'well-equipped'   => 'Well equipped',
-            'some-challenges' => 'Some Challenges'
-        ];
-
-        foreach ($themes as $slug => $name) {
-            if (!term_exists($slug, 'review_themes')) {
-                wp_insert_term($name, 'review_themes', ['slug' => $slug]);
-            }
-        }
     }
 
     /**
