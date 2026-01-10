@@ -143,6 +143,9 @@ add_action('plugins_loaded', function() {
     require_once SHAPED_DIR . 'includes/class-brand-config.php';
     require_once SHAPED_DIR . 'config/brand-helpers.php';
 
+    // Load font loader (generates CSS from brand.json)
+    require_once SHAPED_DIR . 'includes/class-font-loader.php';
+
     // ─── Core Classes (always load) ───
     new Shaped_Assets();
     new Shaped_Amenity_Mapper();

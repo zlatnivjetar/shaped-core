@@ -21,15 +21,16 @@ class Shaped_Assets {
      */
     public function enqueue_frontend(): void {
 
-        // ─── Local Fonts (must load before design tokens) ───
-        // Self-hosted DM Sans fonts for performance and GDPR compliance
-        if (file_exists(SHAPED_DIR . 'assets/css/fonts.css')) {
-            wp_enqueue_style(
-                'shaped-fonts',
-                SHAPED_URL . 'assets/css/fonts.css',
-                [],
-                SHAPED_VERSION
-            );
+        // ─── Local Fonts (generated from brand.json) ───
+        // Self-hosted fonts for performance and GDPR compliance
+        // Single source of truth: config/brand.json
+        wp_register_style('shaped-fonts', false);
+        wp_enqueue_style('shaped-fonts');
+
+        // Generate font CSS dynamically from brand.json
+        if (class_exists('Shaped_Font_Loader')) {
+            $font_css = Shaped_Font_Loader::generate_font_css();
+            wp_add_inline_style('shaped-fonts', $font_css);
         }
 
         // ─── Design Tokens (must load after fonts) ───
@@ -45,13 +46,15 @@ class Shaped_Assets {
 
         // ─── Always Load (lightweight utilities) ───
 
-        // Phosphor Icons for amenity display
-        wp_enqueue_style(
-            'phosphor-icons',
-            'https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css',
-            [],
-            '2.1.1'
-        );
+        // Phosphor Icons for amenity display (self-hosted for performance)
+        if (file_exists(SHAPED_DIR . 'assets/css/phosphor-icons.css')) {
+            wp_enqueue_style(
+                'phosphor-icons',
+                SHAPED_URL . 'assets/css/phosphor-icons.css',
+                [],
+                SHAPED_VERSION
+            );
+        }
 
         // Cookie Banner & Language Switcher styles
         if (file_exists(SHAPED_DIR . 'assets/css/cookie-banner.css')) {
