@@ -18,7 +18,15 @@ class Shaped_Font_Loader {
      * @return string CSS with @font-face declarations
      */
     public static function generate_font_css(): string {
-        $brand_config = shaped_brand_config();
+        // Get brand config - use class method directly for reliability
+        if (function_exists('shaped_brand_config')) {
+            $brand_config = shaped_brand_config();
+        } elseif (class_exists('Shaped_Brand_Config')) {
+            $brand_config = Shaped_Brand_Config::instance()->get_all();
+        } else {
+            // Fallback if brand config not available
+            $brand_config = [];
+        }
 
         $font_family = $brand_config['type']['heading']['family'] ?? 'DM Sans';
         $weights = $brand_config['type']['heading']['weights'] ?? [400, 500, 700];
