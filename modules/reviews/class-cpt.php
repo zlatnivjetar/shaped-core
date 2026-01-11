@@ -114,15 +114,20 @@ class CPT {
      */
     private static function register_meta(): void {
         $meta_fields = [
-            'external_key'    => 'string',
-            'provider'        => 'string',
-            'review_date'     => 'string',
-            'review_rating'   => 'number',
-            'author_name'     => 'string',
-            'is_featured'     => 'boolean',
-            'priority'        => 'number',
-            'featured_locked' => 'boolean',
-            'status'          => 'string',
+            'external_key'         => 'string',
+            'provider'             => 'string',
+            'review_date'          => 'string',
+            'review_rating'        => 'number',
+            'author_name'          => 'string',
+            'is_featured'          => 'boolean',
+            'priority'             => 'number',
+            'featured_locked'      => 'boolean',
+            'content_locked'       => 'boolean',
+            'status'               => 'string',
+            // Translation fields
+            'review_text_original' => 'string',
+            'source_language'      => 'string',
+            'translated_at'        => 'string',
         ];
 
         foreach ($meta_fields as $key => $type) {

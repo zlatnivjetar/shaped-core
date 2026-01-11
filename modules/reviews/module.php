@@ -79,4 +79,52 @@ add_action('admin_init', function() {
         Admin::cleanup_old_provider_terms();
         update_option('shaped_reviews_providers_cleaned', 'yes');
     }
+
+    // Add content_locked field to existing reviews (one-time)
+    if (get_option('shaped_reviews_content_lock_added') !== 'yes') {
+        // Set default value for existing reviews
+        $reviews = get_posts([
+            'post_type'      => CPT::POST_TYPE,
+            'posts_per_page' => -1,
+            'post_status'    => 'any',
+            'fields'         => 'ids'
+        ]);
+
+        foreach ($reviews as $review_id) {
+            if (get_post_meta($review_id, 'content_locked', true) === '') {
+                update_post_meta($review_id, 'content_locked', '0');
+            }
+        }
+
+        update_option('shaped_reviews_content_lock_added', 'yes');
+    }
 });
+
+/**
+ * Schedule automatic sync
+ */
+add_action('init', function() {
+    if (!defined('SHAPED_REVIEWS_AUTO_SYNC') || !SHAPED_REVIEWS_AUTO_SYNC) {
+        return;
+    }
+
+    if (!wp_next_scheduled('shaped_reviews_scheduled_sync')) {
+        wp_schedule_event(time(), 'daily', 'shaped_reviews_scheduled_sync');
+    }
+}, 20);
+
+add_action('shaped_reviews_scheduled_sync', function() {
+    $sync = new Sync();
+    $results = $sync->sync_reviews();
+
+    error_log('[Shaped Reviews] Scheduled sync completed: ' . json_encode($results));
+});
+
+/**
+ * Clear schedule on deactivation
+ */
+if (defined('SHAPED_FILE')) {
+    register_deactivation_hook(SHAPED_FILE, function() {
+        wp_clear_scheduled_hook('shaped_reviews_scheduled_sync');
+    });
+}
