@@ -63,7 +63,7 @@ class Sync {
 
         $endpoint = $this->supabase_url . '/rest/v1/' . $this->table_name;
 
-        // Build query with filters (PostgREST syntax)
+        // All columns are now snake_case in Supabase
         $query_params = [
             'select'      => '*',
             'status'      => 'eq.approved',
