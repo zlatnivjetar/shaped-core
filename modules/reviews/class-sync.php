@@ -63,12 +63,15 @@ class Sync {
 
         $endpoint = $this->supabase_url . '/rest/v1/' . $this->table_name;
 
+        
+
         // Build query with filters (PostgREST syntax)
         $query_params = [
             'select'     => '*',
             'status'     => 'eq.approved',
             'reviewText' => 'not.is.null',
             'provider'   => 'in.(booking,google,tripadvisor,expedia)',
+            'or'         => '(and(provider.in.(google,tripadvisor),reviewRating.gte.4),and(provider.in.(booking,expedia),reviewRating.gte.8))',
             'order'      => 'is_featured.desc,priority.desc,reviewDate.desc',
             'offset'     => $offset,
             'limit'      => $limit,
