@@ -63,18 +63,16 @@ class Sync {
 
         $endpoint = $this->supabase_url . '/rest/v1/' . $this->table_name;
 
-        
-
         // Build query with filters (PostgREST syntax)
         $query_params = [
-            'select'     => '*',
-            'status'     => 'eq.approved',
-            'reviewText' => 'not.is.null',
-            'provider'   => 'in.(booking,google,tripadvisor,expedia)',
-            'or'         => '(and(provider.in.(google,tripadvisor),reviewRating.gte.4),and(provider.in.(booking,expedia),reviewRating.gte.8))',
-            'order'      => 'is_featured.desc,priority.desc,reviewDate.desc',
-            'offset'     => $offset,
-            'limit'      => $limit,
+            'select'      => '*',
+            'status'      => 'eq.approved',
+            'review_text' => 'not.is.null',
+            'provider'    => 'in.(booking,google,tripadvisor,expedia)',
+            'or'          => '(and(provider.in.(google,tripadvisor),review_rating.gte.4),and(provider.in.(booking,expedia),review_rating.gte.8))',
+            'order'       => 'is_featured.desc,priority.desc,review_date.desc',
+            'offset'      => $offset,
+            'limit'       => $limit,
         ];
 
         $url = $endpoint . '?' . http_build_query($query_params);
@@ -122,9 +120,9 @@ class Sync {
     private function generate_external_key(array $review): string {
         $components = [
             $review['provider'] ?? '',
-            $review['authorName'] ?? '',
-            $review['reviewDate'] ?? '',
-            substr($review['reviewText'] ?? '', 0, 50)
+            $review['author_name'] ?? '',
+            $review['review_date'] ?? '',
+            substr($review['review_text'] ?? '', 0, 50)
         ];
 
         return md5(implode('|', $components));
@@ -134,8 +132,8 @@ class Sync {
      * Generate review title from author and date
      */
     private function generate_review_title(array $review): string {
-        $author = !empty($review['authorName']) ? $review['authorName'] : 'Guest';
-        $date = !empty($review['reviewDate']) ? date('M Y', strtotime($review['reviewDate'])) : '';
+        $author = !empty($review['author_name']) ? $review['author_name'] : 'Guest';
+        $date = !empty($review['review_date']) ? date('M Y', strtotime($review['review_date'])) : '';
 
         return trim($author . ($date ? ' - ' . $date : ''));
     }
@@ -147,6 +145,17 @@ class Sync {
         // Skip if not approved
         if (empty($review['status']) || $review['status'] !== 'approved') {
             return false;
+        }
+
+        // Skip if review text is null or too short
+        if (empty($review['review_text']) || mb_strlen(trim($review['review_text'])) < 5) {
+            return false;
+        }
+
+        // Normalize author name (rename if too short)
+        $author_name = $review['author_name'] ?? 'Guest';
+        if (mb_strlen(trim($author_name)) < 4) {
+            $author_name = 'Guest';
         }
 
         $external_key = $this->generate_external_key($review);
@@ -178,12 +187,12 @@ class Sync {
                 'post_type'    => CPT::POST_TYPE,
                 'post_title'   => $this->generate_review_title($review),
                 'post_status'  => 'publish',
-                'post_date'    => $this->format_date($review['reviewDate'])
+                'post_date'    => $this->format_date($review['review_date'])
             ];
 
             // Only update content if not locked
             if (!$is_content_locked) {
-                $post_data['post_content'] = $review['reviewText'] ?? '';
+                $post_data['post_content'] = $review['review_text'] ?? '';
             }
 
             $post_id = wp_update_post($post_data);
@@ -192,9 +201,9 @@ class Sync {
             $post_data = [
                 'post_type'    => CPT::POST_TYPE,
                 'post_title'   => $this->generate_review_title($review),
-                'post_content' => $review['reviewText'] ?? '',
+                'post_content' => $review['review_text'] ?? '',
                 'post_status'  => 'publish',
-                'post_date'    => $this->format_date($review['reviewDate'])
+                'post_date'    => $this->format_date($review['review_date'])
             ];
 
             $post_id = wp_insert_post($post_data);
@@ -207,9 +216,9 @@ class Sync {
         // Update meta fields
         update_post_meta($post_id, 'external_key', $external_key);
         update_post_meta($post_id, 'provider', $review['provider'] ?? '');
-        update_post_meta($post_id, 'review_date', $review['reviewDate'] ?? '');
-        update_post_meta($post_id, 'review_rating', intval($review['reviewRating'] ?? 0));
-        update_post_meta($post_id, 'author_name', $review['authorName'] ?? 'Guest');
+        update_post_meta($post_id, 'review_date', $review['review_date'] ?? '');
+        update_post_meta($post_id, 'review_rating', intval($review['review_rating'] ?? 0));
+        update_post_meta($post_id, 'author_name', $author_name);
         update_post_meta($post_id, 'status', $review['status'] ?? '');
 
         // Handle featured/priority - respect locks
