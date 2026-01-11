@@ -33,7 +33,6 @@ class Admin {
         // Meta boxes
         add_action('add_meta_boxes', [__CLASS__, 'add_meta_boxes']);
         add_action('save_post_' . CPT::POST_TYPE, [__CLASS__, 'save_meta_box'], 10, 3);
-        add_action('save_post_' . CPT::POST_TYPE, [__CLASS__, 'auto_lock_on_content_edit'], 5, 3);
 
         // Quick edit
         add_action('quick_edit_custom_box', [__CLASS__, 'quick_edit_box'], 10, 2);
@@ -46,9 +45,6 @@ class Admin {
 
         // Admin styles
         add_action('admin_head', [__CLASS__, 'admin_styles']);
-
-        // Admin notices
-        add_action('admin_notices', [__CLASS__, 'show_auto_lock_notice']);
 
         // Elementor query (specific query ID support)
         add_action('elementor/query/featured_reviews_query', [__CLASS__, 'elementor_featured_query']);
@@ -423,55 +419,9 @@ class Admin {
                 <input type="checkbox" name="shaped_content_locked" value="1" <?php checked($is_content_locked, '1'); ?>>
                 <strong>Lock review text</strong>
             </label>
-            <br><small>Prevents sync from overwriting manual text edits</small>
+            <br><small>Checked by default. Prevents sync from overwriting your edits. Uncheck to allow sync updates.</small>
         </p>
         <?php
-    }
-
-    /**
-     * Auto-lock content when manually edited
-     * Runs before save_meta_box to detect content changes
-     */
-    public static function auto_lock_on_content_edit(int $post_id, \WP_Post $post, bool $update): void {
-        // Skip if this is a new post
-        if (!$update) {
-            return;
-        }
-
-        // Skip if autosave
-        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
-            return;
-        }
-
-        // Skip if sync is running (check for sync flag)
-        if (defined('SHAPED_REVIEWS_SYNC_RUNNING') && SHAPED_REVIEWS_SYNC_RUNNING) {
-            return;
-        }
-
-        // Skip if user can't edit
-        if (!current_user_can('edit_post', $post_id)) {
-            return;
-        }
-
-        // Skip if content is already locked
-        $is_locked = get_post_meta($post_id, 'content_locked', true);
-        if ($is_locked === '1') {
-            return;
-        }
-
-        // Get the post from database (before this save)
-        $old_post = get_post($post_id);
-        if (!$old_post) {
-            return;
-        }
-
-        // Compare content - if changed, auto-lock
-        if ($post->post_content !== $old_post->post_content) {
-            update_post_meta($post_id, 'content_locked', '1');
-
-            // Add admin notice (shown on next page load)
-            add_option('shaped_review_auto_locked_' . $post_id, '1');
-        }
     }
 
     /**
@@ -636,27 +586,6 @@ class Admin {
             }
         </style>
         <?php
-    }
-
-    /**
-     * Show admin notice when content is auto-locked
-     */
-    public static function show_auto_lock_notice(): void {
-        $screen = get_current_screen();
-        if (!$screen || $screen->post_type !== CPT::POST_TYPE) {
-            return;
-        }
-
-        // Check for auto-lock flag
-        $post_id = $_GET['post'] ?? 0;
-        if ($post_id && get_option('shaped_review_auto_locked_' . $post_id)) {
-            ?>
-            <div class="notice notice-info is-dismissible">
-                <p><strong>Review content locked:</strong> This review's text has been automatically locked because you edited it. Sync will no longer overwrite your changes. You can unlock it in the Featured Review Settings if needed.</p>
-            </div>
-            <?php
-            delete_option('shaped_review_auto_locked_' . $post_id);
-        }
     }
 
     /**
