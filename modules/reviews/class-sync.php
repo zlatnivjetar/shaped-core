@@ -141,11 +141,6 @@ class Sync {
      * Upsert review to WordPress
      */
     private function upsert_review(array $review): bool {
-        // Set flag to prevent auto-locking during sync
-        if (!defined('SHAPED_REVIEWS_SYNC_RUNNING')) {
-            define('SHAPED_REVIEWS_SYNC_RUNNING', true);
-        }
-
         // Skip if not approved
         if (empty($review['status']) || $review['status'] !== 'approved') {
             return false;
@@ -213,6 +208,12 @@ class Sync {
         update_post_meta($post_id, 'review_rating', intval($review['reviewRating'] ?? 0));
         update_post_meta($post_id, 'author_name', $review['authorName'] ?? 'Guest');
         update_post_meta($post_id, 'status', $review['status'] ?? '');
+
+        // Set content_locked to '1' by default for new reviews
+        // This protects content from being overwritten on future syncs
+        if (empty($existing)) {
+            update_post_meta($post_id, 'content_locked', '1');
+        }
 
         // Handle featured/priority - respect locks
         if (!$is_locked) {

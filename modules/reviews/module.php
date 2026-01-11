@@ -80,9 +80,11 @@ add_action('admin_init', function() {
         update_option('shaped_reviews_providers_cleaned', 'yes');
     }
 
-    // Add content_locked field to existing reviews (one-time)
-    if (get_option('shaped_reviews_content_lock_added') !== 'yes') {
-        // Set default value for existing reviews
+    // Set content_locked to '1' for all existing reviews (one-time migration)
+    // Changed from content_lock_added to content_lock_default_enabled to re-run
+    if (get_option('shaped_reviews_content_lock_default_enabled') !== 'yes') {
+        // Set all existing reviews to locked by default
+        // This protects existing content from being overwritten on sync
         $reviews = get_posts([
             'post_type'      => CPT::POST_TYPE,
             'posts_per_page' => -1,
@@ -91,12 +93,11 @@ add_action('admin_init', function() {
         ]);
 
         foreach ($reviews as $review_id) {
-            if (get_post_meta($review_id, 'content_locked', true) === '') {
-                update_post_meta($review_id, 'content_locked', '0');
-            }
+            // Set to '1' (locked) regardless of current value
+            update_post_meta($review_id, 'content_locked', '1');
         }
 
-        update_option('shaped_reviews_content_lock_added', 'yes');
+        update_option('shaped_reviews_content_lock_default_enabled', 'yes');
     }
 });
 
