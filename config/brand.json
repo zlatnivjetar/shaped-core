@@ -118,5 +118,11 @@
       "radius": "8px",
       "shadow": "0 4px 16px rgba(0, 0, 0, 0.1)"
     }
+  },
+  "integrations": {
+    "supabase": {
+      "reviewsTable": "preelook_reviews_all",
+      "autoSync": false
+    }
   }
 }

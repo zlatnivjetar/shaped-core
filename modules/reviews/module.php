@@ -104,7 +104,19 @@ add_action('admin_init', function() {
  * Schedule automatic sync
  */
 add_action('init', function() {
-    if (!defined('SHAPED_REVIEWS_AUTO_SYNC') || !SHAPED_REVIEWS_AUTO_SYNC) {
+    // Check brand config first, fallback to constant
+    $auto_sync = false;
+
+    if (function_exists('shaped_brand')) {
+        $auto_sync = shaped_brand('integrations.supabase.autoSync', false);
+    }
+
+    // Allow constant override for backwards compatibility
+    if (defined('SHAPED_REVIEWS_AUTO_SYNC') && SHAPED_REVIEWS_AUTO_SYNC) {
+        $auto_sync = true;
+    }
+
+    if (!$auto_sync) {
         return;
     }
 
