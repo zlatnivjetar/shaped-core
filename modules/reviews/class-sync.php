@@ -25,20 +25,24 @@ class Sync {
         $this->supabase_url = defined('SUPABASE_URL') ? SUPABASE_URL : '';
         $this->supabase_key = defined('SUPABASE_SERVICE_KEY') ? SUPABASE_SERVICE_KEY : '';
 
-        // Get table name from brand config or use default
-        $default_table = 'shaped_reviews';
-        if (function_exists('shaped_brand')) {
+        // Use table directly (not view) - configurable via constant or brand config
+        $default_table = 'preelook_reviews_all';
+
+        if (defined('SHAPED_REVIEWS_TABLE')) {
+            $default_table = SHAPED_REVIEWS_TABLE;
+        } elseif (function_exists('shaped_brand')) {
             $brand_table = shaped_brand('integrations.supabase.reviewsTable');
             if ($brand_table) {
                 $default_table = $brand_table;
             }
         }
+
         $this->table_name = apply_filters('shaped/reviews/table_name', $default_table);
 
-        // Admin actions
         add_action('admin_menu', [$this, 'add_admin_menu']);
         add_action('admin_init', [$this, 'handle_manual_sync']);
         add_action('admin_init', [$this, 'handle_duplicate_cleanup']);
+        add_action('rest_api_init', [$this, 'register_rest_routes']);
     }
 
     /**
@@ -58,20 +62,31 @@ class Sync {
         }
 
         $endpoint = $this->supabase_url . '/rest/v1/' . $this->table_name;
-        $params = [
-            'select' => '*',
-            'offset' => $offset,
-            'limit'  => $limit,
-            'order'  => 'reviewDate.desc'
+
+        // Build query with filters (PostgREST syntax)
+        $query_params = [
+            'select'     => '*',
+            'status'     => 'eq.approved',
+            'reviewText' => 'not.is.null',
+            'provider'   => 'in.(booking,google,tripadvisor,expedia)',
+            'order'      => 'is_featured.desc,priority.desc,reviewDate.desc',
+            'offset'     => $offset,
+            'limit'      => $limit,
         ];
 
-        $url = $endpoint . '?' . http_build_query($params);
+        $url = $endpoint . '?' . http_build_query($query_params);
+
+        // Fix the in.() syntax that http_build_query mangles
+        $url = str_replace('in.%28', 'in.(', $url);
+        $url = str_replace('%29', ')', $url);
+        $url = str_replace('%2C', ',', $url);
 
         $response = wp_remote_get($url, [
             'headers' => [
                 'apikey'        => $this->supabase_key,
                 'Authorization' => 'Bearer ' . $this->supabase_key,
-                'Content-Type'  => 'application/json'
+                'Content-Type'  => 'application/json',
+                'Prefer'        => 'count=exact'
             ],
             'timeout' => 30
         ]);
@@ -81,11 +96,17 @@ class Sync {
             return false;
         }
 
+        $status_code = wp_remote_retrieve_response_code($response);
+        if ($status_code !== 200) {
+            $this->log_error('API returned status ' . $status_code . ': ' . wp_remote_retrieve_body($response));
+            return false;
+        }
+
         $body = wp_remote_retrieve_body($response);
         $data = json_decode($body, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            $this->log_error('Invalid JSON response');
+            $this->log_error('Invalid JSON response: ' . json_last_error_msg());
             return false;
         }
 
@@ -104,6 +125,16 @@ class Sync {
         ];
 
         return md5(implode('|', $components));
+    }
+
+    /**
+     * Generate review title from author and date
+     */
+    private function generate_review_title(array $review): string {
+        $author = !empty($review['authorName']) ? $review['authorName'] : 'Guest';
+        $date = !empty($review['reviewDate']) ? date('M Y', strtotime($review['reviewDate'])) : '';
+
+        return trim($author . ($date ? ' - ' . $date : ''));
     }
 
     /**
@@ -130,29 +161,34 @@ class Sync {
         $existing_featured = null;
         $existing_priority = null;
         $is_locked = false;
+        $is_content_locked = false;
 
         if (!empty($existing)) {
             $post_id = $existing[0]->ID;
             $existing_featured = get_post_meta($post_id, 'is_featured', true);
             $existing_priority = get_post_meta($post_id, 'priority', true);
             $is_locked = get_post_meta($post_id, 'featured_locked', true) === '1';
+            $is_content_locked = get_post_meta($post_id, 'content_locked', true) === '1';
 
-            // Update existing post
             $post_data = [
                 'ID'           => $post_id,
                 'post_type'    => CPT::POST_TYPE,
-                'post_title'   => !empty($review['reviewTitle']) ? $review['reviewTitle'] : 'Guest Review',
-                'post_content' => $review['reviewText'] ?? '',
+                'post_title'   => $this->generate_review_title($review),
                 'post_status'  => 'publish',
                 'post_date'    => $this->format_date($review['reviewDate'])
             ];
 
+            // Only update content if not locked
+            if (!$is_content_locked) {
+                $post_data['post_content'] = $review['reviewText'] ?? '';
+            }
+
             $post_id = wp_update_post($post_data);
         } else {
-            // Create new post
+            // New post - always set content
             $post_data = [
                 'post_type'    => CPT::POST_TYPE,
-                'post_title'   => !empty($review['reviewTitle']) ? $review['reviewTitle'] : 'Guest Review',
+                'post_title'   => $this->generate_review_title($review),
                 'post_content' => $review['reviewText'] ?? '',
                 'post_status'  => 'publish',
                 'post_date'    => $this->format_date($review['reviewDate'])
@@ -186,6 +222,17 @@ class Sync {
             } elseif ($existing_priority === null || $existing_priority === '') {
                 update_post_meta($post_id, 'priority', 0);
             }
+        }
+
+        // Translation fields (set by external automation)
+        if (!empty($review['review_text_original'])) {
+            update_post_meta($post_id, 'review_text_original', $review['review_text_original']);
+        }
+        if (!empty($review['source_language'])) {
+            update_post_meta($post_id, 'source_language', $review['source_language']);
+        }
+        if (!empty($review['translated_at'])) {
+            update_post_meta($post_id, 'translated_at', $review['translated_at']);
         }
 
         // Set provider taxonomy
@@ -471,10 +518,45 @@ define('SUPABASE_SERVICE_KEY', 'your-service-key');
     private function send_error_notification(string $message): void {
         $admin_email = apply_filters('shaped/admin_email', get_option('admin_email'));
         $property_name = apply_filters('shaped/property_name', get_bloginfo('name'));
-        
+
         $subject = $property_name . ' - Review Sync Error';
         $body = "The review sync encountered an error:\n\n" . $message;
 
         wp_mail($admin_email, $subject, $body);
+    }
+
+    /**
+     * Register REST API routes
+     */
+    public function register_rest_routes(): void {
+        register_rest_route('shaped/v1', '/sync-reviews', [
+            'methods'             => 'POST',
+            'callback'            => [$this, 'handle_rest_sync'],
+            'permission_callback' => [$this, 'verify_sync_secret']
+        ]);
+    }
+
+    /**
+     * Verify sync secret from header
+     */
+    public function verify_sync_secret(\WP_REST_Request $request): bool {
+        if (!defined('SHAPED_SYNC_SECRET')) {
+            return false;
+        }
+
+        $secret = $request->get_header('X-Sync-Secret');
+        return $secret === SHAPED_SYNC_SECRET;
+    }
+
+    /**
+     * Handle REST sync request
+     */
+    public function handle_rest_sync(\WP_REST_Request $request): \WP_REST_Response {
+        $results = $this->sync_reviews();
+
+        return new \WP_REST_Response([
+            'success' => true,
+            'data'    => $results
+        ], 200);
     }
 }

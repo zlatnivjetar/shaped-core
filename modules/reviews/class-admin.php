@@ -45,17 +45,14 @@ class Admin {
 
         // Admin styles
         add_action('admin_head', [__CLASS__, 'admin_styles']);
-
-        // Elementor query (legacy - specific query ID)
-        add_action('elementor/query/featured_reviews_query', [__CLASS__, 'elementor_featured_query']);
     }
 
     /**
      * Initialize frontend hooks
      */
     public static function init_frontend(): void {
-        // Apply featured/priority sorting to all frontend review queries
-        add_action('pre_get_posts', [__CLASS__, 'apply_frontend_sorting']);
+        add_filter('posts_orderby', [__CLASS__, 'force_review_sorting'], 999, 2);
+        add_filter('posts_join', [__CLASS__, 'join_meta_for_sorting'], 999, 2);
     }
 
     /**
@@ -238,78 +235,56 @@ class Admin {
     }
 
     /**
-     * Apply featured/priority sorting to all frontend review queries
-     * This ensures reviews are always sorted correctly, even with Elementor taxonomy filters
+     * Join meta tables for sorting
      */
-    public static function apply_frontend_sorting(\WP_Query $query): void {
-        // Only apply on frontend, for main queries or Elementor queries
-        if (is_admin()) {
-            return;
+    public static function join_meta_for_sorting(string $join, \WP_Query $query): string {
+        global $wpdb;
+
+        if (!self::is_frontend_review_query($query)) {
+            return $join;
         }
 
-        // Only apply to review post type queries
-        if ($query->get('post_type') !== CPT::POST_TYPE) {
-            return;
+        // Check if joins already exist to prevent duplicates
+        if (strpos($join, 'shaped_feat_meta') !== false) {
+            return $join;
         }
 
-        // Don't override if user explicitly set orderby (unless it's the default 'date')
-        $current_orderby = $query->get('orderby');
-        if (!empty($current_orderby) && $current_orderby !== 'date' && $current_orderby !== 'post_date') {
-            return;
+        $join .= " LEFT JOIN {$wpdb->postmeta} AS shaped_feat_meta ON ({$wpdb->posts}.ID = shaped_feat_meta.post_id AND shaped_feat_meta.meta_key = 'is_featured')";
+        $join .= " LEFT JOIN {$wpdb->postmeta} AS shaped_prio_meta ON ({$wpdb->posts}.ID = shaped_prio_meta.post_id AND shaped_prio_meta.meta_key = 'priority')";
+
+        return $join;
+    }
+
+    /**
+     * Force review sorting order
+     */
+    public static function force_review_sorting(string $orderby, \WP_Query $query): string {
+        global $wpdb;
+
+        if (!self::is_frontend_review_query($query)) {
+            return $orderby;
         }
 
-        // Set up meta query for featured and priority
-        $existing_meta_query = $query->get('meta_query') ?: [];
+        return "CAST(COALESCE(shaped_feat_meta.meta_value, '0') AS UNSIGNED) DESC,
+                CAST(COALESCE(shaped_prio_meta.meta_value, '0') AS UNSIGNED) DESC,
+                {$wpdb->posts}.post_date DESC";
+    }
 
-        // Add clauses for featured and priority if they don't already exist
-        $has_featured_clause = false;
-        $has_priority_clause = false;
-
-        if (is_array($existing_meta_query)) {
-            foreach ($existing_meta_query as $key => $clause) {
-                if (isset($clause['key'])) {
-                    if ($clause['key'] === 'is_featured') {
-                        $has_featured_clause = true;
-                    }
-                    if ($clause['key'] === 'priority') {
-                        $has_priority_clause = true;
-                    }
-                }
-            }
+    /**
+     * Check if this is a frontend review query
+     */
+    private static function is_frontend_review_query(\WP_Query $query): bool {
+        if (is_admin() && !wp_doing_ajax()) {
+            return false;
         }
 
-        // Build meta query
-        $meta_query = is_array($existing_meta_query) ? $existing_meta_query : [];
+        $post_type = $query->get('post_type');
 
-        if (!$has_featured_clause) {
-            $meta_query['featured_clause'] = [
-                'key'     => 'is_featured',
-                'compare' => 'EXISTS',
-                'type'    => 'NUMERIC'
-            ];
+        if (is_array($post_type)) {
+            return in_array(CPT::POST_TYPE, $post_type, true);
         }
 
-        if (!$has_priority_clause) {
-            $meta_query['priority_clause'] = [
-                'key'     => 'priority',
-                'compare' => 'EXISTS',
-                'type'    => 'NUMERIC'
-            ];
-        }
-
-        if (!empty($meta_query)) {
-            if (!isset($meta_query['relation'])) {
-                $meta_query['relation'] = 'AND';
-            }
-            $query->set('meta_query', $meta_query);
-        }
-
-        // Set orderby to prioritize featured, then priority, then date
-        $query->set('orderby', [
-            'featured_clause' => 'DESC',
-            'priority_clause' => 'DESC',
-            'date'            => 'DESC'
-        ]);
+        return $post_type === CPT::POST_TYPE;
     }
 
     /**
@@ -412,7 +387,8 @@ class Admin {
         $is_featured = get_post_meta($post->ID, 'is_featured', true);
         $priority = get_post_meta($post->ID, 'priority', true);
         $is_locked = get_post_meta($post->ID, 'featured_locked', true);
-        
+        $is_content_locked = get_post_meta($post->ID, 'content_locked', true);
+
         wp_nonce_field('shaped_featured_nonce', 'shaped_featured_nonce');
         ?>
         <p>
@@ -423,8 +399,8 @@ class Admin {
         </p>
         <p>
             <label for="shaped_priority">Priority (0-100):</label><br>
-            <input type="number" id="shaped_priority" name="shaped_priority" 
-                   value="<?php echo esc_attr($priority ?: '0'); ?>" 
+            <input type="number" id="shaped_priority" name="shaped_priority"
+                   value="<?php echo esc_attr($priority ?: '0'); ?>"
                    min="0" max="100" style="width:100%">
             <small>Higher numbers appear first among featured reviews</small>
         </p>
@@ -434,6 +410,13 @@ class Admin {
                 <strong>Lock featured settings</strong>
             </label>
             <br><small>Prevents sync from overwriting these values</small>
+        </p>
+        <p>
+            <label>
+                <input type="checkbox" name="shaped_content_locked" value="1" <?php checked($is_content_locked, '1'); ?>>
+                <strong>Lock review text</strong>
+            </label>
+            <br><small>Prevents sync from overwriting manual text edits</small>
         </p>
         <?php
     }
@@ -458,6 +441,7 @@ class Admin {
         update_post_meta($post_id, 'is_featured', isset($_POST['shaped_is_featured']) ? '1' : '0');
         update_post_meta($post_id, 'priority', intval($_POST['shaped_priority'] ?? 0));
         update_post_meta($post_id, 'featured_locked', isset($_POST['shaped_featured_locked']) ? '1' : '0');
+        update_post_meta($post_id, 'content_locked', isset($_POST['shaped_content_locked']) ? '1' : '0');
     }
 
     /**
@@ -599,34 +583,6 @@ class Admin {
             }
         </style>
         <?php
-    }
-
-    /**
-     * Elementor featured reviews query
-     */
-    public static function elementor_featured_query(\WP_Query $query): void {
-        $query->set('post_type', CPT::POST_TYPE);
-        $query->set('post_status', 'publish');
-
-        $query->set('meta_query', [
-            'relation' => 'AND',
-            'featured_clause' => [
-                'key'     => 'is_featured',
-                'compare' => 'EXISTS',
-                'type'    => 'NUMERIC'
-            ],
-            'priority_clause' => [
-                'key'     => 'priority',
-                'compare' => 'EXISTS',
-                'type'    => 'NUMERIC'
-            ]
-        ]);
-
-        $query->set('orderby', [
-            'featured_clause' => 'DESC',
-            'priority_clause' => 'DESC',
-            'date'            => 'DESC'
-        ]);
     }
 
     /**
