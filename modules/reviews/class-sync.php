@@ -141,6 +141,11 @@ class Sync {
      * Upsert review to WordPress
      */
     private function upsert_review(array $review): bool {
+        // Set flag to prevent auto-locking during sync
+        if (!defined('SHAPED_REVIEWS_SYNC_RUNNING')) {
+            define('SHAPED_REVIEWS_SYNC_RUNNING', true);
+        }
+
         // Skip if not approved
         if (empty($review['status']) || $review['status'] !== 'approved') {
             return false;
