@@ -55,70 +55,64 @@ class Sync {
     /**
      * Fetch reviews from Supabase
      */
-private function fetch_from_supabase(int $offset = 0, int $limit = 100): array|false {
-    if (!$this->has_credentials()) {
-        $this->log_error('Missing Supabase credentials');
-        return false;
+    private function fetch_from_supabase(int $offset = 0, int $limit = 100): array|false {
+        if (!$this->has_credentials()) {
+            $this->log_error('Missing Supabase credentials');
+            return false;
+        }
+
+        $endpoint = $this->supabase_url . '/rest/v1/' . $this->table_name;
+
+        // All columns are now snake_case in Supabase
+        $query_params = [
+            'select'      => '*',
+            'status'      => 'eq.approved',
+            'review_text' => 'not.is.null',
+            'provider'    => 'in.(booking,google,tripadvisor,expedia)',
+            'or'          => '(and(provider.in.(google,tripadvisor),review_rating.gte.4),and(provider.in.(booking,expedia),review_rating.gte.8))',
+            'order'       => 'is_featured.desc,priority.desc,review_date.desc',
+            'offset'      => $offset,
+            'limit'       => $limit,
+        ];
+
+        $url = $endpoint . '?' . http_build_query($query_params);
+
+        // Fix the in.() syntax that http_build_query mangles
+        $url = str_replace('in.%28', 'in.(', $url);
+        $url = str_replace('%29', ')', $url);
+        $url = str_replace('%2C', ',', $url);
+
+        $response = wp_remote_get($url, [
+            'headers' => [
+                'apikey'        => $this->supabase_key,
+                'Authorization' => 'Bearer ' . $this->supabase_key,
+                'Content-Type'  => 'application/json',
+                'Prefer'        => 'count=exact'
+            ],
+            'timeout' => 30
+        ]);
+
+        if (is_wp_error($response)) {
+            $this->log_error('API request failed: ' . $response->get_error_message());
+            return false;
+        }
+
+        $status_code = wp_remote_retrieve_response_code($response);
+        if ($status_code !== 200 && $status_code !== 206) {
+            $this->log_error('API returned status ' . $status_code . ': ' . wp_remote_retrieve_body($response));
+            return false;
+        }
+
+        $body = wp_remote_retrieve_body($response);
+        $data = json_decode($body, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $this->log_error('Invalid JSON response: ' . json_last_error_msg());
+            return false;
+        }
+
+        return $data;
     }
-
-    $endpoint = $this->supabase_url . '/rest/v1/' . $this->table_name;
-
-    // All columns are now snake_case in Supabase
-    $query_params = [
-        'select'      => '*',
-        'status'      => 'eq.approved',
-        'review_text' => 'not.is.null',
-        'provider'    => 'in.(booking,google,tripadvisor,expedia)',
-        'or'          => '(and(provider.in.(google,tripadvisor),review_rating.gte.4),and(provider.in.(booking,expedia),review_rating.gte.8))',
-        'order'       => 'is_featured.desc,priority.desc,review_date.desc',
-        'offset'      => $offset,
-        'limit'       => $limit,
-    ];
-
-    $url = $endpoint . '?' . http_build_query($query_params);
-
-    // Fix the in.() syntax that http_build_query mangles
-    $url = str_replace('in.%28', 'in.(', $url);
-    $url = str_replace('%29', ')', $url);
-    $url = str_replace('%2C', ',', $url);
-
-    $response = wp_remote_get($url, [
-        'headers' => [
-            'apikey'        => $this->supabase_key,
-            'Authorization' => 'Bearer ' . $this->supabase_key,
-            'Content-Type'  => 'application/json',
-            'Prefer'        => 'count=exact'
-        ],
-        'timeout' => 30
-    ]);
-
-    if (is_wp_error($response)) {
-        $this->log_error('API request failed: ' . $response->get_error_message());
-        return false;
-    }
-
-    $status_code = wp_remote_retrieve_response_code($response);
-    if ($status_code !== 200 && $status_code !== 206) {
-        $this->log_error('API returned status ' . $status_code . ': ' . wp_remote_retrieve_body($response));
-        return false;
-    }
-
-    $body = wp_remote_retrieve_body($response);
-    $data = json_decode($body, true);
-
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        $this->log_error('Invalid JSON response: ' . json_last_error_msg());
-        return false;
-    }
-
-    // DEBUG: Log first review to see actual structure
-    if ($offset === 0 && !empty($data[0])) {
-        error_log('First review structure: ' . print_r($data[0], true));
-    }
-
-    return $data;
-}
-
 
     /**
      * Generate unique key for deduplication
@@ -147,122 +141,115 @@ private function fetch_from_supabase(int $offset = 0, int $limit = 100): array|f
     /**
      * Upsert review to WordPress
      */
-private function upsert_review(array $review): bool {
-    // Skip if not approved
-    if (empty($review['status']) || $review['status'] !== 'approved') {
-        error_log('Review rejected: status check failed - ' . ($review['status'] ?? 'null'));
-        return false;
-    }
-
-    // Skip if review text is null or too short
-    if (empty($review['review_text']) || mb_strlen(trim($review['review_text'])) < 5) {
-        error_log('Review rejected: text check failed - length: ' . mb_strlen($review['review_text'] ?? ''));
-        return false;
-    }
-
-    // Normalize author name (rename if too short)
-    $author_name = $review['author_name'] ?? 'Guest';
-    if (mb_strlen(trim($author_name)) < 4) {
-        $author_name = 'Guest';
-    }
-
-    $external_key = $this->generate_external_key($review);
-
-    // Check if review exists
-    $existing = get_posts([
-        'post_type'      => CPT::POST_TYPE,
-        'meta_key'       => 'external_key',
-        'meta_value'     => $external_key,
-        'posts_per_page' => 1,
-        'post_status'    => 'any'
-    ]);
-
-    // Store existing values before update
-    $existing_featured = null;
-    $existing_priority = null;
-    $is_locked = false;
-    $is_content_locked = false;
-
-    if (!empty($existing)) {
-        $post_id = $existing[0]->ID;
-        $existing_featured = get_post_meta($post_id, 'is_featured', true);
-        $existing_priority = get_post_meta($post_id, 'priority', true);
-        $is_locked = get_post_meta($post_id, 'featured_locked', true) === '1';
-        $is_content_locked = get_post_meta($post_id, 'content_locked', true) === '1';
-
-        $post_data = [
-            'ID'           => $post_id,
-            'post_type'    => CPT::POST_TYPE,
-            'post_title'   => $this->generate_review_title($review),
-            'post_status'  => 'publish',
-            'post_date'    => $this->format_date($review['review_date'])
-        ];
-
-        // Only update content if not locked
-        if (!$is_content_locked) {
-            $post_data['post_content'] = $review['review_text'] ?? '';
+    private function upsert_review(array $review): bool {
+        // Skip if not approved
+        if (empty($review['status']) || $review['status'] !== 'approved') {
+            return false;
         }
 
-        $post_id = wp_update_post($post_data);
-    } else {
-        // New post - always set content
-        $post_data = [
-            'post_type'    => CPT::POST_TYPE,
-            'post_title'   => $this->generate_review_title($review),
-            'post_content' => $review['review_text'] ?? '',
-            'post_status'  => 'publish',
-            'post_date'    => $this->format_date($review['review_date'])
-        ];
-
-        $post_id = wp_insert_post($post_data);
-    }
-
-    if (!$post_id || is_wp_error($post_id)) {
-        return false;
-    }
-
-    // Update meta fields
-    update_post_meta($post_id, 'external_key', $external_key);
-    update_post_meta($post_id, 'provider', $review['provider'] ?? '');
-    update_post_meta($post_id, 'review_date', $review['review_date'] ?? '');
-    update_post_meta($post_id, 'review_rating', intval($review['review_rating'] ?? 0));
-    update_post_meta($post_id, 'author_name', $author_name);
-    update_post_meta($post_id, 'status', $review['status'] ?? '');
-
-    // Handle featured/priority - respect locks
-    if (!$is_locked) {
-        if (isset($review['is_featured'])) {
-            update_post_meta($post_id, 'is_featured', $review['is_featured'] ? '1' : '0');
-        } elseif ($existing_featured === null || $existing_featured === '') {
-            update_post_meta($post_id, 'is_featured', '0');
+        // Normalize author name (rename if too short)
+        $author_name = $review['author_name'] ?? 'Guest';
+        if (mb_strlen(trim($author_name)) < 4) {
+            $author_name = 'Guest';
         }
 
-        if (isset($review['priority'])) {
-            update_post_meta($post_id, 'priority', intval($review['priority']));
-        } elseif ($existing_priority === null || $existing_priority === '') {
-            update_post_meta($post_id, 'priority', 0);
+        $external_key = $this->generate_external_key($review);
+
+        // Check if review exists
+        $existing = get_posts([
+            'post_type'      => CPT::POST_TYPE,
+            'meta_key'       => 'external_key',
+            'meta_value'     => $external_key,
+            'posts_per_page' => 1,
+            'post_status'    => 'any'
+        ]);
+
+        // Store existing values before update
+        $existing_featured = null;
+        $existing_priority = null;
+        $is_locked = false;
+        $is_content_locked = false;
+
+        if (!empty($existing)) {
+            $post_id = $existing[0]->ID;
+            $existing_featured = get_post_meta($post_id, 'is_featured', true);
+            $existing_priority = get_post_meta($post_id, 'priority', true);
+            $is_locked = get_post_meta($post_id, 'featured_locked', true) === '1';
+            $is_content_locked = get_post_meta($post_id, 'content_locked', true) === '1';
+
+            $post_data = [
+                'ID'           => $post_id,
+                'post_type'    => CPT::POST_TYPE,
+                'post_title'   => $this->generate_review_title($review),
+                'post_status'  => 'publish',
+                'post_date'    => $this->format_date($review['review_date'])
+            ];
+
+            // Only update content if not locked
+            if (!$is_content_locked) {
+                $post_data['post_content'] = $review['review_text'] ?? '';
+            }
+
+            $post_id = wp_update_post($post_data);
+        } else {
+            // New post - always set content
+            $post_data = [
+                'post_type'    => CPT::POST_TYPE,
+                'post_title'   => $this->generate_review_title($review),
+                'post_content' => $review['review_text'] ?? '',
+                'post_status'  => 'publish',
+                'post_date'    => $this->format_date($review['review_date'])
+            ];
+
+            $post_id = wp_insert_post($post_data);
         }
-    }
 
-    // Translation fields (set by external automation)
-    if (!empty($review['review_text_original'])) {
-        update_post_meta($post_id, 'review_text_original', $review['review_text_original']);
-    }
-    if (!empty($review['source_language'])) {
-        update_post_meta($post_id, 'source_language', $review['source_language']);
-    }
-    if (!empty($review['translated_at'])) {
-        update_post_meta($post_id, 'translated_at', $review['translated_at']);
-    }
+        if (!$post_id || is_wp_error($post_id)) {
+            return false;
+        }
 
-    // Set provider taxonomy
-    $provider_slug = $this->normalize_provider_slug($review['provider'] ?? '');
-    if ($provider_slug) {
-        wp_set_object_terms($post_id, $provider_slug, 'review_provider');
-    }
+        // Update meta fields
+        update_post_meta($post_id, 'external_key', $external_key);
+        update_post_meta($post_id, 'provider', $review['provider'] ?? '');
+        update_post_meta($post_id, 'review_date', $review['review_date'] ?? '');
+        update_post_meta($post_id, 'review_rating', intval($review['review_rating'] ?? 0));
+        update_post_meta($post_id, 'author_name', $author_name);
+        update_post_meta($post_id, 'status', $review['status'] ?? '');
 
-    return true;
-}
+        // Handle featured/priority - respect locks
+        if (!$is_locked) {
+            if (isset($review['is_featured'])) {
+                update_post_meta($post_id, 'is_featured', $review['is_featured'] ? '1' : '0');
+            } elseif ($existing_featured === null || $existing_featured === '') {
+                update_post_meta($post_id, 'is_featured', '0');
+            }
+
+            if (isset($review['priority'])) {
+                update_post_meta($post_id, 'priority', intval($review['priority']));
+            } elseif ($existing_priority === null || $existing_priority === '') {
+                update_post_meta($post_id, 'priority', 0);
+            }
+        }
+
+        // Translation fields (set by external automation)
+        if (!empty($review['review_text_original'])) {
+            update_post_meta($post_id, 'review_text_original', $review['review_text_original']);
+        }
+        if (!empty($review['source_language'])) {
+            update_post_meta($post_id, 'source_language', $review['source_language']);
+        }
+        if (!empty($review['translated_at'])) {
+            update_post_meta($post_id, 'translated_at', $review['translated_at']);
+        }
+
+        // Set provider taxonomy
+        $provider_slug = $this->normalize_provider_slug($review['provider'] ?? '');
+        if ($provider_slug) {
+            wp_set_object_terms($post_id, $provider_slug, 'review_provider');
+        }
+
+        return true;
+    }
 
     /**
      * Normalize provider slug
@@ -296,6 +283,7 @@ private function upsert_review(array $review): bool {
         $limit = 100;
         $total_synced = 0;
         $total_errors = 0;
+        $total_skipped = 0;
 
         do {
             $reviews = $this->fetch_from_supabase($offset, $limit);
@@ -310,6 +298,12 @@ private function upsert_review(array $review): bool {
             }
 
             foreach ($reviews as $review) {
+                // Skip reviews with insufficient text length
+                if (empty($review['review_text']) || mb_strlen(trim($review['review_text'])) < 5) {
+                    $total_skipped++;
+                    continue;
+                }
+
                 if (!empty($review['status']) && $review['status'] === 'approved') {
                     if ($this->upsert_review($review)) {
                         $total_synced++;
@@ -330,6 +324,7 @@ private function upsert_review(array $review): bool {
 
         $results = [
             'synced'         => $total_synced,
+            'skipped'        => $total_skipped,
             'errors'         => $total_errors,
             'execution_time' => round(microtime(true) - $start_time, 2),
             'timestamp'      => current_time('mysql')
@@ -389,6 +384,9 @@ private function upsert_review(array $review): bool {
                 <?php if (!empty($last_sync)): ?>
                     <p><strong>Last Sync:</strong> <?php echo esc_html($last_sync['timestamp']); ?></p>
                     <p><strong>Reviews Synced:</strong> <?php echo esc_html($last_sync['synced']); ?></p>
+                    <?php if (isset($last_sync['skipped'])): ?>
+                        <p><strong>Skipped:</strong> <?php echo esc_html($last_sync['skipped']); ?></p>
+                    <?php endif; ?>
                     <p><strong>Errors:</strong> <?php echo esc_html($last_sync['errors']); ?></p>
                     <p><strong>Execution Time:</strong> <?php echo esc_html($last_sync['execution_time']); ?>s</p>
                 <?php else: ?>
