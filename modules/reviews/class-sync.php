@@ -97,7 +97,7 @@ class Sync {
         }
 
         $status_code = wp_remote_retrieve_response_code($response);
-        if ($status_code !== 200) {
+        if ($status_code !== 200 && $status_code !== 206) {
             $this->log_error('API returned status ' . $status_code . ': ' . wp_remote_retrieve_body($response));
             return false;
         }
