@@ -1,0 +1,37 @@
+🎯 Configuration Per Client
+For a New Client
+Copy template:
+
+cp -r clients/_template clients/yourclient
+
+Edit /clients/yourclient/brand.json:
+
+"integrations": {
+  "supabase": {
+    "reviewsTable": "yourclient_reviews_all",
+    "autoSync": true
+  }
+}
+
+Done! No need to touch module code or wp-config.php
+
+Configuration Locations
+wp-config.php (Environment secrets only):
+
+define('SUPABASE_URL', 'https://xxx.supabase.co');
+define('SUPABASE_SERVICE_KEY', 'xxx');
+define('SHAPED_SYNC_SECRET', 'xxx');
+
+clients/{client}/brand.json (Per-client settings):
+
+{
+  "company": { "name": "..." },
+  "contact": { "email": "..." },
+  "colors": { "brand": { "primary": "#D1AF5D" } },
+  "integrations": {
+    "supabase": {
+      "reviewsTable": "client_reviews_all",
+      "autoSync": true
+    }
+  }
+}
