@@ -58,7 +58,8 @@
   },
   "integrations": {
     "supabase": {
-      "reviewsTable": "preelook_reviews"
+      "reviewsTable": "preelook_reviews_all",
+      "autoSync": true
     }
   }
 }
