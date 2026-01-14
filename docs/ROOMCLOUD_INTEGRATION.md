@@ -578,7 +578,7 @@ Clear retry queue (optionally for specific booking).
 ### Update RoomCloud Password
 
 ```bash
-wp roomcloud update-password <password> [--test]
+wp roomcloud update_password <password> [--test]
 ```
 
 Update the RoomCloud API password in the database.
@@ -588,7 +588,7 @@ Update the RoomCloud API password in the database.
 
 **Example:**
 ```bash
-wp roomcloud update-password "NewSecurePass123!" --test
+wp roomcloud update_password "NewSecurePass123!" --test
 ```
 
 ### Show Configuration
@@ -630,8 +630,8 @@ rcpassword
 ```
 
 The script will:
-1. Ask for the client URL (e.g., `preelook.com`)
-2. Ask for the new password
+1. Ask for the client URL
+2. Ask for the new password (visible)
 3. Navigate to `domains/{client}/public_html`
 4. Update the password
 5. Test the connection
@@ -645,8 +645,8 @@ $ rcpassword
 ║   RoomCloud Password Updater              ║
 ╚═══════════════════════════════════════════╝
 
-Enter client URL (e.g., preelook.com): preelook.com
-Enter new RoomCloud password: ********
+Enter client URL: preelook.com
+Enter new RoomCloud password: MyNewPass123!
 
 ℹ Updating RoomCloud password for preelook.com...
 

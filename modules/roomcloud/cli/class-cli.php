@@ -182,10 +182,10 @@ class Shaped_RC_CLI {
      * ## EXAMPLES
      *
      *     # Update password
-     *     wp roomcloud update-password "NewSecurePass123!"
+     *     wp roomcloud update_password "NewSecurePass123!"
      *
      *     # Update and test connection
-     *     wp roomcloud update-password "NewSecurePass123!" --test
+     *     wp roomcloud update_password "NewSecurePass123!" --test
      *
      * @synopsis <password> [--test]
      */
