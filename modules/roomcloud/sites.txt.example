@@ -1,0 +1,23 @@
+# RoomCloud Sites Configuration
+#
+# List all WordPress sites that use RoomCloud integration.
+# One site per line.
+#
+# Format:
+#   Local sites:  /absolute/path/to/wordpress
+#   Remote sites: user@hostname:/path/to/wordpress
+#
+# Lines starting with # are ignored (comments)
+# Empty lines are ignored
+
+# Example local sites:
+/var/www/client1.com/public_html
+/var/www/client2.com/public_html
+/home/sites/client3
+
+# Example remote sites (via SSH):
+root@client4.com:/var/www/html
+user@192.168.1.100:/var/www/client5
+staging@staging-server:/home/staging/client6
+
+# Add your 10 client sites below:
