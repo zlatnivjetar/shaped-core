@@ -575,6 +575,30 @@ wp shaped-rc clear-queue [--booking_id=<id>]
 
 Clear retry queue (optionally for specific booking).
 
+### Update RoomCloud Password
+
+```bash
+wp roomcloud update-password <password> [--test]
+```
+
+Update the RoomCloud API password in the database.
+
+**Options:**
+- `--test` — Test connection after updating
+
+**Example:**
+```bash
+wp roomcloud update-password "NewSecurePass123!" --test
+```
+
+### Show Configuration
+
+```bash
+wp roomcloud config
+```
+
+Display current RoomCloud configuration (password is masked for security).
+
 ---
 
 ## Error Handling
@@ -697,6 +721,78 @@ wp post list --post_type=mphb_booking \
 1. Webhook retry without idempotency
 2. Manual sync after webhook processed
 3. Module re-enabled after being disabled
+
+---
+
+## Bulk Password Management
+
+When RoomCloud forces a password change (e.g., periodic security requirements), you can update the password across all your client sites efficiently.
+
+### Using the Bulk Update Script
+
+**Location:** `modules/roomcloud/update-password-bulk.sh`
+
+#### Setup
+
+1. Create a sites list file:
+```bash
+cp modules/roomcloud/sites.txt.example sites.txt
+```
+
+2. Edit `sites.txt` and add your client site paths:
+```
+/var/www/client1.com/public_html
+/var/www/client2.com/public_html
+user@server.com:/var/www/client3
+```
+
+3. Make the script executable (already done):
+```bash
+chmod +x modules/roomcloud/update-password-bulk.sh
+```
+
+#### Usage
+
+**Update all sites from list:**
+```bash
+./modules/roomcloud/update-password-bulk.sh "NewPassword123!" sites.txt
+```
+
+**Update and test connections:**
+```bash
+./modules/roomcloud/update-password-bulk.sh "NewPassword123!" sites.txt --test
+```
+
+**Interactive mode:**
+```bash
+./modules/roomcloud/update-password-bulk.sh "NewPassword123!" --interactive
+```
+
+#### Features
+
+- ✅ Updates local and remote (SSH) sites
+- ✅ Shows progress with colored output
+- ✅ Optional connection testing after update
+- ✅ Summary report with failed sites
+- ✅ Safe: requires confirmation before proceeding
+
+#### Troubleshooting
+
+**WP-CLI not found:**
+```bash
+# Install WP-CLI
+curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+chmod +x wp-cli.phar
+sudo mv wp-cli.phar /usr/local/bin/wp
+```
+
+**SSH timeout:**
+- Ensure SSH keys are set up for passwordless authentication
+- Test SSH connection manually: `ssh user@server`
+
+**Permission denied:**
+- Use `--allow-root` flag (already included in script)
+- Or run as the web server user: `sudo -u www-data wp ...`
 
 ---
 
