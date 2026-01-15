@@ -41,7 +41,7 @@
     "priceRange": "€€",
     "currency": "EUR",
     "paymentAccepted": ["Credit Card", "Debit Card"],
-    "checkinTime": "14:00",
+    "checkinTime": "16:00",
     "checkoutTime": "11:00",
     "petsAllowed": false,
     "amenities": [
@@ -121,7 +121,7 @@
   },
   "integrations": {
     "supabase": {
-      "reviewsTable": "preelook_reviews_all",
+      "reviewsTable": "",
       "autoSync": false
     }
   }
