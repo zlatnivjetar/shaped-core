@@ -65,7 +65,7 @@ class Shaped_Brand_Config
 
         // 3. Load client-specific override if exists
         if ($this->client) {
-            $client_path = $this->get_client_config_path($this->client, 'brand.json');
+            $client_path = $this->get_client_config_path($this->client, $this->client . '.json');
             $client_config = $this->load_json_file($client_path);
 
             if ($client_config) {
