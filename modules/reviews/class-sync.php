@@ -66,7 +66,6 @@ class Sync {
         // All columns are now snake_case in Supabase
         $query_params = [
             'select'      => '*',
-            'status'      => 'eq.approved',
             'review_text' => 'not.is.null',
             'provider'    => 'in.(booking,google,tripadvisor,expedia)',
             'or'          => '(and(provider.in.(google,tripadvisor),review_rating.gte.4),and(provider.in.(booking,expedia),review_rating.gte.8))',
@@ -142,11 +141,6 @@ class Sync {
      * Upsert review to WordPress
      */
     private function upsert_review(array $review): bool {
-        // Skip if not approved
-        if (empty($review['status']) || $review['status'] !== 'approved') {
-            return false;
-        }
-
         // Normalize author name (rename if too short)
         $author_name = $review['author_name'] ?? 'Guest';
         if (mb_strlen(trim($author_name)) < 4) {
@@ -310,12 +304,10 @@ class Sync {
                     continue;
                 }
 
-                if (!empty($review['status']) && $review['status'] === 'approved') {
-                    if ($this->upsert_review($review)) {
-                        $total_synced++;
-                    } else {
-                        $total_errors++;
-                    }
+                if ($this->upsert_review($review)) {
+                    $total_synced++;
+                } else {
+                    $total_errors++;
                 }
             }
 
