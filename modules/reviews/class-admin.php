@@ -155,7 +155,8 @@ class Admin {
             'booking'     => ['name' => 'Booking', 'color' => '#003580'],
             'google'      => ['name' => 'Google', 'color' => '#4285f4'],
             'tripadvisor' => ['name' => 'TripAdvisor', 'color' => '#00af87'],
-            'expedia'     => ['name' => 'Expedia', 'color' => '#ffda00', 'text' => '#000']
+            'expedia'     => ['name' => 'Expedia', 'color' => '#ffda00', 'text' => '#000'],
+            'airbnb'      => ['name' => 'Airbnb', 'color' => '#ff385c']
         ];
 
         $provider_lower = strtolower($provider);

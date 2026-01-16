@@ -67,8 +67,8 @@ class Sync {
         $query_params = [
             'select'      => '*',
             'review_text' => 'not.is.null',
-            'provider'    => 'in.(booking,google,tripadvisor,expedia)',
-            'or'          => '(and(provider.in.(google,tripadvisor),review_rating.gte.4),and(provider.in.(booking,expedia),review_rating.gte.8))',
+            'provider'    => 'in.(booking,google,tripadvisor,expedia,airbnb)',
+            'or'          => '(and(provider.in.(google,tripadvisor,airbnb),review_rating.gte.4),and(provider.in.(booking,expedia),review_rating.gte.8))',
             'order'       => 'is_featured.desc,priority.desc,review_date.desc',
             'offset'      => $offset,
             'limit'       => $limit,
