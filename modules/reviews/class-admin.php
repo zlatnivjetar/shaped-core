@@ -109,7 +109,7 @@ class Admin {
             return;
         }
 
-        $is_five_scale = in_array(strtolower($provider), ['google', 'tripadvisor']);
+        $is_five_scale = in_array(strtolower($provider), ['google', 'tripadvisor', 'airbnb']);
 
         if ($is_five_scale) {
             $star_rating = floatval($rating);
