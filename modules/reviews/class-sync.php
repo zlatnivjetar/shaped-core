@@ -26,7 +26,7 @@ class Sync {
         $this->supabase_key = defined('SUPABASE_SERVICE_KEY') ? SUPABASE_SERVICE_KEY : '';
 
         // Use table directly (not view) - configurable via constant or brand config
-        $default_table = 'preelook_reviews_all';
+        $default_table = '';
 
         if (defined('SHAPED_REVIEWS_TABLE')) {
             $default_table = SHAPED_REVIEWS_TABLE;
