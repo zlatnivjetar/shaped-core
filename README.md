@@ -1,5 +1,18 @@
 # Shaped Core - Refactored Architecture
 
+## 🚀 Multi-Client Deployment
+
+**NEW**: Shaped Core now uses **MU-Plugin configuration** for secure multi-client deployments.
+
+- 📝 **Template**: `shaped-client-config.php` (copy to `/wp-content/mu-plugins/`)
+- 📚 **Full Guide**: See [DEPLOYMENT.md](DEPLOYMENT.md)
+- 🔒 **Security**: Each site has only its own configuration
+- ⚡ **Updates**: Push code via Git without touching client configs
+
+**Deprecated**: `clients/` folder approach (see [clients/README.md](clients/README.md) for migration)
+
+---
+
 ## Directory Structure
 
 ```
@@ -18,15 +31,9 @@ shaped-core/
 │       ├── reviews-dashboard.php
 │       └── system-dashboard.php
 │
-├── clients/                     # Client-specific overrides
-│   ├── _template/               # Template for new clients
-│   │   └── legal/
-│   │       ├── privacy.php
-│   │       └── terms.php
-│   └── [client-name]/           # Per-client customizations
-│       └── legal/
-│           ├── privacy.php
-│           └── terms.php
+├── clients/                     # DEPRECATED: Use MU-plugin instead
+│   ├── README.md                # Migration guide
+│   └── _template/               # Legacy template (reference only)
 │
 ├── config/                      # Configuration
 │   ├── brand-helpers.php        # Brand/white-label helpers

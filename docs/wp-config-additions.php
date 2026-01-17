@@ -1,10 +1,42 @@
 <?php
 /**
- * Shaped Core - Recommended wp-config.php Additions
+ * Shaped Core - Required wp-config.php Additions
  *
- * Add these constants to your wp-config.php file to enable optional features.
+ * Add these constants to your wp-config.php file for production deployments.
  * Place them before the "That's all, stop editing!" comment.
+ *
+ * IMPORTANT: This file should contain SECRETS ONLY.
+ * For client-specific configuration (brand, features, settings), use the
+ * MU-plugin approach (see shaped-client-config.php in repository root).
  */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// REQUIRED: Payment & Integration Secrets
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Stripe API Keys
+ * Get these from: https://dashboard.stripe.com/apikeys
+ */
+define('SHAPED_STRIPE_SECRET', 'sk_live_xxxxxxxxxxxxxxxxxxxxx');
+define('SHAPED_STRIPE_WEBHOOK', 'whsec_xxxxxxxxxxxxxxxxxxxxx');
+
+/**
+ * Supabase Configuration
+ * Get these from: https://app.supabase.com/project/_/settings/api
+ *
+ * Note: URL and service key are shared across all clients in the same project
+ */
+define('SUPABASE_URL', 'https://xxxxxxxxxxxxxxxxxxxxx.supabase.co');
+define('SUPABASE_SERVICE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...');
+
+/**
+ * RoomCloud Sync Secret (if using RoomCloud integration)
+ * Generate a random secret for webhook authentication
+ */
+define('SHAPED_SYNC_SECRET', 'your-random-sync-secret-here');
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Price API - Optional Authentication

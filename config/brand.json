@@ -1,5 +1,5 @@
 {
-  "_comment": "Base brand configuration. Client-specific overrides go in clients/{client}/brand.json",
+  "_comment": "LEGACY: This file is deprecated. Use MU-plugin (shaped-client-config.php) instead. See shaped-client-config.php in repository root for template.",
 
   "company": {
     "name": "Property Name",
