@@ -2,14 +2,13 @@
 
 ## 🚀 Multi-Client Deployment
 
-**NEW**: Shaped Core now uses **MU-Plugin configuration** for secure multi-client deployments.
+**NEW**: Shaped Core uses **MU-Plugin configuration** for secure multi-client deployments.
 
-- 📝 **Template**: `shaped-client-config.php` (copy to `/wp-content/mu-plugins/`)
-- 📚 **Full Guide**: See [DEPLOYMENT.md](DEPLOYMENT.md)
+- 📝 **Setup Checklist**: [SETUP.md](SETUP.md)
 - 🔒 **Security**: Each site has only its own configuration
 - ⚡ **Updates**: Push code via Git without touching client configs
 
-**Deprecated**: `clients/` folder approach (see [clients/README.md](clients/README.md) for migration)
+**Deprecated**: `clients/` folder approach (see [clients/README.md](clients/README.md))
 
 ---
 

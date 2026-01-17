@@ -51,7 +51,7 @@ Use the **MU-plugin** approach for all new deployments:
 
 4. **Activate plugin**: WordPress will auto-load the MU-plugin
 
-**See complete instructions**: [DEPLOYMENT.md](../DEPLOYMENT.md)
+**See complete instructions**: [SETUP.md](../SETUP.md)
 
 ---
 
@@ -132,13 +132,13 @@ clients/
 └── supabase-instructions.txt    ← Still relevant
 ```
 
-**✅ Use instead**: `shaped-client-config.php` in repository root
+**✅ Use instead**: MU-plugin configuration (see SETUP.md)
 
 ---
 
 ## Support
 
-**New deployments**: See [DEPLOYMENT.md](../DEPLOYMENT.md)
+**New deployments**: See [SETUP.md](../SETUP.md)
 
 **Migration help**: See migration section above
 
@@ -149,4 +149,4 @@ clients/
 **Status**: DEPRECATED as of 2026-01-17
 **Migration Required**: Yes
 **Removal**: Future version (after migration period)
-**Replacement**: MU-Plugin approach (see shaped-client-config.php)
+**Replacement**: MU-Plugin approach (see SETUP.md)
