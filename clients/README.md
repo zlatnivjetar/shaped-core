@@ -1,230 +1,152 @@
-# Client Configuration
+# ⚠️ DEPRECATED: Client Configuration Folder
 
-This directory contains client-specific configuration for multi-client deployments of Shaped Core. Each client can have their own brand settings, legal content, and custom configurations.
+**This folder and JSON-based configuration approach is deprecated.**
 
-## Directory Structure
+## Why Deprecated?
+
+The `clients/` folder approach has **critical security and privacy issues**:
+
+❌ **Privacy Violation**: All client configs stored in one repository
+- Hotel Magnus can see Prelook's configuration
+- Client A sees Client B's data when repo is deployed
+- Violates client confidentiality
+
+❌ **Security Risk**: Configuration mixed with code
+- Client-specific secrets might leak into Git
+- Harder to manage separate client deployments
+- Configuration changes require code commits
+
+❌ **Deployment Issues**:
+- Git deployment pushes ALL client configs to ALL sites
+- Can't update one client without affecting others
+- Merge conflicts when multiple clients updated
+
+---
+
+## ✅ New Approach: MU-Plugin Configuration
+
+Use the **MU-plugin** approach for all new deployments:
+
+### Benefits:
+✅ Each site has only its own configuration
+✅ Secrets stay in wp-config.php (WordPress standard)
+✅ Code updates via Git don't touch configuration
+✅ Perfect separation: code (Git) vs config (environment)
+✅ Secure, private, and follows WordPress best practices
+
+### Quick Start:
+
+1. **Copy template**:
+   ```bash
+   cp shaped-client-config.php /wp-content/mu-plugins/shaped-client-config.php
+   ```
+
+2. **Edit configuration**: Update all values in the MU-plugin
+
+3. **Add secrets to wp-config.php**:
+   ```php
+   define('SHAPED_STRIPE_SECRET', 'sk_live_...');
+   define('SUPABASE_URL', 'https://...');
+   ```
+
+4. **Activate plugin**: WordPress will auto-load the MU-plugin
+
+**See complete instructions**: [DEPLOYMENT.md](../DEPLOYMENT.md)
+
+---
+
+## Migration from JSON Config
+
+If you have existing clients using this folder:
+
+### For Each Client Site:
+
+1. **Copy MU-plugin template**:
+   ```bash
+   cp /path/to/shaped-core/shaped-client-config.php \
+      /path/to/wp-content/mu-plugins/shaped-client-config.php
+   ```
+
+2. **Transfer JSON values** from `clients/{client}/{client}.json` to MU-plugin function
+
+3. **Verify** configuration loads:
+   ```bash
+   tail -f wp-content/debug.log | grep "Shaped Brand"
+   ```
+   Should see: `[Shaped Brand] Loaded config from MU-plugin for client: {name}`
+
+4. **Test** thoroughly (booking, emails, branding)
+
+5. **Delete old JSON** (after verification)
+
+### What to Migrate:
+
+From `clients/{client}/brand.json` → **MU-plugin**:
+- Company information
+- Contact details
+- Brand colors
+- Email settings
+- Schema.org data
+- Integration settings
+
+From `wp-config.php` or current setup → **Keep in wp-config.php**:
+- Stripe API keys
+- Supabase credentials
+- Webhook secrets
+- API authentication keys
+
+---
+
+## Legacy Content (Deprecated)
+
+This folder still contains:
+
+### `_template/`
+- Legacy JSON template (deprecated)
+- Legal content templates (still useful as reference)
+- **Do not use for new deployments**
+
+### `preelook/`
+- Example client configuration (deprecated)
+- Will be removed in future version
+- **Reference only**
+
+### `supabase-instructions.txt`
+- Still relevant for Supabase setup
+- **Keep for reference**
+
+---
+
+## Files Reference
 
 ```
 clients/
-├── README.md                       # This file
-├── _template/                      # Template for new clients (copy this)
-│   ├── brand.json                  # Template brand configuration
-│   └── legal/
-│       ├── terms.php               # Template Terms & Conditions
-│       └── privacy.php             # Template Privacy Policy
-├── preelook/                       # Example: Preelook client
-│   ├── brand.json                  # Brand overrides (optional, uses base if not present)
-│   └── legal/
-│       ├── terms.php               # Property-specific Terms & Conditions
-│       └── privacy.php             # Property-specific Privacy Policy
-└── [your-client]/                  # Your new client
-    ├── brand.json
-    └── legal/
-        ├── terms.php
-        └── privacy.php
+├── README.md                    ← This file (deprecation notice)
+├── _template/                   ← DEPRECATED: JSON template
+│   ├── template.json
+│   └── legal/                   ← Legal templates (still useful)
+│       ├── terms.php
+│       └── privacy.php
+├── preelook/                    ← DEPRECATED: Example client
+│   └── preelook.json
+└── supabase-instructions.txt    ← Still relevant
 ```
 
-## Quick Start: Setting Up a New Client
+**✅ Use instead**: `shaped-client-config.php` in repository root
 
-### Step 1: Copy the Template
-
-```bash
-cp -r clients/_template clients/your-client-name
-```
-
-### Step 2: Configure brand.json
-
-Edit `clients/your-client-name/brand.json`:
-
-```json
-{
-  "company": {
-    "name": "Your Property Name",
-    "tagline": "Your tagline",
-    "location": "City, Country",
-    "legalEntity": "Your Legal Entity Ltd",
-    "vatId": "YOUR-VAT-ID",
-    "jurisdiction": "Your Country"
-  },
-  "contact": {
-    "phone": "+1 234 567 8900",
-    "email": "info@yourproperty.com",
-    "address": {
-      "street": "123 Main Street",
-      "city": "Your City",
-      "postalCode": "12345",
-      "country": "Your Country",
-      "countryCode": "XX"
-    }
-  },
-  "colors": {
-    "brand": {
-      "primary": "#2563EB",
-      "primaryHover": "#1D4ED8"
-    }
-  }
-}
-```
-
-### Step 3: Customize Legal Content
-
-Edit the legal files to match your property's terms and local legal requirements:
-
-- `clients/your-client-name/legal/terms.php` - Terms & Conditions
-- `clients/your-client-name/legal/privacy.php` - Privacy Policy
-
-**Important:** The template files contain placeholder text. You MUST customize these with your actual legal content. Consult a legal professional.
-
-### Step 4: Activate the Client
-
-Add to `wp-config.php`:
-
-```php
-define('SHAPED_CLIENT', 'your-client-name');
-```
-
-**OR** the system will auto-detect based on domain (e.g., `your-client-name.com` → `your-client-name`)
-
-## Configuration Reference
-
-### brand.json Structure
-
-The brand.json file supports the following sections:
-
-| Section | Purpose |
-|---------|---------|
-| `company` | Company name, legal entity, VAT ID, jurisdiction |
-| `contact` | Phone, email, address, coordinates |
-| `email` | Email sender settings, check-in/out times, signature |
-| `schema` | SEO schema.org settings (lodging type, amenities) |
-| `colors` | Brand colors, semantic colors, text colors |
-| `type` | Typography settings |
-| `booking` | Booking UI specific colors and styles |
-
-### Legal Content Templates
-
-Legal content files are PHP templates with access to the `$brand` variable:
-
-```php
-<?php
-// Available in legal templates:
-$company_name = $brand['company']['name'];
-$email = $brand['contact']['email'];
-$address = $brand['contact']['address'];
-// ... etc
-?>
-
-<h2>Terms & Conditions for <?php echo esc_html($company_name); ?></h2>
-```
-
-## How It Works
-
-### Brand Configuration
-
-1. **Base Configuration**: `config/brand.json` contains default values
-2. **Client Overrides**: `clients/[client]/brand.json` overrides specific values
-3. **Deep Merge**: Only the values you specify are overridden; others inherit from base
-
-### Legal Content Loading
-
-1. System checks for `clients/[client]/legal/[type].php`
-2. Falls back to `clients/_template/legal/[type].php` if not found
-3. Shows placeholder message if neither exists
-
-## Usage in Code
-
-### PHP (Templates, Emails)
-
-```php
-// Get any brand value using dot notation
-$primary = shaped_brand('colors.brand.primary');
-$company = shaped_brand('company.name');
-$email = shaped_brand('contact.email');
-
-// Shorthand for colors
-$primary = shaped_brand_color('primary');
-$success = shaped_brand_color('success');
-
-// Get full brand config
-$brand = shaped_brand_all();
-
-// Check current client
-$client = shaped_brand_client(); // Returns 'preelook' or null
-
-// Check if specific client
-if (shaped_is_client('preelook')) { ... }
-```
-
-### Legal Content
-
-```php
-// Render legal content in templates
-shaped_render_legal_content('terms');
-shaped_render_legal_content('privacy');
-
-// Get legal content as string
-$terms_html = shaped_get_legal_content('terms');
-
-// Check if legal content exists
-if (shaped_has_legal_content('terms')) { ... }
-```
-
-### JavaScript
-
-Brand colors are automatically available:
-
-```javascript
-console.log(ShapedBrand.primary);      // '#2563EB'
-console.log(ShapedBrand.primaryHover); // '#1D4ED8'
-console.log(ShapedBrand.success);      // '#10B981'
-```
-
-## New Client Checklist
-
-When setting up a new hospitality client:
-
-### Brand & Identity
-- [ ] Create `clients/[client-name]/` directory
-- [ ] Configure `brand.json` with company details
-- [ ] Set brand colors (primary, secondary, hover states)
-- [ ] Configure contact information and address
-- [ ] Set email settings (fromName, check-in/out times, signature)
-
-### Legal Content
-- [ ] Create `legal/terms.php` with property-specific Terms & Conditions
-- [ ] Create `legal/privacy.php` with property-specific Privacy Policy
-- [ ] Review legal content with legal professional
-- [ ] Ensure compliance with local laws (GDPR, local regulations)
-
-### WordPress Setup
-- [ ] Set `SHAPED_CLIENT` constant in `wp-config.php`
-- [ ] Configure Stripe keys (`SHAPED_STRIPE_SECRET`, `SHAPED_STRIPE_WEBHOOK`)
-- [ ] Set success/cancel URLs if needed
-
-### Testing
-- [ ] Verify brand colors display correctly
-- [ ] Test email templates render with correct branding
-- [ ] Verify checkout modals show correct legal content
-- [ ] Test booking flow end-to-end
-- [ ] Verify schema.org markup in page source
-
-## Troubleshooting
-
-### Legal content not showing
-- Ensure files are named exactly `terms.php` and `privacy.php`
-- Check file permissions (readable by web server)
-- Verify client detection: `echo shaped_brand_client();`
-
-### Brand colors not applying
-- Clear any caching plugins
-- Check browser dev tools for CSS conflicts
-- Verify `brand.json` is valid JSON (use a JSON validator)
-
-### Client not detected
-- Set `SHAPED_CLIENT` constant explicitly in wp-config.php
-- Ensure client folder name matches domain (without TLD)
-- Check folder exists: `clients/[client-name]/`
+---
 
 ## Support
 
-For issues or questions, refer to the main plugin documentation or contact Shaped Systems.
+**New deployments**: See [DEPLOYMENT.md](../DEPLOYMENT.md)
+
+**Migration help**: See migration section above
+
+**Questions**: Check GitHub issues or contact development team
+
+---
+
+**Status**: DEPRECATED as of 2026-01-17
+**Migration Required**: Yes
+**Removal**: Future version (after migration period)
+**Replacement**: MU-Plugin approach (see shaped-client-config.php)

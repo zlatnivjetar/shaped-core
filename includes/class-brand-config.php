@@ -2,8 +2,11 @@
 /**
  * Brand Configuration Loader
  *
- * Loads brand.json (base) and merges with client-specific overrides.
- * Supports multi-client deployments with minimal configuration duplication.
+ * Configuration Priority:
+ * 1. MU-Plugin: shaped_get_client_config() function (recommended)
+ * 2. Legacy: brand.json + client-specific JSON overrides
+ *
+ * For multi-client deployments, use MU-plugin approach for security.
  *
  * @package Shaped_Core
  */
@@ -48,9 +51,23 @@ class Shaped_Brand_Config
 
     /**
      * Load and merge brand configuration
+     *
+     * Priority:
+     * 1. MU-Plugin: shaped_get_client_config() function
+     * 2. Legacy: brand.json with client-specific overrides
      */
     private function load_config() {
-        // 1. Load base brand.json
+        // Detect current client first
+        $this->client = $this->detect_client();
+
+        // Method 1: MU-Plugin Configuration (Recommended)
+        if (function_exists('shaped_get_client_config')) {
+            $this->config = shaped_get_client_config();
+            error_log('[Shaped Brand] Loaded config from MU-plugin' . ($this->client ? ' for client: ' . $this->client : ''));
+            return;
+        }
+
+        // Method 2: Legacy JSON Configuration (Backward Compatibility)
         $base_path = $this->get_config_path('brand.json');
         $base_config = $this->load_json_file($base_path);
 
@@ -60,16 +77,12 @@ class Shaped_Brand_Config
             return;
         }
 
-        // 2. Detect current client
-        $this->client = $this->detect_client();
-
-        // 3. Load client-specific override if exists
+        // Load client-specific override if exists
         if ($this->client) {
             $client_path = $this->get_client_config_path($this->client, $this->client . '.json');
             $client_config = $this->load_json_file($client_path);
 
             if ($client_config) {
-                // 4. Deep merge client overrides into base
                 $base_config = $this->deep_merge($base_config, $client_config);
                 error_log('[Shaped Brand] Loaded brand config for client: ' . $this->client);
             }
@@ -82,17 +95,17 @@ class Shaped_Brand_Config
      * Detect current client
      *
      * Priority:
-     * 1. SHAPED_CLIENT constant (defined in wp-config.php)
-     * 2. Auto-detect by domain
+     * 1. SHAPED_CLIENT constant (defined in MU-plugin or wp-config.php)
+     * 2. Auto-detect by domain (legacy)
      * 3. Default to null (uses base config only)
      */
     private function detect_client() {
-        // Method 1: Constant
+        // Method 1: Constant (recommended - defined in MU-plugin)
         if (defined('SHAPED_CLIENT')) {
             return SHAPED_CLIENT;
         }
 
-        // Method 2: Auto-detect by domain
+        // Method 2: Auto-detect by domain (legacy, not recommended)
         if (isset($_SERVER['HTTP_HOST'])) {
             $domain = $_SERVER['HTTP_HOST'];
 
