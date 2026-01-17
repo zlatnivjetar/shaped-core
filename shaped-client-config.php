@@ -250,42 +250,6 @@ function shaped_get_client_config() {
 }
 
 // ============================================================================
-// HELPER FUNCTIONS (Optional)
-// ============================================================================
-
-/**
- * Quick access to brand configuration
- *
- * @param string|null $key Dot notation key (e.g., 'company.name')
- * @param mixed $default Default value if key not found
- * @return mixed
- */
-function shaped_brand($key = null, $default = null) {
-    static $config = null;
-
-    if ($config === null) {
-        $config = shaped_get_client_config();
-    }
-
-    if ($key === null) {
-        return $config;
-    }
-
-    // Support dot notation (e.g., 'company.name')
-    $keys = explode('.', $key);
-    $value = $config;
-
-    foreach ($keys as $k) {
-        if (!isset($value[$k])) {
-            return $default;
-        }
-        $value = $value[$k];
-    }
-
-    return $value;
-}
-
-// ============================================================================
 // NOTES FOR DEVELOPERS
 // ============================================================================
 
@@ -309,6 +273,12 @@ function shaped_brand($key = null, $default = null) {
  *    - SHAPED_PRICE_API_KEY (optional, if SHAPED_PRICE_API_REQUIRE_KEY is true)
  *
  * 6. Test that shaped-core plugin loads configuration correctly
+ *
+ * HELPER FUNCTIONS:
+ * - The shaped-core plugin provides helper functions like shaped_brand()
+ * - DO NOT redefine these in the MU-plugin (will cause redeclaration errors)
+ * - Helper functions: shaped_brand(), shaped_brand_color(), etc.
+ * - See: shaped-core/config/brand-helpers.php
  *
  * SECURITY NOTES:
  * - This file is loaded BEFORE WordPress plugins
