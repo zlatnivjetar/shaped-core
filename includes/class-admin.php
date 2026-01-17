@@ -27,6 +27,9 @@ class Shaped_Admin {
         // AJAX handler for loading modal content
         add_action('wp_ajax_shaped_load_modal_content', [__CLASS__, 'ajax_load_modal_content']);
         add_action('wp_ajax_nopriv_shaped_load_modal_content', [__CLASS__, 'ajax_load_modal_content']);
+
+        // AJAX handler for feature flags
+        add_action('wp_ajax_shaped_save_feature_flags', [__CLASS__, 'ajax_save_feature_flags']);
     }
 
     /**
@@ -237,6 +240,37 @@ class Shaped_Admin {
         wp_send_json_success([
             'content' => $content,
             'title'   => get_the_title($page_id),
+        ]);
+    }
+
+    /**
+     * AJAX handler for saving feature flags
+     */
+    public static function ajax_save_feature_flags(): void {
+        // Verify user permissions
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => 'Insufficient permissions']);
+            return;
+        }
+
+        // Verify nonce
+        if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'shaped_feature_flags')) {
+            wp_send_json_error(['message' => 'Invalid nonce']);
+            return;
+        }
+
+        // Get values from POST
+        $roomcloud = isset($_POST['roomcloud']) ? filter_var($_POST['roomcloud'], FILTER_VALIDATE_BOOLEAN) : false;
+        $reviews = isset($_POST['reviews']) ? filter_var($_POST['reviews'], FILTER_VALIDATE_BOOLEAN) : false;
+
+        // Save to database
+        update_option('shaped_enable_roomcloud', $roomcloud);
+        update_option('shaped_enable_reviews', $reviews);
+
+        wp_send_json_success([
+            'message'   => 'Feature flags saved successfully. Please refresh the page for changes to take effect.',
+            'roomcloud' => $roomcloud,
+            'reviews'   => $reviews,
         ]);
     }
 }
