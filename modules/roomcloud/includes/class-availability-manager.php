@@ -327,8 +327,6 @@ public function ajax_get_calendar_inventory()
      */
     public function filter_individual_room_availability($is_available, $room_id, $search_params)
     {
-      error_log('ROOMCLOUD FILTER CALLED: room_id=' . $room_id . ', is_available=' . ($is_available ? 'true' : 'false'));
-    error_log('ROOMCLOUD SEARCH PARAMS: ' . print_r($search_params, true));
         if (!$is_available) {
             return false; // Already unavailable per MotoPress
         }

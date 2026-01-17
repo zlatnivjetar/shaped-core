@@ -183,33 +183,27 @@ class Shaped_RC_Webhook_Handler
             'hotel_id' => $hotel_id,
         ]);
         
-        // Output XML directly to avoid WordPress JSON encoding
-        header('Content-Type: text/xml; charset=UTF-8');
-        echo $xml;
-        exit;
+        $this->output_xml_response($xml);
     }
-    
+
     /**
      * Handle getRates request
      */
     private function handle_get_rates($hotel_id)
     {
         $rate_id = get_option('shaped_rc_rate_id', '26939');
-        
+
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<Response>' . "\n";
         $xml .= '  <rate rateId="' . esc_attr($rate_id) . '" description="Standard Rate - Room only" />' . "\n";
         $xml .= '</Response>';
-        
+
         Shaped_RC_Error_Logger::log_info('Responded to getRates', [
             'hotel_id' => $hotel_id,
             'rate_id' => $rate_id,
         ]);
-        
-        // Output XML directly to avoid WordPress JSON encoding
-        header('Content-Type: text/xml; charset=UTF-8');
-        echo $xml;
-        exit;
+
+        $this->output_xml_response($xml);
     }
     
     /**
@@ -255,13 +249,10 @@ class Shaped_RC_Webhook_Handler
             'hotel_id' => $hotel_id,
             'room_count' => count($room_mapping),
         ]);
-        
-        // Output XML directly to avoid WordPress JSON encoding
-        header('Content-Type: text/xml; charset=UTF-8');
-        echo $xml;
-        exit;
+
+        $this->output_xml_response($xml);
     }
-    
+
     /**
      * Handle modify request (availability/rate updates from RoomCloud)
      * RoomCloud is source of truth - process and store updates
@@ -271,44 +262,42 @@ class Shaped_RC_Webhook_Handler
         $hotel_id = (string) $modify['hotelId'];
         $start_date = (string) $modify['startDate'];
         $end_date = (string) $modify['endDate'];
-        
+
         Shaped_RC_Error_Logger::log_info('Processing modify request', [
             'hotel_id' => $hotel_id,
             'start_date' => $start_date,
             'end_date' => $end_date,
         ]);
-        
+
         $updates_processed = 0;
-        
+
         // Process each availability element
         if (isset($modify->availability)) {
             foreach ($modify->availability as $avail) {
                 $date = (string) $avail['day'];
                 $roomcloud_id = (string) $avail['roomId'];
                 $quantity = intval($avail['quantity']);
-                
+
                 // Store in availability manager
                 Shaped_RC_Availability_Manager::update_inventory($roomcloud_id, $date, $quantity);
-                
+
                 $updates_processed++;
             }
         }
-        
+
         Shaped_RC_Error_Logger::log_info('Modify request processed', [
             'updates' => $updates_processed,
         ]);
-        
+
         // Return success
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<Response>' . "\n";
         $xml .= '  <ok/>' . "\n";
         $xml .= '</Response>';
-        
-        header('Content-Type: text/xml; charset=UTF-8');
-        echo $xml;
-        exit;
+
+        $this->output_xml_response($xml);
     }
-    
+
     /**
      * Handle getReservations request (pull mode)
      * Returns list of recent reservations from website
@@ -318,22 +307,20 @@ class Shaped_RC_Webhook_Handler
         $hotel_id = (string) $reservations['hotelId'];
         $start_date = (string) $reservations['startDate'];
         $end_date = (string) $reservations['endDate'];
-        
+
         Shaped_RC_Error_Logger::log_info('Responded to getReservations (empty list)', [
             'hotel_id' => $hotel_id,
             'start_date' => $start_date,
             'end_date' => $end_date,
         ]);
-        
+
         // Return empty list - we push reservations, don't support pull mode
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<Response>' . "\n";
         $xml .= '  <!-- No reservations - using push mode only -->' . "\n";
         $xml .= '</Response>';
-        
-        header('Content-Type: text/xml; charset=UTF-8');
-        echo $xml;
-        exit;
+
+        $this->output_xml_response($xml);
     }
     
     /**
@@ -708,5 +695,32 @@ class Shaped_RC_Webhook_Handler
         ", $room_id, $check_in, $check_out));
         
         return $conflicts == 0;
+    }
+
+    /**
+     * Output XML response with proper headers and buffer cleanup
+     * Clears any buffered output to prevent "Content is not allowed in prolog" errors
+     *
+     * @param string $xml The XML response to output
+     */
+    private function output_xml_response($xml)
+    {
+        // Clear ALL output buffers to prevent any stray content before XML declaration
+        // This is critical to avoid "Content is not allowed in prolog" errors
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        // Set proper XML content type
+        header('Content-Type: text/xml; charset=UTF-8');
+
+        // Ensure no other headers or content can be added
+        header('X-RoomCloud-Response: true');
+
+        // Output the clean XML
+        echo $xml;
+
+        // Terminate immediately to prevent any further output
+        exit;
     }
 }

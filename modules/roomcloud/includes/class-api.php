@@ -429,39 +429,127 @@ class Shaped_RC_API
     }
     
     /**
-     * Test connection to RoomCloud
+     * Test outbound connection to RoomCloud's endpoint
+     * Note: This tests if we can reach RoomCloud, NOT if RoomCloud can reach us
      */
     public static function test_connection()
     {
         self::init();
-        
+
         if (!self::is_configured()) {
             return [
                 'success' => false,
-                'error' => 'Not configured',
+                'error' => 'Not configured - please fill in all API credentials',
             ];
         }
-        
-        // Try getHotels request
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<Request userName="' . esc_attr(self::$username) . '" password="' . esc_attr(self::$password) . '">' . "\n";
-        $xml .= '  <getHotels/>' . "\n";
-        $xml .= '</Request>';
-        
-        $response = self::send_request($xml);
-        
-        if ($response['success']) {
+
+        // Test that we can reach the RoomCloud endpoint
+        $response = wp_remote_get(self::$service_url, [
+            'timeout' => 15,
+            'sslverify' => true,
+        ]);
+
+        if (is_wp_error($response)) {
+            return [
+                'success' => false,
+                'error' => 'Cannot reach RoomCloud endpoint: ' . $response->get_error_message(),
+            ];
+        }
+
+        $status_code = wp_remote_retrieve_response_code($response);
+
+        // 200 or 405 (Method Not Allowed for GET) both indicate the endpoint is reachable
+        if ($status_code >= 200 && $status_code < 500) {
             return [
                 'success' => true,
-                'message' => 'Connection successful',
-                'data' => $response['data'],
+                'message' => 'Outbound connection OK (can reach RoomCloud endpoint)',
+                'note' => 'This only tests outbound connectivity. To verify inbound (RoomCloud → your site), use "Test Webhook" below.',
             ];
         } else {
             return [
                 'success' => false,
-                'error' => $response['error'],
+                'error' => "RoomCloud endpoint returned HTTP {$status_code}",
             ];
         }
+    }
+
+    /**
+     * Test the webhook endpoint (inbound from RoomCloud)
+     * Sends a test request to our own webhook to verify it responds correctly
+     */
+    public static function test_webhook()
+    {
+        $webhook_url = rest_url('shaped/v1/roomcloud-webhook');
+
+        // Build a minimal test request (getHotels)
+        $username = get_option('shaped_rc_username', '');
+        $password = get_option('shaped_rc_password', '');
+
+        if (empty($username) || empty($password)) {
+            return [
+                'success' => false,
+                'error' => 'Username or password not configured',
+            ];
+        }
+
+        $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+        $xml .= '<Request userName="' . esc_attr($username) . '" password="' . esc_attr($password) . '">' . "\n";
+        $xml .= '  <getHotels/>' . "\n";
+        $xml .= '</Request>';
+
+        // Send request to our own webhook
+        $response = wp_remote_post($webhook_url, [
+            'body' => $xml,
+            'headers' => [
+                'Content-Type' => 'text/xml; charset=UTF-8',
+            ],
+            'timeout' => 30,
+            'sslverify' => false, // Allow self-signed for local testing
+        ]);
+
+        if (is_wp_error($response)) {
+            return [
+                'success' => false,
+                'error' => 'Webhook unreachable: ' . $response->get_error_message(),
+            ];
+        }
+
+        $status_code = wp_remote_retrieve_response_code($response);
+        $body = wp_remote_retrieve_body($response);
+
+        // Check if response is valid XML
+        if ($status_code !== 200) {
+            return [
+                'success' => false,
+                'error' => "Webhook returned HTTP {$status_code}",
+                'body_preview' => substr($body, 0, 200),
+            ];
+        }
+
+        // Verify response is valid XML (not JSON or HTML)
+        if (strpos($body, '<?xml') === false && strpos($body, '<Response') === false) {
+            return [
+                'success' => false,
+                'error' => 'Webhook did not return valid XML response',
+                'body_preview' => substr($body, 0, 200),
+            ];
+        }
+
+        // Check for "Content is not allowed in prolog" scenario
+        $first_char_pos = strpos($body, '<');
+        if ($first_char_pos > 0) {
+            $prefix = substr($body, 0, $first_char_pos);
+            return [
+                'success' => false,
+                'error' => 'Webhook response has content before XML declaration (this causes RoomCloud errors)',
+                'problematic_prefix' => $prefix,
+            ];
+        }
+
+        return [
+            'success' => true,
+            'message' => 'Webhook responding correctly with valid XML',
+        ];
     }
     
     /**

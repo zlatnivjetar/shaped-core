@@ -30,6 +30,7 @@ class Shaped_RC_Admin_Settings
         
         // Handle AJAX actions
         add_action('wp_ajax_shaped_rc_test_connection', [$this, 'ajax_test_connection']);
+        add_action('wp_ajax_shaped_rc_test_webhook', [$this, 'ajax_test_webhook']);
     }
     
     /**
@@ -121,8 +122,30 @@ class Shaped_RC_Admin_Settings
                 <h2>Connection Status</h2>
                 <?php if ($is_configured): ?>
                     <p style="color: #46b450; font-weight: 600;">✓ Configured</p>
-                    <button type="button" class="button" id="test-connection">Test Connection</button>
-                    <div id="test-result" style="margin-top: 10px;"></div>
+
+                    <table class="form-table" style="margin-top: 15px;">
+                        <tr>
+                            <th style="width: 200px;">Outbound (You → RoomCloud)</th>
+                            <td>
+                                <button type="button" class="button" id="test-connection">Test Outbound</button>
+                                <span class="description" style="margin-left: 10px;">Tests if you can reach RoomCloud's endpoint</span>
+                                <div id="test-connection-result" style="margin-top: 8px;"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Inbound (RoomCloud → You)</th>
+                            <td>
+                                <button type="button" class="button button-primary" id="test-webhook">Test Webhook</button>
+                                <span class="description" style="margin-left: 10px;">Tests if your webhook responds correctly (critical for sync)</span>
+                                <div id="test-webhook-result" style="margin-top: 8px;"></div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <p class="description" style="margin-top: 15px; padding: 10px; background: #fff8e5; border-left: 4px solid #ffb900;">
+                        <strong>Troubleshooting "Content is not allowed in prolog" errors:</strong><br>
+                        If you see this error in RoomCloud, click "Test Webhook" above. It will detect if there's unexpected content before the XML response.
+                    </p>
                 <?php else: ?>
                     <p style="color: #dc3232; font-weight: 600;">✗ Not Configured</p>
                     <p>Please enter your RoomCloud credentials below.</p>
@@ -303,26 +326,60 @@ class Shaped_RC_Admin_Settings
         
         <script>
         jQuery(document).ready(function($) {
-            // Test Connection
+            // Test Outbound Connection
             $('#test-connection').on('click', function() {
                 var $btn = $(this);
-                var $result = $('#test-result');
-                
+                var $result = $('#test-connection-result');
+
                 $btn.prop('disabled', true).text('Testing...');
-                $result.html('<p>Connecting to RoomCloud...</p>');
-                
+                $result.html('<p style="color: #666;">Connecting to RoomCloud endpoint...</p>');
+
                 $.post(ajaxurl, {
                     action: 'shaped_rc_test_connection'
                 }, function(response) {
                     if (response.success) {
-                        $result.html('<div class="notice notice-success inline"><p>' + response.data.message + '</p></div>');
+                        var msg = response.data.message;
+                        if (response.data.note) {
+                            msg += '<br><small style="color: #666;">' + response.data.note + '</small>';
+                        }
+                        $result.html('<div class="notice notice-success inline" style="margin: 0; padding: 8px 12px;"><p style="margin: 0;">' + msg + '</p></div>');
                     } else {
-                        $result.html('<div class="notice notice-error inline"><p>Error: ' + response.data.error + '</p></div>');
+                        $result.html('<div class="notice notice-error inline" style="margin: 0; padding: 8px 12px;"><p style="margin: 0;">Error: ' + response.data.error + '</p></div>');
                     }
                 }).fail(function() {
-                    $result.html('<div class="notice notice-error inline"><p>Request failed</p></div>');
+                    $result.html('<div class="notice notice-error inline" style="margin: 0; padding: 8px 12px;"><p style="margin: 0;">Request failed</p></div>');
                 }).always(function() {
-                    $btn.prop('disabled', false).text('Test Connection');
+                    $btn.prop('disabled', false).text('Test Outbound');
+                });
+            });
+
+            // Test Webhook (Inbound)
+            $('#test-webhook').on('click', function() {
+                var $btn = $(this);
+                var $result = $('#test-webhook-result');
+
+                $btn.prop('disabled', true).text('Testing...');
+                $result.html('<p style="color: #666;">Sending test request to webhook...</p>');
+
+                $.post(ajaxurl, {
+                    action: 'shaped_rc_test_webhook'
+                }, function(response) {
+                    if (response.success) {
+                        $result.html('<div class="notice notice-success inline" style="margin: 0; padding: 8px 12px;"><p style="margin: 0;">✓ ' + response.data.message + '</p></div>');
+                    } else {
+                        var errorMsg = 'Error: ' + response.data.error;
+                        if (response.data.body_preview) {
+                            errorMsg += '<br><small>Response preview: <code>' + $('<div/>').text(response.data.body_preview).html() + '</code></small>';
+                        }
+                        if (response.data.problematic_prefix) {
+                            errorMsg += '<br><small style="color: #dc3232;">Content before XML: <code>' + $('<div/>').text(response.data.problematic_prefix).html() + '</code></small>';
+                        }
+                        $result.html('<div class="notice notice-error inline" style="margin: 0; padding: 8px 12px;"><p style="margin: 0;">' + errorMsg + '</p></div>');
+                    }
+                }).fail(function() {
+                    $result.html('<div class="notice notice-error inline" style="margin: 0; padding: 8px 12px;"><p style="margin: 0;">Request failed - check server logs</p></div>');
+                }).always(function() {
+                    $btn.prop('disabled', false).text('Test Webhook');
                 });
             });
         });
@@ -412,16 +469,34 @@ class Shaped_RC_Admin_Settings
     }
     
     /**
-     * AJAX: Test connection
+     * AJAX: Test connection (outbound)
      */
     public function ajax_test_connection()
     {
         if (!current_user_can('manage_options')) {
             wp_send_json_error(['error' => 'Unauthorized']);
         }
-        
+
         $result = Shaped_RC_API::test_connection();
-        
+
+        if ($result['success']) {
+            wp_send_json_success($result);
+        } else {
+            wp_send_json_error($result);
+        }
+    }
+
+    /**
+     * AJAX: Test webhook (inbound)
+     */
+    public function ajax_test_webhook()
+    {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['error' => 'Unauthorized']);
+        }
+
+        $result = Shaped_RC_API::test_webhook();
+
         if ($result['success']) {
             wp_send_json_success($result);
         } else {
