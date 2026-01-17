@@ -153,7 +153,7 @@ function shaped_get_client_config() {
             ],
             'surface' => [
                 'page' => '#FFFFFF',
-                'alt'  => '#F9FAFB',
+                'alt'  => '#Fbfaf9',
                 'card' => '#FFFFFF',
             ],
             'border' => [
@@ -238,7 +238,7 @@ function shaped_get_client_config() {
             // Supabase Reviews Configuration
             'supabase' => [
                 // Table name in Supabase for reviews (client-specific)
-                'reviewsTable' => 'preelook_reviews_all',
+                'reviewsTable' => 'preelook_reviews',
                 // Enable automatic review syncing
                 'autoSync' => true,
             ],
