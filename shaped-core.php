@@ -22,12 +22,17 @@ define('SHAPED_FILE', __FILE__);
 define('SHAPED_DIR', plugin_dir_path(__FILE__));
 define('SHAPED_URL', plugin_dir_url(__FILE__));
 
-// Module toggles - set in wp-config.php to enable
+// Module toggles - configurable via admin UI or wp-config.php
+// Priority: 1) wp-config.php constants (backward compatibility)  2) Database options  3) Defaults
 if (!defined('SHAPED_ENABLE_ROOMCLOUD')) {
-    define('SHAPED_ENABLE_ROOMCLOUD', false);
+    $roomcloud_option = get_option('shaped_enable_roomcloud', null);
+    $roomcloud_enabled = $roomcloud_option !== null ? (bool) $roomcloud_option : false;
+    define('SHAPED_ENABLE_ROOMCLOUD', $roomcloud_enabled);
 }
 if (!defined('SHAPED_ENABLE_REVIEWS')) {
-    define('SHAPED_ENABLE_REVIEWS', true);
+    $reviews_option = get_option('shaped_enable_reviews', null);
+    $reviews_enabled = $reviews_option !== null ? (bool) $reviews_option : true;
+    define('SHAPED_ENABLE_REVIEWS', $reviews_enabled);
 }
 
 // Stripe credentials - can be set in wp-config.php or via Setup Wizard

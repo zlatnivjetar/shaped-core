@@ -11,7 +11,6 @@ if (!defined('ABSPATH')) {
 class Shaped_RC_Error_Logger
 {
     private static $instance = null;
-    private static $digest_errors = [];
     
     public static function init()
     {
@@ -23,53 +22,33 @@ class Shaped_RC_Error_Logger
     
     private function __construct()
     {
-        /*/ Schedule daily digest
-        add_action('init', [$this, 'schedule_daily_digest']);
-        add_action('shaped_rc_daily_digest', [$this, 'send_daily_digest']);*/
+        // No cron scheduling - all errors logged to file only
     }
     
     /**
-     * Log critical error and send immediate email
+     * Log critical error (file and error_log only)
      */
     public static function log_critical($message, $context = [])
     {
         self::write_to_file('CRITICAL', $message, $context);
-        self::send_immediate_alert('CRITICAL', $message, $context);
-        
-        // Also log to WordPress error log
         error_log('[RoomCloud CRITICAL] ' . $message);
     }
     
     /**
-     * Log error that should be included in daily digest
+     * Log error (file and error_log only)
      */
     public static function log_error($message, $context = [])
     {
         self::write_to_file('ERROR', $message, $context);
-        
-        // Store for daily digest
-        self::$digest_errors[] = [
-            'time' => current_time('mysql'),
-            'message' => $message,
-            'context' => $context,
-        ];
-        
         error_log('[RoomCloud ERROR] ' . $message);
     }
     
     /**
-     * Log warning (included in digest, not critical)
+     * Log warning (file and error_log only)
      */
     public static function log_warning($message, $context = [])
     {
         self::write_to_file('WARNING', $message, $context);
-        
-        self::$digest_errors[] = [
-            'time' => current_time('mysql'),
-            'message' => $message,
-            'context' => $context,
-        ];
-        
         error_log('[RoomCloud WARNING] ' . $message);
     }
     
@@ -122,107 +101,6 @@ class Shaped_RC_Error_Logger
         }
     }
     
-    /*
-     * Send immediate email alert for critical failures
-     
-    private static function send_immediate_alert($level, $message, $context = [])
-    {
-        $to = 'david@shapedsystems.com';
-        $subject = '[CRITICAL] RoomCloud Sync Failure - Preelook';
-        
-        $body = "A critical error occurred in the RoomCloud sync:\n\n";
-        $body .= "Time: " . current_time('Y-m-d H:i:s') . "\n";
-        $body .= "Level: {$level}\n";
-        $body .= "Message: {$message}\n\n";
-        
-        if (!empty($context)) {
-            $body .= "Context:\n";
-            $body .= print_r($context, true) . "\n";
-        }
-        
-        $body .= "\n---\n";
-        $body .= "Site: " . get_site_url() . "\n";
-        $body .= "Log file: " . SHAPED_RC_LOGS_DIR . "sync-errors.log\n";
-        
-        $headers = ['Content-Type: text/plain; charset=UTF-8'];
-        
-        wp_mail($to, $subject, $body, $headers);
-    }
-        
-    
-    /**
-     * Schedule daily digest
-     
-    public function schedule_daily_digest()
-    {
-        if (!wp_next_scheduled('shaped_rc_daily_digest')) {
-            // Schedule for 9 AM daily
-            $first_run = strtotime('tomorrow 09:00:00');
-            wp_schedule_event($first_run, 'daily', 'shaped_rc_daily_digest');
-        }
-    }
-    
-    /**
-     * Send daily digest email
-     
-    public function send_daily_digest()
-    {
-        // Get errors from transient (stored throughout the day)
-        $digest_errors = get_transient('shaped_rc_digest_errors') ?: [];
-        
-        if (empty($digest_errors)) {
-            return; // No errors to report
-        }
-        
-        $to = 'david@shapedsystems.com';
-        $subject = '[Digest] RoomCloud Sync Report - ' . date('Y-m-d');
-        
-        $body = "Daily RoomCloud sync report for Preelook Apartments\n";
-        $body .= "Period: " . date('Y-m-d') . "\n";
-        $body .= "Total issues: " . count($digest_errors) . "\n\n";
-        $body .= str_repeat('=', 80) . "\n\n";
-        
-        foreach ($digest_errors as $index => $error) {
-            $body .= sprintf(
-                "%d. [%s] %s\n",
-                $index + 1,
-                $error['time'],
-                $error['message']
-            );
-            
-            if (!empty($error['context'])) {
-                $body .= "   Context: " . json_encode($error['context']) . "\n";
-            }
-            
-            $body .= "\n";
-        }
-        
-        $body .= str_repeat('=', 80) . "\n";
-        $body .= "Full logs: " . SHAPED_RC_LOGS_DIR . "sync-errors.log\n";
-        
-        $headers = ['Content-Type: text/plain; charset=UTF-8'];
-        
-        wp_mail($to, $subject, $body, $headers);
-        
-        // Clear the digest
-        delete_transient('shaped_rc_digest_errors');
-    }
-    
-    /**
-     * Add error to digest queue
-     */
-    public static function add_to_digest($message, $context = [])
-    {
-        $digest = get_transient('shaped_rc_digest_errors') ?: [];
-        
-        $digest[] = [
-            'time' => current_time('mysql'),
-            'message' => $message,
-            'context' => $context,
-        ];
-        
-        set_transient('shaped_rc_digest_errors', $digest, DAY_IN_SECONDS);
-    }
     
     /**
      * Add failed operation to retry queue

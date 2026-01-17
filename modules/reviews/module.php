@@ -102,42 +102,6 @@ add_action('admin_init', function() {
 });
 
 /**
- * Schedule automatic sync
+ * Manual sync only - automated sync handled by external n8n workflow
+ * Cron-based auto-sync removed to avoid conflicts with n8n monthly workflow
  */
-add_action('init', function() {
-    // Check brand config first, fallback to constant
-    $auto_sync = false;
-
-    if (function_exists('shaped_brand')) {
-        $auto_sync = shaped_brand('integrations.supabase.autoSync', false);
-    }
-
-    // Allow constant override for backwards compatibility
-    if (defined('SHAPED_REVIEWS_AUTO_SYNC') && SHAPED_REVIEWS_AUTO_SYNC) {
-        $auto_sync = true;
-    }
-
-    if (!$auto_sync) {
-        return;
-    }
-
-    if (!wp_next_scheduled('shaped_reviews_scheduled_sync')) {
-        wp_schedule_event(time(), 'daily', 'shaped_reviews_scheduled_sync');
-    }
-}, 20);
-
-add_action('shaped_reviews_scheduled_sync', function() {
-    $sync = new Sync();
-    $results = $sync->sync_reviews();
-
-    error_log('[Shaped Reviews] Scheduled sync completed: ' . json_encode($results));
-});
-
-/**
- * Clear schedule on deactivation
- */
-if (defined('SHAPED_FILE')) {
-    register_deactivation_hook(SHAPED_FILE, function() {
-        wp_clear_scheduled_hook('shaped_reviews_scheduled_sync');
-    });
-}
