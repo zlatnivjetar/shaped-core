@@ -121,7 +121,7 @@
   },
   "integrations": {
     "supabase": {
-      "reviewsTable": "",
+      "reviewsTable": "client_reviews",
       "autoSync": false
     }
   }
