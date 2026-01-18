@@ -35,7 +35,7 @@ define('SHAPED_SYNC_SECRET', 'your-random-sync-secret-here');
 // Roomcloud settings
 define('SHAPED_RC_SERVICE_URL', 'https://xml.tecnes.com/hotw/download/ShapeSystems.jsp');
 define('SHAPED_RC_USERNAME', '9335');
-define('SHAPED_RC_PASSWORD', 'Nasvrtjelep21$');
+define('SHAPED_RC_PASSWORD', 'xxxxxxx');
 
 // ─────────────────────────────────────────────────────────────────────────────
 
