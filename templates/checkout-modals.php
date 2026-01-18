@@ -152,8 +152,27 @@ window.shapedAjax = {
         const modalBody = modal.querySelector('.shaped-modal-body');
         const loadingDiv = modal.querySelector('.shaped-modal-loading');
 
+        console.log('[Shaped Modal] Loading content for page ID:', pageId);
+        console.log('[Shaped Modal] Page URL:', pageUrl);
+        console.log('[Shaped Modal] AJAX URL:', window.shapedAjax?.ajaxUrl);
+
         // If already loaded, don't load again
         if (loadedModals[pageId]) {
+            console.log('[Shaped Modal] Content already loaded for page ID:', pageId);
+            return;
+        }
+
+        // Check if AJAX URL is available
+        if (!window.shapedAjax || !window.shapedAjax.ajaxUrl) {
+            console.error('[Shaped Modal] AJAX URL not available');
+            modalBody.innerHTML = '<p style="color: #d00; padding: 20px; text-align: center;">Error: AJAX configuration missing. Please refresh the page.</p>';
+            return;
+        }
+
+        // Check if page ID is valid
+        if (!pageId || pageId === '0') {
+            console.error('[Shaped Modal] Invalid page ID:', pageId);
+            modalBody.innerHTML = '<p style="color: #d00; padding: 20px; text-align: center;">Error: Page not configured. Please visit the <a href="' + pageUrl + '" target="_blank">full page</a>.</p>';
             return;
         }
 
@@ -167,18 +186,22 @@ window.shapedAjax = {
         formData.append('action', 'shaped_load_modal_content');
         formData.append('page_id', pageId);
 
+        console.log('[Shaped Modal] Sending AJAX request...');
+
         fetch(window.shapedAjax.ajaxUrl, {
             method: 'POST',
             body: formData,
             credentials: 'same-origin'
         })
             .then(function(response) {
+                console.log('[Shaped Modal] Response status:', response.status);
                 if (!response.ok) {
-                    throw new Error('Network error');
+                    throw new Error('Network error: ' + response.status);
                 }
                 return response.json();
             })
             .then(function(data) {
+                console.log('[Shaped Modal] Response data:', data);
                 if (data.success && data.data.content) {
                     // Hide loading spinner
                     if (loadingDiv) {
@@ -190,13 +213,14 @@ window.shapedAjax = {
 
                     // Mark as loaded
                     loadedModals[pageId] = true;
+                    console.log('[Shaped Modal] Content loaded successfully');
                 } else {
                     throw new Error(data.data?.message || 'Failed to load content');
                 }
             })
             .catch(function(error) {
-                console.error('Error loading modal content:', error);
-                modalBody.innerHTML = '<p style="color: #d00; padding: 20px; text-align: center;">Error loading content. Please try again or visit the <a href="' + pageUrl + '" target="_blank">full page</a>.</p>';
+                console.error('[Shaped Modal] Error loading modal content:', error);
+                modalBody.innerHTML = '<p style="color: #d00; padding: 20px; text-align: center;">Error loading content: ' + error.message + '<br>Please try again or visit the <a href="' + pageUrl + '" target="_blank">full page</a>.</p>';
             });
     }
 
@@ -209,8 +233,14 @@ window.shapedAjax = {
             e.preventDefault();
             e.stopPropagation();
 
+            console.log('[Shaped Modal] Trigger clicked:', trigger);
+            console.log('[Shaped Modal] Trigger dataset:', trigger.dataset);
+
             const modalType = trigger.dataset.modal;
             const modal = document.getElementById(modalType + '-modal');
+
+            console.log('[Shaped Modal] Modal type:', modalType);
+            console.log('[Shaped Modal] Modal element:', modal);
 
             if (modal) {
                 modal.style.display = 'block';
@@ -220,8 +250,13 @@ window.shapedAjax = {
                 const pageUrl = trigger.getAttribute('href');
                 const pageId = trigger.dataset.pageId;
 
+                console.log('[Shaped Modal] Extracted pageUrl:', pageUrl);
+                console.log('[Shaped Modal] Extracted pageId:', pageId);
+
                 if (pageUrl && pageId) {
                     loadModalContent(modal, pageUrl, pageId);
+                } else {
+                    console.error('[Shaped Modal] Missing pageUrl or pageId');
                 }
             }
         }
