@@ -23,22 +23,28 @@ if (!is_page(['checkout', 'book', 'booking'])) {
 
 ?>
 <!-- Checkout Modals -->
-<div id="terms-modal" class="shaped-modal" style="display:none;">
+<div id="terms-modal" class="shaped-modal" style="display:none;" data-page-slug="terms-and-conditions">
     <div class="shaped-modal-content">
         <span class="shaped-modal-close">&times;</span>
         <h2 class="checkoutmodalheading">Booking Terms & Conditions</h2>
         <div class="shaped-modal-body" id="terms-content">
-            <?php shaped_render_legal_content('terms'); ?>
+            <div class="shaped-modal-loading">
+                <span class="spinner is-active" style="float: none; margin: 20px auto;"></span>
+                <p style="text-align: center; color: #666;">Loading...</p>
+            </div>
         </div>
     </div>
 </div>
 
-<div id="privacy-modal" class="shaped-modal" style="display:none;">
+<div id="privacy-modal" class="shaped-modal" style="display:none;" data-page-slug="privacy-policy">
     <div class="shaped-modal-content">
         <span class="shaped-modal-close">&times;</span>
         <h2 class="checkoutmodalheading">Privacy Policy</h2>
         <div class="shaped-modal-body" id="privacy-content">
-            <?php shaped_render_legal_content('privacy'); ?>
+            <div class="shaped-modal-loading">
+                <span class="spinner is-active" style="float: none; margin: 20px auto;"></span>
+                <p style="text-align: center; color: #666;">Loading...</p>
+            </div>
         </div>
     </div>
 </div>
@@ -128,11 +134,70 @@ if (!is_page(['checkout', 'book', 'booking'])) {
 </style>
 
 <script>
-// Checkout Modal Handlers - Using event delegation for dynamic content
+// Checkout Modal Handlers - Load WordPress pages via AJAX
 (function() {
     'use strict';
 
-    // Use event delegation on document for modal triggers (works with dynamically added content)
+    // Track which modals have loaded content
+    const loadedModals = {};
+
+    // Load page content via AJAX
+    function loadModalContent(modal, pageSlug) {
+        const modalBody = modal.querySelector('.shaped-modal-body');
+        const loadingDiv = modal.querySelector('.shaped-modal-loading');
+
+        // If already loaded, don't load again
+        if (loadedModals[pageSlug]) {
+            return;
+        }
+
+        // Show loading state
+        if (loadingDiv) {
+            loadingDiv.style.display = 'block';
+        }
+
+        // Fetch the WordPress page
+        fetch('/' + pageSlug + '/')
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Page not found');
+                }
+                return response.text();
+            })
+            .then(function(html) {
+                // Parse the HTML
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Try to extract main content (try multiple selectors)
+                let content = doc.querySelector('article .entry-content') ||
+                              doc.querySelector('.entry-content') ||
+                              doc.querySelector('main article') ||
+                              doc.querySelector('main') ||
+                              doc.querySelector('article');
+
+                if (content) {
+                    // Hide loading spinner
+                    if (loadingDiv) {
+                        loadingDiv.style.display = 'none';
+                    }
+
+                    // Insert content
+                    modalBody.innerHTML = content.innerHTML;
+
+                    // Mark as loaded
+                    loadedModals[pageSlug] = true;
+                } else {
+                    throw new Error('Could not find content');
+                }
+            })
+            .catch(function(error) {
+                console.error('Error loading modal content:', error);
+                modalBody.innerHTML = '<p style="color: #d00; padding: 20px; text-align: center;">Error loading content. Please try again or visit the <a href="/' + pageSlug + '/" target="_blank">full page</a>.</p>';
+            });
+    }
+
+    // Use event delegation on document for modal triggers
     document.addEventListener('click', function(e) {
         // Check if clicked element or parent is a modal trigger
         const trigger = e.target.closest('.modal-trigger');
@@ -147,6 +212,12 @@ if (!is_page(['checkout', 'book', 'booking'])) {
             if (modal) {
                 modal.style.display = 'block';
                 document.body.style.overflow = 'hidden';
+
+                // Load content if needed
+                const pageSlug = modal.dataset.pageSlug;
+                if (pageSlug) {
+                    loadModalContent(modal, pageSlug);
+                }
             }
         }
 
