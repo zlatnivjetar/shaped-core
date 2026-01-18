@@ -93,10 +93,11 @@ class Shaped_RC_Webhook_Handler
         // VALIDATE CREDENTIALS FROM XML
         $username = (string) $xml['userName'];
         $password = (string) $xml['password'];
-        
-        $expected_username = get_option('shaped_rc_username', '9335');
-        $expected_password = get_option('shaped_rc_password', '');
-        
+
+        // Read credentials from wp-config.php constants
+        $expected_username = defined('SHAPED_RC_USERNAME') ? SHAPED_RC_USERNAME : '';
+        $expected_password = defined('SHAPED_RC_PASSWORD') ? SHAPED_RC_PASSWORD : '';
+
         if ($username !== $expected_username || $password !== $expected_password) {
             Shaped_RC_Error_Logger::log_warning('Webhook authentication failed', [
                 'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
