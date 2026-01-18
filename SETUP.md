@@ -1,8 +1,7 @@
 # Per-Client Setup Checklist
 
 ## wp-config.php
-1. Client identifier (`SHAPED_CLIENT`)
-2. Stripe secret key and webhook secret
+2. Stripe secret key and webhook secret (test and production)
 3. Supabase table name (use `clients/{client}/supabase-instructions.txt` for setup)
 4. RoomCloud sync secret (if enabled)
 
@@ -20,9 +19,10 @@
 11. Supabase reviews table name and auto-sync setting
 
 ## Stripe Dashboard
-1. Create webhook endpoint: `https://{client-domain}/wp-json/shaped/v1/stripe/webhook`
-2. Enable events: `checkout.session.completed`, `checkout.session.expired`
-3. Copy webhook secret to wp-config.php
+1. Endpoint URL: `https://{client-domain}/wp-json/shaped/v1/stripe-webhook`
+2. Destination name: Shaped Webhook
+2. Events: `checkout.session.completed`, 'payment_intent.succeeded', 'payment_intent.payment_failed', 'setup_intent.succeeded'
+3. Copy webhook secret and secret keys to wp-config.php
 
 ## Supabase Dashboard
 1. Create client-specific reviews table (see `clients/{client}/supabase-instructions.txt`)

@@ -264,6 +264,10 @@ select[name*="mphb_room_details"]:focus {
 	border-color: var(--color-brand-primary, #D1AF5D);
 }
 
+select:not([size]):not([multiple]) {
+  	background-position: right 12px center !important;
+}
+
 /* ==========================================================================
    PRICE BREAKDOWN
    ========================================================================== */
