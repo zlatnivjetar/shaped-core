@@ -128,38 +128,38 @@ if (!is_page(['checkout', 'book', 'booking'])) {
 </style>
 
 <script>
-// Checkout Modal Handlers
-document.addEventListener('DOMContentLoaded', function() {
-    const modalTriggers = document.querySelectorAll('.modal-trigger');
-    const modals = {
-        terms: document.getElementById('terms-modal'),
-        privacy: document.getElementById('privacy-modal')
-    };
+// Checkout Modal Handlers - Using event delegation for dynamic content
+(function() {
+    'use strict';
 
-    // Prevent default link behavior and open modal
-    modalTriggers.forEach(trigger => {
-        trigger.addEventListener('click', function(e) {
+    // Use event delegation on document for modal triggers (works with dynamically added content)
+    document.addEventListener('click', function(e) {
+        // Check if clicked element or parent is a modal trigger
+        const trigger = e.target.closest('.modal-trigger');
+
+        if (trigger && trigger.dataset.modal) {
             e.preventDefault();
-            const modalType = this.dataset.modal;
-            const modal = modals[modalType];
+            e.stopPropagation();
+
+            const modalType = trigger.dataset.modal;
+            const modal = document.getElementById(modalType + '-modal');
 
             if (modal) {
                 modal.style.display = 'block';
                 document.body.style.overflow = 'hidden';
             }
-        });
-    });
+        }
 
-    // Close modal functionality
-    document.querySelectorAll('.shaped-modal-close').forEach(closeBtn => {
-        closeBtn.addEventListener('click', function() {
-            this.closest('.shaped-modal').style.display = 'none';
-            document.body.style.overflow = 'auto';
-        });
-    });
+        // Handle close button clicks
+        if (e.target.classList.contains('shaped-modal-close')) {
+            const modal = e.target.closest('.shaped-modal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
 
-    // Close on outside click
-    window.addEventListener('click', function(e) {
+        // Close on outside click (clicking the overlay)
         if (e.target.classList.contains('shaped-modal')) {
             e.target.style.display = 'none';
             document.body.style.overflow = 'auto';
@@ -168,8 +168,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Close on ESC key
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            document.querySelectorAll('.shaped-modal').forEach(modal => {
+        if (e.key === 'Escape' || e.key === 'Esc') {
+            const modals = document.querySelectorAll('.shaped-modal');
+            modals.forEach(function(modal) {
                 if (modal.style.display === 'block') {
                     modal.style.display = 'none';
                     document.body.style.overflow = 'auto';
@@ -177,5 +178,5 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
-});
+})();
 </script>
