@@ -27,7 +27,7 @@ if (!defined('ABSPATH')) {
  * Unique client identifier
  * Used for client detection and logging
  */
-define('SHAPED_CLIENT', 'preelook');
+define('SHAPED_CLIENT', 'shaped');
 
 // ============================================================================
 // FEATURE FLAGS
