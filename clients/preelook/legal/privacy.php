@@ -203,4 +203,4 @@ For any privacy-related questions or to exercise your rights: <br>
 
 <hr />
 <br>
-<em>This policy was last updated on 09.09.2025</em>
+<em>KURAC JEBEM TI MAMU</em>
