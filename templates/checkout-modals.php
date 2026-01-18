@@ -23,21 +23,21 @@ if (!is_page(['checkout', 'book', 'booking'])) {
 
 ?>
 <!-- Checkout Modals -->
-<div id="terms-modal" class="mphb-modal" style="display:none;">
-    <div class="mphb-modal-content">
-        <span class="mphb-modal-close">&times;</span>
+<div id="terms-modal" class="shaped-modal" style="display:none;">
+    <div class="shaped-modal-content">
+        <span class="shaped-modal-close">&times;</span>
         <h2 class="checkoutmodalheading">Booking Terms & Conditions</h2>
-        <div class="mphb-modal-body" id="terms-content">
+        <div class="shaped-modal-body" id="terms-content">
             <?php shaped_render_legal_content('terms'); ?>
         </div>
     </div>
 </div>
 
-<div id="privacy-modal" class="mphb-modal" style="display:none;">
-    <div class="mphb-modal-content">
-        <span class="mphb-modal-close">&times;</span>
+<div id="privacy-modal" class="shaped-modal" style="display:none;">
+    <div class="shaped-modal-content">
+        <span class="shaped-modal-close">&times;</span>
         <h2 class="checkoutmodalheading">Privacy Policy</h2>
-        <div class="mphb-modal-body" id="privacy-content">
+        <div class="shaped-modal-body" id="privacy-content">
             <?php shaped_render_legal_content('privacy'); ?>
         </div>
     </div>
@@ -45,7 +45,7 @@ if (!is_page(['checkout', 'book', 'booking'])) {
 
 <style>
 /* Checkout Modal Styling */
-.mphb-modal {
+.shaped-modal {
     display: none;
     position: fixed;
     z-index: 999999;
@@ -57,7 +57,7 @@ if (!is_page(['checkout', 'book', 'booking'])) {
     background-color: rgba(0,0,0,0.75);
 }
 
-.mphb-modal-content {
+.shaped-modal-content {
     background-color: #fefefe;
     margin: 5% auto;
     padding: 0;
@@ -69,7 +69,7 @@ if (!is_page(['checkout', 'book', 'booking'])) {
     flex-direction: column;
 }
 
-.mphb-modal-close {
+.shaped-modal-close {
     color: #aaa;
     float: right;
     font-size: 28px;
@@ -79,8 +79,8 @@ if (!is_page(['checkout', 'book', 'booking'])) {
     line-height: 1;
 }
 
-.mphb-modal-close:hover,
-.mphb-modal-close:focus {
+.shaped-modal-close:hover,
+.shaped-modal-close:focus {
     color: #000;
 }
 
@@ -90,27 +90,27 @@ if (!is_page(['checkout', 'book', 'booking'])) {
     border-bottom: 1px solid #e5e5e5;
 }
 
-.mphb-modal-body {
+.shaped-modal-body {
     padding: 30px;
     overflow-y: auto;
     flex: 1;
 }
 
-.mphb-modal-body h2 {
+.shaped-modal-body h2 {
     margin-top: 1.5em;
     margin-bottom: 0.5em;
 }
 
-.mphb-modal-body h2:first-child {
+.shaped-modal-body h2:first-child {
     margin-top: 0;
 }
 
-.mphb-modal-body ul {
+.shaped-modal-body ul {
     margin-bottom: 1em;
 }
 
 @media (max-width: 768px) {
-    .mphb-modal-content {
+    .shaped-modal-content {
         width: 95%;
         margin: 10px auto;
         max-height: 95vh;
@@ -121,7 +121,7 @@ if (!is_page(['checkout', 'book', 'booking'])) {
         font-size: 20px;
     }
 
-    .mphb-modal-body {
+    .shaped-modal-body {
         padding: 20px;
     }
 }
@@ -151,16 +151,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Close modal functionality
-    document.querySelectorAll('.mphb-modal-close').forEach(closeBtn => {
+    document.querySelectorAll('.shaped-modal-close').forEach(closeBtn => {
         closeBtn.addEventListener('click', function() {
-            this.closest('.mphb-modal').style.display = 'none';
+            this.closest('.shaped-modal').style.display = 'none';
             document.body.style.overflow = 'auto';
         });
     });
 
     // Close on outside click
     window.addEventListener('click', function(e) {
-        if (e.target.classList.contains('mphb-modal')) {
+        if (e.target.classList.contains('shaped-modal')) {
             e.target.style.display = 'none';
             document.body.style.overflow = 'auto';
         }
@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Close on ESC key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            document.querySelectorAll('.mphb-modal').forEach(modal => {
+            document.querySelectorAll('.shaped-modal').forEach(modal => {
                 if (modal.style.display === 'block') {
                     modal.style.display = 'none';
                     document.body.style.overflow = 'auto';
