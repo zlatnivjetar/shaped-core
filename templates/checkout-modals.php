@@ -23,7 +23,7 @@ if (!is_page(['checkout', 'book', 'booking'])) {
 
 ?>
 <!-- Checkout Modals -->
-<div id="terms-modal" class="shaped-modal" style="display:none;" data-page-slug="terms-and-conditions">
+<div id="terms-modal" class="shaped-modal" style="display:none;">
     <div class="shaped-modal-content">
         <span class="shaped-modal-close">&times;</span>
         <h2 class="checkoutmodalheading">Booking Terms & Conditions</h2>
@@ -36,7 +36,7 @@ if (!is_page(['checkout', 'book', 'booking'])) {
     </div>
 </div>
 
-<div id="privacy-modal" class="shaped-modal" style="display:none;" data-page-slug="privacy-policy">
+<div id="privacy-modal" class="shaped-modal" style="display:none;">
     <div class="shaped-modal-content">
         <span class="shaped-modal-close">&times;</span>
         <h2 class="checkoutmodalheading">Privacy Policy</h2>
@@ -142,12 +142,12 @@ if (!is_page(['checkout', 'book', 'booking'])) {
     const loadedModals = {};
 
     // Load page content via AJAX
-    function loadModalContent(modal, pageSlug) {
+    function loadModalContent(modal, pageUrl) {
         const modalBody = modal.querySelector('.shaped-modal-body');
         const loadingDiv = modal.querySelector('.shaped-modal-loading');
 
         // If already loaded, don't load again
-        if (loadedModals[pageSlug]) {
+        if (loadedModals[pageUrl]) {
             return;
         }
 
@@ -157,7 +157,7 @@ if (!is_page(['checkout', 'book', 'booking'])) {
         }
 
         // Fetch the WordPress page
-        fetch('/' + pageSlug + '/')
+        fetch(pageUrl)
             .then(function(response) {
                 if (!response.ok) {
                     throw new Error('Page not found');
@@ -186,14 +186,14 @@ if (!is_page(['checkout', 'book', 'booking'])) {
                     modalBody.innerHTML = content.innerHTML;
 
                     // Mark as loaded
-                    loadedModals[pageSlug] = true;
+                    loadedModals[pageUrl] = true;
                 } else {
                     throw new Error('Could not find content');
                 }
             })
             .catch(function(error) {
                 console.error('Error loading modal content:', error);
-                modalBody.innerHTML = '<p style="color: #d00; padding: 20px; text-align: center;">Error loading content. Please try again or visit the <a href="/' + pageSlug + '/" target="_blank">full page</a>.</p>';
+                modalBody.innerHTML = '<p style="color: #d00; padding: 20px; text-align: center;">Error loading content. Please try again or visit the <a href="' + pageUrl + '" target="_blank">full page</a>.</p>';
             });
     }
 
@@ -213,10 +213,10 @@ if (!is_page(['checkout', 'book', 'booking'])) {
                 modal.style.display = 'block';
                 document.body.style.overflow = 'hidden';
 
-                // Load content if needed
-                const pageSlug = modal.dataset.pageSlug;
-                if (pageSlug) {
-                    loadModalContent(modal, pageSlug);
+                // Get URL from the trigger's href attribute
+                const pageUrl = trigger.getAttribute('href');
+                if (pageUrl) {
+                    loadModalContent(modal, pageUrl);
                 }
             }
         }
