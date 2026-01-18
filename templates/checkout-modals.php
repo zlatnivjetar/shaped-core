@@ -21,7 +21,13 @@ if (!is_page(['checkout', 'book', 'booking'])) {
     }
 }
 
+// Localize AJAX URL for the modal scripts
 ?>
+<script>
+window.shapedAjax = {
+    ajaxUrl: '<?php echo esc_js(admin_url('admin-ajax.php')); ?>'
+};
+</script>
 <!-- Checkout Modals -->
 <div id="terms-modal" class="shaped-modal" style="display:none;">
     <div class="shaped-modal-content">
@@ -141,13 +147,13 @@ if (!is_page(['checkout', 'book', 'booking'])) {
     // Track which modals have loaded content
     const loadedModals = {};
 
-    // Load page content via AJAX
-    function loadModalContent(modal, pageUrl) {
+    // Load page content via WordPress AJAX
+    function loadModalContent(modal, pageUrl, pageId) {
         const modalBody = modal.querySelector('.shaped-modal-body');
         const loadingDiv = modal.querySelector('.shaped-modal-loading');
 
         // If already loaded, don't load again
-        if (loadedModals[pageUrl]) {
+        if (loadedModals[pageId]) {
             return;
         }
 
@@ -156,39 +162,36 @@ if (!is_page(['checkout', 'book', 'booking'])) {
             loadingDiv.style.display = 'block';
         }
 
-        // Fetch the WordPress page
-        fetch(pageUrl)
+        // Use WordPress AJAX to load content
+        const formData = new FormData();
+        formData.append('action', 'shaped_load_modal_content');
+        formData.append('page_id', pageId);
+
+        fetch(window.shapedAjax.ajaxUrl, {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
+        })
             .then(function(response) {
                 if (!response.ok) {
-                    throw new Error('Page not found');
+                    throw new Error('Network error');
                 }
-                return response.text();
+                return response.json();
             })
-            .then(function(html) {
-                // Parse the HTML
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-
-                // Try to extract main content (try multiple selectors)
-                let content = doc.querySelector('article .entry-content') ||
-                              doc.querySelector('.entry-content') ||
-                              doc.querySelector('main article') ||
-                              doc.querySelector('main') ||
-                              doc.querySelector('article');
-
-                if (content) {
+            .then(function(data) {
+                if (data.success && data.data.content) {
                     // Hide loading spinner
                     if (loadingDiv) {
                         loadingDiv.style.display = 'none';
                     }
 
                     // Insert content
-                    modalBody.innerHTML = content.innerHTML;
+                    modalBody.innerHTML = data.data.content;
 
                     // Mark as loaded
-                    loadedModals[pageUrl] = true;
+                    loadedModals[pageId] = true;
                 } else {
-                    throw new Error('Could not find content');
+                    throw new Error(data.data?.message || 'Failed to load content');
                 }
             })
             .catch(function(error) {
@@ -213,10 +216,12 @@ if (!is_page(['checkout', 'book', 'booking'])) {
                 modal.style.display = 'block';
                 document.body.style.overflow = 'hidden';
 
-                // Get URL from the trigger's href attribute
+                // Get URL and page ID from the trigger's attributes
                 const pageUrl = trigger.getAttribute('href');
-                if (pageUrl) {
-                    loadModalContent(modal, pageUrl);
+                const pageId = trigger.dataset.pageId;
+
+                if (pageUrl && pageId) {
+                    loadModalContent(modal, pageUrl, pageId);
                 }
             }
         }
