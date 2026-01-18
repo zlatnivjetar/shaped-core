@@ -177,14 +177,14 @@ class Shaped_RC_CLI {
      * @synopsis
      */
     public function config() {
-        // Credentials from wp-config.php
+        // Credentials and Channel ID from wp-config.php
         $service_url = defined('SHAPED_RC_SERVICE_URL') ? SHAPED_RC_SERVICE_URL : '';
         $username = defined('SHAPED_RC_USERNAME') ? SHAPED_RC_USERNAME : '';
         $password = defined('SHAPED_RC_PASSWORD') ? SHAPED_RC_PASSWORD : '';
+        $channel_id = defined('SHAPED_RC_CHANNEL_ID') ? SHAPED_RC_CHANNEL_ID : '';
 
         // IDs from database
         $hotel_id = get_option('shaped_rc_hotel_id', '');
-        $channel_id = get_option('shaped_rc_channel_id', '');
         $rate_id = get_option('shaped_rc_rate_id', '');
 
         WP_CLI::line('RoomCloud Configuration:');
@@ -193,10 +193,10 @@ class Shaped_RC_CLI {
         WP_CLI::line('  Service URL: ' . ($service_url ?: '(not set in wp-config.php)'));
         WP_CLI::line('  Username: ' . ($username ?: '(not set in wp-config.php)'));
         WP_CLI::line('  Password: ' . ($password ? str_repeat('*', min(strlen($password), 12)) : '(not set in wp-config.php)'));
+        WP_CLI::line('  Channel ID: ' . ($channel_id ?: '(not set in wp-config.php)'));
         WP_CLI::line('');
         WP_CLI::line('Configuration IDs (from database):');
         WP_CLI::line('  Hotel ID: ' . ($hotel_id ?: '(not set)'));
-        WP_CLI::line('  Channel ID: ' . ($channel_id ?: '(not set)'));
         WP_CLI::line('  Rate ID: ' . ($rate_id ?: '(not set)'));
         WP_CLI::line('');
 

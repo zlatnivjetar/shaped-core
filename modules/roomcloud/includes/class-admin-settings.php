@@ -54,10 +54,9 @@ class Shaped_RC_Admin_Settings
      */
     public function register_settings()
     {
-        // Configuration IDs (credentials are now in wp-config.php)
+        // Configuration IDs (credentials and channel_id are now in wp-config.php)
         register_setting('shaped_rc_settings', 'shaped_rc_hotel_id');
         register_setting('shaped_rc_settings', 'shaped_rc_rate_id');
-        register_setting('shaped_rc_settings', 'shaped_rc_channel_id');
 
         // Room mapping (auto-populated, but editable)
         register_setting('shaped_rc_settings', 'shaped_rc_room_mapping', [
@@ -80,10 +79,9 @@ class Shaped_RC_Admin_Settings
             return;
         }
         
-        // Get current settings (credentials are in wp-config.php)
+        // Get current settings (credentials and channel_id are in wp-config.php)
         $hotel_id = get_option('shaped_rc_hotel_id', '9335');
         $rate_id = get_option('shaped_rc_rate_id', '');
-        $channel_id = get_option('shaped_rc_channel_id', '');
         $room_mapping = get_option('shaped_rc_room_mapping', [
             'deluxe-studio-apartment' => '42683',
             'studio-apartment' => '42685',
@@ -136,11 +134,6 @@ class Shaped_RC_Admin_Settings
                             </td>
                         </tr>
                     </table>
-
-                    <p class="description" style="margin-top: 15px; padding: 10px; background: #fff8e5; border-left: 4px solid #ffb900;">
-                        <strong>Troubleshooting "Content is not allowed in prolog" errors:</strong><br>
-                        If you see this error in RoomCloud, click "Test Webhook" above. It will detect if there's unexpected content before the XML response.
-                    </p>
                 <?php else: ?>
                     <p style="color: #dc3232; font-weight: 600;">✗ Not Configured</p>
                     <?php if (!$credentials_configured): ?>
@@ -157,41 +150,10 @@ define('SHAPED_RC_PASSWORD', 'your-password');</pre>
             <form method="post" action="options.php">
                 <?php settings_fields('shaped_rc_settings'); ?>
                 
-                <!-- API Credentials (from wp-config.php) -->
+                <!-- Settings -->
                 <div class="card" style="max-width: 100%; margin-top: 20px;">
-                    <h2>API Credentials</h2>
-                    <?php if ($credentials_configured): ?>
-                        <p style="color: #46b450; margin-bottom: 15px;">
-                            ✓ Credentials configured in wp-config.php
-                        </p>
-                        <table class="form-table">
-                            <tr>
-                                <th scope="row" style="width: 200px;">Service URL</th>
-                                <td><code><?php echo esc_html(SHAPED_RC_SERVICE_URL); ?></code></td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Username</th>
-                                <td><code><?php echo esc_html(SHAPED_RC_USERNAME); ?></code></td>
-                            </tr>
-                            <tr>
-                                <th scope="row">Password</th>
-                                <td><code>••••••••</code> (hidden)</td>
-                            </tr>
-                        </table>
-                        <p class="description" style="margin-top: 15px;">
-                            To update credentials, edit your wp-config.php file.
-                        </p>
-                    <?php else: ?>
-                        <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 12px; margin-bottom: 15px;">
-                            <p style="margin: 0;"><strong>Credentials not configured.</strong></p>
-                            <p style="margin: 10px 0 0 0;">Add these constants to your wp-config.php file:</p>
-                        </div>
-                        <pre style="background: #f5f5f5; padding: 15px; overflow-x: auto;">define('SHAPED_RC_SERVICE_URL', 'https://xml.roomcloud.net/api/channel');
-define('SHAPED_RC_USERNAME', 'your-username-here');
-define('SHAPED_RC_PASSWORD', 'your-password-here');</pre>
-                    <?php endif; ?>
-
-                    <table class="form-table" style="margin-top: 20px;">
+                    <h2>Settings</h2>
+                    <table class="form-table">
                         <tr>
                             <th scope="row">
                                 <label for="shaped_rc_hotel_id">Hotel ID</label>
@@ -205,41 +167,18 @@ define('SHAPED_RC_PASSWORD', 'your-password-here');</pre>
                                 <p class="description">Your property ID in RoomCloud (e.g., 9335)</p>
                             </td>
                         </tr>
-                    </table>
-                </div>
-                
-                <!-- Rate Plan Configuration -->
-                <div class="card" style="max-width: 100%; margin-top: 20px;">
-                    <h2>Rate Plan</h2>
-                    <table class="form-table">
                         <tr>
                             <th scope="row">
                                 <label for="shaped_rc_rate_id">Rate ID</label>
                             </th>
                             <td>
-                                <input type="text" 
-                                       id="shaped_rc_rate_id" 
-                                       name="shaped_rc_rate_id" 
-                                       value="<?php echo esc_attr($rate_id); ?>" 
+                                <input type="text"
+                                       id="shaped_rc_rate_id"
+                                       name="shaped_rc_rate_id"
+                                       value="<?php echo esc_attr($rate_id); ?>"
                                        class="regular-text"
                                        placeholder="e.g., 26939">
                                 <p class="description">The RoomCloud rate plan ID to use for all bookings.</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">
-                                <label for="shaped_rc_channel_id">Channel ID</label>
-                            </th>
-                            <td>
-                                <input type="text" 
-                                       id="shaped_rc_channel_id" 
-                                       name="shaped_rc_channel_id" 
-                                       value="<?php echo esc_attr($channel_id); ?>" 
-                                       class="regular-text"
-                                       placeholder="e.g., 12345">
-                                <p class="description">
-                                    Your "Shape Systems" channel ID in RoomCloud. Find this in RoomCloud → Settings → Channels.
-                                </p>
                             </td>
                         </tr>
                     </table>

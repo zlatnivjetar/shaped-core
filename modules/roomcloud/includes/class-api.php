@@ -33,10 +33,10 @@ class Shaped_RC_API
         self::$service_url = defined('SHAPED_RC_SERVICE_URL') ? SHAPED_RC_SERVICE_URL : '';
         self::$username = defined('SHAPED_RC_USERNAME') ? SHAPED_RC_USERNAME : '';
         self::$password = defined('SHAPED_RC_PASSWORD') ? SHAPED_RC_PASSWORD : '';
+        self::$channel_id = defined('SHAPED_RC_CHANNEL_ID') ? SHAPED_RC_CHANNEL_ID : '';
 
         // Load IDs from database settings
         self::$hotel_id = get_option('shaped_rc_hotel_id', '9335');
-        self::$channel_id = get_option('shaped_rc_channel_id', '');
     }
     
     /**
