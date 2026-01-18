@@ -13,15 +13,7 @@ if (!defined('ABSPATH')) {
 class Shaped_RC_Webhook_Handler
 {
     private static $instance = null;
-    
-    // Reverse mapping: RoomCloud ID => MotoPress slug
-    private static $room_mapping_reverse = [
-        '42683' => 'deluxe-studio-apartment',
-        '42685' => 'studio-apartment',
-        '42686' => 'superior-studio-apartment',
-        '42684' => 'deluxe-double-room',
-    ];
-    
+
     public static function init()
     {
         if (self::$instance === null) {
@@ -29,11 +21,26 @@ class Shaped_RC_Webhook_Handler
         }
         return self::$instance;
     }
-    
+
     private function __construct()
     {
         // Register REST endpoint
         add_action('rest_api_init', [$this, 'register_webhook_endpoint']);
+    }
+
+    /**
+     * Get reverse room mapping (RoomCloud ID => MotoPress slug)
+     * Dynamically built from database option
+     *
+     * @return array Reverse mapping array
+     */
+    private static function get_room_mapping_reverse()
+    {
+        // Get forward mapping from database (MotoPress slug => RoomCloud ID)
+        $room_mapping = get_option('shaped_rc_room_mapping', []);
+
+        // Flip it to create reverse mapping (RoomCloud ID => MotoPress slug)
+        return array_flip($room_mapping);
     }
     
     /**
@@ -173,7 +180,7 @@ class Shaped_RC_Webhook_Handler
      */
     private function handle_get_hotels()
     {
-        $hotel_id = get_option('shaped_rc_hotel_id', '9335');
+        $hotel_id = get_option('shaped_rc_hotel_id', '');
         
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<Response>' . "\n";
@@ -192,7 +199,7 @@ class Shaped_RC_Webhook_Handler
      */
     private function handle_get_rates($hotel_id)
     {
-        $rate_id = get_option('shaped_rc_rate_id', '26939');
+        $rate_id = get_option('shaped_rc_rate_id', '');
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<Response>' . "\n";
@@ -212,27 +219,16 @@ class Shaped_RC_Webhook_Handler
      */
     private function handle_get_rooms($hotel_id)
     {
-        $rate_id = get_option('shaped_rc_rate_id', '26939');
-        $room_mapping = get_option('shaped_rc_room_mapping', [
-            'deluxe-studio-apartment' => '42683',
-            'studio-apartment' => '42685',
-            'superior-studio-apartment' => '42686',
-            'deluxe-double-room' => '42684',
-        ]);
-        
-        // Get MotoPress room types
-        $mphb_rooms = [
-            'deluxe-studio-apartment' => 'Deluxe Studio Apartment',
-            'studio-apartment' => 'Studio Apartment',
-            'superior-studio-apartment' => 'Superior Studio Apartment',
-            'deluxe-double-room' => 'Deluxe Double Room',
-        ];
-        
+        $rate_id = get_option('shaped_rc_rate_id', '');
+        $room_mapping = get_option('shaped_rc_room_mapping', []);
+
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<Response>' . "\n";
-        
+
         foreach ($room_mapping as $slug => $roomcloud_id) {
-            $description = isset($mphb_rooms[$slug]) ? $mphb_rooms[$slug] : ucwords(str_replace('-', ' ', $slug));
+            // Get room description from MotoPress post title, or generate from slug
+            $room_post = get_page_by_path($slug, OBJECT, 'mphb_room_type');
+            $description = $room_post ? get_the_title($room_post) : ucwords(str_replace('-', ' ', $slug));
             
             // Base occupancy: 2 adults for all rooms
             // Additional beds: 0 (we handle pricing via base price)
@@ -350,10 +346,11 @@ class Shaped_RC_Webhook_Handler
         
         $room = $reservation->room;
         $roomcloud_room_id = (string) $room['id'];
-        
-        // Map to MotoPress room type
-        $room_slug = isset(self::$room_mapping_reverse[$roomcloud_room_id])
-            ? self::$room_mapping_reverse[$roomcloud_room_id]
+
+        // Map to MotoPress room type (get dynamic mapping from database)
+        $room_mapping_reverse = self::get_room_mapping_reverse();
+        $room_slug = isset($room_mapping_reverse[$roomcloud_room_id])
+            ? $room_mapping_reverse[$roomcloud_room_id]
             : null;
         
         if (!$room_slug) {

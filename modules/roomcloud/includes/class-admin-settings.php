@@ -80,14 +80,9 @@ class Shaped_RC_Admin_Settings
         }
         
         // Get current settings (credentials and channel_id are in wp-config.php)
-        $hotel_id = get_option('shaped_rc_hotel_id', '9335');
+        $hotel_id = get_option('shaped_rc_hotel_id', '');
         $rate_id = get_option('shaped_rc_rate_id', '');
-        $room_mapping = get_option('shaped_rc_room_mapping', [
-            'deluxe-studio-apartment' => '42683',
-            'studio-apartment' => '42685',
-            'superior-studio-apartment' => '42686',
-            'deluxe-double-room' => '42684',
-        ]);
+        $room_mapping = get_option('shaped_rc_room_mapping', []);
 
         // Check if credentials are configured in wp-config.php
         $credentials_configured = defined('SHAPED_RC_SERVICE_URL') &&

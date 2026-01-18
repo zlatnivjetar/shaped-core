@@ -36,7 +36,7 @@ class Shaped_RC_API
         self::$channel_id = defined('SHAPED_RC_CHANNEL_ID') ? SHAPED_RC_CHANNEL_ID : '';
 
         // Load IDs from database settings
-        self::$hotel_id = get_option('shaped_rc_hotel_id', '9335');
+        self::$hotel_id = get_option('shaped_rc_hotel_id', '');
     }
     
     /**
@@ -130,7 +130,7 @@ class Shaped_RC_API
         
         // Get rate ID from settings if not provided
         if (!$rate_id) {
-            $rate_id = get_option('shaped_rc_rate_id', '99999'); // Placeholder
+            $rate_id = get_option('shaped_rc_rate_id', '');
         }
         
         // Build modify XML
@@ -207,7 +207,7 @@ class Shaped_RC_API
         }
         
         // Get rate ID
-        $rate_id = get_option('shaped_rc_rate_id', '99999');
+        $rate_id = get_option('shaped_rc_rate_id', '');
         
         // Get amount - use provided value or fetch from meta
         if ($amount === null) {

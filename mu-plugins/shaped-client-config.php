@@ -46,8 +46,9 @@ define('SHAPED_ENABLE_ROOMCLOUD', false);
 define('SHAPED_ENABLE_REVIEWS', true);
 
 /**
- * Disable WordPress sessions (recommended for performance)
+ * Disable WordPress sessions globally (recommended for performance)
  * Only set to false if you need WordPress session functionality
+ * Note: Sessions are also specifically disabled for price API endpoint (see below)
  */
 define('SHAPED_NO_SESSION', true);
 
@@ -291,3 +292,21 @@ function shaped_get_client_config() {
  * - shaped-core plugin updates won't touch this file
  * - Easy to backup/restore client-specific settings
  */
+
+// ============================================================================
+// PERFORMANCE OPTIMIZATIONS
+// ============================================================================
+
+/**
+ * Disable WordPress sessions specifically for Price API endpoint
+ * This ensures the price API is as fast as possible by preventing
+ * unnecessary session initialization overhead
+ */
+add_action('muplugins_loaded', function () {
+    if (strpos($_SERVER['REQUEST_URI'] ?? '', '/wp-json/shaped/v1/price') === false) {
+        return;
+    }
+    if (!defined('SHAPED_NO_SESSION')) {
+        define('SHAPED_NO_SESSION', true);
+    }
+}, 1);
