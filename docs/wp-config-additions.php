@@ -29,12 +29,13 @@ define('SHAPED_STRIPE_WEBHOOK', 'whsec_xxxxxxxxxxxxxxxxxxxxx');
  */
 define('SUPABASE_URL', 'https://xxxxxxxxxxxxxxxxxxxxx.supabase.co');
 define('SUPABASE_SERVICE_KEY', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...');
-
-/**
- * RoomCloud Sync Secret (if using RoomCloud integration)
- * Generate a random secret for webhook authentication
- */
 define('SHAPED_SYNC_SECRET', 'your-random-sync-secret-here');
+
+//Roomcloud settings
+// Roomcloud settings
+define('SHAPED_RC_SERVICE_URL', 'https://xml.tecnes.com/hotw/download/ShapeSystems.jsp');
+define('SHAPED_RC_USERNAME', '9335');
+define('SHAPED_RC_PASSWORD', 'Nasvrtjelep21$');
 
 // ─────────────────────────────────────────────────────────────────────────────
 
