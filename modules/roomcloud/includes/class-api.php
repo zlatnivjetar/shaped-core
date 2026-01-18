@@ -29,12 +29,14 @@ class Shaped_RC_API
     
     private function __construct()
     {
-        // Load config from settings
-        self::$service_url = get_option('shaped_rc_service_url', '');
-        self::$username = get_option('shaped_rc_username', '');
-        self::$password = get_option('shaped_rc_password', '');
+        // Load credentials from wp-config constants
+        self::$service_url = defined('SHAPED_RC_SERVICE_URL') ? SHAPED_RC_SERVICE_URL : '';
+        self::$username = defined('SHAPED_RC_USERNAME') ? SHAPED_RC_USERNAME : '';
+        self::$password = defined('SHAPED_RC_PASSWORD') ? SHAPED_RC_PASSWORD : '';
+        self::$channel_id = defined('SHAPED_RC_CHANNEL_ID') ? SHAPED_RC_CHANNEL_ID : '';
+
+        // Load IDs from database settings
         self::$hotel_id = get_option('shaped_rc_hotel_id', '9335');
-        self::$channel_id = get_option('shaped_rc_channel_id', '');
     }
     
     /**
@@ -482,13 +484,13 @@ class Shaped_RC_API
         $webhook_url = rest_url('shaped/v1/roomcloud-webhook');
 
         // Build a minimal test request (getHotels)
-        $username = get_option('shaped_rc_username', '');
-        $password = get_option('shaped_rc_password', '');
+        $username = defined('SHAPED_RC_USERNAME') ? SHAPED_RC_USERNAME : '';
+        $password = defined('SHAPED_RC_PASSWORD') ? SHAPED_RC_PASSWORD : '';
 
         if (empty($username) || empty($password)) {
             return [
                 'success' => false,
-                'error' => 'Username or password not configured',
+                'error' => 'Username or password not configured in wp-config.php',
             ];
         }
 

@@ -166,61 +166,6 @@ class Shaped_RC_CLI {
     }
 
     /**
-     * Update RoomCloud password
-     *
-     * Updates the RoomCloud API password in the database.
-     * This is useful for bulk updates across multiple sites when RoomCloud forces a password change.
-     *
-     * ## OPTIONS
-     *
-     * <password>
-     * : The new RoomCloud password
-     *
-     * [--test]
-     * : Test the connection after updating
-     *
-     * ## EXAMPLES
-     *
-     *     # Update password
-     *     wp roomcloud update_password "NewSecurePass123!"
-     *
-     *     # Update and test connection
-     *     wp roomcloud update_password "NewSecurePass123!" --test
-     *
-     * @synopsis <password> [--test]
-     */
-    public function update_password($args, $assoc_args) {
-        list($new_password) = $args;
-
-        if (empty($new_password)) {
-            WP_CLI::error('Password cannot be empty');
-        }
-
-        // Get current password for comparison
-        $old_password = get_option('shaped_rc_password', '');
-
-        // Update the password
-        update_option('shaped_rc_password', $new_password);
-
-        WP_CLI::success('RoomCloud password updated successfully');
-
-        // Test connection if requested
-        if (isset($assoc_args['test'])) {
-            WP_CLI::line('Testing connection...');
-
-            // Force API to reinitialize with new password
-            Shaped_RC_API::init();
-            $result = Shaped_RC_API::test_connection();
-
-            if ($result['success']) {
-                WP_CLI::success('Connection test passed: ' . $result['message']);
-            } else {
-                WP_CLI::error('Connection test failed: ' . $result['error']);
-            }
-        }
-    }
-
-    /**
      * Show current RoomCloud configuration
      *
      * Displays the current RoomCloud API configuration (password is masked).
@@ -232,27 +177,33 @@ class Shaped_RC_CLI {
      * @synopsis
      */
     public function config() {
-        $service_url = get_option('shaped_rc_service_url', '');
-        $username = get_option('shaped_rc_username', '');
-        $password = get_option('shaped_rc_password', '');
+        // Credentials and Channel ID from wp-config.php
+        $service_url = defined('SHAPED_RC_SERVICE_URL') ? SHAPED_RC_SERVICE_URL : '';
+        $username = defined('SHAPED_RC_USERNAME') ? SHAPED_RC_USERNAME : '';
+        $password = defined('SHAPED_RC_PASSWORD') ? SHAPED_RC_PASSWORD : '';
+        $channel_id = defined('SHAPED_RC_CHANNEL_ID') ? SHAPED_RC_CHANNEL_ID : '';
+
+        // IDs from database
         $hotel_id = get_option('shaped_rc_hotel_id', '');
-        $channel_id = get_option('shaped_rc_channel_id', '');
         $rate_id = get_option('shaped_rc_rate_id', '');
 
         WP_CLI::line('RoomCloud Configuration:');
         WP_CLI::line('');
-        WP_CLI::line('  Service URL: ' . ($service_url ?: '(not set)'));
-        WP_CLI::line('  Username: ' . ($username ?: '(not set)'));
-        WP_CLI::line('  Password: ' . ($password ? str_repeat('*', min(strlen($password), 12)) : '(not set)'));
+        WP_CLI::line('Credentials (from wp-config.php):');
+        WP_CLI::line('  Service URL: ' . ($service_url ?: '(not set in wp-config.php)'));
+        WP_CLI::line('  Username: ' . ($username ?: '(not set in wp-config.php)'));
+        WP_CLI::line('  Password: ' . ($password ? str_repeat('*', min(strlen($password), 12)) : '(not set in wp-config.php)'));
+        WP_CLI::line('  Channel ID: ' . ($channel_id ?: '(not set in wp-config.php)'));
+        WP_CLI::line('');
+        WP_CLI::line('Configuration IDs (from database):');
         WP_CLI::line('  Hotel ID: ' . ($hotel_id ?: '(not set)'));
-        WP_CLI::line('  Channel ID: ' . ($channel_id ?: '(not set)'));
         WP_CLI::line('  Rate ID: ' . ($rate_id ?: '(not set)'));
         WP_CLI::line('');
 
         if (Shaped_RC_API::is_configured()) {
             WP_CLI::success('RoomCloud is configured');
         } else {
-            WP_CLI::warning('RoomCloud is not fully configured');
+            WP_CLI::warning('RoomCloud is not fully configured - check wp-config.php constants');
         }
     }
 }

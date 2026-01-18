@@ -54,18 +54,10 @@ class Shaped_RC_Admin_Settings
      */
     public function register_settings()
     {
-        // Credentials
-        register_setting('shaped_rc_settings', 'shaped_rc_service_url');
-        register_setting('shaped_rc_settings', 'shaped_rc_username');
-        register_setting('shaped_rc_settings', 'shaped_rc_password');
+        // Configuration IDs (credentials and channel_id are now in wp-config.php)
         register_setting('shaped_rc_settings', 'shaped_rc_hotel_id');
-        
-        // Rate ID
         register_setting('shaped_rc_settings', 'shaped_rc_rate_id');
-        
-        // Channel ID
-        register_setting('shaped_rc_settings', 'shaped_rc_channel_id');
-        
+
         // Room mapping (auto-populated, but editable)
         register_setting('shaped_rc_settings', 'shaped_rc_room_mapping', [
             'type' => 'array',
@@ -87,23 +79,24 @@ class Shaped_RC_Admin_Settings
             return;
         }
         
-        // Get current settings
-        $service_url = get_option('shaped_rc_service_url', '');
-        $username = get_option('shaped_rc_username', '9335');
-        $password = get_option('shaped_rc_password', '');
+        // Get current settings (credentials and channel_id are in wp-config.php)
         $hotel_id = get_option('shaped_rc_hotel_id', '9335');
         $rate_id = get_option('shaped_rc_rate_id', '');
-        $channel_id = get_option('shaped_rc_channel_id', '');
         $room_mapping = get_option('shaped_rc_room_mapping', [
             'deluxe-studio-apartment' => '42683',
             'studio-apartment' => '42685',
             'superior-studio-apartment' => '42686',
             'deluxe-double-room' => '42684',
         ]);
-        
+
+        // Check if credentials are configured in wp-config.php
+        $credentials_configured = defined('SHAPED_RC_SERVICE_URL') &&
+                                  defined('SHAPED_RC_USERNAME') &&
+                                  defined('SHAPED_RC_PASSWORD');
+
         // Get MotoPress rooms
         $mphb_rooms = Shaped_Pricing::fetch_room_types();
-        
+
         // Check configuration status
         $is_configured = Shaped_RC_API::is_configured();
         
@@ -141,112 +134,51 @@ class Shaped_RC_Admin_Settings
                             </td>
                         </tr>
                     </table>
-
-                    <p class="description" style="margin-top: 15px; padding: 10px; background: #fff8e5; border-left: 4px solid #ffb900;">
-                        <strong>Troubleshooting "Content is not allowed in prolog" errors:</strong><br>
-                        If you see this error in RoomCloud, click "Test Webhook" above. It will detect if there's unexpected content before the XML response.
-                    </p>
                 <?php else: ?>
                     <p style="color: #dc3232; font-weight: 600;">✗ Not Configured</p>
-                    <p>Please enter your RoomCloud credentials below.</p>
+                    <?php if (!$credentials_configured): ?>
+                        <p>Please configure RoomCloud credentials in wp-config.php:</p>
+                        <pre style="background: #f5f5f5; padding: 10px; margin-top: 10px;">define('SHAPED_RC_SERVICE_URL', 'https://xml.roomcloud.net/api/channel');
+define('SHAPED_RC_USERNAME', 'your-username');
+define('SHAPED_RC_PASSWORD', 'your-password');</pre>
+                    <?php else: ?>
+                        <p>Credentials configured. Please complete the configuration below.</p>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
             
             <form method="post" action="options.php">
                 <?php settings_fields('shaped_rc_settings'); ?>
                 
-                <!-- API Credentials -->
+                <!-- Settings -->
                 <div class="card" style="max-width: 100%; margin-top: 20px;">
-                    <h2>API Credentials</h2>
+                    <h2>Settings</h2>
                     <table class="form-table">
-                        <tr>
-                            <th scope="row">
-                                <label for="shaped_rc_service_url">Service URL</label>
-                            </th>
-                            <td>
-                                <input type="url" 
-                                       id="shaped_rc_service_url" 
-                                       name="shaped_rc_service_url" 
-                                       value="<?php echo esc_attr($service_url); ?>" 
-                                       class="regular-text"
-                                       placeholder="https://xml.roomcloud.net/api/channel">
-                                <p class="description">
-                                    Production API endpoint URL from RoomCloud.
-                                </p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">
-                                <label for="shaped_rc_username">Username</label>
-                            </th>
-                            <td>
-                                <input type="text" 
-                                       id="shaped_rc_username" 
-                                       name="shaped_rc_username" 
-                                       value="<?php echo esc_attr($username); ?>" 
-                                       class="regular-text">
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">
-                                <label for="shaped_rc_password">Password</label>
-                            </th>
-                            <td>
-                                <input type="password" 
-                                       id="shaped_rc_password" 
-                                       name="shaped_rc_password" 
-                                       value="<?php echo esc_attr($password); ?>" 
-                                       class="regular-text">
-                            </td>
-                        </tr>
                         <tr>
                             <th scope="row">
                                 <label for="shaped_rc_hotel_id">Hotel ID</label>
                             </th>
                             <td>
-                                <input type="text" 
-                                       id="shaped_rc_hotel_id" 
-                                       name="shaped_rc_hotel_id" 
-                                       value="<?php echo esc_attr($hotel_id); ?>" 
+                                <input type="text"
+                                       id="shaped_rc_hotel_id"
+                                       name="shaped_rc_hotel_id"
+                                       value="<?php echo esc_attr($hotel_id); ?>"
                                        class="regular-text">
-                                <p class="description">Your property ID in RoomCloud (default: 9335)</p>
+                                <p class="description">Your property ID in RoomCloud (e.g., 9335)</p>
                             </td>
                         </tr>
-                    </table>
-                </div>
-                
-                <!-- Rate Plan Configuration -->
-                <div class="card" style="max-width: 100%; margin-top: 20px;">
-                    <h2>Rate Plan</h2>
-                    <table class="form-table">
                         <tr>
                             <th scope="row">
                                 <label for="shaped_rc_rate_id">Rate ID</label>
                             </th>
                             <td>
-                                <input type="text" 
-                                       id="shaped_rc_rate_id" 
-                                       name="shaped_rc_rate_id" 
-                                       value="<?php echo esc_attr($rate_id); ?>" 
+                                <input type="text"
+                                       id="shaped_rc_rate_id"
+                                       name="shaped_rc_rate_id"
+                                       value="<?php echo esc_attr($rate_id); ?>"
                                        class="regular-text"
                                        placeholder="e.g., 26939">
                                 <p class="description">The RoomCloud rate plan ID to use for all bookings.</p>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">
-                                <label for="shaped_rc_channel_id">Channel ID</label>
-                            </th>
-                            <td>
-                                <input type="text" 
-                                       id="shaped_rc_channel_id" 
-                                       name="shaped_rc_channel_id" 
-                                       value="<?php echo esc_attr($channel_id); ?>" 
-                                       class="regular-text"
-                                       placeholder="e.g., 12345">
-                                <p class="description">
-                                    Your "Shape Systems" channel ID in RoomCloud. Find this in RoomCloud → Settings → Channels.
-                                </p>
                             </td>
                         </tr>
                     </table>
