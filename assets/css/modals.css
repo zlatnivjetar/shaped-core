@@ -145,11 +145,11 @@
     color: var(--color-text-muted, #666);
 }
 
-.shaped-modal-content.is-loaded .shaped-modal-loading {
+#shaped-modal-overlay .shaped-modal-content.is-loaded .shaped-modal-loading {
     display: none;
 }
 
-.shaped-modal-content:not(.is-loaded) .shaped-modal-body {
+#shaped-modal-overlay .shaped-modal-content:not(.is-loaded) .shaped-modal-body {
     display: none;
 }
 
