@@ -51,8 +51,6 @@ return [
      * RoomCloud defaults
      */
     'roomcloud' => [
-        'hotel_id'   => '9335',
-        'rate_id'    => '99999',
         'status_map' => [
             'SUBMITTED' => '2',
             'CONFIRMED' => '4',
