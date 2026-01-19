@@ -160,7 +160,7 @@ function shaped_get_client_config() {
                 'highlight' => '#fffbf0',  // booking form, checkout form bottom etc.
             ],
             'border' => [
-                'default' => '#E5E3DC',
+                'default' => '#e4e4e4',
             ],
             'text' => [
                 'primary'           => '#11110F',
