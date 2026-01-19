@@ -52,7 +52,7 @@
 .shaped-admin-section h2 {
     margin-top: 0;
     padding-bottom: 12px;
-    border-bottom: 2px solid var(--color-brand-primary, #D1AF5D);
+    border-bottom: 2px solid var(--color-brand-primary, #2563EB);
 }
 
 .shaped-admin-section > .description {
@@ -128,7 +128,7 @@
 /* Primary/brand variant - golden themed */
 .shaped-settings-panel--primary {
     background: var(--color-surface-highlight, #fffbf0);
-    border: 1px solid var(--color-brand-primary, #D1AF5D);
+    border: 1px solid var(--color-brand-primary, #2563EB);
 }
 
 .shaped-settings-panel.is-visible {

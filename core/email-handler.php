@@ -253,7 +253,7 @@ function shaped_get_reservation_template($data) {
     );
 
     // Footer note
-    $primary = shaped_email_color('primary', '#D1AF5D');
+    $primary = shaped_email_color('primary', '#2563EB');
     $text_muted = shaped_email_color('textMuted', '#666666');
     $content .= '<p style="margin: 0; font-size: 14px; color: ' . $text_muted . '; text-align: center; line-height: 1.6;">';
     $content .= "You'll receive full booking details after payment is processed.<br>";

@@ -325,8 +325,8 @@ function shaped_email_end() {
  * @return string Header HTML
  */
 function shaped_email_header($title, $subtitle = '') {
-    $primary = shaped_email_color('primary', '#D1AF5D');
-    $secondary = shaped_email_color('secondary', '#94772E');
+    $primary = shaped_email_color('primary', '#2563EB');
+    $secondary = shaped_email_color('secondary', '#1E40AF');
 
     ob_start();
     ?>
@@ -459,7 +459,7 @@ function shaped_email_block_card_start($variant = 'neutral', $margin_bottom = '2
     ];
 
     $bg = isset($backgrounds[$variant]) ? $backgrounds[$variant] : $backgrounds['neutral'];
-    $primary = shaped_email_color('primary', '#D1AF5D');
+    $primary = shaped_email_color('primary', '#2563EB');
     $border_color = shaped_brand('colors.border.default', '#e5e5e5');
 
     // Build border style and padding based on variant
@@ -615,7 +615,7 @@ function shaped_email_block_total_divider() {
  */
 function shaped_email_block_total_row($label, $value) {
     $text_primary = shaped_email_color('textPrimary', '#26272C');
-    $primary = shaped_email_color('primary', '#D1AF5D');
+    $primary = shaped_email_color('primary', '#2563EB');
 
     ob_start();
     ?>
@@ -638,7 +638,7 @@ function shaped_email_block_total_row($label, $value) {
  * @return string Button HTML
  */
 function shaped_email_block_button($text, $url, $subtext = '') {
-    $primary = shaped_email_color('primary', '#D1AF5D');
+    $primary = shaped_email_color('primary', '#2563EB');
     $text_inverse = shaped_email_color('textInverse', '#FFFFFF');
 
     ob_start();
@@ -749,7 +749,7 @@ function shaped_email_block_contact($phone = '', $email = '') {
  */
 function shaped_email_block_closing($message = '', $signature = '', $variant = 'highlight', $logo_url = null) {
     $text_primary = shaped_email_color('textPrimary', '#26272C');
-    $primary = shaped_email_color('primary', '#D1AF5D');
+    $primary = shaped_email_color('primary', '#2563EB');
     $border_color = shaped_brand('colors.border.default', '#e5e5e5');
     $bg = $variant === 'highlight' ? '#fffbf0' : '#f8f8f8';
 
@@ -805,7 +805,7 @@ function shaped_email_block_closing($message = '', $signature = '', $variant = '
 function shaped_email_block_payment_info($amount, $date, $note = '') {
     $text_primary = shaped_email_color('textPrimary', '#26272C');
     $text_muted = shaped_email_color('textMuted', '#666666');
-    $primary = shaped_email_color('primary', '#D1AF5D');
+    $primary = shaped_email_color('primary', '#2563EB');
     $border_color = shaped_brand('colors.border.default', '#e5e5e5');
 
     // Brand light background gets 4px border-left in brand main color + extra left padding
@@ -836,7 +836,7 @@ function shaped_email_block_payment_info($amount, $date, $note = '') {
 function shaped_email_block_text($text, $variant = 'muted') {
     $text_muted = shaped_email_color('textMuted', '#666666');
     $text_primary = shaped_email_color('textPrimary', '#26272C');
-    $primary = shaped_email_color('primary', '#D1AF5D');
+    $primary = shaped_email_color('primary', '#2563EB');
 
     $color = $variant === 'primary' ? $text_primary : $text_muted;
     $align = 'left';

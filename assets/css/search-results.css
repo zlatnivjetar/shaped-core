@@ -50,8 +50,8 @@
 /* Results Info Bar */
 .mphb_sc_search_results-info {
     background: var(--color-surface-card, #ffffff);
-    border-left: 4px solid var(--color-brand-primary, #D1AF5D);
-    border-right: 4px solid var(--color-brand-primary, #D1AF5D);
+    border-left: 4px solid var(--color-brand-primary, #2563EB);
+    border-right: 4px solid var(--color-brand-primary, #2563EB);
     padding: 1.5rem 2rem;
     margin-bottom: 0;
     border-radius: 0.5rem;
@@ -134,7 +134,7 @@
 }
 
 .mphb-room-type-title a:hover {
-    color: var(--color-brand-primary, #D1AF5D);
+    color: var(--color-brand-primary, #2563EB);
 }
 
 /* Room Description */
@@ -171,7 +171,7 @@
 }
 
 .mphb-price {
-    color: var(--color-brand-primary, #D1AF5D);
+    color: var(--color-brand-primary, #2563EB);
     font-size: 1.5rem;
     font-weight: 700;
     display: block;
@@ -216,7 +216,7 @@
 }
 
 .mphb-price-current {
-    color: var(--color-brand-primary, #D1AF5D) !important;
+    color: var(--color-brand-primary, #2563EB) !important;
     font-weight: 700 !important;
     font-size: 24px;
 }
@@ -270,7 +270,7 @@
 
 .shaped-rates-indicator .rates-count {
     font-weight: 600;
-    color: var(--color-brand-primary, #D1AF5D);
+    color: var(--color-brand-primary, #2563EB);
 }
 
 .shaped-rates-indicator .rates-text {
@@ -310,7 +310,7 @@
 }
 
 .mphb-view-details-button:hover {
-    color: var(--color-brand-primary, #D1AF5D);
+    color: var(--color-brand-primary, #2563EB);
 }
 
 /* Reserve Room Section */
@@ -339,7 +339,7 @@
 /* Book Button */
 .mphb-book-button,
 .mphb-confirm-reservation {
-    background: var(--color-brand-primary, #D1AF5D);
+    background: var(--color-brand-primary, #2563EB);
     color: var(--color-text-on-accent, #ffffff);
     border: none;
     border-radius: 0.5rem;
@@ -399,7 +399,7 @@
 }
 
 .mphb-amenity-icon {
-    color: var(--color-brand-primary, #D1AF5D);
+    color: var(--color-brand-primary, #2563EB);
     font-size: 1rem;
     width: 20px;
     text-align: center;

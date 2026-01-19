@@ -9,7 +9,7 @@
 }
 
 .mphb-price-current {
-	color: var(--color-brand-primary, #D1AF5D);
+	color: var(--color-brand-primary, #2563EB);
 	margin-left: 8px;
 	font-weight: bold;
 }
@@ -76,7 +76,7 @@
 	font-weight: 700;
 	margin: 0 0 1.5rem 0;
 	padding-bottom: 1rem;
-	border-bottom: 2px solid var(--color-brand-primary, #D1AF5D);
+	border-bottom: 2px solid var(--color-brand-primary, #2563EB);
 	letter-spacing: -0.025em;
 }
 
@@ -85,7 +85,7 @@
     font-size: 1.5rem !important;
     font-weight: 700 !important;
     line-height: 1.25em !important;
-        border-bottom: 2px solid var(--color-brand-primary, #D1AF5D) !important;
+        border-bottom: 2px solid var(--color-brand-primary, #2563EB) !important;
     letter-spacing: -0.025em !important;
         margin: 0 0 1.5rem 0!important;
     padding-bottom: 1rem !important;padding-top: 2rem !important;
@@ -146,7 +146,7 @@
 
 .mphb-check-in-date time:last-child,
 .mphb-check-out-date time:last-child {
-	color: var(--color-brand-primary, #D1AF5D);
+	color: var(--color-brand-primary, #2563EB);
 	font-size: 0.875rem;
 	font-weight: 700;
 }
@@ -194,7 +194,7 @@
 }
 
 .mphb-room-type-title a {
-	color: var(--color-brand-primary, #D1AF5D);
+	color: var(--color-brand-primary, #2563EB);
 	text-decoration: none;
 	font-weight: 600;
 }
@@ -261,7 +261,7 @@ select[name*="mphb_room_details"] {
 .mphb-guest-name-wrapper input[type="text"]:focus,
 select[name*="mphb_room_details"]:focus {
 	outline: none;
-	border-color: var(--color-brand-primary, #D1AF5D);
+	border-color: var(--color-brand-primary, #2563EB);
 }
 
 
@@ -321,12 +321,12 @@ select[name*="mphb_room_details"]:focus {
 }
 
 .mphb-price {
-	color: var(--color-brand-primary, #D1AF5D);
+	color: var(--color-brand-primary, #2563EB);
 	font-weight: 700;
 }
 
 .mphb-price-breakdown-expand {
-	color: var(--color-brand-primary, #D1AF5D);
+	color: var(--color-brand-primary, #2563EB);
 	text-decoration: none;
 	font-weight: 600;
 }
@@ -337,7 +337,7 @@ select[name*="mphb_room_details"]:focus {
 
 /* Total Row */
 .mphb-price-breakdown tfoot th {
-	background: var(--color-brand-primary, #D1AF5D);
+	background: var(--color-brand-primary, #2563EB);
 	color: var(--color-text-inverse, #ffffff);
 	font-weight: 700;
 	font-size: 1.125rem;
@@ -401,7 +401,7 @@ select[name*="mphb_room_details"]:focus {
 
 .mphb-customer-details input:focus {
 	outline: none;
-	border-color: var(--color-brand-primary, #D1AF5D);
+	border-color: var(--color-brand-primary, #2563EB);
 }
 
 .mphb-customer-details input::placeholder {
@@ -410,7 +410,7 @@ select[name*="mphb_room_details"]:focus {
 
 /* Required Fields */
 abbr[title="Required"] {
-	color: var(--color-brand-primary, #D1AF5D);
+	color: var(--color-brand-primary, #2563EB);
 	text-decoration: none;
 	font-weight: 700;
 	margin-left: 2px;
@@ -459,7 +459,7 @@ abbr[title="Required"] {
 }
 
 .mphb-total-price-field .mphb-price {
-	color: var(--color-brand-primary, #D1AF5D);
+	color: var(--color-brand-primary, #2563EB);
 	font-size: 2rem;
 	font-weight: 700;
 	display: block;
@@ -558,8 +558,8 @@ abbr[title="Required"] {
 }
 
 .mphb-terms-and-conditions-accept input[type="checkbox"]:checked {
-	background: var(--color-brand-primary, #D1AF5D);
-	border-color: var(--color-brand-primary, #D1AF5D);
+	background: var(--color-brand-primary, #2563EB);
+	border-color: var(--color-brand-primary, #2563EB);
 }
 
 .mphb-terms-and-conditions-accept input[type="checkbox"]:checked::after {
@@ -574,7 +574,7 @@ abbr[title="Required"] {
 }
 
 .mphb-terms-and-conditions-link {
-	color: var(--color-brand-primary, #D1AF5D);
+	color: var(--color-brand-primary, #2563EB);
 	text-decoration: none;
 	font-weight: 600;
 }
@@ -621,8 +621,8 @@ input[type="submit"].button {
 
 .mphb-checkout-text-wrapper {
 	background: var(--color-surface-alt, #fafafa);
-	border-left: 4px solid var(--color-brand-primary, #D1AF5D);
-	border-right: 4px solid var(--color-brand-primary, #D1AF5D);
+	border-left: 4px solid var(--color-brand-primary, #2563EB);
+	border-right: 4px solid var(--color-brand-primary, #2563EB);
 	padding: 2rem;
 	text-align: center;
 	margin: 0 !important;
@@ -652,7 +652,7 @@ input:focus,
 .mphb-terms-and-conditions-link:focus,
 .mphb-room-type-title a:focus {
 	outline: none;
-	border-color: var(--color-brand-primary, #D1AF5D);
+	border-color: var(--color-brand-primary, #2563EB);
 }
 
 .mphb-discount-row {
@@ -849,7 +849,7 @@ input:focus,
 }
 
 .shaped-note__body strong {
-	color: var(--color-brand-primary, #D1AF5D);
+	color: var(--color-brand-primary, #2563EB);
 }
 
 @media (max-width: 767px) {
@@ -1181,19 +1181,19 @@ input:focus,
 }
 
 .shaped-modal-close:hover {
-    color: #D1AF5D;
+    color: #2563EB;
 }
 
 .shaped-terms-link,
 .shaped-privacy-link {
-    color: #D1AF5D;
+    color: #2563EB;
     text-decoration: underline;
     transition: color 200ms ease;
 }
 
 .shaped-terms-link:hover,
 .shaped-privacy-link:hover {
-    color: #C39937;
+    color: #1D4ED8;
 }
 
 /* Mobile optimization */
