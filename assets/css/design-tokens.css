@@ -1,10 +1,15 @@
 /**
- * Shaped Design Tokens
+ * Shaped Design Tokens - FALLBACK DEFAULTS
  *
- * CSS Custom Properties for the Shaped booking system.
+ * These are default/fallback values only.
  *
- * CONSTANTS - These values are the same for all clients.
- * CLIENT-SPECIFIC - Only surface colors are defined per-client in mu-plugins/shaped-client-config.php
+ * CLIENT-SPECIFIC VALUES ARE INJECTED DYNAMICALLY:
+ * - Source: mu-plugins/shaped-client-config.php (outside repo in production)
+ * - Loader: Shaped_Design_Tokens_Generator::generate_tokens_css()
+ * - Injected: Via wp_add_inline_style() in class-assets.php
+ *
+ * The dynamic injection overrides these defaults with client-specific values.
+ * This file provides type safety and fallbacks only.
  */
 
 :root {

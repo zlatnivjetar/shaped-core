@@ -42,6 +42,13 @@ class Shaped_Assets {
                 ['shaped-fonts'],
                 SHAPED_VERSION
             );
+
+            // Inject client-specific CSS variables from shaped-client-config.php
+            // This works even when mu-plugins is outside the repo
+            if (class_exists('Shaped_Design_Tokens_Generator')) {
+                $tokens_css = Shaped_Design_Tokens_Generator::generate_tokens_css();
+                wp_add_inline_style('shaped-design-tokens', $tokens_css);
+            }
         }
 
         // ─── Always Load (lightweight utilities) ───

@@ -23,9 +23,12 @@ class Shaped_Loader {
         'Shaped_Booking_Manager'    => 'core/class-booking-manager.php',
 
         // Include classes
-        'Shaped_Assets'             => 'includes/class-assets.php',
-        'Shaped_Admin'              => 'includes/class-admin.php',
-        'Shaped_Amenity_Mapper'     => 'includes/class-amenity-mapper.php',
+        'Shaped_Assets'                    => 'includes/class-assets.php',
+        'Shaped_Admin'                     => 'includes/class-admin.php',
+        'Shaped_Amenity_Mapper'            => 'includes/class-amenity-mapper.php',
+        'Shaped_Brand_Config'              => 'includes/class-brand-config.php',
+        'Shaped_Font_Loader'               => 'includes/class-font-loader.php',
+        'Shaped_Design_Tokens_Generator'   => 'includes/class-design-tokens-generator.php',
 
         // Admin classes
         'Shaped_Role_Manager'       => 'admin/class-role-manager.php',
