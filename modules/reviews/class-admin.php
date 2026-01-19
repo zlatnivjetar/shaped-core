@@ -123,7 +123,7 @@ class Admin {
         $has_half = ($star_rating - $full_stars) >= 0.5;
 
         echo '<div style="white-space:nowrap;">';
-        echo '<span style="color:#D1AF5D; font-size:16px;">';
+        echo '<span style="color:#2563EB; font-size:16px;">';
 
         for ($i = 1; $i <= 5; $i++) {
             if ($i <= $full_stars) {
@@ -178,7 +178,7 @@ class Admin {
         $is_featured = get_post_meta($post_id, 'is_featured', true);
         
         if ($is_featured) {
-            echo '<span style="color:#D1AF5D; font-size:18px;" title="Featured">⭐</span>';
+            echo '<span style="color:#2563EB; font-size:18px;" title="Featured">⭐</span>';
         } else {
             echo '<span style="color:#ddd;">—</span>';
         }
@@ -192,7 +192,7 @@ class Admin {
         $is_featured = get_post_meta($post_id, 'is_featured', true);
 
         if ($is_featured && $priority > 0) {
-            echo '<strong style="color:#D1AF5D;">' . intval($priority) . '</strong>';
+            echo '<strong style="color:#2563EB;">' . intval($priority) . '</strong>';
         } elseif ($priority > 0) {
             echo intval($priority);
         } else {

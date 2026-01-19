@@ -28,7 +28,7 @@
 
 /* Modal Container */
 .shaped-modal-container {
-    background: var(--color-surface-card, #fff);
+    background: var(--color-surface-white, #fff);
     border-radius: var(--radius-md, 8px);
     max-width: 800px;
     width: 100%;

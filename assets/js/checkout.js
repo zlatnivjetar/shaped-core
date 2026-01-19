@@ -429,7 +429,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <span class="mphb-price-original" style="text-decoration: line-through; color: var(--color-text-muted, #999); font-weight: normal;">
                 <span class="mphb-currency">€</span>${formatPrice(originalPrice)}
             </span>
-            <span class="mphb-price mphb-price-current" style="color: var(--color-brand-primary, #D1AF5D); margin-left: 8px; font-weight: bold;">
+            <span class="mphb-price mphb-price-current" style="color: var(--color-brand-primary, #2563EB); margin-left: 8px; font-weight: bold;">
                 <span class="mphb-currency">€</span>${discountedTotal}
             </span>
         `;
@@ -673,7 +673,7 @@ document.addEventListener('DOMContentLoaded', function() {
             `.trim();
 
             const discountedHTML = `
-                <span class="mphb-price-discount" style="color: var(--color-brand-primary, #D1AF5D); font-weight:bold; margin-left:4px;">
+                <span class="mphb-price-discount" style="color: var(--color-brand-primary, #2563EB); font-weight:bold; margin-left:4px;">
                     ${currencyHTML}${formattedDiscounted}
                 </span>
             `.trim();

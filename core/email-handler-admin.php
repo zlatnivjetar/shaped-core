@@ -303,7 +303,7 @@ function shaped_get_admin_reservation_template( $data ) {
             <p><strong>Check-in:</strong> <?php echo esc_html( $data['check_in'] ); ?></p>
             <p><strong>Check-out:</strong> <?php echo esc_html( $data['check_out'] ); ?></p>
             <p><strong>Total Amount:</strong> <strong style="color: #1976d2;"><?php echo esc_html( $data['pending_amount'] ); ?></strong></p>
-            <p style="background: #fffbf0; padding: 10px; border-radius: 3px; border-left: 3px solid #D1AF5D;">
+            <p style="background: #fffbf0; padding: 10px; border-radius: 3px; border-left: 3px solid #2563EB;">
                 <strong>⚠️ Payment Status:</strong> Card saved. Will be charged on <?php echo esc_html( $data['charge_date'] ); ?>
             </p>
             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
@@ -428,13 +428,13 @@ function shaped_get_admin_deposit_template( $data ) {
     ob_start();
     ?>
     <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333; max-width: 600px; border: 1px solid #ddd; border-radius: 5px; margin: 20px auto;">
-        <div style="background-color: #D1AF5D; color: white; padding: 15px; border-radius: 5px 5px 0 0;">
+        <div style="background-color: #2563EB; color: white; padding: 15px; border-radius: 5px 5px 0 0;">
             <h2 style="margin: 0;">Deposit Received: #<?php echo esc_html( $data['booking_id'] ); ?></h2>
         </div>
         <div style="padding: 20px;">
             <h3 style="margin-top: 0;">Payment Details:</h3>
             <p><strong>Deposit Paid:</strong> <strong style="color: #2e7d32;"><?php echo esc_html( $data['deposit_paid'] ); ?></strong></p>
-            <p><strong>Balance Due:</strong> <strong style="color: #D1AF5D;"><?php echo esc_html( $data['balance_due'] ); ?></strong> (at check-in)</p>
+            <p><strong>Balance Due:</strong> <strong style="color: #2563EB;"><?php echo esc_html( $data['balance_due'] ); ?></strong> (at check-in)</p>
             <p><strong>Total Booking:</strong> <?php echo esc_html( $data['total_amount'] ); ?></p>
             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
             <h3 style="margin-top: 0;">Booking Details:</h3>

@@ -42,7 +42,7 @@
  * Card-like container for grouping related settings
  * ========================================================================== */
 .shaped-admin-section {
-    background: var(--color-surface-card, #fff);
+    background: var(--color-surface-white, #fff);
     padding: 24px;
     border: 1px solid var(--color-border-default, #ccd0d4);
     border-radius: var(--radius-sm, 4px);
@@ -52,7 +52,7 @@
 .shaped-admin-section h2 {
     margin-top: 0;
     padding-bottom: 12px;
-    border-bottom: 2px solid var(--color-brand-primary, #D1AF5D);
+    border-bottom: 2px solid var(--color-brand-primary, #2563EB);
 }
 
 .shaped-admin-section > .description {
@@ -128,7 +128,7 @@
 /* Primary/brand variant - golden themed */
 .shaped-settings-panel--primary {
     background: var(--color-surface-highlight, #fffbf0);
-    border: 1px solid var(--color-brand-primary, #D1AF5D);
+    border: 1px solid var(--color-brand-primary, #2563EB);
 }
 
 .shaped-settings-panel.is-visible {
@@ -186,7 +186,7 @@
  * Informational panel at the bottom of settings pages
  * ========================================================================== */
 .shaped-admin-info {
-    background: var(--color-surface-card, #fff);
+    background: var(--color-surface-white, #fff);
     padding: 24px;
     border: 1px solid var(--color-border-default, #ccd0d4);
     border-radius: var(--radius-sm, 4px);
@@ -224,7 +224,7 @@
 
 /* Legacy alias */
 .shaped-pricing-info {
-    background: var(--color-surface-card, #fff);
+    background: var(--color-surface-white, #fff);
     padding: 24px;
     border: 1px solid var(--color-border-default, #ccd0d4);
     border-radius: var(--radius-sm, 4px);

@@ -5,12 +5,12 @@
 }
 
     .elementor-gallery__titles-container.e--pointer-underline.e--animation-slide{
-    background: var(--color-surface-card, #ffffff);
+    background: var(--color-surface-white, #ffffff);
     padding:24px 32px;
     border-radius: var(--radius-md, 8px);
     box-shadow: var(--shadow-md, 0 2px 4px rgba(0, 0, 0, 0.08));
-    border-left: 4px solid var(--color-brand-primary, #D1AF5D);
-    border-right: 4px solid var(--color-brand-primary, #D1AF5D);
+    border-left: 4px solid var(--color-brand-primary, #2563EB);
+    border-right: 4px solid var(--color-brand-primary, #2563EB);
     }
     
 

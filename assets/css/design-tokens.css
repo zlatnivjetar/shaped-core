@@ -2,145 +2,107 @@
  * Shaped Design Tokens
  *
  * CSS Custom Properties for the Shaped booking system.
- * These values match the brand.json schema and provide a single source of truth
- * for all colors, spacing, and design values across the plugin.
  *
- * To customize for a specific property, override these variables in your theme's CSS
- * or use a child theme. For example:
- *
- * :root {
- *   --color-brand-primary: #your-brand-color;
- * }
+ * CONSTANTS - These values are the same for all clients.
+ * CLIENT-SPECIFIC - Only surface colors are defined per-client in mu-plugins/shaped-client-config.php
  */
 
 :root {
-  /* =========================================================================
-   * BRAND COLORS
-   * Primary colors for brand identity - the main accent and interactive colors
-   * ========================================================================= */
-  --color-brand-primary: #D1AF5D;
-  --color-brand-primary-hover: #C39937;
-  --color-brand-secondary: #94772E;
+  /* =================================================================
+   * CLIENT-SPECIFIC SURFACE COLORS
+   * Defined in mu-plugins/shaped-client-config.php
+   * These are placeholders - actual values injected via PHP
+   * ================================================================= */
+  --color-surface-page: #FFFFFF;
+  --color-surface-alt: #F9FAFB;
+  --color-surface-white: #FFFFFF;
+  --color-surface-highlight: #EFF6FF;
+  --color-surface-page-dark: #1F2937;
+  --color-surface-page-black: #111827;
 
-  /* =========================================================================
-   * SURFACE COLORS
-   * Background colors for various UI surfaces
-   * ========================================================================= */
-  --color-surface-page: #FBFAF9;
-  --color-surface-alt: #fafafa;
-  --color-surface-card: #ffffff;
-  --color-surface-highlight: #fffbf0;
-  --color-surface-muted: #f8f8f8;
-  --color-surface-light: #f5f5f5;
+  /* =================================================================
+   * CONSTANTS - BRAND COLORS
+   * Generic defaults - client-specific values injected via PHP
+   * ================================================================= */
+  --color-brand-primary: #2563EB;
+  --color-brand-primary-hover: #1D4ED8;
+  --color-brand-secondary: #1E40AF;
 
-  /* =========================================================================
-   * BORDER COLORS
-   * Border and divider colors
-   * ========================================================================= */
-  --color-border-default: #e0e0e0;
-  --color-border-light: #f0f0f0;
-  --color-border-lighter: #f6f6f6;
+  /* =================================================================
+   * CONSTANTS - TEXT COLORS
+   * ================================================================= */
+  --color-text-primary: #111827;
+  --color-text-muted: #6B7280;
+  --color-text-light: #9CA3AF;
+  --color-text-disabled: #D1D5DB;
+  --color-text-inverse: #FFFFFF;
+  --color-text-on-accent: #FFFFFF;
 
-  /* =========================================================================
-   * TEXT COLORS
-   * Typography colors for various text contexts
-   * ========================================================================= */
-  --color-text-primary: #141310;
-  --color-text-muted: #666666;
-  --color-text-light: #999999;
-  --color-text-disabled: #d0d0d0;
-  --color-text-inverse: #ffffff;
-  --color-text-on-accent: #ffffff;
+  /* =================================================================
+   * CONSTANTS - BORDER
+   * Single border color for entire system
+   * ================================================================= */
+  --color-border-default: #e4e4e4;
 
-  /* =========================================================================
-   * SEMANTIC COLORS
-   * Colors that convey meaning (success, error, warning states)
-   * ========================================================================= */
-  --color-semantic-success: #4C9155;
-  --color-semantic-error: #b83c2e;
-  --color-semantic-error-alt: #dc2626;
-  --color-semantic-warning: #E69500;
+  /* =================================================================
+   * CONSTANTS - SEMANTIC COLORS
+   * ================================================================= */
+  --color-semantic-success: #10B981;
+  --color-semantic-error: #EF4444;
+  --color-semantic-error-alt: #DC2626;
+  --color-semantic-error-bg: #FEE2E2;
+  --color-semantic-error-border: #FECACA;
 
-  /* Semantic backgrounds */
-  --color-semantic-error-bg: #FCEEEE;
-  --color-semantic-error-border: #fecaca;
+  /* =================================================================
+   * CONSTANTS - BADGE COLORS
+   * ================================================================= */
+  --color-badge-urgency-bg: #FEE2E2;
+  --color-badge-urgency-text: #DC2626;
+  --color-badge-discount-bg: #10B981;
+  --color-badge-discount-text: #FFFFFF;
 
-  /* =========================================================================
-   * OVERLAY COLORS
-   * Scrim and overlay backgrounds
-   * ========================================================================= */
-  --color-overlay-scrim: rgba(20, 19, 16, 0.5);
+  /* =================================================================
+   * CONSTANTS - OVERLAY
+   * ================================================================= */
+  --color-overlay-scrim: rgba(0, 0, 0, 0.5);
 
-  /* =========================================================================
-   * BOOKING-SPECIFIC COLORS
-   * Colors specific to the booking/pricing UI
-   * ========================================================================= */
-  --color-booking-price-primary: #D1AF5D;
-  --color-booking-price-muted: #999999;
+  /* =================================================================
+   * CONSTANTS - GRADIENTS
+   * ================================================================= */
+  --gradient-brand: linear-gradient(135deg, var(--color-brand-primary) 0%, var(--color-brand-secondary) 100%);
 
-  /* Badge colors */
-  --color-badge-urgency-bg: #FCEEEE;
-  --color-badge-urgency-text: #b83c2e;
-  --color-badge-discount-bg: #4C9155;
-  --color-badge-discount-text: #ffffff;
+  /* =================================================================
+   * CONSTANTS - SHADOWS
+   * ================================================================= */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --shadow-card: 0 2px 5px -1px rgba(50, 50, 93, 0.25), 0 1px 3px -1px rgba(0, 0, 0, 0.3);
+  --shadow-search-form: 0 6px 24px rgba(0, 0, 0, 0.1);
 
-  /* =========================================================================
-   * FOOTER / DARK THEME
-   * Dark backgrounds for footer areas
-   * ========================================================================= */
-  --color-footer-bg: #26272C;
-  --color-footer-text: #ffffff;
-  --color-footer-text-muted: #999999;
-
-  /* =========================================================================
-   * GRADIENTS
-   * Pre-composed gradient values
-   * ========================================================================= */
-  --gradient-brand: linear-gradient(135deg, #D1AF5D 0%, #94772E 100%);
-  --gradient-brand-primary: linear-gradient(135deg, var(--color-brand-primary) 0%, var(--color-brand-secondary) 100%);
-
-  /* =========================================================================
-   * SHADOWS
-   * Box shadow values for elevation
-   * ========================================================================= */
-  --shadow-sm: 0 1px 2px rgba(20, 19, 16, 0.05);
-  --shadow-md: 0 2px 4px rgba(20, 19, 16, 0.1);
-  --shadow-lg: 0 4px 8px rgba(20, 19, 16, 0.1);
-  --shadow-xl: 0 8px 32px rgba(20, 19, 16, 0.12);
-  --shadow-card: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
-  --shadow-glow-brand: 0 0 4px rgba(209, 175, 93, 0.6), 0 0 8px rgba(209, 175, 93, 0.45), 0 0 16px rgba(209, 175, 93, 0.3);
-  --shadow-search-form: 0 6px 24px rgba(20, 19, 16, 0.1), 0px 0px 9px 3px rgba(209, 175, 93, 0.1);
-
-  /* =========================================================================
-   * BORDER RADIUS
-   * Consistent border radius values
-   * ========================================================================= */
+  /* =================================================================
+   * CONSTANTS - BORDER RADIUS
+   * ================================================================= */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
 
-  /* =========================================================================
-   * TYPOGRAPHY
-   * Font families
-   * ========================================================================= */
-  --font-heading: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* =================================================================
+   * CONSTANTS - TYPOGRAPHY
+   * ================================================================= */
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-  /* =========================================================================
-   * TRANSITIONS
-   * Animation timing values
-   * ========================================================================= */
+  /* =================================================================
+   * CONSTANTS - TRANSITIONS
+   * ================================================================= */
   --transition-fast: 150ms ease;
   --transition-base: 200ms ease;
   --transition-slow: 300ms ease;
 
-  /* =========================================================================
+  /* =================================================================
    * LEGACY ALIASES
-   * For backward compatibility with existing code using --shaped-* prefix
-   * ========================================================================= */
+   * For backward compatibility
+   * ================================================================= */
   --shaped-accent: var(--color-brand-primary);
   --shaped-accent-hover: var(--color-brand-primary-hover);
-  --shaped-surface: var(--color-surface-card);
-  --shaped-text: var(--color-text-primary);
-  --shaped-text-secondary: var(--color-text-muted);
 }

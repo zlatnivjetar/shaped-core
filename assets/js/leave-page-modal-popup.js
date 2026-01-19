@@ -47,7 +47,7 @@ function showLeavingConfirmation(destination, url, isProvider = false) {
                <button onclick="this.closest('[data-modal]').remove()" style="
                    padding: 0.875rem 1.875rem;
                    border: 1px solid var(--color-border-default, #e0e0e0);
-                   background: var(--color-brand-primary, #D1AF5D);
+                   background: var(--color-brand-primary, #2563EB);
                    color: var(--color-text-inverse, white);
                    border-radius: var(--radius-md, 8px);
                    cursor: pointer;
