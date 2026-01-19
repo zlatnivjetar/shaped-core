@@ -159,9 +159,6 @@ function shaped_get_client_config() {
                 'card' => '#FFFFFF',  // Pure White (cards/forms)
                 'highlight' => '#fffbf0',  // booking form, checkout form bottom etc.
             ],
-            'border' => [
-                'default' => '#e4e4e4',
-            ],
             'text' => [
                 'primary'           => '#11110F',
                 'muted'             => '#51504D',
