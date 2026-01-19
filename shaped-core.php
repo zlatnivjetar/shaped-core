@@ -143,6 +143,7 @@ add_action('plugins_loaded', function() {
     // Load helper functions
     require_once SHAPED_DIR . 'includes/helpers.php';
     require_once SHAPED_DIR . 'includes/pricing-helpers.php';
+    require_once SHAPED_DIR . 'includes/checkout-helpers.php';
 
     // Load brand configuration system
     require_once SHAPED_DIR . 'includes/class-brand-config.php';
