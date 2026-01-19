@@ -150,11 +150,12 @@ function shaped_get_client_config() {
             'brand' => [
                 'primary'      => '#E2BD27',
                 'primaryHover' => '#B7991F', // hover + active
-                'secondary'    => '#0B0B09', // use as brand “dark” / inverse anchor
             ],
             'surface' => [
                 'page' => '#FBFBF9',
-                'alt'  => '#2C2B25',
+                'pageDark'  => '#2C2B25',
+                'pageBlack'    => '#0B0B09', // use as brand “dark” / inverse anchor
+                'alt'  => '#F8F8F8',
                 'white'  => '#FFFFFF',
                 'card' => '#FFFFFF',  // Pure White (cards/forms)
                 'highlight' => '#fffbf0',  // booking form, checkout form bottom etc.
