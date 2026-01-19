@@ -49,7 +49,7 @@
 
 /* Results Info Bar */
 .mphb_sc_search_results-info {
-    background: var(--color-surface-card, #ffffff);
+    background: var(--color-surface-white, #ffffff);
     border-left: 4px solid var(--color-brand-primary, #2563EB);
     border-right: 4px solid var(--color-brand-primary, #2563EB);
     padding: 1.5rem 2rem;
@@ -81,7 +81,7 @@
 
 /* Individual Room Cards */
 .mphb-room-type {
-    background: var(--color-surface-card, #ffffff);
+    background: var(--color-surface-white, #ffffff);
     border-radius: 0.75rem;
     overflow: hidden;
     box-shadow: var(--shadow-xl, 0 8px 32px rgba(20, 19, 16, 0.12)), inset 0 1px 0 rgba(255, 255, 255, 0.3);
@@ -155,7 +155,7 @@
     background: var(--color-surface-highlight, #fffbf0);
     margin: 2rem 0;
     padding: 1.25rem;
-    border-top: 1px solid var(--color-border-light, #f0f0f0);
+    border-top: 1px solid var(--color-border-default, #e4e4e4);
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
@@ -327,7 +327,7 @@
     font-family: inherit;
     font-size: 0.875rem;
     color: var(--color-text-primary, #141310);
-    background: var(--color-surface-card, #ffffff);
+    background: var(--color-surface-white, #ffffff);
     margin-right: 0.5rem;
 }
 
@@ -468,7 +468,7 @@
     
     p.mphb_sc_search_results-info {
         text-align: center;
-        background: var(--color-surface-card, #ffffff);
+        background: var(--color-surface-white, #ffffff);
         padding: 1rem 2rem;
         margin: 1rem 0 -.5rem 0;
 

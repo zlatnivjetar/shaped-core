@@ -5,7 +5,7 @@
 }
 
     .elementor-gallery__titles-container.e--pointer-underline.e--animation-slide{
-    background: var(--color-surface-card, #ffffff);
+    background: var(--color-surface-white, #ffffff);
     padding:24px 32px;
     border-radius: var(--radius-md, 8px);
     box-shadow: var(--shadow-md, 0 2px 4px rgba(0, 0, 0, 0.08));
