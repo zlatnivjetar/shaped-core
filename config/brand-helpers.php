@@ -37,6 +37,8 @@ function shaped_brand($path, $default = null) {
  * - colors.surface.{key}
  * - colors.border.{key}
  *
+ * Falls back to plugin constants if not found in client config.
+ *
  * @param string $key Color key
  * @return string|null Color value (e.g., '#2563EB') or null
  *
@@ -45,7 +47,32 @@ function shaped_brand($path, $default = null) {
  * @example shaped_brand_color('textMuted') // Returns '#666666'
  */
 function shaped_brand_color($key) {
-    return Shaped_Brand_Config::instance()->get_color($key);
+    $color = Shaped_Brand_Config::instance()->get_color($key);
+
+    // If not found in config, fall back to plugin constants
+    // These are CONSTANTS that should NOT be in client config
+    if ($color === null) {
+        $constants = [
+            // Semantic colors (CONSTANTS - same for all clients)
+            'success' => '#4C9155',
+            'error' => '#b83c2e',
+
+            // Surface constants (generic white/light gray)
+            'alt' => '#F8F8F8',
+            'white' => '#FFFFFF',
+            'card' => '#FFFFFF',
+
+            // Overlay
+            'scrim' => 'rgba(0, 0, 0, 0.5)',
+
+            // Border
+            'default' => '#e4e4e4',
+        ];
+
+        return $constants[$key] ?? null;
+    }
+
+    return $color;
 }
 
 /**

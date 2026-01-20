@@ -42,16 +42,15 @@ class Shaped_Design_Tokens_Generator {
             }
         }
 
-        // ─── Surface Colors (CLIENT-SPECIFIC) ───
+        // ─── Surface Colors (CLIENT-SPECIFIC ONLY) ───
+        // Note: alt, white, card are CONSTANTS in plugin - don't inject them
         if (isset($config['colors']['surface'])) {
             $surface = $config['colors']['surface'];
 
-            // Map config keys to CSS variable names
+            // Only inject CLIENT-SPECIFIC surface colors
+            // Constants (alt, white) are hardcoded in design-tokens.css
             $surface_map = [
                 'page'      => 'page',
-                'alt'       => 'alt',
-                'white'     => 'white',
-                'card'      => 'white',      // Legacy: map 'card' to 'white'
                 'highlight' => 'highlight',
                 'pageDark'  => 'page-dark',
                 'pageBlack' => 'page-black',
