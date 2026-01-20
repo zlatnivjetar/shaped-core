@@ -207,7 +207,12 @@ add_action('plugins_loaded', function() {
     if (SHAPED_ENABLE_REVIEWS && file_exists(SHAPED_DIR . 'modules/reviews/module.php')) {
         require_once SHAPED_DIR . 'modules/reviews/module.php';
     }
-    
+
+    // Elementor Sync (always enabled if Elementor is active)
+    if (file_exists(SHAPED_DIR . 'modules/elementor-sync/module.php')) {
+        require_once SHAPED_DIR . 'modules/elementor-sync/module.php';
+    }
+
 }, 20); // Priority 20 to ensure MPHB is loaded first
 
 /* =========================================================================
@@ -341,6 +346,9 @@ function shaped_activate() {
         do_action('shaped_activate_module_reviews');
     }
 
+    // Trigger Elementor color sync (if Elementor is active)
+    do_action('shaped/elementor/trigger_sync');
+
     // Set transient to redirect to setup wizard
     set_transient('shaped_activation_redirect', true, 30);
 
@@ -352,6 +360,7 @@ function shaped_deactivate() {
     wp_clear_scheduled_hook('shaped_check_abandoned_bookings');
     wp_clear_scheduled_hook('shaped_daily_charge_fallback');
     wp_clear_scheduled_hook('shaped_charge_single_booking');
-    
+    wp_clear_scheduled_hook('shaped_elementor_daily_sync');
+
     flush_rewrite_rules();
 }
