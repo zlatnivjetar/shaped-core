@@ -51,20 +51,13 @@
 
   /* =================================================================
    * CONSTANTS - SEMANTIC COLORS
+   * Shared by success/error states AND badges (discount/urgency)
    * ================================================================= */
-  --color-semantic-success: #10B981;
-  --color-semantic-error: #EF4444;
-  --color-semantic-error-alt: #DC2626;
-  --color-semantic-error-bg: #FEE2E2;
-  --color-semantic-error-border: #FECACA;
-
-  /* =================================================================
-   * CONSTANTS - BADGE COLORS
-   * ================================================================= */
-  --color-badge-urgency-bg: #FEE2E2;
-  --color-badge-urgency-text: #DC2626;
-  --color-badge-discount-bg: #10B981;
-  --color-badge-discount-text: #FFFFFF;
+  --color-semantic-success: #4C9155;
+  --color-semantic-error: #b83c2e;
+  --color-semantic-error-bg: #FCEEEE;
+  --color-semantic-error-alt: #FCEEEE;
+  --color-semantic-error-border: #FCEEEE;
 
   /* =================================================================
    * CONSTANTS - OVERLAY

@@ -228,8 +228,8 @@
 }
 
 .mphb-discount-badge {
-    background: var(--color-badge-discount-bg, #4C9155);
-    color: var(--color-badge-discount-text, #ffffff);
+    background: var(--color-semantic-success, #4C9155);
+    color: var(--color-text-inverse, #FFFFFF);
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 14px;
@@ -238,8 +238,8 @@
 }
 
 .mphb-urgency-badge {
-    background: var(--color-badge-urgency-bg, #FCEEEE);
-    color: var(--color-badge-urgency-text, #b83c2e);
+    background: var(--color-semantic-error-bg, #FCEEEE);
+    color: var(--color-semantic-error, #b83c2e);
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 14px;
@@ -364,7 +364,7 @@
 }
 
 .mphb-remove-from-reservation {
-    color: var(--color-semantic-error-alt, #dc2626);
+    color: var(--color-semantic-error, #b83c2e);
     font-size: 0.875rem;
     text-decoration: none;
 }
