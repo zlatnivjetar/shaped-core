@@ -8,8 +8,6 @@
 - 🔒 **Security**: Each site has only its own configuration
 - ⚡ **Updates**: Push code via Git without touching client configs
 
-**Deprecated**: `clients/` folder approach (see [clients/README.md](clients/README.md))
-
 ---
 
 ## Directory Structure
