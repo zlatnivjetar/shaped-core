@@ -47,12 +47,12 @@
 .mphb_sc_search-check-in-date label, .mphb_sc_search-check-out-date label {
     display: block;
     font-size: 14px;
-    font-weight: 900;
+    font-weight: 700;
     color: var(--color-text-primary, #141310);
     letter-spacing: 0.5px;
     text-transform: uppercase;
     width: fit-content;
-line-height: 1.5em;
+    line-height: 1.5em;
     font-family: var(--font-body, 'DM Sans', -apple-system, system-ui, BlinkMacSystemFont, sans-serif);
 }
 
