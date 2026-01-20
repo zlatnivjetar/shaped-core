@@ -153,12 +153,9 @@ function shaped_get_client_config() {
             ],
             'surface' => [
                 'page' => '#FBFBF9',
+                'highlight' => '#fffbf0',  // booking form, checkout form bottom etc.
                 'pageDark'  => '#2C2B25',
                 'pageBlack'    => '#0B0B09', // use as brand “dark” / inverse anchor
-                'alt'  => '#F8F8F8',
-                'white'  => '#FFFFFF',
-                'card' => '#FFFFFF',  // Pure White (cards/forms)
-                'highlight' => '#fffbf0',  // booking form, checkout form bottom etc.
             ],
             'text' => [
                 'primary'           => '#11110F',
@@ -166,14 +163,6 @@ function shaped_get_client_config() {
                 'inverse'           => '#FFFFFF',
                 'inverseMuted'      => 'rgba(255, 255, 255, 0.72)',
                 'onPrimary'         => '#0B0B09',
-            ],
-            'semantic' => [
-                'success' => '#10B981',
-                'error'   => '#EF4444',
-                'warning' => '#F59E0B',
-            ],
-            'overlay' => [
-                'scrim' => 'rgba(0, 0, 0, 0.5)',
             ],
         ],
 
@@ -210,26 +199,6 @@ function shaped_get_client_config() {
                 'mobile'  => 480,
                 'tablet'  => 768,
                 'desktop' => 1280,
-            ],
-        ],
-
-        // ====================================================================
-        // BOOKING UI CONFIGURATION
-        // ====================================================================
-        'booking' => [
-            'colors' => [
-                'price' => [
-                    'primary' => '#D1AF5D',
-                    'muted'   => '#9CA3AF',
-                ],
-                'badge' => [
-                    'urgency'  => ['bg' => '#FCEEEE', 'text' => '#B83C2E'],
-                    'discount' => ['bg' => '#4C9155', 'text' => '#FFFFFF'],
-                ],
-            ],
-            'card' => [
-                'radius' => '8px',
-                'shadow' => '0 4px 16px rgba(0, 0, 0, 0.1)',
             ],
         ],
 
