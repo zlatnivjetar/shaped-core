@@ -70,9 +70,16 @@ class Shaped_RC_Webhook_Handler
     {
         // Get raw body
         $body = $request->get_body();
-        
+
+        // Sanitize body for logging - remove credentials
+        $sanitized_body = preg_replace(
+            '/(userName|password)="[^"]*"/i',
+            '$1="[REDACTED]"',
+            $body
+        );
+
         Shaped_RC_Error_Logger::log_info('Webhook received', [
-            'body_preview' => substr($body, 0, 300) . '...',
+            'body_preview' => substr($sanitized_body, 0, 300) . '...',
         ]);
         
         // Parse XML

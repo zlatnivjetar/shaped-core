@@ -15,9 +15,37 @@ define('SHAPED_RC_DIR', SHAPED_DIR . 'modules/roomcloud/');
 define('SHAPED_RC_URL', SHAPED_URL . 'modules/roomcloud/');
 define('SHAPED_RC_LOGS_DIR', SHAPED_RC_DIR . 'logs/');
 
-// Ensure logs directory exists
+// Ensure logs directory exists and is protected from web access
 if (!file_exists(SHAPED_RC_LOGS_DIR)) {
     wp_mkdir_p(SHAPED_RC_LOGS_DIR);
+}
+
+// Create .htaccess to deny web access to logs
+$htaccess_file = SHAPED_RC_LOGS_DIR . '.htaccess';
+if (!file_exists($htaccess_file)) {
+    $htaccess_content = "# Deny all web access to log files\n";
+    $htaccess_content .= "Order deny,allow\n";
+    $htaccess_content .= "Deny from all\n";
+    file_put_contents($htaccess_file, $htaccess_content);
+}
+
+// Create index.php to prevent directory listing
+$index_file = SHAPED_RC_LOGS_DIR . 'index.php';
+if (!file_exists($index_file)) {
+    file_put_contents($index_file, "<?php\n// Silence is golden\n");
+}
+
+// One-time cleanup: Remove old log files that may contain exposed credentials
+// This runs once and sets a flag to prevent repeated deletion
+if (!get_option('shaped_rc_logs_cleaned_v1', false)) {
+    $old_logs = glob(SHAPED_RC_LOGS_DIR . '*.log');
+    if (!empty($old_logs)) {
+        foreach ($old_logs as $log_file) {
+            @unlink($log_file);
+        }
+        error_log('[RoomCloud] Cleaned up ' . count($old_logs) . ' old log files with exposed credentials');
+    }
+    update_option('shaped_rc_logs_cleaned_v1', true);
 }
 
 // Load core classes
