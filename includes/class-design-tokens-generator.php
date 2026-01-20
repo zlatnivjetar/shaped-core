@@ -80,6 +80,25 @@ class Shaped_Design_Tokens_Generator {
             }
         }
 
+        // ─── Typography ───
+        if (isset($config['type'])) {
+            $type = $config['type'];
+
+            // Heading font
+            if (isset($type['heading']['family'])) {
+                $heading_family = $type['heading']['family'];
+                $heading_fallback = $type['heading']['fallback'] ?? 'sans-serif';
+                $css .= "    --font-heading: '{$heading_family}', {$heading_fallback};\n";
+            }
+
+            // Body font
+            if (isset($type['body']['family'])) {
+                $body_family = $type['body']['family'];
+                $body_fallback = $type['body']['fallback'] ?? 'sans-serif';
+                $css .= "    --font-body: '{$body_family}', {$body_fallback};\n";
+            }
+        }
+
         $css .= "}\n";
 
         return $css;
