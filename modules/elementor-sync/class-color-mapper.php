@@ -34,6 +34,8 @@ class Color_Mapper {
     /**
      * Map system colors (Elementor's 4 default slots)
      *
+     * Uses exact Elementor CSS variable IDs: primary, text, accent, secondary
+     *
      * @param array $config Brand configuration
      * @return array System colors in Elementor format
      */
@@ -41,27 +43,27 @@ class Color_Mapper {
         $mapping = apply_filters('shaped/elementor/system_color_mapping', [
             [
                 'id' => 'primary',
-                'title' => 'Primary',
-                'path' => 'colors.brand.primary',
-                'fallback' => '#2563EB',
-            ],
-            [
-                'id' => 'secondary',
-                'title' => 'Secondary',
-                'path' => 'colors.surface.pageBlack',
-                'fallback' => '#111827',
+                'title' => 'Surface Page',
+                'path' => 'colors.surface.page',
+                'fallback' => '#FBFBF9',
             ],
             [
                 'id' => 'text',
-                'title' => 'Text Muted',
-                'path' => 'colors.text.muted',
-                'fallback' => '#6B7280',
+                'title' => 'Text Primary / Surface Black',
+                'path' => 'colors.surface.pageBlack',
+                'fallback' => '#0B0B09',
             ],
             [
                 'id' => 'accent',
-                'title' => 'Accent',
+                'title' => 'Brand Primary',
                 'path' => 'colors.brand.primary',
-                'fallback' => '#2563EB',
+                'fallback' => '#E2BD27',
+            ],
+            [
+                'id' => 'secondary',
+                'title' => 'Surface Dark',
+                'path' => 'colors.surface.pageDark',
+                'fallback' => '#2C2B25',
             ],
         ]);
 
@@ -71,51 +73,72 @@ class Color_Mapper {
     /**
      * Map custom colors (extensible slots)
      *
+     * Uses exact Elementor-generated IDs from the active site configuration.
+     * Constants (Surface Alt, Border, Success, Error) are hardcoded.
+     *
      * @param array $config Brand configuration
      * @return array Custom colors in Elementor format
      */
     private static function map_custom_colors(array $config): array {
         $mapping = apply_filters('shaped/elementor/custom_color_mapping', [
+            // Brand config colors (will override)
             [
-                'id' => 'button_hover',
-                'title' => 'Button Hover',
+                'id' => '73fe071',
+                'title' => 'Hover Primary',
                 'path' => 'colors.brand.primaryHover',
-                'fallback' => '#1D4ED8',
+                'fallback' => '#B7991F',
             ],
             [
-                'id' => 'text_primary',
-                'title' => 'Text Primary',
-                'path' => 'colors.text.primary',
-                'fallback' => '#111827',
-            ],
-            [
-                'id' => 'background_warm',
-                'title' => 'Background Warm',
-                'path' => 'colors.surface.page',
-                'fallback' => '#FBFBF9',
-            ],
-            [
-                'id' => 'background_alt',
-                'title' => 'Background Alt',
+                'id' => '3f7ee3f2',
+                'title' => 'Surface Highlight',
                 'path' => 'colors.surface.highlight',
-                'fallback' => '#F9FAFB',
+                'fallback' => '#fffbf0',
             ],
             [
-                'id' => 'background_dark',
-                'title' => 'Background Dark',
-                'path' => 'colors.surface.pageDark',
-                'fallback' => '#1F2937',
+                'id' => '170f6343',
+                'title' => 'Surface White / Text White',
+                'path' => 'colors.text.inverse',
+                'fallback' => '#FFFFFF',
             ],
             [
-                'id' => 'text_muted',
+                'id' => '456087ab',
                 'title' => 'Text Muted',
                 'path' => 'colors.text.muted',
-                'fallback' => '#6B7280',
+                'fallback' => '#51504D',
             ],
             [
-                'id' => 'border_light',
-                'title' => 'Border Light',
-                'constant' => '#EDEDED',
+                'id' => '9e7def5',
+                'title' => 'Text White Muted',
+                'path' => 'colors.text.inverseMuted',
+                'fallback' => 'rgba(255, 255, 255, 0.72)',
+            ],
+            [
+                'id' => 'f3d7197',
+                'title' => 'On Brand Primary',
+                'path' => 'colors.text.onPrimary',
+                'fallback' => '#0B0B09',
+            ],
+
+            // Constants (same across all projects)
+            [
+                'id' => 'd273c21',
+                'title' => 'Surface Alt',
+                'constant' => '#F8F8F8',
+            ],
+            [
+                'id' => 'cdbc92d',
+                'title' => 'Border',
+                'constant' => '#E4E4E4',
+            ],
+            [
+                'id' => '3475a1d',
+                'title' => 'Success',
+                'constant' => '#4C9155',
+            ],
+            [
+                'id' => '5e85910',
+                'title' => 'Error',
+                'constant' => '#B83C2E',
             ],
         ]);
 

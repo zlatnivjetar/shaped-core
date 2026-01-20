@@ -114,6 +114,9 @@ class Color_Sync {
     /**
      * Update Elementor kit with new settings
      *
+     * Aggressively clears all Elementor caches and forces CSS regeneration
+     * to ensure color changes take immediate effect.
+     *
      * @param int $kit_id Kit post ID
      * @param array $settings Kit settings
      * @return bool Success status
@@ -121,10 +124,39 @@ class Color_Sync {
     private static function update_kit_settings(int $kit_id, array $settings): bool {
         $result = update_post_meta($kit_id, '_elementor_page_settings', $settings);
 
-        // Clear Elementor cache to ensure changes take effect
-        if (class_exists('\Elementor\Plugin')) {
-            \Elementor\Plugin::$instance->files_manager->clear_cache();
+        if (!class_exists('\Elementor\Plugin')) {
+            return $result !== false;
         }
+
+        // Aggressive cache clearing to force Elementor to use new colors
+        $elementor = \Elementor\Plugin::$instance;
+
+        // 1. Clear files cache (CSS, JS)
+        if (isset($elementor->files_manager)) {
+            $elementor->files_manager->clear_cache();
+        }
+
+        // 2. Clear all WordPress transients used by Elementor
+        delete_transient('elementor_global_css');
+        delete_transient('elementor_custom_colors');
+
+        // 3. Clear kit-specific caches
+        delete_post_meta($kit_id, '_elementor_css');
+        delete_post_meta($kit_id, '_elementor_global_css_file_mtime');
+
+        // 4. Trigger Elementor's CSS regeneration
+        if (isset($elementor->posts_css_manager)) {
+            $elementor->posts_css_manager->clear_cache();
+        }
+
+        // 5. Clear any cached kit settings
+        wp_cache_delete($kit_id, 'post_meta');
+        wp_cache_delete('elementor_active_kit', 'options');
+
+        // 6. Trigger Elementor's update action (for plugins that hook into it)
+        do_action('elementor/kit/updated', $kit_id);
+
+        error_log('[Shaped Elementor Sync] Aggressively cleared all caches for Kit ID: ' . $kit_id);
 
         return $result !== false;
     }
@@ -206,15 +238,38 @@ class Color_Sync {
     }
 
     /**
-     * Force sync (clears cache and re-syncs)
+     * Force sync (aggressively clears all caches and re-syncs)
+     *
+     * This is the nuclear option - clears everything before syncing.
+     * Use when normal sync doesn't seem to take effect.
      *
      * @return bool|\WP_Error
      */
     public static function force_sync() {
-        // Clear Elementor cache first
-        if (class_exists('\Elementor\Plugin')) {
-            \Elementor\Plugin::$instance->files_manager->clear_cache();
+        if (!class_exists('\Elementor\Plugin')) {
+            return self::sync();
         }
+
+        $elementor = \Elementor\Plugin::$instance;
+
+        // Nuclear cache clearing before sync
+        if (isset($elementor->files_manager)) {
+            $elementor->files_manager->clear_cache();
+        }
+
+        if (isset($elementor->posts_css_manager)) {
+            $elementor->posts_css_manager->clear_cache();
+        }
+
+        // Clear all Elementor-related transients
+        global $wpdb;
+        $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '%elementor%css%'");
+        $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '%_transient_elementor%'");
+
+        // Clear object cache
+        wp_cache_flush();
+
+        error_log('[Shaped Elementor Sync] Force sync - cleared all caches');
 
         return self::sync();
     }
