@@ -155,10 +155,10 @@ function shaped_get_client_config() {
                 'page' => '#FBFBF9',
                 'highlight' => '#fffbf0',  // booking form, checkout form bottom etc.
                 'pageDark'  => '#2C2B25',
-                'pageBlack'    => '#0B0B09', // use as brand “dark” / inverse anchor
+                'pageBlack'    => '#0b0b09', // use as brand “dark” / inverse anchor
             ],
             'text' => [
-                'primary'           => '#11110F',
+                'primary'           => '#0B0B09',
                 'muted'             => '#51504D',
                 'inverse'           => '#FFFFFF',
                 'inverseMuted'      => 'rgba(255, 255, 255, 0.72)',
