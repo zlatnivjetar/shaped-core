@@ -14,13 +14,17 @@
 
 :root {
   /* =================================================================
+   * CONSTANTS - SURFACE COLORS (generic)
+   * ================================================================= */
+  --color-surface-alt: #F8F8F8;
+  --color-surface-white: #FFFFFF;
+
+  /* =================================================================
    * CLIENT-SPECIFIC SURFACE COLORS
    * Defined in mu-plugins/shaped-client-config.php
-   * These are placeholders - actual values injected via PHP
+   * Only these 4 change per-client - injected via PHP
    * ================================================================= */
   --color-surface-page: #FFFFFF;
-  --color-surface-alt: #F9FAFB;
-  --color-surface-white: #FFFFFF;
   --color-surface-highlight: #EFF6FF;
   --color-surface-page-dark: #1F2937;
   --color-surface-page-black: #111827;
