@@ -7,13 +7,14 @@ Sits on top of frozen MotoPress Hotel Booking (MPHB) v. 5.2.3.
 shaped-core/
 ├── admin/          # WP admin UI, settings pages
 ├── config/         # Feature flags, constants, environment config
+├── assets/         # CSS, JS and font files
 ├── core/           # Core classes, bootstrapping
 ├── modules/        # Feature modules (payments, emails, availability, etc.)
 ├── includes/       # Shared utilities, helpers
 ├── templates/      # Frontend templates, overrides
 ├── shortcodes/     # WP shortcodes
 ├── schema/         # Database schema, migrations
-├── clients/        # Client-specific overrides (if any)
+├── vendor/           # Stripe folder (do not touch)
 ├── docs/           # Internal documentation
 ├── shaped-core.php # Main plugin file
 ├── mu-plugins/   # Only for reference here, does not live inside the plugin
