@@ -34,6 +34,11 @@ if (!defined('SHAPED_ENABLE_REVIEWS')) {
     $reviews_enabled = $reviews_option !== null ? (bool) $reviews_option : true;
     define('SHAPED_ENABLE_REVIEWS', $reviews_enabled);
 }
+if (!defined('SHAPED_ENABLE_REVIEW_EMAIL')) {
+    $review_email_option = get_option('shaped_enable_review_email', null);
+    $review_email_enabled = $review_email_option !== null ? (bool) $review_email_option : true;
+    define('SHAPED_ENABLE_REVIEW_EMAIL', $review_email_enabled);
+}
 
 // Stripe credentials - can be set in wp-config.php or via Setup Wizard
 // Priority: 1) Constants  2) Environment variables  3) Database (Setup Wizard)
@@ -213,6 +218,11 @@ add_action('plugins_loaded', function() {
         require_once SHAPED_DIR . 'modules/elementor-sync/module.php';
     }
 
+    // Review Email System (automated review request emails)
+    if (SHAPED_ENABLE_REVIEW_EMAIL && file_exists(SHAPED_DIR . 'modules/review-email/module.php')) {
+        require_once SHAPED_DIR . 'modules/review-email/module.php';
+    }
+
 }, 20); // Priority 20 to ensure MPHB is loaded first
 
 /* =========================================================================
@@ -361,6 +371,7 @@ function shaped_deactivate() {
     wp_clear_scheduled_hook('shaped_daily_charge_fallback');
     wp_clear_scheduled_hook('shaped_charge_single_booking');
     wp_clear_scheduled_hook('shaped_elementor_daily_sync');
+    wp_clear_scheduled_hook('shaped_process_review_emails');
 
     flush_rewrite_rules();
 }

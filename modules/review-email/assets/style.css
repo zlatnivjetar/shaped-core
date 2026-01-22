@@ -1,0 +1,482 @@
+/**
+ * Shaped Leave Review Form Styles
+ *
+ * @package Shaped_Core
+ * @subpackage ReviewEmail
+ */
+
+/* Container */
+.shaped-review-container {
+    max-width: 600px;
+    margin: 0 auto;
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 8px 32px rgba(20, 19, 16, 0.12);
+}
+
+/* Header */
+.shaped-review-header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid var(--shaped-primary, #2563EB);
+}
+
+.shaped-review-header h1 {
+    margin: 0 0 8px 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--shaped-text-primary, #26272C);
+    line-height: 1.2;
+}
+
+.shaped-review-header p {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--shaped-text-muted, #666666);
+}
+
+/* Stay Summary */
+.shaped-review-summary {
+    background: #fafafa;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 32px;
+    border: 1px solid #f0f0f0;
+}
+
+.shaped-review-summary .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 0;
+}
+
+.shaped-review-summary .summary-row:not(:last-child) {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.shaped-review-summary .label {
+    color: var(--shaped-text-muted, #666666);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.shaped-review-summary .value {
+    color: var(--shaped-text-primary, #26272C);
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-align: right;
+}
+
+/* Rating Section */
+.shaped-rating-section {
+    margin-bottom: 32px;
+}
+
+.shaped-rating-section > label {
+    display: block;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--shaped-text-primary, #26272C);
+    margin-bottom: 8px;
+}
+
+.shaped-rating-section .rating-help {
+    margin: 0 0 16px 0;
+    font-size: 0.875rem;
+    color: var(--shaped-text-muted, #666666);
+}
+
+/* Rating Buttons */
+.shaped-rating-buttons {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.rating-btn {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+    border: 2px solid #e5e5e5;
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--shaped-text-muted, #666666);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.rating-btn:hover {
+    border-color: var(--shaped-primary, #2563EB);
+    color: var(--shaped-primary, #2563EB);
+    transform: translateY(-2px);
+}
+
+.rating-btn.selected {
+    background: var(--shaped-primary, #2563EB);
+    border-color: var(--shaped-primary, #2563EB);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+/* Low rating styling */
+.rating-btn.selected[data-rating="1"],
+.rating-btn.selected[data-rating="2"],
+.rating-btn.selected[data-rating="3"],
+.rating-btn.selected[data-rating="4"] {
+    background: var(--shaped-error, #ef4444);
+    border-color: var(--shaped-error, #ef4444);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Medium rating styling */
+.rating-btn.selected[data-rating="5"],
+.rating-btn.selected[data-rating="6"],
+.rating-btn.selected[data-rating="7"] {
+    background: #f59e0b;
+    border-color: #f59e0b;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+/* High rating styling */
+.rating-btn.selected[data-rating="8"],
+.rating-btn.selected[data-rating="9"],
+.rating-btn.selected[data-rating="10"] {
+    background: var(--shaped-success, #22c55e);
+    border-color: var(--shaped-success, #22c55e);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+/* Rating Label */
+.rating-label {
+    text-align: center;
+    min-height: 24px;
+}
+
+#rating-description {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--shaped-text-muted, #666666);
+}
+
+/* Comment Section */
+.shaped-comment-section {
+    margin-bottom: 24px;
+}
+
+.shaped-comment-section label,
+.shaped-name-section label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--shaped-text-primary, #26272C);
+    margin-bottom: 8px;
+}
+
+.shaped-comment-section textarea,
+.shaped-name-section input,
+.feedback-details textarea {
+    width: 100%;
+    padding: 14px 16px;
+    font-family: inherit;
+    font-size: 1rem;
+    border: 2px solid #e5e5e5;
+    border-radius: 8px;
+    background: #ffffff;
+    color: var(--shaped-text-primary, #26272C);
+    resize: vertical;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.shaped-comment-section textarea:focus,
+.shaped-name-section input:focus,
+.feedback-details textarea:focus {
+    outline: none;
+    border-color: var(--shaped-primary, #2563EB);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.shaped-comment-section textarea::placeholder,
+.shaped-name-section input::placeholder,
+.feedback-details textarea::placeholder {
+    color: #999999;
+}
+
+/* Name Section */
+.shaped-name-section {
+    margin-bottom: 32px;
+}
+
+.shaped-name-section input {
+    max-width: 300px;
+}
+
+/* Submit Section */
+.shaped-submit-section {
+    text-align: center;
+}
+
+.shaped-submit-btn {
+    display: inline-block;
+    padding: 16px 48px;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+    border-radius: 8px;
+    background: var(--shaped-primary, #2563EB);
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.shaped-submit-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+.shaped-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.shaped-submit-btn .btn-loading {
+    display: none;
+}
+
+.shaped-submit-btn.loading .btn-text {
+    display: none;
+}
+
+.shaped-submit-btn.loading .btn-loading {
+    display: inline;
+}
+
+/* Form Error */
+.shaped-form-error {
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    color: var(--shaped-error, #ef4444);
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+/* Feedback Section */
+.shaped-feedback-section {
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.feedback-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.feedback-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--shaped-text-primary, #26272C);
+}
+
+.feedback-header p {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--shaped-text-muted, #666666);
+}
+
+/* Feedback Options */
+.feedback-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.feedback-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #fafafa;
+    border: 2px solid #e5e5e5;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.feedback-checkbox:hover {
+    border-color: var(--shaped-primary, #2563EB);
+}
+
+.feedback-checkbox input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--shaped-primary, #2563EB);
+}
+
+.feedback-checkbox span {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--shaped-text-primary, #26272C);
+}
+
+.feedback-checkbox input:checked + span {
+    color: var(--shaped-primary, #2563EB);
+}
+
+.feedback-details {
+    margin-bottom: 24px;
+}
+
+.feedback-details label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--shaped-text-primary, #26272C);
+    margin-bottom: 8px;
+}
+
+/* Thank You Section */
+.shaped-thank-you-section {
+    text-align: center;
+    padding: 48px 24px;
+}
+
+.thank-you-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    background: var(--shaped-success, #22c55e);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    color: #ffffff;
+}
+
+.shaped-thank-you-section h2 {
+    margin: 0 0 16px 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--shaped-text-primary, #26272C);
+}
+
+.shaped-thank-you-section p {
+    margin: 0 0 8px 0;
+    font-size: 1.125rem;
+    color: var(--shaped-text-muted, #666666);
+    line-height: 1.6;
+}
+
+.shaped-thank-you-section .thank-you-subtext {
+    font-size: 0.875rem;
+}
+
+/* Error/Success States */
+.shaped-review-error,
+.shaped-review-success {
+    text-align: center;
+    padding: 48px 24px;
+}
+
+.error-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    background: var(--shaped-error, #ef4444);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    color: #ffffff;
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    background: var(--shaped-success, #22c55e);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    color: #ffffff;
+}
+
+.shaped-review-error h2,
+.shaped-review-success h2 {
+    margin: 0 0 16px 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--shaped-text-primary, #26272C);
+}
+
+.shaped-review-error p,
+.shaped-review-success p {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--shaped-text-muted, #666666);
+}
+
+/* Mobile Responsive */
+@media (max-width: 640px) {
+    .shaped-review-container {
+        padding: 24px 16px;
+        border-radius: 0;
+        margin: 0;
+    }
+
+    .shaped-review-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .shaped-rating-buttons {
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+    .rating-btn {
+        font-size: 0.875rem;
+    }
+
+    .feedback-options {
+        grid-template-columns: 1fr;
+    }
+
+    .shaped-submit-btn {
+        width: 100%;
+        padding: 14px 24px;
+    }
+
+    .shaped-name-section input {
+        max-width: 100%;
+    }
+
+    .shaped-review-summary .summary-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .shaped-review-summary .value {
+        text-align: left;
+    }
+}
