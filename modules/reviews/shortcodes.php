@@ -22,6 +22,7 @@ function get_provider_configs(): array {
         'tripadvisor' => ['name' => 'TripAdvisor', 'bg' => '#00af87', 'text' => '#ffffff', 'scale' => 5],
         'google'      => ['name' => 'Google', 'bg' => '#4285f4', 'text' => '#ffffff', 'scale' => 5],
         'airbnb'      => ['name' => 'Airbnb', 'bg' => '#ff385c', 'text' => '#ffffff', 'scale' => 5],
+        'direct'      => ['name' => 'Direct', 'bg' => '#6366f1', 'text' => '#ffffff', 'scale' => 10],
     ];
 }
 
@@ -35,6 +36,7 @@ function get_provider_links(): array {
         'expedia'     => '#',
         'google'      => '#',
         'airbnb'      => '#',
+        'direct'      => '#',
     ]);
 }
 

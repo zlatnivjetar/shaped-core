@@ -93,6 +93,17 @@ class Shaped_Assets {
             );
         }
 
+        // Leave page confirmation modal (for external links)
+        if (file_exists(SHAPED_DIR . 'assets/js/leave-page-modal-popup.js')) {
+            wp_enqueue_script(
+                'shaped-leave-modal',
+                SHAPED_URL . 'assets/js/leave-page-modal-popup.js',
+                [],
+                SHAPED_VERSION,
+                true
+            );
+        }
+
         // ─── Checkout Page ───
         if ($this->is_checkout_page()) {
             $this->enqueue_checkout_assets();
@@ -166,17 +177,6 @@ class Shaped_Assets {
             wp_enqueue_script(
                 'shaped-checkout',
                 SHAPED_URL . 'assets/js/checkout.js',
-                ['jquery'],
-                SHAPED_VERSION,
-                true
-            );
-        }
-        
-        // Leave page modal
-        if (file_exists(SHAPED_DIR . 'assets/js/leave-page-modal-popup.js')) {
-            wp_enqueue_script(
-                'shaped-leave-modal',
-                SHAPED_URL . 'assets/js/leave-page-modal-popup.js',
                 ['jquery'],
                 SHAPED_VERSION,
                 true

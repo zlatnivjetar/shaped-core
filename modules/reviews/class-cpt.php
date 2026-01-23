@@ -99,7 +99,8 @@ class CPT {
             'booking'     => 'Booking',
             'google'      => 'Google',
             'tripadvisor' => 'TripAdvisor',
-            'expedia'     => 'Expedia'
+            'expedia'     => 'Expedia',
+            'direct'      => 'Direct'
         ];
 
         foreach ($providers as $slug => $name) {
