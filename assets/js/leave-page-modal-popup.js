@@ -44,30 +44,36 @@ function showLeavingConfirmation(destination, url, isProvider = false) {
                ${description}
            </p>
            <div style="display: flex; gap: 1rem; justify-content: center;" class="button-container">
-               <button onclick="this.closest('[data-modal]').remove()" style="
-                   padding: 0.875rem 1.875rem;
-                   border: 1px solid var(--color-border-default, #e0e0e0);
-                   background: var(--color-brand-primary, #2563EB);
-                   color: var(--color-text-inverse, white);
-                   border-radius: var(--radius-md, 8px);
-                   cursor: pointer;
-                   font-family: inherit;
-                   transition: all 0.3s ease;
-                   font-size: 1rem;
-               " onmouseenter="this.style.transform='translateY(-2px)';this.style.background='#c39937'; this.style.boxShadow='0 0 4px rgba(209, 175, 93, 0.6), 0 0 8px rgba(209, 175, 93, 0.45), 0 0 16px rgba(209, 175, 93, 0.3)'; this.style.borderColor='#d1af5d';" onmouseleave="this.style.transform='none'; this.style.boxShadow='none'; this.style.borderColor='#e0e0e0'; this.style.background='#d1af5d';" class="modal-button">Stay Here</button>
+               <button onclick="this.closest('[data-modal]').remove()"
+                   data-primary-bg="true"
+                   style="
+                       padding: 0.875rem 1.875rem;
+                       border: 1px solid var(--color-border-default, #e0e0e0);
+                       background: var(--color-brand-primary, #D1AF5D);
+                       color: var(--color-text-inverse, white);
+                       border-radius: var(--radius-md, 8px);
+                       cursor: pointer;
+                       font-family: inherit;
+                       transition: var(--transition-slow, all 0.3s ease);
+                       font-size: 1rem;
+                   "
+                   class="modal-button modal-primary">Stay Here</button>
 
-               <button onclick="window.open('${url}', '_blank'); this.closest('[data-modal]').remove();" style="
-                   padding: 0.875rem 1.875rem;
-                   border: 1px solid var(--color-border-default, #e0e0e0);
-                   background: var(--color-surface-page, #fbfaf9);
-                   color: var(--color-text-primary, #141310);
-                   border-radius: var(--radius-md, 8px);
-                   cursor: pointer;
-                   font-family: inherit;
-                   font-weight: 600;
-                   transition: all 0.3s ease;
-                   font-size: 1rem;
-               " onmouseenter="this.style.transform='translateY(-2px)';this.style.background='#c39937'; this.style.color='#fff'; this.style.boxShadow='0 0 4px rgba(209, 175, 93, 0.6), 0 0 8px rgba(209, 175, 93, 0.45), 0 0 16px rgba(209, 175, 93, 0.3)'; this.style.borderColor='#d1af5d';" onmouseleave="this.style.transform='none'; this.style.color='#141310'; this.style.background='#fbfaf9'; this.style.boxShadow='none'; this.style.borderColor='#e0e0e0';" class="modal-button">Continue</button>
+               <button onclick="window.open('${url}', '_blank'); this.closest('[data-modal]').remove();"
+                   data-primary-bg="false"
+                   style="
+                       padding: 0.875rem 1.875rem;
+                       border: 1px solid var(--color-border-default, #e0e0e0);
+                       background: var(--color-surface-page, #fbfaf9);
+                       color: var(--color-text-primary, #141310);
+                       border-radius: var(--radius-md, 8px);
+                       cursor: pointer;
+                       font-family: inherit;
+                       font-weight: 600;
+                       transition: var(--transition-slow, all 0.3s ease);
+                       font-size: 1rem;
+                   "
+                   class="modal-button modal-secondary">Continue</button>
            </div>
        </div>
        <style>
@@ -88,6 +94,43 @@ function showLeavingConfirmation(destination, url, isProvider = false) {
    
    modal.setAttribute('data-modal', 'true');
    document.body.appendChild(modal);
+
+   // Add hover effects using CSS variables
+   const buttons = modal.querySelectorAll('.modal-button');
+   buttons.forEach(button => {
+       const isPrimary = button.getAttribute('data-primary-bg') === 'true';
+
+       // Get CSS variables from :root
+       const rootStyles = getComputedStyle(document.documentElement);
+       const primaryColor = rootStyles.getPropertyValue('--color-brand-primary').trim() || '#D1AF5D';
+       const primaryHover = rootStyles.getPropertyValue('--color-brand-primary-hover').trim() || '#c39937';
+       const borderDefault = rootStyles.getPropertyValue('--color-border-default').trim() || '#e0e0e0';
+       const surfacePage = rootStyles.getPropertyValue('--color-surface-page').trim() || '#fbfaf9';
+       const textPrimary = rootStyles.getPropertyValue('--color-text-primary').trim() || '#141310';
+       const textInverse = rootStyles.getPropertyValue('--color-text-inverse').trim() || '#ffffff';
+
+       button.addEventListener('mouseenter', function() {
+           this.style.transform = 'translateY(-2px)';
+           this.style.background = primaryHover;
+           this.style.color = textInverse;
+           this.style.boxShadow = `0 0 4px ${primaryColor}99, 0 0 8px ${primaryColor}73, 0 0 16px ${primaryColor}4D`;
+           this.style.borderColor = primaryColor;
+       });
+
+       button.addEventListener('mouseleave', function() {
+           this.style.transform = 'none';
+           this.style.boxShadow = 'none';
+           if (isPrimary) {
+               this.style.background = primaryColor;
+               this.style.color = textInverse;
+               this.style.borderColor = borderDefault;
+           } else {
+               this.style.background = surfacePage;
+               this.style.color = textPrimary;
+               this.style.borderColor = borderDefault;
+           }
+       });
+   });
 }
 
 // Attach to links
