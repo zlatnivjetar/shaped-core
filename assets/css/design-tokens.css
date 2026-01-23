@@ -35,7 +35,7 @@
    * ================================================================= */
   --color-brand-primary: #2563EB;
   --color-brand-primary-hover: #1D4ED8;
-  --color-brand-secondary: #1E40AF;
+  --color-brand-secondary: #B7991F;
 
   /* =================================================================
    * CONSTANTS - TEXT COLORS
@@ -71,7 +71,7 @@
   /* =================================================================
    * CONSTANTS - GRADIENTS
    * ================================================================= */
-  --gradient-brand: linear-gradient(135deg, var(--color-brand-primary) 0%, var(--color-brand-secondary) 100%);
+  --gradient-brand: linear-gradient(135deg, var(--color-brand-primary) 0%, var(--color-brand-primary-hover) 100%);
 
   /* =================================================================
    * CONSTANTS - SHADOWS

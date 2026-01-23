@@ -555,6 +555,7 @@ abbr[title="Required"] {
 	transition: all var(--transition-base, 200ms ease);
 	flex-shrink: 0;
 	margin-bottom: 2px;
+  margin-right: 4px;
 }
 
 .mphb-terms-and-conditions-accept input[type="checkbox"]:checked {
