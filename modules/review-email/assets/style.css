@@ -454,8 +454,8 @@
     }
 
     .rating-btn {
-        font-size: 0.875rem;
-        padding: 12px;
+        font-size: 0.875rem !important;
+        padding: 12px !important;
     }
 
     .feedback-options {
