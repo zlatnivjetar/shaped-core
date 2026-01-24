@@ -23,6 +23,10 @@ define('SHAPED_PRICE_API_REQUIRE_KEY', false);  // Require API key for price end
 // BRAND CONFIGURATION
 // =============================================================================
 
+/**
+ * Returns the complete brand configuration for this client
+ * @return array Complete brand configuration
+ */
 function shaped_get_client_config() {
     return [
 
@@ -139,14 +143,15 @@ function shaped_get_client_config() {
 
         // --- Elementor ---
         'elementor' => [
-            'sync_colors' => false,  // Sync brand colors to Elementor globals (enable for new builds only)
+            'sync_colors' => true,  // Sync brand colors to Elementor globals (enable for new builds only)
         ],
 
         // --- Integrations ---
         'integrations' => [
             'supabase' => [
                 'reviewsTable' => 'preelook_reviews',
-                'autoSync'     => true,
+                // Enable automatic review syncing
+                'autoSync' => false,
             ],
         ],
 
