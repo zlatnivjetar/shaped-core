@@ -32,15 +32,11 @@ class Email {
                 return false;
             }
 
-            // Get booking object
+            // Get booking object (may be null for test bookings created via wp_insert_post)
             $booking = \MPHB()->getBookingRepository()->findById($booking_id, true);
-            if (!$booking) {
-                error_log('[Shaped Review Email] Booking not found: #' . $booking_id);
-                return false;
-            }
 
             // Get customer details - with fallback to meta
-            $customer = $booking->getCustomer();
+            $customer = $booking ? $booking->getCustomer() : null;
             $customer_email = $customer ? $customer->getEmail() : null;
             $customer_first = $customer ? $customer->getFirstName() : null;
 
@@ -57,15 +53,16 @@ class Email {
                 return false;
             }
 
-            // Check if booking was cancelled
-            if ($booking->getStatus() === 'cancelled') {
+            // Check if booking was cancelled (check both MPHB status and WP post status)
+            $booking_status = $booking ? $booking->getStatus() : get_post_status($booking_id);
+            if ($booking_status === 'cancelled') {
                 error_log('[Shaped Review Email] Booking cancelled, skipping review email for #' . $booking_id);
                 return false;
             }
 
             // Get booking details - fallback to meta if MPHB object doesn't have dates
-            $check_in_date = $booking->getCheckInDate();
-            $check_out_date = $booking->getCheckOutDate();
+            $check_in_date = $booking ? $booking->getCheckInDate() : null;
+            $check_out_date = $booking ? $booking->getCheckOutDate() : null;
 
             if (!$check_in_date) {
                 $check_in_meta = get_post_meta($booking_id, '_mphb_check_in_date', true);
@@ -85,7 +82,7 @@ class Email {
             $check_out = $check_out_date->format('d.m.Y');
 
             // Get room details
-            $room_type_ids = $booking->getReservedRoomTypeIds();
+            $room_type_ids = $booking ? $booking->getReservedRoomTypeIds() : [];
             $room_names = array_map('get_the_title', $room_type_ids);
             $room_list = implode(', ', $room_names) ?: 'Accommodation';
 
@@ -190,7 +187,7 @@ class Email {
         // Render full email
         return shaped_render_email([
             'title'       => 'Share Your Experience - ' . $company_name,
-            'header'      => 'How Was Your Stay?',
+            'header'      => 'How was your stay?',
             'subtitle'    => 'We\'d love your feedback',
             'content'     => $content,
             'footer_text' => 'You received this email because you recently stayed with us.',
