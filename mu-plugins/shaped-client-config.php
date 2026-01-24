@@ -63,6 +63,10 @@ define('SHAPED_PRICE_API_REQUIRE_KEY', false);
 // BRAND CONFIGURATION
 // ============================================================================
 
+'elementor' => [
+    'sync_colors' => true,
+],
+
 /**
  * Returns the complete brand configuration for this client
  * This replaces the need for JSON config files
@@ -212,7 +216,7 @@ function shaped_get_client_config() {
                 // Table name in Supabase for reviews (client-specific)
                 'reviewsTable' => 'preelook_reviews',
                 // Enable automatic review syncing
-                'autoSync' => true,
+                'autoSync' => false,
             ],
 
             // Add other integration configs here as needed
