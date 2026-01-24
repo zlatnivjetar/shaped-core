@@ -57,4 +57,14 @@ return [
             'CANCELLED' => '7',
         ],
     ],
+
+    /**
+     * Elementor integration settings
+     * sync_colors: When true, syncs brand config colors to Elementor global colors.
+     *              Default OFF - only enable for new builds where you control Elementor setup.
+     *              For existing sites, brand config is source of truth for plugin components only.
+     */
+    'elementor' => [
+        'sync_colors' => false,
+    ],
 ];

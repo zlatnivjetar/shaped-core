@@ -360,9 +360,13 @@ span.page-numbers.current {
 }
 
 /* ===== READ MORE BUTTON ===== */
-.shaped-read-more-btn, .prs-read-more-btn {
-    background: none;
-    border: none;
+/* Reset Elementor global button styles - this is a text-link button */
+.shaped-read-more-btn,
+.prs-read-more-btn {
+    background: none !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
     color: var(--color-text-primary, #141310) !important;
     font-weight: 600 !important;
     font-size: 0.9375rem !important;
@@ -375,9 +379,14 @@ span.page-numbers.current {
 }
 
 .shaped-read-more-btn:hover,
-.prs-read-more-btn:hover {
-    color: var(--shaped-accent-hover, #C5A24A);
-    text-decoration: none;
+.shaped-read-more-btn:focus,
+.prs-read-more-btn:hover,
+.prs-read-more-btn:focus {
+    background: none !important;
+    background-color: transparent !important;
+    color: var(--color-brand-primary, #2563EB) !important;
+    text-decoration: none !important;
+    box-shadow: none !important;
 }
 
 /* ===== REVIEW DATE ===== */

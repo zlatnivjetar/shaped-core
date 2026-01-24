@@ -33,12 +33,44 @@ add_action('elementor/loaded', function() {
 }, 20);
 
 /**
+ * Check if Elementor color sync is enabled in brand config
+ * Default: false (opt-in for new builds only)
+ *
+ * @return bool
+ */
+function is_sync_enabled(): bool {
+    // Check via brand config helper if available
+    if (function_exists('shaped_brand')) {
+        return (bool) shaped_brand('elementor.sync_colors', false);
+    }
+
+    // Check via Shaped_Brand_Config class
+    if (class_exists('Shaped_Brand_Config')) {
+        return (bool) \Shaped_Brand_Config::instance()->get('elementor.sync_colors', false);
+    }
+
+    // Check via client config function
+    if (function_exists('shaped_get_client_config')) {
+        $config = shaped_get_client_config();
+        return !empty($config['elementor']['sync_colors']);
+    }
+
+    // Default: disabled
+    return false;
+}
+
+/**
  * Auto-sync on plugin activation
- * This runs once when the plugin is activated
+ * This runs once when the plugin is activated (only if sync_colors enabled)
  */
 register_activation_hook(SHAPED_PLUGIN_FILE, function() {
     // Delay sync to ensure Elementor is loaded
     add_action('init', function() {
+        if (!is_sync_enabled()) {
+            error_log('[Shaped Elementor Sync] Activation sync skipped - sync_colors is disabled in brand config');
+            return;
+        }
+
         if (Color_Sync::is_elementor_active()) {
             $result = Color_Sync::sync();
 
@@ -56,6 +88,11 @@ register_activation_hook(SHAPED_PLUGIN_FILE, function() {
  * Usage: do_action('shaped/elementor/trigger_sync');
  */
 add_action('shaped/elementor/trigger_sync', function() {
+    if (!is_sync_enabled()) {
+        error_log('[Shaped Elementor Sync] Manual sync skipped - sync_colors is disabled in brand config');
+        return;
+    }
+
     if (!Color_Sync::is_elementor_active()) {
         error_log('[Shaped Elementor Sync] Manual sync skipped - Elementor not active');
         return;
@@ -75,6 +112,11 @@ add_action('shaped/elementor/trigger_sync', function() {
  * Usage: do_action('shaped/elementor/force_sync');
  */
 add_action('shaped/elementor/force_sync', function() {
+    if (!is_sync_enabled()) {
+        error_log('[Shaped Elementor Sync] Force sync skipped - sync_colors is disabled in brand config');
+        return;
+    }
+
     if (!Color_Sync::is_elementor_active()) {
         error_log('[Shaped Elementor Sync] Force sync skipped - Elementor not active');
         return;
@@ -119,9 +161,14 @@ if (apply_filters('shaped/elementor/enable_daily_sync', false)) {
 }
 
 /**
- * Sync when Elementor kit is activated/changed
+ * Sync when Elementor kit is activated/changed (only if sync_colors enabled)
  */
 add_action('elementor/kit/activated', function($kit_id) {
+    if (!is_sync_enabled()) {
+        error_log('[Shaped Elementor Sync] Kit activation sync skipped - sync_colors is disabled in brand config');
+        return;
+    }
+
     error_log('[Shaped Elementor Sync] Kit activated (ID: ' . $kit_id . '), triggering sync');
 
     $result = Color_Sync::sync();
