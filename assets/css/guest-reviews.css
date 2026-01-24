@@ -202,12 +202,14 @@ span.page-numbers.current {
 }
 
 
+/* Elementor loop variant - reset any inherited button styles */
 .prs-read-more-btn {
-    color: var(--color-brand-primary, #2563EB) !important;
+    background: none !important;
+    background-color: transparent !important;
+    color: var(--color-text-primary, #141310) !important;
     padding: 8px 0 0 0 !important;
     font-size: 0.875rem !important;
-    text-transform:capitalize !important;
-
+    text-transform: capitalize !important;
 }
 
 @media (max-width: 479px) {
