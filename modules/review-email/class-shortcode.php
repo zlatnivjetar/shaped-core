@@ -101,13 +101,32 @@ class Shortcode {
         $room_type_ids = $booking->getReservedRoomTypeIds();
         $room_names = array_map('get_the_title', $room_type_ids);
 
+        // Get guest name - with fallback to meta
+        $guest_name = $customer ? $customer->getFirstName() : null;
+        if (!$guest_name) {
+            $guest_name = get_post_meta($booking_id, '_mphb_first_name', true) ?: 'Guest';
+        }
+
+        // Get dates - fallback to meta if MPHB object doesn't have them
+        $check_in_date = $booking->getCheckInDate();
+        $check_out_date = $booking->getCheckOutDate();
+
+        if (!$check_in_date) {
+            $check_in_meta = get_post_meta($booking_id, '_mphb_check_in_date', true);
+            $check_in_date = $check_in_meta ? \DateTime::createFromFormat('Y-m-d', $check_in_meta) : null;
+        }
+        if (!$check_out_date) {
+            $check_out_meta = get_post_meta($booking_id, '_mphb_check_out_date', true);
+            $check_out_date = $check_out_meta ? \DateTime::createFromFormat('Y-m-d', $check_out_meta) : null;
+        }
+
         return $this->render_form([
             'booking_id'  => $booking_id,
             'token'       => $token,
-            'guest_name'  => $customer ? $customer->getFirstName() : 'Guest',
-            'check_in'    => $booking->getCheckInDate()->format('F j, Y'),
-            'check_out'   => $booking->getCheckOutDate()->format('F j, Y'),
-            'room_list'   => implode(', ', $room_names),
+            'guest_name'  => $guest_name,
+            'check_in'    => $check_in_date ? $check_in_date->format('F j, Y') : 'N/A',
+            'check_out'   => $check_out_date ? $check_out_date->format('F j, Y') : 'N/A',
+            'room_list'   => implode(', ', $room_names) ?: 'Accommodation',
         ]);
     }
 
