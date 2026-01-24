@@ -101,13 +101,32 @@ class Shortcode {
         $room_type_ids = $booking->getReservedRoomTypeIds();
         $room_names = array_map('get_the_title', $room_type_ids);
 
+        // Get guest name - with fallback to meta
+        $guest_name = $customer ? $customer->getFirstName() : null;
+        if (!$guest_name) {
+            $guest_name = get_post_meta($booking_id, '_mphb_first_name', true) ?: 'Guest';
+        }
+
+        // Get dates - fallback to meta if MPHB object doesn't have them
+        $check_in_date = $booking->getCheckInDate();
+        $check_out_date = $booking->getCheckOutDate();
+
+        if (!$check_in_date) {
+            $check_in_meta = get_post_meta($booking_id, '_mphb_check_in_date', true);
+            $check_in_date = $check_in_meta ? \DateTime::createFromFormat('Y-m-d', $check_in_meta) : null;
+        }
+        if (!$check_out_date) {
+            $check_out_meta = get_post_meta($booking_id, '_mphb_check_out_date', true);
+            $check_out_date = $check_out_meta ? \DateTime::createFromFormat('Y-m-d', $check_out_meta) : null;
+        }
+
         return $this->render_form([
             'booking_id'  => $booking_id,
             'token'       => $token,
-            'guest_name'  => $customer ? $customer->getFirstName() : 'Guest',
-            'check_in'    => $booking->getCheckInDate()->format('F j, Y'),
-            'check_out'   => $booking->getCheckOutDate()->format('F j, Y'),
-            'room_list'   => implode(', ', $room_names),
+            'guest_name'  => $guest_name,
+            'check_in'    => $check_in_date ? $check_in_date->format('F j, Y') : 'N/A',
+            'check_out'   => $check_out_date ? $check_out_date->format('F j, Y') : 'N/A',
+            'room_list'   => implode(', ', $room_names) ?: 'Accommodation',
         ]);
     }
 
@@ -333,13 +352,21 @@ class Shortcode {
     }
 
     /**
-     * Check if booking has been reviewed
+     * Check if booking has been reviewed (or review is in progress)
      *
      * @param int $booking_id Booking ID
      * @return bool
      */
     private function has_reviewed(int $booking_id): bool {
-        return (bool) get_post_meta($booking_id, '_shaped_review_submitted', true);
+        // Check if review was submitted (either published or feedback)
+        if (get_post_meta($booking_id, '_shaped_review_submitted', true)) {
+            return true;
+        }
+        // Also check if review process was started (low rating submitted, awaiting feedback)
+        if (get_post_meta($booking_id, '_shaped_review_started', true)) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -379,9 +406,15 @@ class Shortcode {
 
         // If rating is below threshold, prompt for feedback
         if ($rating < self::PUBLISH_THRESHOLD) {
+            // Mark review as started to prevent re-access
+            update_post_meta($booking_id, '_shaped_review_started', current_time('mysql'));
+            update_post_meta($booking_id, '_shaped_review_initial_rating', $rating);
+            update_post_meta($booking_id, '_shaped_review_initial_comment', $comment);
+
             wp_send_json_success([
                 'action'  => 'feedback',
                 'rating'  => $rating,
+                'comment' => $comment, // Pass comment to pre-populate feedback form
                 'message' => 'Please help us understand what could have been better.',
             ]);
             return;
@@ -543,10 +576,32 @@ class Shortcode {
 
         $subject = 'Guest Feedback Received - Booking #' . $booking_id;
 
+        // Get guest info with fallbacks to meta
         $booking = \MPHB()->getBookingRepository()->findById($booking_id, true);
         $customer = $booking ? $booking->getCustomer() : null;
-        $guest_name = $customer ? $customer->getFirstName() . ' ' . $customer->getLastName() : 'Unknown';
-        $guest_email = $customer ? $customer->getEmail() : 'Unknown';
+
+        $guest_first = $customer ? $customer->getFirstName() : null;
+        $guest_last = $customer ? $customer->getLastName() : null;
+        $guest_email = $customer ? $customer->getEmail() : null;
+
+        // Fallback to meta values
+        if (!$guest_first) {
+            $guest_first = get_post_meta($booking_id, '_mphb_first_name', true) ?: '';
+        }
+        if (!$guest_last) {
+            $guest_last = get_post_meta($booking_id, '_mphb_last_name', true) ?: '';
+        }
+        if (!$guest_email) {
+            $guest_email = get_post_meta($booking_id, '_mphb_email', true) ?: 'Unknown';
+        }
+
+        $guest_name = trim($guest_first . ' ' . $guest_last) ?: 'Unknown';
+
+        // Get the original comment from the first form if no details provided
+        $details = $feedback['details'];
+        if (!$details) {
+            $details = get_post_meta($booking_id, '_shaped_review_initial_comment', true) ?: 'No additional details provided';
+        }
 
         $message = sprintf(
             "A guest has provided feedback after their stay.\n\n" .
@@ -560,8 +615,8 @@ class Shortcode {
             $guest_name,
             $guest_email,
             $feedback['rating'],
-            implode(', ', $feedback['issues']),
-            $feedback['details'] ?: 'No additional details provided',
+            !empty($feedback['issues']) ? implode(', ', $feedback['issues']) : 'None selected',
+            $details,
             self::PUBLISH_THRESHOLD
         );
 
