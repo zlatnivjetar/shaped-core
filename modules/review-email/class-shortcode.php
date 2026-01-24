@@ -177,7 +177,7 @@ class Shortcode {
                 <!-- Rating Selection -->
                 <div class="shaped-rating-section">
                     <label>Rate your experience</label>
-                    <p class="rating-help">Select a rating from 1 (poor) to 10 (excellent)</p>
+                    <p class="rating-help">Select a rating from 1 to 10</p>
 
                     <div class="shaped-rating-buttons">
                         <?php for ($i = 1; $i <= 10; $i++): ?>
