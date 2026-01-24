@@ -19,7 +19,7 @@ class Scheduler {
     /**
      * Hours after checkout to send review email
      */
-    const HOURS_AFTER_CHECKOUT = 4;
+    const HOURS_AFTER_CHECKOUT = 6;
 
     /**
      * Constructor
