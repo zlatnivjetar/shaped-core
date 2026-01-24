@@ -26,6 +26,7 @@ shaped-core/
 2. **All emails go through Shaped Core** — MPHB email system is disabled
 3. **All payments go through Shaped Core** — MPHB payment handling is disabled
 4. **Stripe is the only payment processor** — two modes: Deposit OR Dual-flow (system-wide, never per-booking)
+5. **mu-plugins folder should never be modified** — here only for reference
 
 ## Payment Modes (mutually exclusive)
 
