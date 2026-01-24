@@ -130,7 +130,7 @@ class Shortcode {
         <div class="shaped-review-container" data-booking-id="<?php echo esc_attr($data['booking_id']); ?>" data-token="<?php echo esc_attr($data['token']); ?>">
             <!-- Header -->
             <div class="shaped-review-header">
-                <h1>How Was Your Stay?</h1>
+                <h1>How was your stay?</h1>
                 <p>We'd love to hear about your experience at <?php echo esc_html($company_name); ?></p>
             </div>
 
