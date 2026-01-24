@@ -325,8 +325,8 @@ function shaped_email_end() {
  * @return string Header HTML
  */
 function shaped_email_header($title, $subtitle = '') {
-    $primary = shaped_email_color('primary', '#2563EB');
-    $secondary = shaped_email_color('secondary', '#1E40AF');
+    $primary = shaped_email_color('primary', '#E2BD27');
+    $secondary = shaped_email_color('secondary', '#B7991F');
 
     ob_start();
     ?>
