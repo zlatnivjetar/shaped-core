@@ -102,7 +102,9 @@
                     if (response.success) {
                         if (response.data.action === 'feedback') {
                             // Low rating - show feedback form
-                            showFeedbackSection($form, $feedbackSection, rating);
+                            // Pass the original comment to pre-populate details
+                            var originalComment = response.data.comment || $('#shaped-review-comment').val();
+                            showFeedbackSection($form, $feedbackSection, rating, originalComment);
                         } else if (response.data.action === 'published') {
                             // High rating - show thank you
                             showThankYou($form, $feedbackSection, $thankYouSection, response.data.message);
@@ -177,9 +179,14 @@
     /**
      * Show feedback section for low ratings
      */
-    function showFeedbackSection($form, $feedbackSection, rating) {
+    function showFeedbackSection($form, $feedbackSection, rating, originalComment) {
         // Store original rating
         $('#shaped-original-rating').val(rating);
+
+        // Pre-populate feedback details with original comment if provided
+        if (originalComment && originalComment.trim()) {
+            $('#shaped-feedback-details').val(originalComment);
+        }
 
         // Hide form, show feedback
         $form.slideUp(300, function() {
