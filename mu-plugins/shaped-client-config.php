@@ -154,7 +154,7 @@ function shaped_get_client_config() {
             'surface' => [
                 'page' => '#FBFBF9',
                 'highlight' => '#fffbf0',  // booking form, checkout form bottom etc.
-                'pageDark'  => '#2C2B25',
+                'pageDark'  => '#2b2a26',
                 'pageBlack'    => '#0b0b09', // use as brand “dark” / inverse anchor
             ],
             'text' => [

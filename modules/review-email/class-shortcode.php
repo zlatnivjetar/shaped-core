@@ -199,13 +199,13 @@ class Shortcode {
                         name="comment"
                         id="shaped-review-comment"
                         rows="5"
-                        placeholder="What did you enjoy most about your stay? Any highlights or memorable moments..."
+                        placeholder="What did you enjoy most about your stay?"
                     ></textarea>
                 </div>
 
                 <!-- Guest Name (optional override) -->
                 <div class="shaped-name-section">
-                    <label for="shaped-review-name">Your name (as it will appear on the review)</label>
+                    <label for="shaped-review-name">Your name</label>
                     <input
                         type="text"
                         name="author_name"
@@ -343,8 +343,8 @@ class Shortcode {
 
         return sprintf(
             '<div class="shaped-review-container shaped-review-success">
-                <div class="success-icon" style="color: %s;">&#10003;</div>
-                <h2>Review Already Submitted</h2>
+                <div class="success-icon" style="color: #ffffff;</div>
+                <h2>Review already submitted</h2>
                 <p>You have already submitted a review for this stay. Thank you for your feedback!</p>
             </div>',
             esc_attr($success)
