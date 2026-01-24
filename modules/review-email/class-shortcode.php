@@ -91,23 +91,59 @@ class Shortcode {
             return $this->render_already_reviewed();
         }
 
-        // Get booking details for display
-        $booking = \MPHB()->getBookingRepository()->findById($booking_id, true);
-        if (!$booking) {
-            return $this->render_error('Booking not found.');
+        // Get booking details for display - try MPHB first, fall back to post meta
+        $guest_name = 'Guest';
+        $check_in = '';
+        $check_out = '';
+        $room_list = '';
+
+        if (function_exists('MPHB')) {
+            $booking = \MPHB()->getBookingRepository()->findById($booking_id, true);
+            if ($booking) {
+                $customer = $booking->getCustomer();
+                if ($customer) {
+                    $guest_name = $customer->getFirstName() ?: 'Guest';
+                }
+                if ($booking->getCheckInDate()) {
+                    $check_in = $booking->getCheckInDate()->format('F j, Y');
+                }
+                if ($booking->getCheckOutDate()) {
+                    $check_out = $booking->getCheckOutDate()->format('F j, Y');
+                }
+                $room_type_ids = $booking->getReservedRoomTypeIds();
+                if (!empty($room_type_ids)) {
+                    $room_names = array_map('get_the_title', $room_type_ids);
+                    $room_list = implode(', ', $room_names);
+                }
+            }
         }
 
-        $customer = $booking->getCustomer();
-        $room_type_ids = $booking->getReservedRoomTypeIds();
-        $room_names = array_map('get_the_title', $room_type_ids);
+        // Fall back to post meta
+        if ($guest_name === 'Guest') {
+            $meta_name = get_post_meta($booking_id, '_mphb_first_name', true);
+            if ($meta_name) {
+                $guest_name = $meta_name;
+            }
+        }
+        if (empty($check_in)) {
+            $check_in_raw = get_post_meta($booking_id, '_mphb_check_in_date', true);
+            $check_in = $check_in_raw ? date('F j, Y', strtotime($check_in_raw)) : 'N/A';
+        }
+        if (empty($check_out)) {
+            $check_out_raw = get_post_meta($booking_id, '_mphb_check_out_date', true);
+            $check_out = $check_out_raw ? date('F j, Y', strtotime($check_out_raw)) : 'N/A';
+        }
+        if (empty($room_list)) {
+            $room_list = 'Your accommodation';
+        }
 
         return $this->render_form([
             'booking_id'  => $booking_id,
             'token'       => $token,
-            'guest_name'  => $customer ? $customer->getFirstName() : 'Guest',
-            'check_in'    => $booking->getCheckInDate()->format('F j, Y'),
-            'check_out'   => $booking->getCheckOutDate()->format('F j, Y'),
-            'room_list'   => implode(', ', $room_names),
+            'guest_name'  => $guest_name,
+            'check_in'    => $check_in,
+            'check_out'   => $check_out,
+            'room_list'   => $room_list,
         ]);
     }
 

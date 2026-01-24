@@ -68,3 +68,36 @@ add_action('init', function() {
         wp_insert_term('Direct', 'review_provider', ['slug' => 'direct']);
     }
 }, 15);
+
+/**
+ * Create the leave-review page if it doesn't exist
+ */
+add_action('init', function() {
+    // Only run once
+    if (get_option('shaped_review_page_created')) {
+        return;
+    }
+
+    // Check if page already exists
+    $existing = get_page_by_path('leave-review');
+    if ($existing) {
+        update_option('shaped_review_page_url', get_permalink($existing->ID));
+        update_option('shaped_review_page_created', true);
+        return;
+    }
+
+    // Create the page
+    $page_id = wp_insert_post([
+        'post_title'   => 'Leave a Review',
+        'post_name'    => 'leave-review',
+        'post_content' => '[shaped_leave_review]',
+        'post_status'  => 'publish',
+        'post_type'    => 'page',
+    ]);
+
+    if ($page_id && !is_wp_error($page_id)) {
+        update_option('shaped_review_page_url', get_permalink($page_id));
+        update_option('shaped_review_page_created', true);
+        error_log('[Shaped Review Email] Created leave-review page #' . $page_id);
+    }
+}, 20);

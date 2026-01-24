@@ -163,12 +163,25 @@ class Scheduler {
      * @return string
      */
     public static function generate_token(int $booking_id): string {
-        $booking = \MPHB()->getBookingRepository()->findById($booking_id, true);
-        if (!$booking || !$booking->getCustomer()) {
+        $email = '';
+
+        // Try MPHB first
+        if (function_exists('MPHB')) {
+            $booking = \MPHB()->getBookingRepository()->findById($booking_id, true);
+            if ($booking && $booking->getCustomer()) {
+                $email = $booking->getCustomer()->getEmail();
+            }
+        }
+
+        // Fall back to post meta
+        if (empty($email)) {
+            $email = get_post_meta($booking_id, '_mphb_email', true);
+        }
+
+        if (empty($email)) {
             return '';
         }
 
-        $email = $booking->getCustomer()->getEmail();
         return hash('sha256', $booking_id . $email . wp_salt('auth'));
     }
 

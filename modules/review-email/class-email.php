@@ -26,47 +26,83 @@ class Email {
         try {
             error_log('[Shaped Review Email] Starting review email for booking #' . $booking_id);
 
-            // Verify MotoPress is available
-            if (!class_exists('MPHB\Entities\Booking')) {
-                error_log('[Shaped Review Email] MotoPress not available');
-                return false;
+            // Get customer email - try MPHB first, fall back to post meta
+            $customer_email = '';
+            $customer_first = '';
+            $customer_last = '';
+            $check_in = '';
+            $check_out = '';
+            $room_list = '';
+
+            // Try MPHB booking object first
+            if (function_exists('MPHB') && class_exists('MPHB\Entities\Booking')) {
+                $booking = \MPHB()->getBookingRepository()->findById($booking_id, true);
+
+                if ($booking) {
+                    $customer = $booking->getCustomer();
+                    if ($customer && $customer->getEmail()) {
+                        $customer_email = $customer->getEmail();
+                        $customer_first = $customer->getFirstName();
+                        $customer_last = $customer->getLastName();
+                    }
+
+                    if ($booking->getCheckInDate()) {
+                        $check_in = $booking->getCheckInDate()->format('d.m.Y');
+                    }
+                    if ($booking->getCheckOutDate()) {
+                        $check_out = $booking->getCheckOutDate()->format('d.m.Y');
+                    }
+
+                    // Check if booking was cancelled
+                    if ($booking->getStatus() === 'cancelled') {
+                        error_log('[Shaped Review Email] Booking cancelled, skipping review email for #' . $booking_id);
+                        return false;
+                    }
+
+                    // Get room details
+                    $room_type_ids = $booking->getReservedRoomTypeIds();
+                    if (!empty($room_type_ids)) {
+                        $room_names = array_map('get_the_title', $room_type_ids);
+                        $room_list = implode(', ', $room_names);
+                    }
+                }
             }
 
-            // Get booking object
-            $booking = \MPHB()->getBookingRepository()->findById($booking_id, true);
-            if (!$booking) {
-                error_log('[Shaped Review Email] Booking not found: #' . $booking_id);
-                return false;
+            // Fall back to post meta if MPHB data not available
+            if (empty($customer_email)) {
+                $customer_email = get_post_meta($booking_id, '_mphb_email', true);
+            }
+            if (empty($customer_first)) {
+                $customer_first = get_post_meta($booking_id, '_mphb_first_name', true);
+            }
+            if (empty($customer_last)) {
+                $customer_last = get_post_meta($booking_id, '_mphb_last_name', true);
+            }
+            if (empty($check_in)) {
+                $check_in_raw = get_post_meta($booking_id, '_mphb_check_in_date', true);
+                $check_in = $check_in_raw ? date('d.m.Y', strtotime($check_in_raw)) : '';
+            }
+            if (empty($check_out)) {
+                $check_out_raw = get_post_meta($booking_id, '_mphb_check_out_date', true);
+                $check_out = $check_out_raw ? date('d.m.Y', strtotime($check_out_raw)) : '';
             }
 
-            // Get customer details
-            $customer = $booking->getCustomer();
-            if (!$customer || !$customer->getEmail()) {
+            // Validate we have required data
+            if (empty($customer_email)) {
                 error_log('[Shaped Review Email] No customer email for booking #' . $booking_id);
                 return false;
             }
 
-            // Check if booking was cancelled
-            if ($booking->getStatus() === 'cancelled') {
-                error_log('[Shaped Review Email] Booking cancelled, skipping review email for #' . $booking_id);
-                return false;
+            if (empty($customer_first)) {
+                $customer_first = 'Guest';
             }
-
-            // Get booking details
-            $check_in = $booking->getCheckInDate()->format('d.m.Y');
-            $check_out = $booking->getCheckOutDate()->format('d.m.Y');
-
-            // Get room details
-            $room_type_ids = $booking->getReservedRoomTypeIds();
-            $room_names = array_map('get_the_title', $room_type_ids);
-            $room_list = implode(', ', $room_names);
 
             // Get email config
             $from_name = shaped_email_config('from_name', get_bloginfo('name'));
             $from_email = shaped_email_config('from_email', get_option('admin_email'));
 
             // Email setup
-            $to = $customer->getEmail();
+            $to = $customer_email;
             $subject = 'How was your stay? - ' . $from_name;
 
             // Get review URL
@@ -75,10 +111,10 @@ class Email {
             // Build email
             $message = self::get_template([
                 'booking_id'     => $booking_id,
-                'customer_first' => $customer->getFirstName(),
-                'check_in'       => $check_in,
-                'check_out'      => $check_out,
-                'room_list'      => $room_list,
+                'customer_first' => $customer_first,
+                'check_in'       => $check_in ?: 'N/A',
+                'check_out'      => $check_out ?: 'N/A',
+                'room_list'      => $room_list ?: 'Your accommodation',
                 'review_url'     => $review_url,
             ]);
 
