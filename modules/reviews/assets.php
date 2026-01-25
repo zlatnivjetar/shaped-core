@@ -45,6 +45,23 @@ add_action('wp_enqueue_scripts', function() {
             filemtime($badge_css)
         );
     }
+
+    // Enqueue frontend JS for standalone grid (filters, Load More)
+    $js_file = dirname(__FILE__) . '/assets/reviews-frontend.js';
+    if (file_exists($js_file)) {
+        wp_enqueue_script(
+            'shaped-reviews-frontend',
+            plugin_dir_url(__FILE__) . 'assets/reviews-frontend.js',
+            [],
+            filemtime($js_file),
+            true // Load in footer
+        );
+
+        // Pass AJAX URL to script
+        wp_localize_script('shaped-reviews-frontend', 'shapedReviewsData', [
+            'ajaxUrl' => admin_url('admin-ajax.php'),
+        ]);
+    }
 }, 10);
 
 /**
