@@ -76,7 +76,7 @@ class Shaped_Design_Tokens_Generator {
                 $css .= "    --color-text-inverse: {$text['inverse']};\n";
             }
             if (isset($text['onPrimary'])) {
-                $css .= "    --color-text-on-accent: {$text['onPrimary']};\n";
+                $css .= "    --color-text-on-primary: {$text['onPrimary']};\n";
             }
         }
 

@@ -1,0 +1,215 @@
+/**
+ * Shaped Global Button Styles
+ *
+ * Provides consistent button styling across the entire plugin.
+ * Works independently of Elementor - uses design tokens for theming.
+ *
+ * USAGE:
+ * - Primary buttons (CTAs):     class="shaped-btn shaped-btn-primary"
+ * - Secondary buttons:          class="shaped-btn shaped-btn-secondary"
+ * - Link-style buttons:         class="shaped-btn shaped-btn-link"
+ * - Ghost buttons:              class="shaped-btn shaped-btn-ghost"
+ *
+ * SIZE MODIFIERS:
+ * - Small:                      class="shaped-btn shaped-btn-primary shaped-btn-sm"
+ * - Large:                      class="shaped-btn shaped-btn-primary shaped-btn-lg"
+ */
+
+/* =================================================================
+ * BASE BUTTON RESET
+ * Applied to all button variants
+ * ================================================================= */
+.shaped-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-body, 'DM Sans', sans-serif);
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  border: none;
+  background: none;
+  transition: all var(--transition-base, 200ms ease);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.shaped-btn:focus {
+  outline: 2px solid var(--color-brand-primary, #2563EB);
+  outline-offset: 2px;
+}
+
+.shaped-btn:disabled,
+.shaped-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* =================================================================
+ * PRIMARY BUTTON
+ * Full background, used for main CTAs
+ * ================================================================= */
+.shaped-btn-primary {
+  background: var(--color-brand-primary, #2563EB);
+  color: var(--color-text-on-primary, #ffffff);
+  padding: 1rem 2rem;
+  border-radius: var(--radius-md, 8px);
+}
+
+.shaped-btn-primary:hover {
+  background: var(--color-brand-primary-hover, #1D4ED8);
+  color: var(--color-text-on-primary, #ffffff);
+}
+
+.shaped-btn-primary:active {
+  transform: translateY(1px);
+}
+
+/* =================================================================
+ * SECONDARY BUTTON
+ * Bordered, transparent background
+ * ================================================================= */
+.shaped-btn-secondary {
+  background: var(--color-surface-white, #ffffff);
+  color: var(--color-text-primary, #111827);
+  padding: 1rem 2rem;
+  border: 2px solid var(--color-border-default, #e4e4e4);
+  border-radius: var(--radius-md, 8px);
+}
+
+.shaped-btn-secondary:hover {
+  border-color: var(--color-brand-primary, #2563EB);
+  color: var(--color-brand-primary, #2563EB);
+}
+
+.shaped-btn-secondary:active {
+  transform: translateY(1px);
+}
+
+/* =================================================================
+ * LINK BUTTON
+ * Looks like a navigation link - no background, underline on hover
+ * Perfect for filters, tabs, and inline actions
+ * ================================================================= */
+.shaped-btn-link {
+  background: transparent;
+  color: var(--color-text-primary, #111827);
+  padding: 0.5rem 1rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  text-transform: uppercase;
+}
+
+.shaped-btn-link:hover {
+  color: var(--color-brand-primary, #2563EB);
+  border-bottom-color: var(--color-brand-primary, #2563EB);
+}
+
+.shaped-btn-link:focus {
+  outline: none;
+  border-bottom-color: var(--color-brand-primary, #2563EB);
+}
+
+.shaped-btn-link.active,
+.shaped-btn-link[aria-pressed="true"],
+.shaped-btn-link[aria-current="true"] {
+  color: var(--color-brand-primary, #2563EB);
+  border-bottom-color: var(--color-brand-primary, #2563EB);
+}
+
+/* =================================================================
+ * GHOST BUTTON
+ * Subtle, shows background only on hover
+ * ================================================================= */
+.shaped-btn-ghost {
+  background: transparent;
+  color: var(--color-text-primary, #111827);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md, 8px);
+}
+
+.shaped-btn-ghost:hover {
+  background: var(--color-surface-alt, #f8f8f8);
+  color: var(--color-brand-primary, #2563EB);
+}
+
+/* =================================================================
+ * SIZE MODIFIERS
+ * ================================================================= */
+.shaped-btn-sm {
+  font-size: 0.8125rem;
+  padding: 0.5rem 1rem;
+}
+
+.shaped-btn-sm.shaped-btn-link {
+  padding: 0.375rem 0.75rem;
+}
+
+.shaped-btn-lg {
+  font-size: 1rem;
+  padding: 1.25rem 2.5rem;
+}
+
+.shaped-btn-lg.shaped-btn-link {
+  padding: 0.625rem 1.25rem;
+}
+
+/* =================================================================
+ * FULL WIDTH MODIFIER
+ * ================================================================= */
+.shaped-btn-block {
+  width: 100%;
+}
+
+/* =================================================================
+ * LOADING STATE
+ * ================================================================= */
+.shaped-btn.is-loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.shaped-btn.is-loading::after {
+  content: '';
+  position: absolute;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: shaped-btn-spin 0.6s linear infinite;
+}
+
+.shaped-btn-primary.is-loading::after {
+  border-top-color: var(--color-text-on-primary, #ffffff);
+}
+
+@keyframes shaped-btn-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* =================================================================
+ * RESPONSIVE
+ * ================================================================= */
+@media (max-width: 767px) {
+  .shaped-btn {
+    font-size: 0.8125rem;
+  }
+
+  .shaped-btn-primary,
+  .shaped-btn-secondary {
+    padding: 0.875rem 1.5rem;
+  }
+
+  .shaped-btn-link {
+    padding: 0.375rem 0.75rem;
+  }
+}
