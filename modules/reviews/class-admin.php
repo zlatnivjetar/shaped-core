@@ -45,9 +45,6 @@ class Admin {
 
         // Admin styles
         add_action('admin_head', [__CLASS__, 'admin_styles']);
-
-        // Elementor query (specific query ID support)
-        add_action('elementor/query/featured_reviews_query', [__CLASS__, 'elementor_featured_query']);
     }
 
     /**
@@ -587,37 +584,6 @@ class Admin {
             }
         </style>
         <?php
-    }
-
-    /**
-     * Elementor featured reviews query
-     * Handles the featured_reviews_query ID for Elementor Loop Grid
-     */
-    public static function elementor_featured_query(\WP_Query $query): void {
-        $query->set('post_type', CPT::POST_TYPE);
-        $query->set('post_status', 'publish');
-
-        // Set up meta query for featured and priority
-        $query->set('meta_query', [
-            'relation' => 'AND',
-            'featured_clause' => [
-                'key'     => 'is_featured',
-                'compare' => 'EXISTS',
-                'type'    => 'NUMERIC'
-            ],
-            'priority_clause' => [
-                'key'     => 'priority',
-                'compare' => 'EXISTS',
-                'type'    => 'NUMERIC'
-            ]
-        ]);
-
-        // Force sorting: featured DESC, priority DESC, date DESC
-        $query->set('orderby', [
-            'featured_clause' => 'DESC',
-            'priority_clause' => 'DESC',
-            'date'            => 'DESC'
-        ]);
     }
 
     /**
