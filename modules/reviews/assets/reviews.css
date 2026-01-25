@@ -331,10 +331,10 @@ span.page-numbers.current {
 .prs-review-content-wrapper.expanded .prs-review-text {
     max-height: 7.5em;
     overflow-y: auto;
-    padding-right: 8px;
-    margin-right: -8px;
+    padding-right: 4px;
+    margin-right: 0px;
     scrollbar-width: thin;
-    scrollbar-color: rgba(209, 175, 93, 0.125) var(--color-surface-alt, #f0f0f0);
+    scrollbar-color: var(--color-text-muted) var(--color-surface-alt);
 }
 
 .shaped-review-content-wrapper.expanded .shaped-review-text::-webkit-scrollbar,
@@ -344,7 +344,7 @@ span.page-numbers.current {
 
 .shaped-review-content-wrapper.expanded .shaped-review-text::-webkit-scrollbar-track,
 .prs-review-content-wrapper.expanded .prs-review-text::-webkit-scrollbar-track {
-    background: var(--color-surface-alt, #f0f0f0);
+    background: var(--color-surface-alt);
     border-radius: 2px;
 }
 
@@ -571,7 +571,7 @@ span.page-numbers.current {
 .shaped-review-card {
     background: var(--color-surface-white, #ffffff);
     border-radius: var(--radius-md, 8px);
-    padding: 24px 20px;
+    padding: 24px;
     box-shadow: var(--shadow-card, 0 2px 4px rgba(0,0,0,0.08));
     transition: transform 200ms ease, box-shadow 200ms ease;
     min-height: 17.375rem;
