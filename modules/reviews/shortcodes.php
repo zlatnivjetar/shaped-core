@@ -245,3 +245,26 @@ add_shortcode('shaped_review_content', function($atts) {
 add_shortcode('review_content', function() {
     return do_shortcode('[shaped_review_content]');
 });
+
+/**
+ * [shaped_reviews] - Standalone reviews grid with filters and pagination
+ *
+ * Renders a complete review display without Elementor dependency.
+ * Includes provider filter buttons, 3-column grid, and Load More pagination.
+ *
+ * Usage: [shaped_reviews]
+ *
+ * The grid respects URL parameter ?provider=<slug> for direct linking to filtered views.
+ */
+add_shortcode('shaped_reviews', function() {
+    // Check for provider filter in URL
+    $provider = isset($_GET['provider']) ? sanitize_text_field($_GET['provider']) : 'all';
+
+    // Validate provider
+    $valid_providers = Frontend::PROVIDER_ORDER;
+    if ($provider !== 'all' && !in_array($provider, $valid_providers, true)) {
+        $provider = 'all';
+    }
+
+    return Frontend::render_grid($provider, 1);
+});
