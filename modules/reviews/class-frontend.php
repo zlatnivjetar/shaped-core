@@ -125,14 +125,14 @@ class Frontend {
         ?>
         <div class="shaped-reviews-filters" role="group" aria-label="Filter reviews by provider">
             <button type="button"
-                    class="shaped-filter-btn <?php echo $current_provider === 'all' ? 'active' : ''; ?>"
+                    class="shaped-btn shaped-btn-link <?php echo $current_provider === 'all' ? 'active' : ''; ?>"
                     data-provider="all"
                     aria-pressed="<?php echo $current_provider === 'all' ? 'true' : 'false'; ?>">
                 All
             </button>
             <?php foreach ($active_providers as $slug => $count): ?>
             <button type="button"
-                    class="shaped-filter-btn <?php echo $current_provider === $slug ? 'active' : ''; ?>"
+                    class="shaped-btn shaped-btn-link <?php echo $current_provider === $slug ? 'active' : ''; ?>"
                     data-provider="<?php echo esc_attr($slug); ?>"
                     aria-pressed="<?php echo $current_provider === $slug ? 'true' : 'false'; ?>">
                 <?php echo esc_html(self::PROVIDER_NAMES[$slug] ?? ucfirst($slug)); ?>

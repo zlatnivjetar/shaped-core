@@ -29,7 +29,7 @@
 
             this.grid = this.container.querySelector('.shaped-reviews-grid');
             this.pagination = this.container.querySelector('.shaped-reviews-pagination');
-            this.filterButtons = this.container.querySelectorAll('.shaped-filter-btn');
+            this.filterButtons = this.container.querySelectorAll('.shaped-btn-link[data-provider]');
             this.loadMoreBtn = this.container.querySelector('.shaped-load-more-btn');
 
             // Read initial state from data attributes
