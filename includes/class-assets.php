@@ -51,6 +51,18 @@ class Shaped_Assets {
             }
         }
 
+        // ─── Global Button Styles (must load after design tokens) ───
+        // Provides consistent button styling across the entire plugin
+        // Works independently of Elementor
+        if (file_exists(SHAPED_DIR . 'assets/css/buttons.css')) {
+            wp_enqueue_style(
+                'shaped-buttons',
+                SHAPED_URL . 'assets/css/buttons.css',
+                ['shaped-design-tokens'],
+                SHAPED_VERSION
+            );
+        }
+
         // ─── Always Load (lightweight utilities) ───
 
         // Phosphor Icons for amenity display (self-hosted for performance)

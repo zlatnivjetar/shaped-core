@@ -196,7 +196,7 @@ a.datepick-cmd {
 .mphb-datepicker-minimal .datepick-selected,
 .mphb-datepicker-minimal .mphb-selected-date {
   background: var(--color-brand-primary, #2563EB) !important;
-  color: var(--color-text-on-accent, #ffffff) !important;
+  color: var(--color-text-on-primary, #ffffff) !important;
   font-weight: 700 !important;
   width: 3rem !important;
 }
@@ -270,7 +270,7 @@ a.datepick-cmd {
 
 .mphb-datepicker-minimal .datepick-cmd-close {
   background: var(--color-brand-primary, #2563EB) !important;
-  color: var(--color-text-on-accent, #ffffff) !important;
+  color: var(--color-text-on-primary, #ffffff) !important;
   border: 1px solid var(--color-brand-primary, #2563EB);
 }
 

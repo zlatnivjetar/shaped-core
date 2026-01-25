@@ -340,7 +340,7 @@
 .mphb-book-button,
 .mphb-confirm-reservation {
     background: var(--color-brand-primary, #2563EB);
-    color: var(--color-text-on-accent, #ffffff);
+    color: var(--color-text-on-primary, #ffffff);
     border: none;
     border-radius: 0.5rem;
     padding: 1rem 2rem;
