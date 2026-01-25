@@ -387,9 +387,7 @@ span.page-numbers.current {
 }
 
 .shaped-read-more-btn:hover,
-.shaped-read-more-btn:focus,
-.prs-read-more-btn:hover,
-.prs-read-more-btn:focus {
+.prs-read-more-btn:hover {
     background: none !important;
     background-color: transparent !important;
     color: var(--color-brand-primary, #2563EB) !important;
