@@ -16,15 +16,14 @@ if (!defined('ABSPATH')) {
 
 /**
  * Enqueue external CSS files
- * Load on all frontend pages for better compatibility
+ * Load on all frontend pages for shortcode compatibility
  */
 add_action('wp_enqueue_scripts', function() {
-    // Load on all frontend pages (not just review pages) to ensure Elementor loops work
     if (is_admin()) {
         return;
     }
 
-    // Enqueue external reviews CSS (Elementor-specific styling)
+    // Enqueue reviews CSS
     $css_file = dirname(__FILE__) . '/assets/reviews.css';
     if (file_exists($css_file)) {
         wp_enqueue_style(
@@ -65,11 +64,9 @@ add_action('wp_enqueue_scripts', function() {
 }, 10);
 
 /**
- * Enqueue inline JavaScript only
- * Load on all frontend pages for better compatibility
+ * Enqueue inline JavaScript for read more toggle
  */
 add_action('wp_footer', function() {
-    // Load on all frontend pages to ensure Elementor loops work
     if (is_admin()) {
         return;
     }
@@ -137,11 +134,6 @@ function has_shortcode_on_page(): bool {
         if (has_shortcode($post->post_content, $shortcode)) {
             return true;
         }
-    }
-
-    // Check for Elementor loop with reviews
-    if (strpos($post->post_content, 'featured_reviews_query') !== false) {
-        return true;
     }
 
     // Check for review CPT archive

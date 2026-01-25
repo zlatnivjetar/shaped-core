@@ -1,13 +1,15 @@
 <?php
 /**
  * Shaped Reviews Module
- * 
+ *
  * Syncs reviews from Supabase (aggregated from Booking, Expedia, Google, TripAdvisor)
- * and displays them via WordPress CPT + Elementor Loop.
- * 
+ * and displays them via WordPress CPT with standalone shortcode grid.
+ *
+ * This module is completely standalone and can be installed on any WordPress site.
+ *
  * Activation: Define SHAPED_ENABLE_REVIEWS in wp-config.php
  * Required: SUPABASE_URL, SUPABASE_SERVICE_KEY constants
- * 
+ *
  * @package Shaped_Core
  * @subpackage Reviews
  * @since 2.0.0
