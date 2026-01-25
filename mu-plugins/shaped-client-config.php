@@ -142,8 +142,9 @@ function shaped_get_client_config() {
         ],
 
         // --- Elementor ---
+        // SSH to run into public_html to sync globals: wp eval "do_action('shaped/elementor/force_sync');"
         'elementor' => [
-            'sync_colors' => true,  // Sync brand colors to Elementor globals (enable for new builds only)
+            'sync_colors' => false,  // Sync brand colors to Elementor globals (enable for new builds only)
         ],
 
         // --- Integrations ---
