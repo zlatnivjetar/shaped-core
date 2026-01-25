@@ -34,6 +34,7 @@
    * Generic defaults - client-specific values injected via PHP
    * ================================================================= */
   --color-brand-primary: #2563EB;
+  --color-brand-primary-rgb: 37, 99, 235;  /* RGB values for use with rgba() */
   --color-brand-primary-hover: #1D4ED8;
   --color-brand-secondary: #B7991F;
 

@@ -33,6 +33,11 @@ class Shaped_Design_Tokens_Generator {
             $brand = $config['colors']['brand'];
             if (isset($brand['primary'])) {
                 $css .= "    --color-brand-primary: {$brand['primary']};\n";
+                // Also output RGB values for use with rgba() in shadows/glows
+                $rgb = self::hex_to_rgb($brand['primary']);
+                if ($rgb) {
+                    $css .= "    --color-brand-primary-rgb: {$rgb};\n";
+                }
             }
             if (isset($brand['primaryHover'])) {
                 $css .= "    --color-brand-primary-hover: {$brand['primaryHover']};\n";
@@ -102,6 +107,30 @@ class Shaped_Design_Tokens_Generator {
         $css .= "}\n";
 
         return $css;
+    }
+
+    /**
+     * Convert hex color to RGB values string
+     *
+     * @param string $hex Hex color (e.g., #d1af5d or d1af5d)
+     * @return string|null RGB values as "r, g, b" or null if invalid
+     */
+    private static function hex_to_rgb(string $hex): ?string {
+        $hex = ltrim($hex, '#');
+
+        if (strlen($hex) === 3) {
+            $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
+        }
+
+        if (strlen($hex) !== 6) {
+            return null;
+        }
+
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+
+        return "{$r}, {$g}, {$b}";
     }
 
     /**
