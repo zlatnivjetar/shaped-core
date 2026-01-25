@@ -36,6 +36,7 @@ define('SHAPED_REVIEWS_DIR', __DIR__ . '/');
 require_once SHAPED_REVIEWS_DIR . 'class-cpt.php';
 require_once SHAPED_REVIEWS_DIR . 'class-sync.php';
 require_once SHAPED_REVIEWS_DIR . 'class-admin.php';
+require_once SHAPED_REVIEWS_DIR . 'class-frontend.php';
 require_once SHAPED_REVIEWS_DIR . 'shortcodes.php';
 require_once SHAPED_REVIEWS_DIR . 'assets.php';
 
@@ -56,6 +57,9 @@ add_action('init', function() {
         // Initialize frontend hooks (sorting, etc.)
         Admin::init_frontend();
     }
+
+    // Initialize frontend display (AJAX handlers)
+    Frontend::init();
 }, 5);
 
 /**

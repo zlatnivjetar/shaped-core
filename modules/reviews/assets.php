@@ -102,6 +102,7 @@ function has_shortcode_on_page(): bool {
     }
 
     $shortcodes = [
+        'shaped_reviews', // Standalone grid shortcode
         'shaped_unified_rating',
         'shaped_review_author',
         'shaped_review_date',
