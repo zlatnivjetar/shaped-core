@@ -165,6 +165,10 @@
         fetchAndAppendCards: function() {
             this.setLoading(true);
 
+            // Remember current card count for scroll target
+            const existingCards = this.grid.querySelectorAll('.shaped-review-card');
+            const scrollTargetIndex = existingCards.length;
+
             this.fetchReviews(this.currentProvider, this.currentPage)
                 .then(response => {
                     if (response.success && response.data && response.data.html) {
@@ -176,6 +180,9 @@
 
                         // Update Load More button visibility
                         this.updateLoadMoreButton(response.data.has_more);
+
+                        // Smooth scroll to first new card
+                        this.scrollToNewCards(scrollTargetIndex);
                     } else {
                         // No more reviews or error - hide button
                         this.updateLoadMoreButton(false);
@@ -191,6 +198,29 @@
                 .finally(() => {
                     this.setLoading(false);
                 });
+        },
+
+        /**
+         * Smooth scroll to newly loaded cards
+         */
+        scrollToNewCards: function(startIndex) {
+            // Small delay to allow DOM to update
+            setTimeout(() => {
+                const cards = this.grid.querySelectorAll('.shaped-review-card');
+                if (cards[startIndex]) {
+                    const card = cards[startIndex];
+                    const cardRect = card.getBoundingClientRect();
+                    const offset = 100; // Offset from top of viewport
+
+                    // Only scroll if the new card is below the fold
+                    if (cardRect.top > window.innerHeight * 0.5) {
+                        window.scrollTo({
+                            top: window.pageYOffset + cardRect.top - offset,
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            }, 50);
         },
 
         /**
@@ -219,16 +249,10 @@
         updateLoadMoreButton: function(hasMore) {
             if (!this.pagination) return;
 
-            if (hasMore) {
-                // Show or create the button
-                if (!this.loadMoreBtn) {
-                    this.pagination.innerHTML = `
-                        <button type="button" class="shaped-load-more-btn" data-page="${this.currentPage}">
-                            <span class="shaped-load-more-text">Load More</span>
-                            <span class="shaped-load-more-spinner" style="display:none;"></span>
-                        </button>
-                    `;
-                    this.loadMoreBtn = this.pagination.querySelector('.shaped-load-more-btn');
+            // Ensure we have reference to button (might be hidden initially)
+            if (!this.loadMoreBtn) {
+                this.loadMoreBtn = this.pagination.querySelector('.shaped-load-more-btn');
+                if (this.loadMoreBtn) {
                     this.loadMoreBtn.addEventListener('click', (e) => {
                         e.preventDefault();
                         if (!this.isLoading) {
@@ -236,10 +260,14 @@
                         }
                     });
                 }
+            }
+
+            if (hasMore) {
                 this.pagination.style.display = 'flex';
-                this.loadMoreBtn.dataset.page = this.currentPage;
+                if (this.loadMoreBtn) {
+                    this.loadMoreBtn.dataset.page = this.currentPage;
+                }
             } else {
-                // Hide pagination
                 this.pagination.style.display = 'none';
             }
         },

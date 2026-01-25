@@ -94,8 +94,7 @@ class Frontend {
                 ?>
             </div>
 
-            <?php if ($has_more): ?>
-            <div class="shaped-reviews-pagination">
+            <div class="shaped-reviews-pagination"<?php echo $has_more ? '' : ' style="display:none;"'; ?>>
                 <button type="button"
                         class="shaped-load-more-btn"
                         data-page="<?php echo esc_attr($page); ?>">
@@ -103,7 +102,6 @@ class Frontend {
                     <span class="shaped-load-more-spinner" style="display:none;"></span>
                 </button>
             </div>
-            <?php endif; ?>
 
             <?php wp_nonce_field('shaped_reviews_nonce', 'shaped_reviews_nonce', false); ?>
         </div>
