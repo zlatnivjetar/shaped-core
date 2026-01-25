@@ -528,47 +528,13 @@ span.page-numbers.current {
     margin: 0 auto;
 }
 
-/* Filter Buttons */
+/* Filter Buttons Container */
 .shaped-reviews-filters {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 0.5rem;
     margin-bottom: 2rem;
-}
-
-/* Standalone filter buttons - navigation link style */
-.shaped-filter-btn {
-    padding: 0.5rem 1rem;
-    border: none;
-    border-bottom: 2px solid transparent;
-    background: transparent;
-    color: var(--color-text-primary, #141310);
-    font-family: var(--font-body, 'DM Sans', sans-serif);
-    font-weight: 600;
-    font-size: 0.875rem;
-    border-radius: 0;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    transition: all 200ms ease;
-}
-
-.shaped-filter-btn:hover {
-    border-bottom-color: var(--color-brand-primary, #2563EB);
-    color: var(--color-brand-primary, #2563EB);
-}
-
-.shaped-filter-btn.active,
-.shaped-filter-btn[aria-pressed="true"] {
-    background: transparent;
-    border-bottom-color: var(--color-brand-primary, #d1af5d);
-    color: var(--color-brand-primary, #d1af5d);
-}
-
-.shaped-filter-btn.active:hover,
-.shaped-filter-btn[aria-pressed="true"]:hover {
-    color: var(--color-brand-primary, #d1af5d);
 }
 
 /* Reviews Grid */
@@ -739,11 +705,6 @@ span.page-numbers.current {
         padding: 0.5rem 0;
     }
 
-    .shaped-filter-btn {
-        font-size: 0.8125rem;
-        padding: 0.375rem 0.75rem;
-    }
-
     .shaped-review-card {
         min-height: 12.375rem;
         padding: 16px;
@@ -762,11 +723,6 @@ span.page-numbers.current {
 @media (max-width: 479px) {
     .shaped-reviews-filters {
         justify-content: center;
-    }
-
-    .shaped-filter-btn {
-        font-size: 0.8125rem;
-        padding: 0.375rem 0.625rem;
     }
 
     .shaped-reviews-grid {

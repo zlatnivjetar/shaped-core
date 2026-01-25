@@ -96,32 +96,40 @@
  * LINK BUTTON
  * Looks like a navigation link - no background, underline on hover
  * Perfect for filters, tabs, and inline actions
+ *
+ * Uses !important to override Elementor global button styles
+ * (.elementor-kit-* button) which have high specificity
  * ================================================================= */
 .shaped-btn-link {
-  background: transparent;
-  color: var(--color-text-primary, #111827);
-  padding: 0.5rem 1rem;
-  border: none;
-  border-bottom: 2px solid transparent;
-  border-radius: 0;
+  background: transparent !important;
+  background-color: transparent !important;
+  color: var(--color-text-primary, #111827) !important;
+  padding: 0.5rem 1rem !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
   text-transform: uppercase;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
 }
 
 .shaped-btn-link:hover {
-  color: var(--color-brand-primary, #2563EB);
-  border-bottom-color: var(--color-brand-primary, #2563EB);
+  color: var(--color-brand-primary, #2563EB) !important;
+  border-bottom-color: var(--color-brand-primary, #2563EB) !important;
+  background: transparent !important;
 }
 
 .shaped-btn-link:focus {
   outline: none;
-  border-bottom-color: var(--color-brand-primary, #2563EB);
+  border-bottom-color: var(--color-brand-primary, #2563EB) !important;
 }
 
 .shaped-btn-link.active,
 .shaped-btn-link[aria-pressed="true"],
 .shaped-btn-link[aria-current="true"] {
-  color: var(--color-brand-primary, #2563EB);
-  border-bottom-color: var(--color-brand-primary, #2563EB);
+  color: var(--color-brand-primary, #2563EB) !important;
+  border-bottom-color: var(--color-brand-primary, #2563EB) !important;
+  background: transparent !important;
 }
 
 /* =================================================================
