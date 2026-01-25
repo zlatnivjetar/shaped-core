@@ -272,7 +272,6 @@ class Frontend {
         }
 
         $configs = get_provider_configs();
-        $links = get_provider_links();
 
         $provider_key = strtolower(str_replace(['-', '_', ' '], '', $provider));
         $provider_map = [
@@ -287,11 +286,8 @@ class Frontend {
             'text' => '#fff'
         ];
 
-        $url = $links[$provider_key] ?? '#';
-
         return sprintf(
-            '<a href="%s" target="_blank" rel="noopener" class="shaped-provider-badge" data-provider="%s" style="background-color: %s; color: %s;">%s</a>',
-            esc_url($url),
+            '<span class="shaped-provider-badge" data-provider="%s" style="background-color: %s; color: %s;">%s</span>',
             esc_attr($provider_key),
             esc_attr($config['bg']),
             esc_attr($config['text']),
