@@ -1,14 +1,14 @@
-.sub-menu > li {
+#navmenu .sub-menu > li {
     padding: 0 !important;
     border-color: #f2f2f2 !important;
 }
-.sub-menu > li:first-child {
+#navmenu .sub-menu > li:first-child {
     border-top: 2px solid var(--color-border-default) !important;
 }
 
 @media (max-width:1024px) {
 
-.elementor-sub-item {
+#navmenu .elementor-sub-item {
     font-size: 16px !important;
     padding: 24px !important;
     background: var(--color-surface-alt);
@@ -18,7 +18,7 @@
 
 @media (max-width:767px) {
 
-.elementor-sub-item {
+#navmenu .elementor-sub-item {
     padding: 16px !important;
     font-size: 14px !important;
 }
