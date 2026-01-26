@@ -63,6 +63,17 @@ class Shaped_Assets {
             );
         }
 
+        // ─── Mobile Menu Styles (must load after design tokens) ───
+        // Provides mobile menu styling for Elementor nav-menu widget
+        if (file_exists(SHAPED_DIR . 'assets/css/mobile-menu.css')) {
+            wp_enqueue_style(
+                'shaped-mobile-menu',
+                SHAPED_URL . 'assets/css/mobile-menu.css',
+                ['shaped-design-tokens'],
+                SHAPED_VERSION
+            );
+        }
+
         // ─── Always Load (lightweight utilities) ───
 
         // Phosphor Icons for amenity display (self-hosted for performance)
