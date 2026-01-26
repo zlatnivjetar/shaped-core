@@ -1,14 +1,20 @@
-#navmenu .sub-menu > li {
+.sub-menu > li {
     padding: 0 !important;
     border-color: #f2f2f2 !important;
 }
-#navmenu .sub-menu > li:first-child {
+.sub-menu > li:first-child {
     border-top: 2px solid var(--color-border-default) !important;
 }
 
 @media (max-width:1024px) {
+    
+#navmenu .elementor-nav-menu--dropdown:not(:nth-child(2)) {
+    box-shadow: 0 550px 0 500px #00000080;
+}
 
-#navmenu .elementor-sub-item {
+
+
+.elementor-sub-item {
     font-size: 16px !important;
     padding: 24px !important;
     background: var(--color-surface-alt);
@@ -18,7 +24,7 @@
 
 @media (max-width:767px) {
 
-#navmenu .elementor-sub-item {
+.elementor-sub-item {
     padding: 16px !important;
     font-size: 14px !important;
 }
