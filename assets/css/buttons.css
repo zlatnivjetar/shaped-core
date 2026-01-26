@@ -88,8 +88,8 @@
 }
 
 .shaped-btn-secondary:hover {
-  border-color: var(--color-brand-primary, #2563EB);
-  color: var(--color-brand-primary, #2563EB);
+  border-color: var(--color-brand-primary-hover, #2563EB);
+  color: var(--color-brand-primary-hover, #2563EB);
 }
 
 .shaped-btn-secondary:active {
@@ -118,8 +118,8 @@
 }
 
 .shaped-btn-link:hover {
-  color: var(--color-brand-primary, #2563EB) !important;
-  border-bottom-color: var(--color-brand-primary, #2563EB) !important;
+  color: var(--color-brand-primary-hover, #2563EB) !important;
+  border-bottom-color: var(--color-brand-primary-hover, #2563EB) !important;
   background: transparent !important;
 }
 
@@ -131,8 +131,8 @@
 .shaped-btn-link.active,
 .shaped-btn-link[aria-pressed="true"],
 .shaped-btn-link[aria-current="true"] {
-  color: var(--color-brand-primary, #2563EB) !important;
-  border-bottom-color: var(--color-brand-primary, #2563EB) !important;
+  color: var(--color-brand-primary-hover, #2563EB) !important;
+  border-bottom-color: var(--color-brand-primary-hover, #2563EB) !important;
   background: transparent !important;
 }
 
