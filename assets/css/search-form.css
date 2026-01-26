@@ -54,6 +54,7 @@
     width: fit-content;
     line-height: 1.5em;
     font-family: var(--font-body, 'DM Sans', -apple-system, system-ui, BlinkMacSystemFont, sans-serif);
+    margin-bottom: 8px;
 }
 
 /* Completely remove asterisk and disable cursor events */
