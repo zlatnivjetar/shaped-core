@@ -346,13 +346,14 @@ span.mphb-price-discount {
 }
 
 .mphb-price-breakdown-expand {
-	color: var(--color-brand-primary, #2563EB);
+	color: var(--color-text-primary, #2563EB);
 	text-decoration: none;
 	font-weight: 600;
 }
 
 .mphb-price-breakdown-expand:hover {
 	text-decoration: underline;
+  color: var(--color-brand-primary-hover);
 }
 
 /* Total Row */
