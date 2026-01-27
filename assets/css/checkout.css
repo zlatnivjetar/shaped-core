@@ -469,7 +469,7 @@ abbr[title="Required"] {
 }
 
 .mphb-total-price output {
-	color: var(--color-text-primary, #141310);
+	color: var(--color-text-muted, #141310);
 	font-size: 1.5rem;
 	font-weight: 600;
 }
@@ -1005,6 +1005,8 @@ input:focus,
 	.mphb-total-price-field .mphb-price {
 		font-size: 1.75rem;
     color: var(--color-text-primary);
+    margin-left: 0 !important;
+    margin-top: 4px;
 	}
 
 	.mphb-total-price {
@@ -1075,7 +1077,7 @@ input:focus,
 	}
 
 	.mphb_sc_checkout-submit-wrapper {
-		padding: 1.5rem;
+		padding: 1rem 1.5rem;
 	}
 
 	.mphb-customer-details input[type="text"],
