@@ -1006,7 +1006,6 @@ input:focus,
 		font-size: 1.75rem;
     color: var(--color-text-primary);
     margin-left: 0 !important;
-    margin-top: 4px;
 	}
 
 	.mphb-total-price {
