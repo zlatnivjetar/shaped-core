@@ -73,7 +73,6 @@
 .mphb-price-breakdown-title {
 	color: var(--color-text-primary, #141310);
 	font-size: 1.5rem;
-	font-weight: 700;
 	margin: 0 0 1.5rem 0;
 	padding-bottom: 1rem;
 	border-bottom: 2px solid var(--color-brand-primary, #2563EB);
@@ -83,7 +82,6 @@
 .mphb-room-rate-chooser-title {
     color: var(--color-text-primary, #141310);
     font-size: 1.5rem;
-    font-weight: 700;
     line-height: 1.25em;
     border-bottom: 2px solid var(--color-brand-primary, #2563EB);
     letter-spacing: -0.025em;

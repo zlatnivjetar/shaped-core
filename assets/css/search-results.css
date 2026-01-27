@@ -115,16 +115,13 @@
 
 .mphb-room-type-details-title {
     padding: 0 24px;
-    font-size: 1.125rem !important;
     margin-bottom: 1rem;
     margin-top: 1.5rem;
 }
 
 /* Room Title */
 .mphb-room-type-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 1rem 0 0.5rem 0 !important;
+    margin: 1rem 0 !important;
 }
 
 .mphb-room-type-title a {
@@ -216,8 +213,8 @@
 }
 
 .mphb-price-current {
-    color: var(--color-brand-primary, #2563EB) !important;
-    font-weight: 700 !important;
+    color: var(--color-text-primary, #2563EB) !important;
+    font-weight: 600;
     font-size: 24px;
 }
 
@@ -270,7 +267,7 @@
 
 .shaped-rates-indicator .rates-count {
     font-weight: 600;
-    color: var(--color-brand-primary, #2563EB);
+    color: var(--color-text-primary, #2563EB);
 }
 
 .shaped-rates-indicator .rates-text {
@@ -399,7 +396,7 @@
 }
 
 .mphb-amenity-icon {
-    color: var(--color-brand-primary, #2563EB);
+    color: var(--color-brand-primary-hover);
     font-size: 1rem;
     width: 20px;
     text-align: center;
