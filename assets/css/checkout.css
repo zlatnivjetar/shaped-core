@@ -341,7 +341,7 @@ span.mphb-price-discount {
 }
 
 .mphb-price {
-	color: var(--color-brand-primary, #2563EB);
+	color: var(--color-text-primary, #2563EB);
 	font-weight: 600;
 }
 
@@ -366,7 +366,7 @@ span.mphb-price-discount {
 
 .mphb-price-breakdown tfoot .mphb-price {
 	color: var(--color-text-inverse, #ffffff);
-	font-size: 1.25rem;
+	font-size: 1.5rem;
 }
 
 
@@ -479,9 +479,9 @@ abbr[title="Required"] {
 }
 
 .mphb-total-price-field .mphb-price {
-	color: var(--color-brand-primary, #2563EB);
+	color: var(--color-brand-primary, #2563EB) !important;
 	font-size: 2rem;
-	font-weight: 600;
+	font-weight: 600 !important;
 	display: block;
 	margin-top: 0;
 }
@@ -769,7 +769,7 @@ input:focus,
 	border-top: 2px solid var(--color-border-default, #e0e0e0);
 	padding-top: 12px;
 	font-weight: 600;
-	font-size: 1.125rem;
+	font-size: 1.5rem;
 }
 
 /* Hide unnecessary rows */
