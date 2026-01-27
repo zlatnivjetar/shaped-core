@@ -58,11 +58,11 @@ $pricing = shaped_get_room_pricing_data($room_id, $room_slug);
     </p>
     <?php endif; ?>
 
-    <h2 class="mphb-room-type-title entry-title">
+    <h3 class="mphb-room-type-title entry-title">
         <a class="mphb-room-type-title" href="<?php echo esc_url($room_permalink); ?>">
             <?php echo esc_html($room_title); ?>
         </a>
-    </h2>
+    </h3>
 
     <?php if ($room_excerpt): ?>
     <p><?php echo esc_html($room_excerpt); ?></p>
