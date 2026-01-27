@@ -141,7 +141,7 @@ p.mphb-room-rate-variant:last-child {
 .mphb-check-out-date span:first-child {
 	display: block;
 	color: var(--color-text-muted, #666666);
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 1rem;
 	margin-bottom: 0.5rem;
 }
@@ -159,7 +159,11 @@ p.mphb-room-rate-variant:last-child {
 .mphb-check-out-date time:last-child {
 	color: var(--color-text-primary);
 	font-size: 0.875rem;
-	font-weight: 700;
+	font-weight: 600;
+}
+
+.mphb-room-rate-variant label strong {
+  font-weight: 600;
 }
 
 .mphb-check-dates span {
@@ -465,8 +469,8 @@ abbr[title="Required"] {
 
 .mphb-total-price output {
 	color: var(--color-text-primary, #141310);
-	font-size: 1.25rem;
-	font-weight: 700;
+	font-size: 1.5rem;
+	font-weight: 600;
 }
 
 .mphb-total-price-field .mphb-price {
@@ -474,7 +478,7 @@ abbr[title="Required"] {
 	font-size: 2rem;
 	font-weight: 700;
 	display: block;
-	margin-top: 0.5rem;
+	margin-top: 0;
 }
 
 .mphb-checkout-terms-wrapper {
@@ -619,12 +623,6 @@ ul.mphb_sc_checkout-services-list.mphb_checkout-services-list {
 	padding: 1.5rem 0 1rem 0;
 	text-align: center;
 	margin-bottom: 0;
-}
-
-.mphb_sc_checkout-submit-wrapper .button,
-input[type="submit"].button {
-	font-size: 1rem;
-	letter-spacing: -.25px;
 }
 
 /* ==========================================================================

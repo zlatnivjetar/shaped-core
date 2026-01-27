@@ -10,7 +10,7 @@
 .elementor-element .elementor-button {
     text-transform: uppercase;
     font-weight: 700;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.2px;
     background-color: transparent;
     font-size: 1rem;
     color: var(--color-text-primary, #141310);
