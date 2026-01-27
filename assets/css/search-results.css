@@ -506,10 +506,15 @@
     }
     
     /* Typography */
-    .mphb-room-type-title,
-    .mphb-price {
+    .mphb-room-type-title {
         font-size: 1.375rem;
         margin-top: 16px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .mphb-price {
+        font-size: 1.375rem;
+        margin-top: 8px !important;
         margin-bottom: 8px !important;
     }
     
