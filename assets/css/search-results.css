@@ -131,7 +131,7 @@
 }
 
 .mphb-room-type-title a:hover {
-    color: var(--color-brand-primary, #2563EB);
+    color: var(--color-brand-primary-hover, #2563EB);
 }
 
 /* Room Description */
@@ -167,12 +167,6 @@
     margin-right: 4px;
 }
 
-.mphb-price {
-    color: var(--color-brand-primary, #2563EB);
-    font-size: 1.5rem;
-    font-weight: 700;
-    display: block;
-}
 
 .mphb-price-period {
     color: var(--color-text-light, #999999);

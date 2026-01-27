@@ -148,7 +148,7 @@ p.mphb-room-rate-variant:last-child {
 .mphb-check-out-date strong {
 	display: block;
 	color: var(--color-text-primary, #141310);
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 1.125rem;
 	margin-bottom: 0.5rem;
 }
@@ -194,7 +194,7 @@ p.mphb-room-rate-variant:last-child {
 .mphb-room-number {
 	color: var(--color-text-primary, #141310);
 	font-size: 1.125rem;
-	font-weight: 700;
+	font-weight: 600;
 	margin: 0 0 1rem 0;
 }
 
@@ -277,6 +277,13 @@ select[name*="mphb_room_details"]:focus {
 	border-color: var(--color-brand-primary, #2563EB);
 }
 
+span.mphb-price-discount {
+  font-size: 1.125rem;
+  font-weight: 600 !important;
+  margin-left: 8px;
+  color: var(--color-text-primary) !important;
+}
+
 
 /* ==========================================================================
    PRICE BREAKDOWN
@@ -325,7 +332,7 @@ select[name*="mphb_room_details"]:focus {
 .mphb-price-breakdown td {
 	color: var(--color-text-primary, #141310);
 	font-size: 1rem;
-	font-weight: 700;
+	font-weight: 600;
 }
 
 .mphb-table-price-column {
@@ -335,7 +342,7 @@ select[name*="mphb_room_details"]:focus {
 
 .mphb-price {
 	color: var(--color-brand-primary, #2563EB);
-	font-weight: 700;
+	font-weight: 600;
 }
 
 .mphb-price-breakdown-expand {
@@ -352,7 +359,7 @@ select[name*="mphb_room_details"]:focus {
 .mphb-price-breakdown tfoot th {
 	background: var(--color-brand-primary, #2563EB);
 	color: var(--color-text-inverse, #ffffff);
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 1.125rem;
 	border: none;
 }
@@ -425,7 +432,7 @@ select[name*="mphb_room_details"]:focus {
 abbr[title="Required"] {
 	color: var(--color-brand-primary, #2563EB);
 	text-decoration: none;
-	font-weight: 700;
+	font-weight: 600;
 	margin-left: 2px;
 }
 
@@ -444,7 +451,7 @@ abbr[title="Required"] {
 	color: var(--color-text-muted, #666666);
 	font-size: 1rem;
 	margin-bottom: 0.5rem;
-	font-weight: 700;
+	font-weight: 600;
 	line-height: 1.5em
 }
 
@@ -474,7 +481,7 @@ abbr[title="Required"] {
 .mphb-total-price-field .mphb-price {
 	color: var(--color-brand-primary, #2563EB);
 	font-size: 2rem;
-	font-weight: 700;
+	font-weight: 600;
 	display: block;
 	margin-top: 0;
 }
@@ -749,7 +756,7 @@ input:focus,
 
 /* Services row (empty header) - match dates row styling */
 .mphb-price-breakdown .mphb-price-breakdown-services th {
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 1rem;
 	padding: 8px 16px;
 	border-top: 1px solid var(--color-border-default, #e4e4e4);
@@ -761,7 +768,7 @@ input:focus,
 .mphb-price-breakdown .mphb-price-breakdown-total th {
 	border-top: 2px solid var(--color-border-default, #e0e0e0);
 	padding-top: 12px;
-	font-weight: 700;
+	font-weight: 600;
 	font-size: 1.125rem;
 }
 
@@ -887,6 +894,10 @@ input:focus,
 		font-size: 1rem;
 	}
 
+  span.mphb-price-discount {
+    font-size: 1.0625rem;
+  }
+
 	.discount-badge-checkout,
 	.mphb-urgency-badge {
 		margin-left: 0px;
@@ -931,6 +942,7 @@ input:focus,
 
 	.mphb-terms-and-conditions-accept label {
 		font-size: .8125rem;
+    line-height: 1.5em;
 	}
 
 	#shaped-payment-note {
@@ -991,12 +1003,17 @@ input:focus,
 	.mphb-price-breakdown tfoot .mphb-price,
 	.mphb-price-breakdown tfoot th,
 	.mphb-total-price output {
-		font-size: 1.1875rem;
+		font-size: 1.375rem;
 	}
 
 	.mphb-total-price-field .mphb-price {
-		font-size: 2rem;
+		font-size: 1.75rem;
+    color: var(--color-text-primary);
 	}
+
+  .mphb-price-current {
+    color: var(--color-text-primary) !important;
+  }
 
 	.mphb-total-price {
 		margin-bottom: 0;
@@ -1083,7 +1100,7 @@ input:focus,
 
 	.mphb-price-breakdown-date {
 		font-size: 0.875rem;
-		font-weight: 700;
+		font-weight: 600;
 	}
 
 	.payment-methods {
