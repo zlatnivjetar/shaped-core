@@ -81,15 +81,16 @@
 }
 
 .mphb-room-rate-chooser-title {
-    color: var(--color-text-primary, #141310) !important;
-    font-size: 1.5rem !important;
-    font-weight: 700 !important;
-    line-height: 1.25em !important;
-        border-bottom: 2px solid var(--color-brand-primary, #2563EB) !important;
-    letter-spacing: -0.025em !important;
-        margin: 0 0 1.5rem 0!important;
-    padding-bottom: 1rem !important;padding-top: 2rem !important;
-    text-transform: unset !important;
+    color: var(--color-text-primary, #141310);
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.25em;
+    border-bottom: 2px solid var(--color-brand-primary, #2563EB);
+    letter-spacing: -0.025em;
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 1rem;
+    padding-top: 2rem;
+    text-transform: unset;
 
 }
 

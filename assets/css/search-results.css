@@ -121,7 +121,7 @@
 
 /* Room Title */
 .mphb-room-type-title {
-    font-size: 1.5rem !important;
+    font-size: 1.375rem;
     font-weight: 700;
     margin: 1.5rem 0 1rem 0 !important;
     letter-spacing: -0.025em;
@@ -517,7 +517,7 @@
     /* Typography */
     .mphb-room-type-title,
     .mphb-price {
-        font-size: 1.5rem !important;
+        font-size: 1.375rem;
         margin-top: 0;
     }
     
