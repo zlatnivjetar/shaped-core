@@ -9,9 +9,8 @@
 }
 
 .mphb-price-current {
-	color: var(--color-brand-primary, #2563EB);
-	margin-left: 8px;
-	font-weight: bold;
+	color: var(--color-text-primary);
+	font-weight: 600;
 }
 
 .discount-badge-checkout {
@@ -358,7 +357,7 @@ span.mphb-price-discount {
 
 /* Total Row */
 .mphb-price-breakdown tfoot th {
-	background: var(--color-brand-primary, #2563EB);
+	background: transparent;
 	color: var(--color-text-inverse, #ffffff);
 	font-weight: 600;
 	font-size: 1.125rem;
@@ -1011,10 +1010,6 @@ input:focus,
 		font-size: 1.75rem;
     color: var(--color-text-primary);
 	}
-
-  .mphb-price-current {
-    color: var(--color-text-primary) !important;
-  }
 
 	.mphb-total-price {
 		margin-bottom: 0;
