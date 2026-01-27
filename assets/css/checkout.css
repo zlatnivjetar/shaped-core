@@ -8,10 +8,6 @@
 	font-weight: normal;
 }
 
-.mphb-price-current {
-	color: var(--color-text-primary);
-	font-weight: 600;
-}
 
 .discount-badge-checkout {
 	background: var(--color-semantic-success, #4C9155);
@@ -329,7 +325,7 @@ span.mphb-price-discount {
 }
 
 .mphb-price-breakdown td {
-	color: var(--color-text-primary, #141310);
+	color: var(--color-text-muted, #141310);
 	font-size: 1rem;
 	font-weight: 600;
 }
@@ -340,7 +336,7 @@ span.mphb-price-discount {
 }
 
 .mphb-price {
-	color: var(--color-text-primary, #2563EB);
+	color: var(--color-text-muted, #2563EB);
 	font-weight: 600;
 }
 
@@ -479,7 +475,7 @@ abbr[title="Required"] {
 }
 
 .mphb-total-price-field .mphb-price {
-	color: var(--color-brand-primary, #2563EB) !important;
+	color: var(--color-text-primary, #2563EB) !important;
 	font-size: 2rem;
 	font-weight: 600 !important;
 	display: block;
