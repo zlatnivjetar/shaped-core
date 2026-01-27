@@ -298,6 +298,10 @@ span.mphb-price-discount {
 	background: var(--color-surface-white, #ffffff);
 }
 
+.mphb-price-breakdown-group td  {
+  background-color: var(--color-surface-white) !important;
+}
+
 .mphb-price-breakdown {
 	width: 100%;
 	border-collapse: collapse;
