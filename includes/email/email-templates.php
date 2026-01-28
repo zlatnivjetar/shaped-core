@@ -615,14 +615,13 @@ function shaped_email_block_total_divider() {
  */
 function shaped_email_block_total_row($label, $value) {
     $text_primary = shaped_email_color('textPrimary', '#26272C');
-    $primary = shaped_email_color('primary', '#2563EB');
 
     ob_start();
     ?>
                                         <tr>
-                                            <td style="padding: 0; color: <?php echo $text_primary; ?>; font-size: 16px; font-weight: 700; line-height: 1.6;"><?php echo esc_html($label); ?></td>
+                                            <td style="padding: 0; color: <?php echo $text_primary; ?>; font-size: 16px; font-weight: 600; line-height: 1.6;"><?php echo esc_html($label); ?></td>
                                             <td style="padding: 0; text-align: right;">
-                                                <span class="total-price" style="color: <?php echo $primary; ?>; font-size: 24px; font-weight: 700;"><?php echo esc_html($value); ?></span>
+                                                <span class="total-price" style="color: <?php echo $text_primary; ?>; font-size: 24px; font-weight: 600;"><?php echo esc_html($value); ?></span>
                                             </td>
                                         </tr>
     <?php
