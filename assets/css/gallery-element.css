@@ -1,10 +1,10 @@
 
 .elementor-gallery-title {
-    padding: 4px 12px;
+    padding: 12px;
 
 }
 
-    .elementor-gallery__titles-container.e--pointer-underline.e--animation-slide{
+    .elementor-gallery__titles-container.e--pointer-underline.e--animation-grow{
     background: var(--color-surface-white);
     padding:24px 32px;
     border-radius: var(--radius-md);
@@ -15,7 +15,7 @@
 
 
 @media (max-width:479px) {
-    .elementor-gallery__titles-container.e--pointer-underline.e--animation-slide {
+    .elementor-gallery__titles-container.e--pointer-underline.e--animation-grow {
         margin-bottom:16px !important;
         gap:8px 16px;
         padding:1rem 0;
@@ -30,7 +30,6 @@
 
     .elementor-gallery-title {
     margin-right: 0px !important;
-    padding:8px 12px;
 }
 
     .elementor-gallery-title:nth-of-type(2), .elementor-gallery-title:nth-of-type(4)
