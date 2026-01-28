@@ -40,12 +40,12 @@ if (!defined('SHAPED_ENABLE_REVIEW_EMAIL')) {
     define('SHAPED_ENABLE_REVIEW_EMAIL', $review_email_enabled);
 }
 
-// Stripe credentials - can be set in wp-config.php or via Setup Wizard
-// Priority: 1) Constants  2) Environment variables  3) Database (Setup Wizard)
+// Stripe credentials - can be set in wp-config.php or stored in database
+// Priority: 1) Constants  2) Environment variables  3) Database (encrypted)
 if (!defined('SHAPED_STRIPE_SECRET')) {
     $stripe_secret = getenv('STRIPE_SECRET_KEY') ?: '';
     if (empty($stripe_secret)) {
-        // Defer to database lookup via Shaped_Setup_Wizard::get_stripe_secret()
+        // Defer to database lookup via Shaped_Stripe_Config::get_stripe_secret()
         // We define empty here; actual value retrieved at runtime
         $stripe_secret = '';
     }
@@ -54,7 +54,7 @@ if (!defined('SHAPED_STRIPE_SECRET')) {
 if (!defined('SHAPED_STRIPE_WEBHOOK')) {
     $stripe_webhook = getenv('STRIPE_WEBHOOK_SECRET') ?: '';
     if (empty($stripe_webhook)) {
-        // Defer to database lookup via Shaped_Setup_Wizard::get_stripe_webhook()
+        // Defer to database lookup via Shaped_Stripe_Config::get_stripe_webhook()
         $stripe_webhook = '';
     }
     define('SHAPED_STRIPE_WEBHOOK', $stripe_webhook);
@@ -171,9 +171,8 @@ add_action('plugins_loaded', function() {
     Shaped_Noise_Control::init();
     Shaped_Reviews_Dashboard::init();
 
-    // ─── Setup Wizard ───
-    require_once SHAPED_DIR . 'includes/class-setup-wizard.php';
-    Shaped_Setup_Wizard::init();
+    // ─── Stripe Configuration ───
+    require_once SHAPED_DIR . 'includes/class-stripe-config.php';
 
     // ─── Pricing Service (unified pricing API) ───
     require_once SHAPED_DIR . 'includes/pricing/init.php';
@@ -287,16 +286,16 @@ add_action('admin_notices', function() {
         return;
     }
 
-    // Use Setup Wizard's credential check (supports both constants and database)
-    if (class_exists('Shaped_Setup_Wizard')) {
-        $has_secret = Shaped_Setup_Wizard::get_stripe_secret() !== '';
-        $has_webhook = Shaped_Setup_Wizard::get_stripe_webhook() !== '';
+    // Check Stripe credentials (supports both constants and database)
+    if (class_exists('Shaped_Stripe_Config')) {
+        $has_secret = Shaped_Stripe_Config::get_stripe_secret() !== '';
+        $has_webhook = Shaped_Stripe_Config::get_stripe_webhook() !== '';
 
         if (!$has_secret || !$has_webhook) {
-            $wizard_url = admin_url('admin.php?page=shaped-setup-wizard');
+            $config_url = admin_url('admin.php?page=shaped-pricing');
             echo '<div class="notice notice-warning"><p>';
             echo '<strong>Shaped Core:</strong> Stripe keys not configured. ';
-            echo '<a href="' . esc_url($wizard_url) . '">Run the Setup Wizard</a> or add constants to <code>wp-config.php</code>';
+            echo '<a href="' . esc_url($config_url) . '">Configure Stripe Keys</a> or add constants to <code>wp-config.php</code>';
             echo '</p></div>';
         }
     }
@@ -358,9 +357,6 @@ function shaped_activate() {
 
     // Trigger Elementor color sync (if Elementor is active)
     do_action('shaped/elementor/trigger_sync');
-
-    // Set transient to redirect to setup wizard
-    set_transient('shaped_activation_redirect', true, 30);
 
     flush_rewrite_rules();
 }

@@ -16,8 +16,8 @@ if (!current_user_can('manage_options')) {
 }
 
 // System status checks
-$stripe_configured = class_exists('Shaped_Setup_Wizard')
-    && Shaped_Setup_Wizard::get_stripe_secret() !== '';
+$stripe_configured = class_exists('Shaped_Stripe_Config')
+    && Shaped_Stripe_Config::get_stripe_secret() !== '';
 
 $roomcloud_enabled = defined('SHAPED_ENABLE_ROOMCLOUD') && SHAPED_ENABLE_ROOMCLOUD;
 
@@ -49,8 +49,8 @@ $admins = get_users(['role' => 'administrator']);
                 </li>
             </ul>
             <p class="card-actions">
-                <a href="<?php echo esc_url(admin_url('admin.php?page=shaped-config-health')); ?>">Config Health</a> |
-                <a href="<?php echo esc_url(admin_url('admin.php?page=shaped-setup-wizard')); ?>">Setup Wizard</a>
+                <a href="<?php echo esc_url(admin_url('admin.php?page=shaped-system-health')); ?>">Config Health</a> |
+                <a href="<?php echo esc_url(admin_url('admin.php?page=shaped-pricing')); ?>">Pricing Settings</a>
             </p>
         </div>
 
@@ -105,12 +105,6 @@ $admins = get_users(['role' => 'administrator']);
                 <span class="dashicons dashicons-admin-generic"></span>
                 <strong>Settings</strong>
                 <span>Modal pages configuration</span>
-            </a>
-
-            <a href="<?php echo esc_url(admin_url('admin.php?page=shaped-setup-wizard')); ?>" class="tool-card">
-                <span class="dashicons dashicons-welcome-learn-more"></span>
-                <strong>Setup Wizard</strong>
-                <span>Stripe & payment setup</span>
             </a>
 
             <?php if ($roomcloud_enabled): ?>

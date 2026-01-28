@@ -99,14 +99,14 @@ function shaped_log(string $message, string $level = 'info'): void {
 /**
  * Get Stripe secret key
  *
- * Priority: 1) Constants  2) Setup Wizard database storage
+ * Priority: 1) Constants  2) Database storage
  *
  * @return string Stripe secret key or empty string
  */
 function shaped_get_stripe_secret(): string {
-    // If Setup Wizard class exists, use its getter (handles constant + DB priority)
-    if (class_exists('Shaped_Setup_Wizard')) {
-        return Shaped_Setup_Wizard::get_stripe_secret();
+    // If Stripe Config class exists, use its getter (handles constant + DB priority)
+    if (class_exists('Shaped_Stripe_Config')) {
+        return Shaped_Stripe_Config::get_stripe_secret();
     }
 
     // Fall back to constant
@@ -116,14 +116,14 @@ function shaped_get_stripe_secret(): string {
 /**
  * Get Stripe webhook secret
  *
- * Priority: 1) Constants  2) Setup Wizard database storage
+ * Priority: 1) Constants  2) Database storage
  *
  * @return string Stripe webhook secret or empty string
  */
 function shaped_get_stripe_webhook(): string {
-    // If Setup Wizard class exists, use its getter (handles constant + DB priority)
-    if (class_exists('Shaped_Setup_Wizard')) {
-        return Shaped_Setup_Wizard::get_stripe_webhook();
+    // If Stripe Config class exists, use its getter (handles constant + DB priority)
+    if (class_exists('Shaped_Stripe_Config')) {
+        return Shaped_Stripe_Config::get_stripe_webhook();
     }
 
     // Fall back to constant

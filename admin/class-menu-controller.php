@@ -109,7 +109,7 @@ class Shaped_Menu_Controller {
             );
 
             // System submenus - use add_submenu_page with redirects (same pattern as Shaped Ops)
-            // Order: Overview, RoomCloud, Setup Wizard, Config Health, Settings, Plugins, Tools, Updates
+            // Order: Overview, RoomCloud, Config Health, Settings, Plugins, Tools, Updates
 
             add_submenu_page(
                 'shaped-system',
@@ -134,20 +134,11 @@ class Shaped_Menu_Controller {
 
             add_submenu_page(
                 'shaped-system',
-                'Setup Wizard',
-                'Setup Wizard',
-                'manage_options',
-                'shaped-system-wizard',
-                [__CLASS__, 'redirect_to_wizard']
-            );
-
-            add_submenu_page(
-                'shaped-system',
                 'Config Health',
                 'Config Health',
                 'manage_options',
                 'shaped-system-health',
-                [__CLASS__, 'redirect_to_health']
+                [__CLASS__, 'render_config_health']
             );
 
             add_submenu_page(
@@ -233,8 +224,6 @@ class Shaped_Menu_Controller {
 
         // Shaped System parent highlighting
         $system_pages = [
-            'shaped-setup-wizard',
-            'shaped-config-health',
             'shaped-roomcloud',
         ];
 
@@ -259,12 +248,6 @@ class Shaped_Menu_Controller {
         }
 
         // Shaped System submenu highlighting - return the registered submenu slug
-        if ($page === 'shaped-setup-wizard') {
-            return 'shaped-system-wizard';
-        }
-        if ($page === 'shaped-config-health') {
-            return 'shaped-system-health';
-        }
         if ($page === 'shaped-roomcloud') {
             return 'shaped-system-roomcloud';
         }
@@ -364,16 +347,6 @@ class Shaped_Menu_Controller {
         exit;
     }
 
-    public static function redirect_to_wizard(): void {
-        wp_safe_redirect(admin_url('admin.php?page=shaped-setup-wizard'));
-        exit;
-    }
-
-    public static function redirect_to_health(): void {
-        wp_safe_redirect(admin_url('admin.php?page=shaped-config-health'));
-        exit;
-    }
-
     // ─── Page renderers ───
 
     public static function render_ops_dashboard(): void {
@@ -390,5 +363,9 @@ class Shaped_Menu_Controller {
 
     public static function render_shortcodes_page(): void {
         require_once SHAPED_DIR . 'admin/pages/shortcodes.php';
+    }
+
+    public static function render_config_health(): void {
+        require_once SHAPED_DIR . 'admin/pages/config-health.php';
     }
 }
