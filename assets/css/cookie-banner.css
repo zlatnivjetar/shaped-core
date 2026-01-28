@@ -73,19 +73,32 @@ button.cmplz-show {
 
 .cmplz-btn.cmplz-accept:hover {
   background-color: var(--color-brand-primary-hover) !important;
+  color: var(--color-surface-white) !important;
 }
 
-.cmplz-buttons .cmplz-btn .cmplz-view-preferences {
+.cmplz-cookiebanner .cmplz-buttons .cmplz-btn.cmplz-view-preferences,
+.cmplz-cookiebanner .cmplz-buttons .cmplz-btn.cmplz-save-preferences {
   background-color: var(--color-surface-white) !important;
   border: 2px solid var(--color-border-default) !important;
 }
 
+
+
 .cmplz-cookiebanner .cmplz-links .cmplz-link {
   color: var(--color-text-primary) !important;
+  transition: var(--transition-base) !important;
 }
 
 .cmplz-cookiebanner .cmplz-links .cmplz-link:hover {
   color: var(--color-brand-primary-hover) !important;
+}
+
+.cmplz-cookiebanner .cmplz-categories .cmplz-category .cmplz-banner-checkbox .cmplz-label:before {
+  background-color: var(--color-text-primary) !important;
+}
+
+.cmplz-cookiebanner .cmplz-categories .cmplz-category .cmplz-banner-checkbox input.cmplz-consent-checkbox:checked + .cmplz-label::before {
+  background-color: var(--color-brand-primary) !important;
 }
 
 /* =========================================================================
