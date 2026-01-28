@@ -75,9 +75,17 @@ button.cmplz-show {
   background-color: var(--color-brand-primary-hover) !important;
 }
 
-.cmplz-buttons.cmplz-btn.cmplz-view-preferences {
+.cmplz-buttons .cmplz-btn .cmplz-view-preferences {
   background-color: var(--color-surface-white) !important;
   border: 2px solid var(--color-border-default) !important;
+}
+
+.cmplz-cookiebanner .cmplz-links .cmplz-link {
+  color: var(--color-text-primary) !important;
+}
+
+.cmplz-cookiebanner .cmplz-links .cmplz-link:hover {
+  color: var(--color-brand-primary-hover) !important;
 }
 
 /* =========================================================================
