@@ -347,14 +347,14 @@ class Shaped_Booking_Manager
                             <div style="padding-top: 8px; border-top: 1px solid #e0e0e0; margin-top: 8px;">
                                 <div style="margin-bottom: 6px;"><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Deposit Paid:</span> <strong style="color: <?php shaped_brand_color_e('success'); ?>;">€<?php echo number_format($context['deposit_amount'], 2); ?></strong></div>
                                 <?php if ($context['balance_due'] > 0): ?>
-                                <div style="margin-bottom: 6px;"><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Balance Due on Arrival:</span> <strong style="color: <?php shaped_brand_color_e('primary'); ?>;">€<?php echo number_format($context['balance_due'], 2); ?></strong></div>
+                                <div style="margin-bottom: 6px;"><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Balance Due on Arrival:</span> <strong style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-weight: 600;">€<?php echo number_format($context['balance_due'], 2); ?></strong></div>
                                 <?php endif; ?>
                                 <div><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Total Booking Amount:</span> <strong>€<?php echo number_format($context['deposit_amount'] + $context['balance_due'], 2); ?></strong></div>
                             </div>
                         <?php else: ?>
                             <!-- FULL PAYMENT -->
                             <?php if (is_numeric($context['amount'])): ?>
-                            <div><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Total Amount:</span> <strong style="color: <?php shaped_brand_color_e('primary'); ?>;">€<?php echo number_format($context['amount'], 2); ?></strong></div>
+                            <div><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Total Amount:</span> <strong style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-weight: 600;">€<?php echo number_format($context['amount'], 2); ?></strong></div>
                             <?php endif; ?>
                         <?php endif; ?>
 
@@ -481,7 +481,7 @@ class Shaped_Booking_Manager
                     <h2 style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">No Charge Applied</h2>
                     <p style="font-size: 1.125rem; color: <?php shaped_brand_color_e('textPrimary'); ?>; margin: 0;">
                         Your card has not been charged. The reservation of
-                        <strong style="color: <?php shaped_brand_color_e('primary'); ?>;">€<?php echo number_format((float)$pending_amount, 2); ?></strong>
+                        <strong style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-weight: 600;">€<?php echo number_format((float)$pending_amount, 2); ?></strong>
                         has been cancelled.
                     </p>
                 </div>
