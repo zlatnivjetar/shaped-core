@@ -25,8 +25,6 @@ class Shaped_Menu_Controller {
         'edit.php?post_type=page',          // Pages
         'upload.php',                       // Media
         'profile.php',                      // User profile
-        'mphb_booking_calendar',            // MotoPress Bookings menu
-        'edit.php?post_type=mphb_room_type', // MotoPress Accommodation menu
     ];
 
     /**
@@ -299,6 +297,7 @@ class Shaped_Menu_Controller {
             'mphb_room',
             'mphb_rate',
             'mphb_season',
+            'mphb_room_service',
             'shaped_review',
         ];
 
@@ -310,9 +309,6 @@ class Shaped_Menu_Controller {
             'shaped-pricing',
             'shaped-reviews-dashboard',
             'shaped-reviews-sync',
-            'mphb_calendar',           // MotoPress Calendar
-            'mphb_booking_rules',      // MotoPress Booking Rules
-            'mphb_settings',           // MotoPress Settings
         ];
 
         // Check page access
