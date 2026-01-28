@@ -62,8 +62,7 @@
   border-radius: var(--radius-md);
 }
 
-.shaped-btn-primary:hover,
-.elementor-button:hover, button:hover, .button:hover {
+.shaped-btn-primary:hover{
   box-shadow:
     0 0 4px rgba(var(--color-brand-primary-rgb), 0.55),
     0 0 8px rgba(var(--color-brand-primary-rgb), 0.35),
