@@ -27,13 +27,13 @@
 
 .shaped-star-full,
 .prs-star-full {
-    color: var(--shaped-accent, #2563EB) !important;
+    color: var(--shaped-accent) !important;
 }
 
 .shaped-star-half,
 .prs-star-half {
     position: relative;
-    color: var(--color-border-default, #e0e0e0) !important;
+    color: var(--color-border-default) !important;
 }
 
 .shaped-star-half::before,
@@ -44,28 +44,28 @@
     top: 0;
     width: 50%;
     overflow: hidden;
-    color: var(--shaped-accent, #2563EB) !important;
+    color: var(--shaped-accent) !important;
 }
 
 .shaped-star-empty,
 .prs-star-empty {
-    color: var(--color-border-default, #e0e0e0) !important;
+    color: var(--color-border-default) !important;
 }
 
 .shaped-rating-numeric,
 .prs-rating-numeric {
     font-size: 0.875rem;
     font-weight: 700;
-    color: var(--shaped-accent, #2563EB);
+    color: var(--shaped-accent);
 }
 
 /* ===== REVIEW CARD ===== */
 .shaped-review-card-root,
 .prs-review-card-root {
-    background: var(--color-surface-white, #ffffff);
-    border-radius: var(--radius-md, 8px);
+    background: var(--color-surface-white);
+    border-radius: var(--radius-md);
     padding: 24px 20px;
-    box-shadow: var(--shadow-card, 0 2px 4px rgba(0,0,0,0.08)) !important;
+    box-shadow: var(--shadow-card) !important;
     transition: transform 200ms ease, box-shadow 200ms ease;
     min-height: 17.375rem;
     display: flex;
@@ -75,7 +75,7 @@
 .shaped-review-card-root:hover,
 .prs-review-card-root:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md, 0 4px 8px rgba(0,0,0,0.12)) !important;
+    box-shadow: var(--shadow-md) !important;
 }
 
 /* ===== REVIEW CONTENT ===== */
@@ -89,7 +89,7 @@
 
 .shaped-review-text,
 .prs-review-text {
-    color: var(--color-text-muted, #666666);
+    color: var(--color-text-muted);
     line-height: 1.5;
     font-size: 0.9375rem;
     flex: 1;
@@ -156,7 +156,7 @@
     background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
-    color: var(--color-text-primary, #141310) !important;
+    color: var(--color-text-primary) !important;
     font-weight: 600 !important;
     font-size: 0.9375rem !important;
     cursor: pointer;
@@ -171,7 +171,7 @@
 .prs-read-more-btn:hover {
     background: none !important;
     background-color: transparent !important;
-    color: var(--color-brand-primary, #2563EB) !important;
+    color: var(--color-brand-primary) !important;
     text-decoration: none !important;
     box-shadow: none !important;
 }
@@ -180,14 +180,14 @@
 .shaped-review-date,
 .prs-review-date {
     font-size: 0.875rem;
-    color: var(--color-text-muted, #999999);
+    color: var(--color-text-muted);
 }
 
 /* ===== TITLE ===== */
 .shaped-review-title {
     font-size: 1.125rem;
     font-weight: 700;
-    color: var(--color-text-primary, #141310);
+    color: var(--color-text-primary);
     margin: 0;
     line-height: 1.2;
 }
@@ -218,10 +218,10 @@
 
 /* Review Card (standalone version) */
 .shaped-review-card {
-    background: var(--color-surface-white, #ffffff);
-    border-radius: var(--radius-md, 8px);
+    background: var(--color-surface-white);
+    border-radius: var(--radius-md);
     padding: 24px;
-    box-shadow: var(--shadow-card, 0 2px 4px rgba(0,0,0,0.08));
+    box-shadow: var(--shadow-card);
     transition: transform 200ms ease, box-shadow 200ms ease;
     min-height: 240px;
     display: flex;
@@ -230,7 +230,7 @@
 
 .shaped-review-card:hover {
     transform: translateY(-2px);
-    box-shadow: var(--shadow-md, 0 4px 8px rgba(0,0,0,0.12));
+    box-shadow: var(--shadow-md);
 }
 
 /* Card Header */
@@ -258,7 +258,7 @@
 .shaped-review-author {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--color-text-primary, #141310);
+    color: var(--color-text-primary);
     margin: 0;
     line-height: 1.3;
     margin-bottom: 4px;
@@ -279,12 +279,12 @@
 }
 
 .shaped-load-more-btn {
-    background: var(--color-brand-primary, #b8965e);
-    color: var(--color-text-inverse, #ffffff);
+    background: var(--color-brand-primary);
+    color: var(--color-text-inverse);
     padding: 1rem 3rem;
     border: none;
-    border-radius: var(--radius-md, 8px);
-    font-family: var(--font-body, 'DM Sans', sans-serif);
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
     font-weight: 600;
     font-size: 0.875rem;
     text-transform: uppercase;
@@ -324,7 +324,7 @@
 /* Empty State */
 .shaped-reviews-empty {
     text-align: center;
-    color: var(--color-text-muted, #666666);
+    color: var(--color-text-muted);
     padding: 2rem;
     font-size: 1rem;
     grid-column: 1 / -1; /* Span all columns */

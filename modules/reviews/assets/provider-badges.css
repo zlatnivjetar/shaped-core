@@ -48,19 +48,25 @@
 
 .shaped-provider-badge[data-provider="tripadvisor"],
 .prs-provider-badge[data-provider="tripadvisor"] {
-    background-color: #00AF87;
+    background-color: #00af87;
     color: #ffffff;
 }
 
 .shaped-provider-badge[data-provider="expedia"],
 .prs-provider-badge[data-provider="expedia"] {
-    background-color: #FFCB00;
-    color: var(--color-text-primary, #141310);
+    background-color: #ffda00;
+    color: var(--color-text-primary);
 }
 
 .shaped-provider-badge[data-provider="google"],
 .prs-provider-badge[data-provider="google"] {
-    background-color: #4285F4;
+    background-color: #4285f4;
+    color: #ffffff;
+}
+
+.shaped-provider-badge[data-provider="direct"],
+.prs-provider-badge[data-provider="direct"] {
+    background-color: #6366f1;
     color: #ffffff;
 }
 

@@ -4,14 +4,14 @@
 /* Discount display styling */
 .mphb-price-original {
 	text-decoration: line-through;
-	color: var(--color-text-light, #999999);
+	color: var(--color-text-light);
 	font-weight: normal;
 }
 
 
 .discount-badge-checkout {
-	background: var(--color-semantic-success, #4C9155);
-	color: var(--color-text-inverse, #ffffff);
+	background: var(--color-semantic-success);
+	color: var(--color-text-inverse);
 	padding: 4px 8px;
 	border-radius: 4px;
 	font-size: 14px;
@@ -21,7 +21,7 @@
 
 /* Price breakdown discount row */
 .mphb-price-breakdown tr.mphb-price-breakdown-discount td:last-child {
-	color: var(--color-semantic-success, #4C9155);
+	color: var(--color-semantic-success);
 }
 
 /* ==========================================================================
@@ -29,18 +29,18 @@
    ========================================================================== */
 
 .mphb_sc_checkout-wrapper {
-	font-family: var(--font-body, 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif);
+	font-family: var(--font-body);
 	max-width: 800px;
 	margin: 0 auto;
-	box-shadow: var(--shadow-xl, 0 8px 32px rgba(20, 19, 16, 0.12)), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-	background-color: var(--color-surface-alt, #fafafa);
-	color: var(--color-text-primary, #141310);
+	box-shadow: var(--shadow-xl), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+	background-color: var(--color-surface-alt);
+	color: var(--color-text-primary);
 	line-height: 1.5;
-	border-radius: var(--radius-lg, 12px);
+	border-radius: var(--radius-lg);
 }
 
 .mphb_sc_checkout-form {
-	background: var(--color-surface-white, #ffffff);
+	background: var(--color-surface-white);
 	border-radius: 0.75rem;
 	border: none;
 	box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.08);
@@ -53,8 +53,8 @@
 
 .mphb-checkout-section {
 	padding: 2rem;
-	border-bottom: 1px solid var(--color-border-default, #e4e4e4);
-	background: var(--color-surface-white, #ffffff);
+	border-bottom: 1px solid var(--color-border-default);
+	background: var(--color-surface-white);
 }
 
 .mphb-checkout-section:last-child {
@@ -66,19 +66,19 @@
 .mphb-customer-details-title,
 .mphb-gateway-chooser-title,
 .mphb-price-breakdown-title {
-	color: var(--color-text-primary, #141310);
+	color: var(--color-text-primary);
 	font-size: 1.5rem;
 	margin: 0 0 1.5rem 0;
 	padding-bottom: 1rem;
-	border-bottom: 2px solid var(--color-brand-primary, #2563EB);
+	border-bottom: 2px solid var(--color-brand-primary);
 	letter-spacing: -0.4px;
 }
 
 .mphb-room-rate-chooser-title {
-    color: var(--color-text-primary, #141310);
+    color: var(--color-text-primary);
     font-size: 1.5rem;
     line-height: 1.25em;
-    border-bottom: 2px solid var(--color-brand-primary, #2563EB);
+    border-bottom: 2px solid var(--color-brand-primary);
     letter-spacing: -0.025em;
     margin: 0 0 1.5rem 0;
     padding-bottom: 1rem;
@@ -106,7 +106,7 @@ p.mphb-room-rate-variant:last-child {
    ========================================================================== */
 
 .mphb-booking-details {
-	background: var(--color-surface-white, #ffffff);
+	background: var(--color-surface-white);
 }
 
 .mphb-check-dates {
@@ -119,21 +119,21 @@ p.mphb-room-rate-variant:last-child {
 .mphb-check-out-date {
 	display: inline-block;
 	width: calc(50% - 0.5rem);
-	background: var(--color-surface-alt, #fafafa);
-	border: 1px solid var(--color-border-default, #e4e4e4);
+	background: var(--color-surface-alt);
+	border: 1px solid var(--color-border-default);
 	border-radius: 0.5rem;
 	padding: 1.5rem;
 	margin-bottom: 1rem;
 	font-size: 0.875rem;
 	text-align: center;
-	box-shadow: var(--shadow-card, rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px);
+	box-shadow: var(--shadow-card);
 }
 
 
 .mphb-check-in-date span:first-child,
 .mphb-check-out-date span:first-child {
 	display: block;
-	color: var(--color-text-muted, #666666);
+	color: var(--color-text-muted);
 	font-weight: 600;
 	font-size: 1rem;
 	margin-bottom: 0.5rem;
@@ -142,7 +142,7 @@ p.mphb-room-rate-variant:last-child {
 .mphb-check-in-date strong,
 .mphb-check-out-date strong {
 	display: block;
-	color: var(--color-text-primary, #141310);
+	color: var(--color-text-primary);
 	font-weight: 600;
 	font-size: 1.125rem;
 	margin-bottom: 0.5rem;
@@ -171,7 +171,7 @@ p.mphb-room-rate-variant:last-child {
 
 .mphb-room-details,
 .mphb-coupon-code-wrapper {
-	background: var(--color-surface-white, #ffffff);
+	background: var(--color-surface-white);
 	border-radius: 0.5rem;
 	padding: 0;
 	margin: 1rem 0;
@@ -182,12 +182,12 @@ p.mphb-room-rate-variant:last-child {
 	margin-top: 0rem !important;
 	border: 0;
 	border-radius: 0;
-	border-bottom: 1px solid var(--color-border-default, #e4e4e4);
+	border-bottom: 1px solid var(--color-border-default);
 	margin: 0 !important;
 }
 
 .mphb-room-number {
-	color: var(--color-text-primary, #141310);
+	color: var(--color-text-primary);
 	font-size: 1.125rem;
 	font-weight: 600;
 	margin: 0 0 1rem 0;
@@ -202,7 +202,7 @@ p.mphb-room-rate-variant:last-child {
 }
 
 .mphb-room-type-title a {
-	color: var(--color-brand-primary, #2563EB);
+	color: var(--color-brand-primary);
 	text-decoration: none;
 	font-weight: 600;
 }
@@ -224,7 +224,7 @@ p.mphb-room-rate-variant:last-child {
 .mphb-guest-name-wrapper label,
 .mphb-services-details-title {
 	display: block;
-	color: var(--color-text-primary, #141310);
+	color: var(--color-text-primary);
 	font-weight: 600;
 	font-size: 1rem;
 	margin-bottom: 8px;
@@ -241,13 +241,13 @@ select[name*="mphb_room_details"] {
 	width: 100%;
 	height: 48px;
 	padding: 10px 0 10px 16px;
-	border: 2px solid var(--color-border-default, #e0e0e0);
+	border: 2px solid var(--color-border-default);
 	border-radius: 0.5rem;
 	font-family: inherit;
 	font-size: 1rem;
-	color: var(--color-text-primary, #141310);
-	background: var(--color-surface-white, #ffffff);
-	transition: border-color var(--transition-base, 200ms ease);
+	color: var(--color-text-primary);
+	background: var(--color-surface-white);
+	transition: border-color var(--transition-base);
 	-webkit-appearance: none;
 	-moz-appearance: none;
 	appearance: none;
@@ -269,7 +269,7 @@ select[name*="mphb_room_details"] {
 .mphb-guest-name-wrapper input[type="text"]:focus,
 select[name*="mphb_room_details"]:focus {
 	outline: none;
-	border-color: var(--color-brand-primary, #2563EB);
+	border-color: var(--color-brand-primary);
 }
 
 span.mphb-price-discount {
@@ -295,7 +295,7 @@ span.mphb-price-discount {
 }
 
 .mphb-room-price-breakdown-wrapper {
-	background: var(--color-surface-white, #ffffff);
+	background: var(--color-surface-white);
 }
 
 .mphb-price-breakdown-group td  {
@@ -305,12 +305,12 @@ span.mphb-price-discount {
 .mphb-price-breakdown {
 	width: 100%;
 	border-collapse: collapse;
-	background: var(--color-surface-white, #ffffff);
-	border: 1px solid var(--color-border-default, #e4e4e4);
+	background: var(--color-surface-white);
+	border: 1px solid var(--color-border-default);
 	border-radius: 0.5rem;
 	overflow: hidden;
 	border-bottom: 2rem;
-	box-shadow: var(--shadow-card, rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px);
+	box-shadow: var(--shadow-card);
 	margin-bottom: 1rem;
 }
 
@@ -318,18 +318,18 @@ span.mphb-price-discount {
 .mphb-price-breakdown td {
 	padding: 1rem 1.5rem;
 	text-align: left;
-	border-bottom: 1px solid var(--color-border-default, #e4e4e4);
+	border-bottom: 1px solid var(--color-border-default);
 }
 
 .mphb-price-breakdown th {
-	background: var(--color-surface-alt, #fafafa);
-	color: var(--color-text-muted, #666666);
+	background: var(--color-surface-alt);
+	color: var(--color-text-muted);
 	font-weight: 600;
 	font-size: 0.875rem;
 }
 
 .mphb-price-breakdown td {
-	color: var(--color-text-muted, #141310);
+	color: var(--color-text-muted);
 	font-size: 1rem;
 	font-weight: 600;
 }
@@ -340,12 +340,12 @@ span.mphb-price-discount {
 }
 
 .mphb-price {
-	color: var(--color-text-muted, #2563EB);
+	color: var(--color-text-muted);
 	font-weight: 600;
 }
 
 .mphb-price-breakdown-expand {
-	color: var(--color-text-primary, #2563EB);
+	color: var(--color-text-primary);
 	text-decoration: none;
 	font-weight: 600;
 }
@@ -358,14 +358,14 @@ span.mphb-price-discount {
 /* Total Row */
 .mphb-price-breakdown tfoot th {
 	background: transparent;
-	color: var(--color-text-inverse, #ffffff);
+	color: var(--color-text-inverse);
 	font-weight: 600;
 	font-size: 1.125rem;
 	border: none;
 }
 
 .mphb-price-breakdown tfoot .mphb-price {
-	color: var(--color-text-inverse, #ffffff);
+	color: var(--color-text-inverse);
 	font-size: 1.5rem;
 }
 
@@ -375,13 +375,13 @@ span.mphb-price-discount {
    ========================================================================== */
 
 .mphb-required-fields-tip {
-	background: var(--color-surface-alt, #fafafa);
-	border: 1px solid var(--color-border-default, #e4e4e4);
+	background: var(--color-surface-alt);
+	border: 1px solid var(--color-border-default);
 	border-radius: 0.5rem;
 	padding: 1rem;
 	margin-bottom: 1.5rem;
 	text-align: center;
-	color: var(--color-text-muted, #666666);
+	color: var(--color-text-muted);
 	font-size: 0.875rem;
 	display: none;
 }
@@ -398,7 +398,7 @@ span.mphb-price-discount {
 
 .mphb-customer-details label {
 	display: block;
-	color: var(--color-text-primary, #141310);
+	color: var(--color-text-primary);
 	font-weight: 600;
 	font-size: 1rem;
 	margin-bottom: 0.5rem;
@@ -410,27 +410,27 @@ span.mphb-price-discount {
 	width: 100%;
 	height: 48px;
 	padding: 10px 0 10px 16px;
-	border: 2px solid var(--color-border-default, #e0e0e0);
+	border: 2px solid var(--color-border-default);
 	border-radius: 0.5rem;
 	font-family: inherit;
 	font-size: 1rem;
-	color: var(--color-text-primary, #141310);
-	background: var(--color-surface-white, #ffffff);
-	transition: border-color var(--transition-base, 200ms ease);
+	color: var(--color-text-primary);
+	background: var(--color-surface-white);
+	transition: border-color var(--transition-base);
 }
 
 .mphb-customer-details input:focus {
 	outline: none;
-	border-color: var(--color-brand-primary, #2563EB);
+	border-color: var(--color-brand-primary);
 }
 
 .mphb-customer-details input::placeholder {
-	color: var(--color-text-light, #999999);
+	color: var(--color-text-light);
 }
 
 /* Required Fields */
 abbr[title="Required"] {
-	color: var(--color-brand-primary, #2563EB);
+	color: var(--color-brand-primary);
 	text-decoration: none;
 	font-weight: 600;
 	margin-left: 2px;
@@ -448,7 +448,7 @@ abbr[title="Required"] {
 
 /* Make the payment description more prominent */
 .mphb-gateway-description {
-	color: var(--color-text-muted, #666666);
+	color: var(--color-text-muted);
 	font-size: 1rem;
 	margin-bottom: 0.5rem;
 	font-weight: 600;
@@ -466,20 +466,20 @@ abbr[title="Required"] {
    ========================================================================== */
 
 .mphb-total-price {
-	background: var(--color-surface-highlight, #fffbf0);
+	background: var(--color-surface-highlight);
 	padding: 2rem 2rem 0 2rem;
 	text-align: center;
 	margin-bottom: 1rem;
 }
 
 .mphb-total-price output {
-	color: var(--color-text-muted, #141310);
+	color: var(--color-text-muted);
 	font-size: 1.5rem;
 	font-weight: 600;
 }
 
 .mphb-total-price-field .mphb-price {
-	color: var(--color-text-primary, #2563EB) !important;
+	color: var(--color-text-primary) !important;
 	font-size: 2rem;
 	font-weight: 600 !important;
 	display: block;
@@ -490,7 +490,7 @@ abbr[title="Required"] {
 	border: 0;
 	text-align: -webkit-center;
 	margin-top: 0 !important;
-	background: var(--color-surface-highlight, #fffbf0);
+	background: var(--color-surface-highlight);
 	padding: 0rem;
 }
 
@@ -504,10 +504,10 @@ abbr[title="Required"] {
    ========================================================================== */
 
 .mphb-errors-wrapper {
-	background: var(--color-semantic-error-bg, #fceeee);
-	border: 1px solid var(--color-semantic-error-border, #fecaca);
+	background: var(--color-semantic-error-bg);
+	border: 1px solid var(--color-semantic-error-border);
 	padding: 1rem;
-	color: var(--color-semantic-error, #b83c2e);
+	color: var(--color-semantic-error);
 	font-size: 0.875rem;
 	text-align: center;
 	margin-top: 1rem;
@@ -515,7 +515,7 @@ abbr[title="Required"] {
 }
 
 .checkout-form-bottom {
-	background: var(--color-surface-highlight, #fffbf0)
+	background: var(--color-surface-highlight)
 }
 
 .payment-methods {
@@ -540,15 +540,15 @@ abbr[title="Required"] {
 
 
 .mphb-terms-and-conditions {
-	background: var(--color-surface-white, #ffffff);
-	border: 1px solid var(--color-border-default, #e4e4e4);
+	background: var(--color-surface-white);
+	border: 1px solid var(--color-border-default);
 	border-radius: 0.5rem;
 	padding: 1rem;
 	margin-bottom: 1.5rem;
 }
 
 .mphb-terms-and-conditions p {
-	color: var(--color-text-muted, #666666);
+	color: var(--color-text-muted);
 	font-size: 0.875rem;
 	margin: 0;
 }
@@ -567,20 +567,20 @@ abbr[title="Required"] {
 	appearance: none;
 	width: 20px;
 	height: 20px;
-	border: 2px solid var(--color-border-default, #e0e0e0);
+	border: 2px solid var(--color-border-default);
 	border-radius: 0.25rem !important;
-	background: var(--color-surface-white, #ffffff);
+	background: var(--color-surface-white);
 	position: relative;
 	cursor: pointer;
-	transition: all var(--transition-base, 200ms ease);
+	transition: all var(--transition-base);
 	flex-shrink: 0;
 	margin-bottom: -4px;
   margin-right: 4px;
 }
 
 .mphb-terms-and-conditions-accept input[type="checkbox"]:checked {
-	background: var(--color-brand-primary, #2563EB);
-	border-color: var(--color-brand-primary, #2563EB);
+	background: var(--color-brand-primary);
+	border-color: var(--color-brand-primary);
 }
 
 .mphb-terms-and-conditions-accept input[type="checkbox"]:checked::after {
@@ -589,13 +589,13 @@ abbr[title="Required"] {
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
-	color: var(--color-text-on-primary, #ffffff);
+	color: var(--color-text-on-primary);
 	font-size: 12px;
 	font-weight: bold;
 }
 
 .mphb-terms-and-conditions-link {
-	color: var(--color-brand-primary, #2563EB);
+	color: var(--color-brand-primary);
 	text-decoration: none;
 	font-weight: 600;
 }
@@ -624,7 +624,7 @@ ul.mphb_sc_checkout-services-list.mphb_checkout-services-list {
    ========================================================================== */
 
 .mphb_sc_checkout-submit-wrapper {
-	background: var(--color-surface-highlight, #fffbf0);
+	background: var(--color-surface-highlight);
 	padding: 1.5rem 0 1rem 0;
 	text-align: center;
 	margin-bottom: 0;
@@ -635,9 +635,9 @@ ul.mphb_sc_checkout-services-list.mphb_checkout-services-list {
    ========================================================================== */
 
 .mphb-checkout-text-wrapper {
-	background: var(--color-surface-alt, #fafafa);
-	border-left: 4px solid var(--color-brand-primary, #2563EB);
-	border-right: 4px solid var(--color-brand-primary, #2563EB);
+	background: var(--color-surface-alt);
+	border-left: 4px solid var(--color-brand-primary);
+	border-right: 4px solid var(--color-brand-primary);
 	padding: 2rem;
 	text-align: center;
 	margin: 0 !important;
@@ -648,7 +648,7 @@ ul.mphb_sc_checkout-services-list.mphb_checkout-services-list {
 }
 
 .mphb-checkout-text-wrapper p {
-	color: var(--color-text-muted, #666666);
+	color: var(--color-text-muted);
 	font-size: 0.875rem;
 	margin: 0;
 	line-height: 1.5em;
@@ -667,17 +667,17 @@ input:focus,
 .mphb-terms-and-conditions-link:focus,
 .mphb-room-type-title a:focus {
 	outline: none;
-	border-color: var(--color-brand-primary, #2563EB);
+	border-color: var(--color-brand-primary);
 }
 
 .mphb-discount-row {
-	color: var(--color-semantic-success, #4C9155);
+	color: var(--color-semantic-success);
 	font-weight: 600;
 }
 
 .discount-badge-checkout {
-	background: var(--color-semantic-success, #4C9155);
-	color: var(--color-text-inverse, #ffffff);
+	background: var(--color-semantic-success);
+	color: var(--color-text-inverse);
 	padding: 4px 8px;
 	border-radius: 4px;
 	font-size: 14px;
@@ -710,7 +710,7 @@ input:focus,
 .mphb-price-breakdown .mphb-price-breakdown-subtotal th,
 .mphb-price-breakdown .mphb-discount-row th {
 	font-size: 1rem;
-	color: var(--color-text-primary, #141310);
+	color: var(--color-text-primary);
 }
 
 /* Accommodation and Services totals - medium */
@@ -735,12 +735,12 @@ input:focus,
 .mphb-price-breakdown .mphb-discount-row th {
 	padding-top: 12px;
 	padding-bottom: 12px;
-	border-top: 1px solid var(--color-border-default, #e4e4e4);
+	border-top: 1px solid var(--color-border-default);
 }
 
 /* Keep discount amount in green */
 .mphb-price-breakdown .mphb-discount-row .mphb-table-price-column {
-	color: var(--color-semantic-success, #4C9155) !important;
+	color: var(--color-semantic-success) !important;
 	font-weight: 600;
 }
 
@@ -749,9 +749,9 @@ input:focus,
 .mphb-price-breakdown .mphb-price-breakdown-services-headers th {
 	font-weight: 600;
 	font-size: 0.875rem;
-	background-color: var(--color-surface-alt, #fafafa);
+	background-color: var(--color-surface-alt);
 	padding: 4px 16px;
-	color: var(--color-text-muted, #666666);
+	color: var(--color-text-muted);
 }
 
 /* Services row (empty header) - match dates row styling */
@@ -759,14 +759,14 @@ input:focus,
 	font-weight: 600;
 	font-size: 1rem;
 	padding: 8px 16px;
-	border-top: 1px solid var(--color-border-default, #e4e4e4);
-	color: var(--color-brand-primary, #d1af5d);
-	background-color: var(--color-surface-white, #ffffff);
+	border-top: 1px solid var(--color-border-default);
+	color: var(--color-brand-primary);
+	background-color: var(--color-surface-white);
 }
 
 /* Total row styling */
 .mphb-price-breakdown .mphb-price-breakdown-total th {
-	border-top: 2px solid var(--color-border-default, #e0e0e0);
+	border-top: 2px solid var(--color-border-default);
 	padding-top: 12px;
 	font-weight: 600;
 	font-size: 1.5rem;
@@ -782,13 +782,13 @@ input:focus,
 /* Ensure consistent spacing between sections */
 .mphb-price-breakdown .mphb-price-breakdown-accommodation-total,
 .mphb-price-breakdown .mphb-price-breakdown-services-total {
-	border-top: 1px solid var(--color-surface-alt, #f5f5f5);
+	border-top: 1px solid var(--color-surface-alt);
 }
 
 /* Service details column width */
 .mphb-price-breakdown .mphb-price-breakdown-service-details {
 	text-align: left;
-	color: var(--color-text-muted, #666666);
+	color: var(--color-text-muted);
 }
 
 /* Remove any default MotoPress styling that conflicts */
@@ -800,12 +800,12 @@ input:focus,
 
 .mphb-price-breakdown-subtotal th,
 .mphb-discount-row th {
-	background-color: var(--color-surface-white, #ffffff);
+	background-color: var(--color-surface-white);
 }
 
 .mphb-urgency-badge {
-	background: var(--color-semantic-error-bg, #FCEEEE);
-	color: var(--color-semantic-error, #b83c2e);
+	background: var(--color-semantic-error-bg);
+	color: var(--color-semantic-error);
 	padding: 4px 8px;
 	border-radius: 4px;
 	font-size: 14px;
@@ -823,7 +823,7 @@ input:focus,
 	display: flex;
 	justify-content: center;
 	font-size:16px;
-	color: var(--color-text-muted, #666666);
+	color: var(--color-text-muted);
 }
 
 
@@ -839,11 +839,11 @@ input:focus,
 
 
 #shaped-payment-note {
-	background: var(--color-surface-white, #ffffff);
-	border: 1px solid var(--color-border-default, #e4e4e4);
+	background: var(--color-surface-white);
+	border: 1px solid var(--color-border-default);
 	padding: 24px 200px;
 	margin: 24px 0;
-	box-shadow: var(--shadow-md, 0 2px 4px rgba(50, 50, 93, 0.16), 0 1px 3px -1px rgba(0, 0, 0, 0.08));
+	box-shadow: var(--shadow-md);
 }
 
 .shaped-note__content {
@@ -853,18 +853,18 @@ input:focus,
 .shaped-note__headline {
 	display: block;
 	font-size: 1.25rem;
-	color: var(--color-text-primary, #141310);
+	color: var(--color-text-primary);
 	margin-bottom: 8px;
 }
 
 .shaped-note__body {
-	color: var(--color-text-muted, #666666);
+	color: var(--color-text-muted);
 	margin: 0;
 	line-height: 1.5;
 }
 
 .shaped-note__body strong {
-	color: var(--color-brand-primary, #2563EB);
+	color: var(--color-brand-primary);
 }
 
 @media (max-width: 767px) {
@@ -1152,12 +1152,12 @@ input:focus,
 }
 
 .shaped-modal-content {
-    background-color: #ffffff;
+    background-color: var(--color-surface-white);
     margin: 50px auto;
     padding: 0;
     width: 90%;
     max-width: 700px;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     position: relative;
     max-height: 80vh;
     display: flex;
@@ -1173,8 +1173,8 @@ input:focus,
     padding: 24px 0 8px;
     margin: 0;
     margin-bottom: 24px;
-    border-bottom: 1px solid #e0e0e0;
-    color: #141310;
+    border-bottom: 1px solid var(--color-border-default);
+    color: var(--color-text-primary);
     font-size: 1.75rem;
 }
 
@@ -1188,7 +1188,7 @@ input:focus,
     overflow-y: auto;
     flex: 1;
     line-height: 1.6;
-    color: #666666;
+    color: var(--color-text-muted);
 }
 
 .shaped-modal-close {
@@ -1197,9 +1197,9 @@ input:focus,
     top: 28px;
     font-size: 40px;
     font-weight: bold;
-    color: #141310;
+    color: var(--color-text-primary);
     cursor: pointer;
-    transition: color 200ms ease;
+    transition: color var(--transition-base);
 }
 
 .shaped-modal-close:hover {

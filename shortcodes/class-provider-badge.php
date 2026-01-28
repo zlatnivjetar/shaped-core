@@ -83,22 +83,27 @@ function shaped_get_provider_info(): array {
         ],
         'airbnb' => [
             'name'  => 'Airbnb',
-            'color' => '#FF5A5F',
+            'color' => '#ff385c',
             'url'   => '',
         ],
         'tripadvisor' => [
             'name'  => 'TripAdvisor',
-            'color' => '#00AF87',
+            'color' => '#00af87',
             'url'   => '',
         ],
         'expedia' => [
             'name'  => 'Expedia',
-            'color' => '#FFCB00',
+            'color' => '#ffda00',
             'url'   => '',
         ],
         'google' => [
             'name'  => 'Google',
-            'color' => '#4285F4',
+            'color' => '#4285f4',
+            'url'   => '',
+        ],
+        'direct' => [
+            'name'  => 'Direct',
+            'color' => '#6366f1',
             'url'   => '',
         ],
     ]);
