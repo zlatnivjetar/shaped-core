@@ -163,7 +163,7 @@ class Shaped_Pricing {
         add_menu_page(
             'Shaped Pricing',
             'Shaped Pricing',
-            'manage_options',
+            'shaped_view_ops',
             'shaped-pricing',
             [__CLASS__, 'render_admin_page'],
             'dashicons-money-alt',
@@ -191,7 +191,7 @@ class Shaped_Pricing {
      * Render admin page
      */
     public static function render_admin_page(): void {
-        if (!current_user_can('manage_options')) {
+        if (!current_user_can('shaped_view_ops')) {
             return;
         }
 

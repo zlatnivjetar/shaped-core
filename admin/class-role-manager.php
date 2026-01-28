@@ -54,7 +54,7 @@ class Shaped_Role_Manager {
         // Create operator role with specific capabilities
         add_role(
             self::ROLE_OPERATOR,
-            'Hotel Operator',
+            'Operator',
             self::get_operator_capabilities()
         );
     }
@@ -123,15 +123,6 @@ class Shaped_Role_Manager {
             'edit_others_mphb_seasons'  => true,
             'publish_mphb_seasons'      => true,
             'read_private_mphb_seasons' => true,
-
-            // MotoPress - Services
-            'edit_mphb_room_service'          => true,
-            'read_mphb_room_service'          => true,
-            'delete_mphb_room_service'        => false,
-            'edit_mphb_room_services'         => true,
-            'edit_others_mphb_room_services'  => true,
-            'publish_mphb_room_services'      => true,
-            'read_private_mphb_room_services' => true,
 
             // Shaped Reviews
             'edit_shaped_review'          => true,
