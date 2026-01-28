@@ -27,10 +27,6 @@
     margin-right: 4px
 }
 
-.elementor-element .elementor-button .elementor-button-icon{
-    color: var(--color-brand-primary);
-}
-
 .elementor-element .elementor-button:hover {
     color: var(--color-brand-primary);
 }
