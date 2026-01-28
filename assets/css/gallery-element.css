@@ -4,7 +4,7 @@
 
 }
 
-    .elementor-gallery__titles-container.e--pointer-underline.e--animation-grow{
+    .elementor-gallery__titles-container{
     background: var(--color-surface-white);
     padding:24px 32px;
     border-radius: var(--radius-md);
@@ -15,7 +15,7 @@
 
 
 @media (max-width:479px) {
-    .elementor-gallery__titles-container.e--pointer-underline.e--animation-grow {
+    .elementor-gallery__titles-container {
         margin-bottom:16px !important;
         gap:8px 16px;
         padding:1rem 0;
