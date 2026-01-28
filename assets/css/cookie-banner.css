@@ -65,10 +65,19 @@ button.cmplz-show {
 
 .cmplz-btn.cmplz-accept {
   transition: all var(--transition-base) !important;
+  background-color: var(--color-brand-primary) !important;
+  letter-spacing: 0.2px !important;
+  border: none !important;
+  color: var(--color-text-on-primary) !important;
 }
 
 .cmplz-btn.cmplz-accept:hover {
   background-color: var(--color-brand-primary-hover) !important;
+}
+
+.cmplz-buttons.cmplz-btn.cmplz-view-preferences {
+  background-color: var(--color-surface-white) !important;
+  border: 2px solid var(--color-border-default) !important;
 }
 
 /* =========================================================================
