@@ -209,45 +209,6 @@ class Shaped_Menu_Controller {
 
         // Remove specific submenus that shouldn't be visible
         remove_submenu_page('index.php', 'update-core.php');
-
-        // Hide unwanted MotoPress submenus
-        self::hide_mphb_submenus();
-    }
-
-    /**
-     * Hide specific MotoPress submenus for operators
-     */
-    private static function hide_mphb_submenus(): void {
-        global $submenu;
-
-        // Bookings menu - keep only: Calendar
-        $bookings_allowed = ['mphb_calendar'];
-        if (isset($submenu['mphb_booking_calendar'])) {
-            foreach ($submenu['mphb_booking_calendar'] as $key => $item) {
-                $slug = $item[2] ?? '';
-                if (!in_array($slug, $bookings_allowed, true)) {
-                    unset($submenu['mphb_booking_calendar'][$key]);
-                }
-            }
-        }
-
-        // Accommodation menu - keep only: Accommodation Types, Booking Rules, Seasons, Rates, Settings
-        $accommodation_allowed = [
-            'edit.php?post_type=mphb_room_type',  // Accommodation Types
-            'mphb_booking_rules',                  // Booking Rules
-            'edit.php?post_type=mphb_season',     // Seasons
-            'edit.php?post_type=mphb_rate',       // Rates
-            'mphb_settings',                       // Settings
-        ];
-
-        if (isset($submenu['edit.php?post_type=mphb_room_type'])) {
-            foreach ($submenu['edit.php?post_type=mphb_room_type'] as $key => $item) {
-                $slug = $item[2] ?? '';
-                if (!in_array($slug, $accommodation_allowed, true)) {
-                    unset($submenu['edit.php?post_type=mphb_room_type'][$key]);
-                }
-            }
-        }
     }
 
     /**

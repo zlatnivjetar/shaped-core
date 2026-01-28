@@ -89,13 +89,17 @@ class Shaped_Role_Manager {
             'read_private_mphb_bookings' => true,
 
             // MotoPress - Room Types (view inventory)
-            'edit_mphb_room_type'          => true,
-            'read_mphb_room_type'          => true,
-            'delete_mphb_room_type'        => false,
-            'edit_mphb_room_types'         => true,
-            'edit_others_mphb_room_types'  => true,
-            'publish_mphb_room_types'      => true,
-            'read_private_mphb_room_types' => true,
+            'edit_mphb_room_type'            => true,
+            'read_mphb_room_type'            => true,
+            'delete_mphb_room_type'          => false,
+            'edit_mphb_room_types'           => true,
+            'edit_others_mphb_room_types'    => true,
+            'publish_mphb_room_types'        => true,
+            'read_private_mphb_room_types'   => true,
+            'manage_mphb_room_type_terms'    => true,
+            'edit_mphb_room_type_terms'      => true,
+            'delete_mphb_room_type_terms'    => false,
+            'assign_mphb_room_type_terms'    => true,
 
             // MotoPress - Rooms (accommodation units)
             'edit_mphb_room'          => true,
@@ -132,6 +136,12 @@ class Shaped_Role_Manager {
             'edit_others_shaped_reviews'  => true,
             'publish_shaped_reviews'      => true,
             'read_private_shaped_reviews' => true,
+
+            // MotoPress - Settings and Admin Pages
+            'mphb_view_calendar'          => true,
+            'mphb_edit_settings'          => true,
+            'mphb_manage_settings'        => true,
+            'mphb_edit_booking_rules'     => true,
 
             // Shaped custom capability for Ops access
             'shaped_view_ops'            => true,
