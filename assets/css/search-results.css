@@ -327,7 +327,7 @@
     font-weight: 600;
     font-size: 1rem;
     cursor: pointer;
-    transition: background var(--transition-base);
+    transition: var(--transition-base);
     width: 100%;
     text-transform: uppercase;
 }
