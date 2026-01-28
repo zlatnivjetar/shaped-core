@@ -27,3 +27,6 @@
 ## Supabase Dashboard
 1. Create client-specific reviews table (see `clients/{client}/supabase-instructions.txt`)
 2. Verify service key has access to table
+
+## Hostinger Cron
+1. Create Hostinger cron for client domain (or configure it on client's hosting platform)
