@@ -867,6 +867,10 @@ input:focus,
 	color: var(--color-brand-primary);
 }
 
+#mphb-customer-details p {
+    margin-bottom: 24px;
+}
+
 @media (max-width: 767px) {
 
 	.mphb-price-breakdown .mphb-price-breakdown-subtotal th,
@@ -1063,7 +1067,7 @@ input:focus,
 	.mphb-adults-chooser label,
 	.mphb-children-chooser label,
 	.mphb-guest-name-wrapper label {
-		margin-bottom: 0.25rem;
+		margin-bottom: 0.5rem;
 		font-size: 0.9375rem;
 	}
 
