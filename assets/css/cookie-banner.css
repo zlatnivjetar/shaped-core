@@ -30,7 +30,7 @@ button.cmplz-show {
 }
 
 .cmplz-cookiebanner {
-    box-shadow: 0 8px 32px rgba(20, 19, 16, 0.12);
+    box-shadow: var(--shadow-xl);
 }
 
 .cmplz-cookiebanner .cmplz-title {
@@ -64,11 +64,11 @@ button.cmplz-show {
 }
 
 .cmplz-btn.cmplz-accept {
-  transition: all 0.2s!important;
+  transition: all var(--transition-base) !important;
 }
 
 .cmplz-btn.cmplz-accept:hover {
-  background-color: var(--color-brand-primary-hover, #c39937) !important;
+  background-color: var(--color-brand-primary-hover) !important;
 }
 
 /* =========================================================================
@@ -76,7 +76,7 @@ button.cmplz-show {
  * ========================================================================= */
 
 .gt_float_switcher {
-  border-radius:8px !important;
+  border-radius: var(--radius-md) !important;
   font-size:1.125rem !important;
 }
 
@@ -86,7 +86,7 @@ button.cmplz-show {
 }
 
 #gt_float_wrapper {
-    transition: opacity 0.3s ease;
+    transition: opacity var(--transition-slow);
     opacity: 1;
     pointer-events: auto;
     bottom: 24px !important;

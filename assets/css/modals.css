@@ -12,14 +12,14 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: var(--color-overlay-scrim, rgba(0, 0, 0, 0.75));
+    background: var(--color-overlay-scrim);
     z-index: 999999;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity var(--transition-slow);
 }
 
 .shaped-modal-overlay.is-visible {
@@ -28,16 +28,16 @@
 
 /* Modal Container */
 .shaped-modal-container {
-    background: var(--color-surface-white, #fff);
-    border-radius: var(--radius-md, 8px);
+    background: var(--color-surface-white);
+    border-radius: var(--radius-md);
     max-width: 800px;
     width: 100%;
     max-height: 90vh;
     display: flex;
     flex-direction: column;
-    box-shadow: var(--shadow-xl, 0 10px 40px rgba(0, 0, 0, 0.3));
+    box-shadow: var(--shadow-xl);
     transform: scale(0.9);
-    transition: transform 0.3s ease;
+    transition: transform var(--transition-slow);
 }
 
 .shaped-modal-overlay.is-visible .shaped-modal-container {
@@ -50,14 +50,14 @@
     align-items: center;
     justify-content: space-between;
     padding: 20px 30px;
-    border-bottom: 1px solid var(--color-border-default, #e5e5e5);
+    border-bottom: 1px solid var(--color-border-default);
 }
 
 .shaped-modal-title {
     margin: 0;
     font-size: 24px;
     font-weight: 600;
-    color: var(--color-text-primary, #333);
+    color: var(--color-text-primary);
 }
 
 .shaped-modal-close {
@@ -65,7 +65,7 @@
     border: none;
     font-size: 32px;
     line-height: 1;
-    color: var(--color-text-muted, #999);
+    color: var(--color-text-light);
     cursor: pointer;
     padding: 0;
     width: 32px;
@@ -73,13 +73,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: var(--radius-sm, 4px);
-    transition: all 0.2s ease;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-base);
 }
 
 .shaped-modal-close:hover {
-    background: var(--color-surface-alt, #f5f5f5);
-    color: var(--color-text-primary, #333);
+    background: var(--color-surface-alt);
+    color: var(--color-text-primary);
 }
 
 /* Modal Content */
@@ -99,7 +99,7 @@
 .shaped-modal-body h3 {
     margin-top: 1.5em;
     margin-bottom: 0.5em;
-    color: var(--color-text-primary, #333);
+    color: var(--color-text-primary);
 }
 
 .shaped-modal-body h1:first-child,
@@ -119,12 +119,12 @@
 }
 
 .shaped-modal-body a {
-    color: var(--color-brand-primary, #0073aa);
+    color: var(--color-brand-primary);
     text-decoration: underline;
 }
 
 .shaped-modal-body a:hover {
-    color: var(--color-brand-primary-hover, #005177);
+    color: var(--color-brand-primary-hover);
 }
 
 /* Loading State */
@@ -142,7 +142,7 @@
 
 .shaped-modal-loading p {
     margin: 0;
-    color: var(--color-text-muted, #666);
+    color: var(--color-text-muted);
 }
 
 #shaped-modal-overlay .shaped-modal-content.is-loaded .shaped-modal-loading {
@@ -195,7 +195,7 @@ a.shaped-modal-link:hover {
 }
 
 .shaped-modal-close:focus {
-    outline: 2px solid var(--color-brand-primary, #0073aa);
+    outline: 2px solid var(--color-brand-primary);
     outline-offset: 2px;
 }
 

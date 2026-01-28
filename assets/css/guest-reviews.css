@@ -10,27 +10,27 @@
 
 .e-filter-item {
     padding: 0.5rem 1rem;
-    border: 2px solid var(--color-border-default, #e0e0e0);
-    background: var(--color-surface-white, #ffffff);
-    color: var(--color-text-muted, #666666);
+    border: 2px solid var(--color-border-default);
+    background: var(--color-surface-white);
+    color: var(--color-text-muted);
     font-weight: 500;
     font-size: 0.875rem;
     border-radius: 0.5rem;
     cursor: pointer;
-    transition: all var(--transition-base, 200ms ease);
-    font-family: var(--font-body, 'DM Sans', sans-serif);
+    transition: all var(--transition-base);
+    font-family: var(--font-body);
 }
 
 .e-filter-item:hover {
-    border-color: var(--color-brand-primary, #2563EB);
-    color: var(--color-text-primary, #141310) !important;
-    background: var(--color-surface-white, #ffffff);
+    border-color: var(--color-brand-primary);
+    color: var(--color-text-primary) !important;
+    background: var(--color-surface-white);
 }
 
 .e-filter-item[aria-pressed="true"] {
-    background: var(--color-brand-primary, #2563EB);
-    border-color: var(--color-brand-primary, #2563EB);
-    color: var(--color-text-inverse, #ffffff);
+    background: var(--color-brand-primary);
+    border-color: var(--color-brand-primary);
+    color: var(--color-text-inverse);
 }
 
 /* Review Card Height Fix */
@@ -61,25 +61,25 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-surface-white, #ffffff);
-    border: 2px solid var(--color-border-default, #e0e0e0);
-    color: var(--color-text-muted, #666666);
+    background: var(--color-surface-white);
+    border: 2px solid var(--color-border-default);
+    color: var(--color-text-muted);
     text-decoration: none;
     font-weight: 500;
     border-radius: 0.25rem;
-    transition: all var(--transition-base, 200ms ease);
+    transition: all var(--transition-base);
 }
 
 .e-load-more-pagination-page:hover {
-    border-color: var(--color-border-default, #e4e4e4);
-    color: var(--color-text-primary, #141310);
+    border-color: var(--color-border-default);
+    color: var(--color-text-primary);
 }
 
 .e-load-more-pagination-page-current,
 .e-load-more-pagination-page[aria-current="true"] {
-    background: var(--color-brand-primary, #2563EB);
-    border-color: var(--color-brand-primary, #2563EB);
-    color: var(--color-text-inverse, #ffffff);
+    background: var(--color-brand-primary);
+    border-color: var(--color-brand-primary);
+    color: var(--color-text-inverse);
 }
 
 .e-load-more-pagination-ellipsis {
@@ -88,26 +88,26 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-text-light, #999999);
+    color: var(--color-text-light);
 }
 
 .e-load-more-pagination-prev,
 .e-load-more-pagination-next {
     padding: 0.5rem 1rem;
-    background: var(--color-surface-white, #ffffff);
-    border: 2px solid var(--color-border-default, #e0e0e0);
-    color: var(--color-text-muted, #666666);
+    background: var(--color-surface-white);
+    border: 2px solid var(--color-border-default);
+    color: var(--color-text-muted);
     text-decoration: none;
     font-weight: 500;
     border-radius: 0.25rem;
-    transition: all var(--transition-base, 200ms ease);
+    transition: all var(--transition-base);
 }
 
 .e-load-more-pagination-prev:hover,
 .e-load-more-pagination-next:hover {
-    border-color: var(--color-brand-primary, #2563EB);
-    background: var(--color-brand-primary, #2563EB);
-    color: var(--color-text-inverse, #ffffff);
+    border-color: var(--color-brand-primary);
+    background: var(--color-brand-primary);
+    color: var(--color-text-inverse);
 }
 
 /* Taxonomy filter buttons */
@@ -118,42 +118,42 @@
 }
 
 .elementor-widget-taxonomy-filter .e-filter-item[aria-pressed=true] {
-    color: var(--color-text-inverse, #ffffff);
-    background-color: var(--color-brand-primary, #d1af5d) !important;
+    color: var(--color-text-inverse);
+    background-color: var(--color-brand-primary) !important;
     border: none;
 }
 
 .elementor-widget-taxonomy-filter .e-filter-item {
-    border-radius: var(--radius-md, 8px);
-    color: var(--color-text-muted, #666666);
+    border-radius: var(--radius-md);
+    color: var(--color-text-muted);
 }
 
 .elementor-widget-taxonomy-filter .e-filter {
     margin-bottom: 1rem;
-	  border-radius: var(--radius-md, 8px);
+	  border-radius: var(--radius-md);
 }
 
 .elementor-widget-taxonomy-filter .elementor-taxonomy-filter__item {
     padding: 0.5rem 1rem !important;
-    border: 2px solid var(--color-border-default, #e0e0e0) !important;
-    background: var(--color-surface-white, #ffffff) !important;
-    color: var(--color-text-muted, #666666) !important;
+    border: 2px solid var(--color-border-default) !important;
+    background: var(--color-surface-white) !important;
+    color: var(--color-text-muted) !important;
     font-weight: 500 !important;
     border-radius: 0.5rem !important;
     text-decoration: none !important;
-    transition: all var(--transition-base, 200ms ease) !important;
+    transition: all var(--transition-base) !important;
 }
 
 .elementor-widget-taxonomy-filter .elementor-taxonomy-filter__item:hover {
-    border-color: var(--color-brand-primary, #2563EB) !important;
-    color: var(--color-text-primary, #141310) !important;
-    background: var(--color-brand-primary, #2563EB);
+    border-color: var(--color-brand-primary) !important;
+    color: var(--color-text-primary) !important;
+    background: var(--color-brand-primary);
 }
 
 .elementor-widget-taxonomy-filter .elementor-taxonomy-filter__item--active {
-    background: var(--color-brand-primary, #2563EB) !important;
-    border-color: var(--color-brand-primary, #2563EB) !important;
-    color: var(--color-text-inverse, #ffffff) !important;
+    background: var(--color-brand-primary) !important;
+    border-color: var(--color-brand-primary) !important;
+    color: var(--color-text-inverse) !important;
 }
 
 nav.elementor-pagination {
@@ -171,13 +171,13 @@ button.e-filter-item {
 
 
 a.page-numbers {
-    background: var(--color-surface-white, #ffffff);
+    background: var(--color-surface-white);
     height: fit-content;
     width: auto;
     padding: 10px 20px;
     line-height: 1.5em;
-    border: 1px solid var(--color-border-default, #e0e0e0);
-    border-radius: var(--radius-md, 8px);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-md);
     margin: 0 !important;
     font-size: .875rem;
 }
@@ -187,8 +187,8 @@ span.page-numbers.current {
     width: auto;
     padding: 10px 20px;
     line-height: 1.5em;
-    border: 1px solid var(--color-border-default, #e0e0e0);
-    border-radius: var(--radius-md, 8px);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-md);
     margin: 0 !important;
     font-size: .875rem;
 }
@@ -206,7 +206,7 @@ span.page-numbers.current {
 .prs-read-more-btn {
     background: none !important;
     background-color: transparent !important;
-    color: var(--color-text-primary, #141310) !important;
+    color: var(--color-text-primary) !important;
     padding: 8px 0 0 0 !important;
     font-size: 0.875rem !important;
     text-transform: capitalize !important;
@@ -219,7 +219,7 @@ span.page-numbers.current {
 a.page-numbers {
 
     padding: 8px 16px;
-    border: 1px solid var(--color-border-default, #e0e0e0) !important;
+    border: 1px solid var(--color-border-default) !important;
   font-size: .8125rem;
 }
 span.page-numbers.current, .page-numbers.dots {
@@ -251,11 +251,11 @@ button.e-filter-item {
     padding: 1rem 0;
     gap: .5rem !important;
     flex-wrap: wrap !important;
-    background: var(--color-surface-white, #ffffff);
+    background: var(--color-surface-white);
 }
 
 .e-filter-item[aria-pressed="true"]:hover {
-    color: var(--color-text-inverse, #ffffff) !important;
+    color: var(--color-text-inverse) !important;
 }
 
 .elementor-loop-container.elementor-grid {

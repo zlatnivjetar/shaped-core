@@ -646,18 +646,18 @@ class Shaped_Booking_Manager
 
         ob_start();
         ?>
-        <div class="shaped-thank-you" style="max-width: 600px; margin: 0 auto; margin-top: -12rem; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 8px 32px rgba(20, 19, 16, 0.12);">
+        <div class="shaped-thank-you" style="max-width: 600px; margin: 0 auto; margin-top: -12rem; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: <?php shaped_brand_color_e('surface'); ?>; border-radius: 12px; padding: 32px; box-shadow: 0 8px 32px rgba(20, 19, 16, 0.12);">
             <!-- Success -->
-            <div style="text-align: center; padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid #f0f0f0;">
+            <div style="text-align: center; padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid <?php shaped_brand_color_e('border'); ?>;">
                 <div style="color: <?php shaped_brand_color_e('success'); ?>; font-size: 3rem; margin-bottom: 16px;">✓</div>
-                <h1 style="color: #141310; color: <?php shaped_brand_color_e('textDark'); ?>; font-size: 1.5rem; font-weight: 600; margin: 0 0 8px 0;">Booking Confirmed!</h1>
+                <h1 style="color: <?php shaped_brand_color_e('textDark'); ?>; font-size: 1.5rem; font-weight: 600; margin: 0 0 8px 0;">Booking Confirmed!</h1>
                 <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin: 0;">Your reservation has been successfully secured.</p>
             </div>
 
             <!-- Details -->
-            <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid #f0f0f0;">
+            <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid <?php shaped_brand_color_e('border'); ?>;">
                 <h2 style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-size: 1.5rem; font-weight: 600; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid <?php shaped_brand_color_e('primary'); ?>;">Booking Details</h2>
-                <div style="background: #fafafa; border-radius: 8px; padding: 24px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; border: 1px solid #f0f0f0;">
+                <div style="background: <?php shaped_brand_color_e('surfaceAlt'); ?>; border-radius: 8px; padding: 24px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; border: 1px solid <?php shaped_brand_color_e('border'); ?>;">
                     <div style="display: grid; gap: 12px; color: <?php shaped_brand_color_e('textPrimary'); ?>;">
                         <div><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Booking ID:</span> <strong>#<?php echo $booking_id; ?></strong></div>
                         <div><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Guest Name:</span> <strong><?php echo esc_html($customer->getFirstName() . ' ' . $customer->getLastName()); ?></strong></div>
@@ -669,8 +669,8 @@ class Shaped_Booking_Manager
             </div>
 
             <!-- Payment -->
-            <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid #f0f0f0;">
-                <div style="background: #fffbf0; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; padding: 24px; border-radius: 8px; border: 1px solid #c8e6c9;">
+            <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid <?php shaped_brand_color_e('border'); ?>;">
+                <div style="background: <?php shaped_brand_color_e('highlight'); ?>; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; padding: 24px; border-radius: 8px; border: 1px solid <?php shaped_brand_color_e('successBorder'); ?>;">
                     <h2 style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Payment Information</h2>
 
                     <?php if ($context['payment_type'] === 'deposit' && $context['deposit_amount'] > 0): ?>
@@ -689,7 +689,7 @@ class Shaped_Booking_Manager
                             </span>
                         </p>
                         <?php endif; ?>
-                        <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin-bottom: 8px; padding-top: 8px; border-top: 1px solid #e0e0e0; font-size: 0.9375rem;">
+                        <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin-bottom: 8px; padding-top: 8px; border-top: 1px solid <?php shaped_brand_color_e('border'); ?>; font-size: 0.9375rem;">
                             Total Booking Amount: <strong>€<?php echo number_format((float)($context['deposit_amount'] + $context['balance_due']), 2); ?></strong>
                         </p>
                         <p style="color: <?php shaped_brand_color_e('textPrimary'); ?>; margin-bottom: 0; line-height: 1.5;">
@@ -723,8 +723,8 @@ class Shaped_Booking_Manager
             </div>
 
             <!-- Getting Here -->
-            <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid #f0f0f0;">
-                <div style="background: #fafafa; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; padding: 24px; border-radius: 8px;">
+            <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid <?php shaped_brand_color_e('border'); ?>;">
+                <div style="background: <?php shaped_brand_color_e('surfaceAlt'); ?>; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; padding: 24px; border-radius: 8px;">
                     <h2 style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Getting Here</h2>
                     <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin-bottom: 12px; line-height: 1.5;">
                         <strong style="color: <?php shaped_brand_color_e('textPrimary'); ?>;">Address:</strong> <?php
@@ -758,7 +758,7 @@ class Shaped_Booking_Manager
                     0 0 4px rgba(209,175,93,0.6),
                     0 0 8px rgba(209,175,93,0.45),
                     0 0 16px rgba(209,175,93,0.3);
-                background: #c39937 !important;
+                background: <?php shaped_brand_color_e('primaryHover'); ?> !important;
             }
 
             @media (max-width: 640px) {

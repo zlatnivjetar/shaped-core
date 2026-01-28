@@ -24,7 +24,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-family: var(--font-body, 'DM Sans', sans-serif);
+  font-family: var(--font-body);
   font-weight: 600;
   font-size: 0.875rem;
   line-height: 1.5;
@@ -34,13 +34,13 @@
   cursor: pointer;
   border: none;
   background: none;
-  transition: all var(--transition-base, 200ms ease);
+  transition: all var(--transition-base);
   -webkit-appearance: none;
   appearance: none;
 }
 
 .shaped-btn:focus {
-  outline: 2px solid var(--color-brand-primary, #2563EB);
+  outline: 2px solid var(--color-brand-primary);
   outline-offset: 2px;
 }
 
@@ -56,19 +56,19 @@
  * Full background, used for main CTAs
  * ================================================================= */
 .shaped-btn-primary {
-  background: var(--color-brand-primary, #2563EB);
-  color: var(--color-text-on-primary, #ffffff);
+  background: var(--color-brand-primary);
+  color: var(--color-text-on-primary);
   padding: 1rem 2rem;
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-md);
 }
 
 .shaped-btn-primary:hover {
-  background: var(--color-brand-primary-hover, #1D4ED8);
-  color: var(--color-text-on-primary, #ffffff);
+  background: var(--color-brand-primary-hover);
+  color: var(--color-text-on-primary);
   box-shadow:
-    0 0 4px rgba(var(--color-brand-primary-rgb, 37, 99, 235), 0.55),
-    0 0 8px rgba(var(--color-brand-primary-rgb, 37, 99, 235), 0.35),
-    0 0 16px rgba(var(--color-brand-primary-rgb, 37, 99, 235), 0.25);
+    0 0 4px rgba(var(--color-brand-primary-rgb), 0.55),
+    0 0 8px rgba(var(--color-brand-primary-rgb), 0.35),
+    0 0 16px rgba(var(--color-brand-primary-rgb), 0.25);
 }
 
 .shaped-btn-primary:active {
@@ -80,16 +80,16 @@
  * Bordered, transparent background
  * ================================================================= */
 .shaped-btn-secondary {
-  background: var(--color-surface-white, #ffffff);
-  color: var(--color-text-primary, #111827);
+  background: var(--color-surface-white);
+  color: var(--color-text-primary);
   padding: 1rem 2rem;
-  border: 2px solid var(--color-border-default, #e4e4e4);
-  border-radius: var(--radius-md, 8px);
+  border: 2px solid var(--color-border-default);
+  border-radius: var(--radius-md);
 }
 
 .shaped-btn-secondary:hover {
-  border-color: var(--color-brand-primary-hover, #2563EB);
-  color: var(--color-brand-primary-hover, #2563EB);
+  border-color: var(--color-brand-primary-hover);
+  color: var(--color-brand-primary-hover);
 }
 
 .shaped-btn-secondary:active {
@@ -107,7 +107,7 @@
 .shaped-btn-link {
   background: transparent !important;
   background-color: transparent !important;
-  color: var(--color-text-primary, #111827) !important;
+  color: var(--color-text-primary) !important;
   padding: 0.5rem 1rem !important;
   border: none !important;
   border-bottom: 2px solid transparent !important;
@@ -118,21 +118,21 @@
 }
 
 .shaped-btn-link:hover {
-  color: var(--color-brand-primary-hover, #2563EB) !important;
-  border-bottom-color: var(--color-brand-primary-hover, #2563EB) !important;
+  color: var(--color-brand-primary-hover) !important;
+  border-bottom-color: var(--color-brand-primary-hover) !important;
   background: transparent !important;
 }
 
 .shaped-btn-link:focus {
   outline: none;
-  border-bottom-color: var(--color-brand-primary, #2563EB) !important;
+  border-bottom-color: var(--color-brand-primary) !important;
 }
 
 .shaped-btn-link.active,
 .shaped-btn-link[aria-pressed="true"],
 .shaped-btn-link[aria-current="true"] {
-  color: var(--color-brand-primary-hover, #2563EB) !important;
-  border-bottom-color: var(--color-brand-primary-hover, #2563EB) !important;
+  color: var(--color-brand-primary-hover) !important;
+  border-bottom-color: var(--color-brand-primary-hover) !important;
   background: transparent !important;
 }
 
@@ -142,14 +142,14 @@
  * ================================================================= */
 .shaped-btn-ghost {
   background: transparent;
-  color: var(--color-text-primary, #111827);
+  color: var(--color-text-primary);
   padding: 0.75rem 1.5rem;
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-md);
 }
 
 .shaped-btn-ghost:hover {
-  background: var(--color-surface-alt, #f8f8f8);
-  color: var(--color-brand-primary, #2563EB);
+  background: var(--color-surface-alt);
+  color: var(--color-brand-primary);
 }
 
 /* =================================================================
@@ -201,7 +201,7 @@
 }
 
 .shaped-btn-primary.is-loading::after {
-  border-top-color: var(--color-text-on-primary, #ffffff);
+  border-top-color: var(--color-text-on-primary);
 }
 
 @keyframes shaped-btn-spin {
