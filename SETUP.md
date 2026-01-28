@@ -6,7 +6,6 @@
 4. RoomCloud sync secret (if enabled)
 
 ## /wp-content/mu-plugins/shaped-client-config.php
-1. Copy template from `clients/_template/template.json` structure
 2. Feature flags (RoomCloud, Reviews, Sessions, Price API)
 3. Company info (name, tagline, location, legal entity, VAT, jurisdiction)
 4. Contact (phone, email, address, coordinates, maps URL)
