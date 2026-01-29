@@ -864,7 +864,8 @@ input:focus,
 }
 
 .shaped-note__body strong {
-	color: var(--color-brand-primary);
+	color: var(--color-text-primary);
+  font-weight: 600;
 }
 
 #mphb-customer-details p {
