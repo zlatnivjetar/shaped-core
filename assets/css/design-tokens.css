@@ -24,19 +24,19 @@
    * Defined in mu-plugins/shaped-client-config.php
    * Only these 4 change per-client - injected via PHP
    * ================================================================= */
-  --color-surface-page: #FFFFFF;
-  --color-surface-highlight: #EFF6FF;
-  --color-surface-page-dark: #1F2937;
-  --color-surface-page-black: #111827;
+  --color-surface-page: ;
+  --color-surface-highlight: ;
+  --color-surface-page-dark: ;
+  --color-surface-page-black: ;
 
   /* =================================================================
-   * CONSTANTS - BRAND COLORS
+   * BRAND COLORS
    * Generic defaults - client-specific values injected via PHP
    * ================================================================= */
-  --color-brand-primary: #2563EB;
+  --color-brand-primary: ;
   --color-brand-primary-rgb: 37, 99, 235;  /* RGB values for use with rgba() */
-  --color-brand-primary-hover: #1D4ED8;
-  --color-brand-secondary: #B7991F;
+  --color-brand-primary-hover: ;
+  --color-brand-secondary: ;
 
   /* =================================================================
    * CONSTANTS - TEXT COLORS
