@@ -88,7 +88,7 @@
 .custom-review-strip .rating-text {
     font-size: 13px;
     font-weight: 600;
-    color: var(--color-text-inverted);
+    color: var(--color-text-inverse);
     letter-spacing: -0.2px;
 }
 

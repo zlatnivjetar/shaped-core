@@ -31,7 +31,7 @@
 
   /* =================================================================
    * BRAND COLORS
-   * Generic defaults - client-specific values injected via PHP
+   * Client-specific values injected via PHP
    * ================================================================= */
   --color-brand-primary: ;
   --color-brand-primary-rgb: 37, 99, 235;  /* RGB values for use with rgba() */
