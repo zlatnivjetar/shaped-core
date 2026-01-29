@@ -429,10 +429,10 @@ function shaped_get_payment_failed_template($data) {
     // Warning card
     $text_primary = shaped_email_color('textPrimary', '#26272C');
     $text_muted = shaped_email_color('textMuted', '#666666');
-    $content .= '<div style="background: #FFF5F5; border-left: 4px solid #b83c2e; border-radius: 8px; padding: 20px; margin: 0 0 24px 0;">';
-    $content .= '<p style="margin: 0 0 12px 0; font-size: 16px; color: ' . $text_primary . '; font-weight: 700;">⚠️ Action Required</p>';
-    $content .= '<p style="margin: 0 0 12px 0; font-size: 14px; color: ' . $text_muted . '; line-height: 1.6;">Your booking is at risk of cancellation. Please contact us immediately to resolve this payment issue.</p>';
-    $content .= '<p style="margin: 0; font-size: 14px; color: ' . $text_muted . '; line-height: 1.6;"><strong>Common reasons:</strong> Insufficient funds, expired card, card limit exceeded, or bank declined the transaction.</p>';
+    $content .= '<div class="email-alert-danger" style="background: #FFF5F5; border-left: 4px solid #b83c2e; border-radius: 8px; padding: 20px; margin: 0 0 24px 0;">';
+    $content .= '<p class="email-text-primary" style="margin: 0 0 12px 0; font-size: 16px; color: ' . $text_primary . '; font-weight: 700;">⚠️ Action Required</p>';
+    $content .= '<p class="email-text-muted" style="margin: 0 0 12px 0; font-size: 14px; color: ' . $text_muted . '; line-height: 1.6;">Your booking is at risk of cancellation. Please contact us immediately to resolve this payment issue.</p>';
+    $content .= '<p class="email-text-muted" style="margin: 0; font-size: 14px; color: ' . $text_muted . '; line-height: 1.6;"><strong>Common reasons:</strong> Insufficient funds, expired card, card limit exceeded, or bank declined the transaction.</p>';
     $content .= '</div>';
 
     // Contact section
