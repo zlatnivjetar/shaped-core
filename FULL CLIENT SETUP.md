@@ -15,6 +15,7 @@
 ## wp-config
 - Stripe secret key and webhook secret (test and production)
 - wp_home/wp_siteurl set client domain
+- disable wp-cron
 (Roomcloud and Supabase settings stay as-is, optional Supabase sync secret)
 
 ## shaped-client-config
