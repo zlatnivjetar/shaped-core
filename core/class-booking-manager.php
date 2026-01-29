@@ -248,7 +248,7 @@ class Shaped_Booking_Manager
         }
 
         if (!isset($_GET['booking_id'], $_GET['token'])) {
-            return '<p style="font-size: 1.5rem; font-weight:700; padding: 24px; border-bottom: 2px solid ' . shaped_brand_color('primary') . '; padding-bottom: 8px;">Booking not found.</p>';
+            return '<p style="font-size: 1.5rem; font-weight:700; padding: 24px; border-bottom: 2px solid var(--color-brand-primary); padding-bottom: 8px;">Booking not found.</p>';
         }
 
         $booking_id = absint($_GET['booking_id']);
@@ -256,7 +256,7 @@ class Shaped_Booking_Manager
 
         $booking = MPHB()->getBookingRepository()->findById($booking_id);
         if (!$booking) {
-            return '<p style="font-size: 1.5rem; font-weight:700; padding: 24px; border-bottom: 2px solid ' . shaped_brand_color('primary') . '; padding-bottom: 8px;">Booking not found.</p>';
+            return '<p style="font-size: 1.5rem; font-weight:700; padding: 24px; border-bottom: 2px solid var(--color-brand-primary); padding-bottom: 8px;">Booking not found.</p>';
         }
 
         $expected_token = md5($booking_id . $booking->getCustomer()->getEmail());
@@ -266,15 +266,15 @@ class Shaped_Booking_Manager
 
         if ($booking->getStatus() === 'cancelled') {
             return '<div style="max-width: 600px; margin: 0 auto; font-family: \'DM Sans\', -apple-system, BlinkMacSystemFont, sans-serif; background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 8px 32px rgba(20, 19, 16, 0.12); text-align: center;">
-                <div style="color: ' . shaped_brand_color('error') . '; font-size: 3rem; margin-bottom: 16px;">✗</div>
-                <h2 style="color: ' . shaped_brand_color('textPrimary') . '; font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Booking Cancelled</h2>
-                <p style="color: ' . shaped_brand_color('textMuted') . '; margin-bottom: 24px; line-height: 1.5;">
+                <div style="color: var(--color-semantic-error); font-size: 3rem; margin-bottom: 16px;">✗</div>
+                <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Booking Cancelled</h2>
+                <p style="color: var(--color-text-muted); margin-bottom: 24px; line-height: 1.5;">
                     This booking (#' . $booking_id . ') has been cancelled and can no longer be managed.
                 </p>
-                <p style="color: ' . shaped_brand_color('textMuted') . '; font-size: 0.875rem; margin: 0;">
+                <p style="color: var(--color-text-muted); font-size: 0.875rem; margin: 0;">
                     If you need assistance, please contact us at<br>
-                    <a href="tel:' . esc_attr(preg_replace('/[^0-9+]/', '', shaped_brand('contact.phone', ''))) . '" style="color: ' . shaped_brand_color('primary') . '; text-decoration: none;">' . esc_html(shaped_brand('contact.phone', '')) . '</a> or
-                    <a href="mailto:' . esc_attr(shaped_brand('contact.email', '')) . '" style="color: ' . shaped_brand_color('primary') . '; text-decoration: none;">' . esc_html(shaped_brand('contact.email', '')) . '</a>
+                    <a href="tel:' . esc_attr(preg_replace('/[^0-9+]/', '', shaped_brand('contact.phone', ''))) . '" style="color: var(--color-brand-primary); text-decoration: none;">' . esc_html(shaped_brand('contact.phone', '')) . '</a> or
+                    <a href="mailto:' . esc_attr(shaped_brand('contact.email', '')) . '" style="color: var(--color-brand-primary); text-decoration: none;">' . esc_html(shaped_brand('contact.email', '')) . '</a>
                 </p>
             </div>';
         }
@@ -331,46 +331,46 @@ class Shaped_Booking_Manager
         <div class="shaped-manage-booking" style="max-width: 600px; margin: 0 auto; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 8px 32px rgba(20, 19, 16, 0.12);">
             <!-- Booking Details -->
             <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid #f0f0f0;">
-                <h2 style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-size: 1.5rem; font-weight: 600; margin-bottom: 24px; padding-bottom:16px; border-bottom: 2px solid <?php shaped_brand_color_e('primary'); ?>;">Booking Details</h2>
+                <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 24px; padding-bottom:16px; border-bottom: 2px solid var(--color-brand-primary);">Booking Details</h2>
                 <div style="background: #fafafa; border-radius: 8px; padding: 24px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; border: 1px solid #f0f0f0;">
-                    <div style="display: grid; gap: 12px; color: <?php shaped_brand_color_e('textPrimary'); ?>;">
-                        <div><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Booking ID:</span> <strong>#<?php echo $booking_id; ?></strong></div>
-                        <div><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Guest:</span> <strong><?php echo esc_html($customer->getFirstName() . ' ' . $customer->getLastName()); ?></strong></div>
-                        <div><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Check-in:</span> <strong><?php echo $context['check_in']->format('F j, Y'); ?></strong></div>
-                        <div><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Check-out:</span> <strong><?php echo $context['check_out']->format('F j, Y'); ?></strong></div>
+                    <div style="display: grid; gap: 12px; color: var(--color-text-primary);">
+                        <div><span style="color: var(--color-text-muted);">Booking ID:</span> <strong>#<?php echo $booking_id; ?></strong></div>
+                        <div><span style="color: var(--color-text-muted);">Guest:</span> <strong><?php echo esc_html($customer->getFirstName() . ' ' . $customer->getLastName()); ?></strong></div>
+                        <div><span style="color: var(--color-text-muted);">Check-in:</span> <strong><?php echo $context['check_in']->format('F j, Y'); ?></strong></div>
+                        <div><span style="color: var(--color-text-muted);">Check-out:</span> <strong><?php echo $context['check_out']->format('F j, Y'); ?></strong></div>
                         <?php if ($accommodation_name): ?>
-                        <div><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Accommodation:</span> <strong><?php echo esc_html($accommodation_name); ?></strong></div>
+                        <div><span style="color: var(--color-text-muted);">Accommodation:</span> <strong><?php echo esc_html($accommodation_name); ?></strong></div>
                         <?php endif; ?>
 
                         <?php if ($context['payment_type'] === 'deposit' && $context['deposit_amount'] > 0): ?>
                             <!-- DEPOSIT PAYMENT -->
                             <div style="padding-top: 8px; border-top: 1px solid #e0e0e0; margin-top: 8px;">
-                                <div style="margin-bottom: 6px;"><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Deposit Paid:</span> <strong style="color: <?php shaped_brand_color_e('success'); ?>;">€<?php echo number_format($context['deposit_amount'], 2); ?></strong></div>
+                                <div style="margin-bottom: 6px;"><span style="color: var(--color-text-muted);">Deposit Paid:</span> <strong style="color: var(--color-semantic-success);">€<?php echo number_format($context['deposit_amount'], 2); ?></strong></div>
                                 <?php if ($context['balance_due'] > 0): ?>
-                                <div style="margin-bottom: 6px;"><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Balance Due on Arrival:</span> <strong style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-weight: 600;">€<?php echo number_format($context['balance_due'], 2); ?></strong></div>
+                                <div style="margin-bottom: 6px;"><span style="color: var(--color-text-muted);">Balance Due on Arrival:</span> <strong style="color: var(--color-text-primary); font-weight: 600;">€<?php echo number_format($context['balance_due'], 2); ?></strong></div>
                                 <?php endif; ?>
-                                <div><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Total Booking Amount:</span> <strong>€<?php echo number_format($context['deposit_amount'] + $context['balance_due'], 2); ?></strong></div>
+                                <div><span style="color: var(--color-text-muted);">Total Booking Amount:</span> <strong>€<?php echo number_format($context['deposit_amount'] + $context['balance_due'], 2); ?></strong></div>
                             </div>
                         <?php else: ?>
                             <!-- FULL PAYMENT -->
                             <?php if (is_numeric($context['amount'])): ?>
-                            <div><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Total Amount:</span> <strong style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-weight: 600;">€<?php echo number_format($context['amount'], 2); ?></strong></div>
+                            <div><span style="color: var(--color-text-muted);">Total Amount:</span> <strong style="color: var(--color-text-primary); font-weight: 600;">€<?php echo number_format($context['amount'], 2); ?></strong></div>
                             <?php endif; ?>
                         <?php endif; ?>
 
                         <div style="padding-top: 8px; border-top: 1px solid #e0e0e0;">
-                            <span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Payment Status:</span>
+                            <span style="color: var(--color-text-muted);">Payment Status:</span>
                             <?php if ($context['payment_status'] === 'paid'): ?>
-                                <strong style="color: <?php shaped_brand_color_e('success'); ?>;">Paid in Full</strong>
+                                <strong style="color: var(--color-semantic-success);">Paid in Full</strong>
                             <?php elseif ($context['payment_status'] === 'deposit_paid'): ?>
-                                <strong style="color: <?php shaped_brand_color_e('success'); ?>;">Deposit Paid</strong> <span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">(Balance due on arrival)</span>
+                                <strong style="color: var(--color-semantic-success);">Deposit Paid</strong> <span style="color: var(--color-text-muted);">(Balance due on arrival)</span>
                             <?php elseif ($context['payment_status'] === 'failed'): ?>
-                                <strong style="color: <?php shaped_brand_color_e('error'); ?>;">Payment Failed</strong>
+                                <strong style="color: var(--color-semantic-error);">Payment Failed</strong>
                             <?php elseif ($context['payment_status'] === 'authorized'): ?>
                                 <?php if ($context['days_until_charge'] > 0): ?>
-                                    <strong style="color: <?php shaped_brand_color_e('primary'); ?>;">Will be charged on <?php echo $context['charge_date']->format('F j'); ?></strong>
+                                    <strong style="color: var(--color-brand-primary);">Will be charged on <?php echo $context['charge_date']->format('F j'); ?></strong>
                                 <?php else: ?>
-                                    <strong style="color: <?php shaped_brand_color_e('success'); ?>;">Processing</strong>
+                                    <strong style="color: var(--color-semantic-success);">Processing</strong>
                                 <?php endif; ?>
                             <?php else: ?>
                                 <strong style="color: #999;">Pending</strong>
@@ -383,13 +383,13 @@ class Shaped_Booking_Manager
             <?php if (!$info_only): ?>
                 <div>
                     <div style="box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; background: #fcf4f3; border: 1px solid #f0f0f0; padding: 24px; border-radius: 8px;">
-                        <h2 style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Cancel Your Booking</h2>
-                        <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin-bottom: 20px; line-height: 1.5;">
+                        <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Cancel Your Booking</h2>
+                        <p style="color: var(--color-text-muted); margin-bottom: 20px; line-height: 1.5;">
                             You can cancel your booking free of charge since payment has not been processed yet.
                         </p>
                         <form method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
                             <button type="submit" name="action" value="cancel"
-                                    style="background: <?php shaped_brand_color_e('error'); ?>; color: <?php shaped_brand_color_e('textInverse'); ?>; padding: 14px 30px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer;">
+                                    style="background: var(--color-semantic-error); color: var(--color-text-inverse); padding: 14px 30px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer;">
                                 Cancel Booking
                             </button>
                         </form>
@@ -398,10 +398,10 @@ class Shaped_Booking_Manager
             <?php endif; ?>
 
             <div style="text-align: center; margin-top:24px">
-                <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin: 0; font-size: 0.875rem;">
+                <p style="color: var(--color-text-muted); margin: 0; font-size: 0.875rem;">
                     Questions? Contact us at<br>
-                    <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', shaped_brand('contact.phone', ''))); ?>" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;"><?php echo esc_html(shaped_brand('contact.phone', '')); ?></a> or
-                    <a href="mailto:<?php echo esc_attr(shaped_brand('contact.email', '')); ?>" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;"><?php echo esc_html(shaped_brand('contact.email', '')); ?></a>
+                    <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', shaped_brand('contact.phone', ''))); ?>" style="color: var(--color-brand-primary); text-decoration: none;"><?php echo esc_html(shaped_brand('contact.phone', '')); ?></a> or
+                    <a href="mailto:<?php echo esc_attr(shaped_brand('contact.email', '')); ?>" style="color: var(--color-brand-primary); text-decoration: none;"><?php echo esc_html(shaped_brand('contact.email', '')); ?></a>
                 </p>
             </div>
         </div>
@@ -411,9 +411,9 @@ class Shaped_Booking_Manager
           color: #fff !important;
           transform: translateY(-2px);
           box-shadow:
-            0 0 4px <?php echo shaped_brand_color('error'); ?>88,
-            0 0 8px <?php echo shaped_brand_color('error'); ?>78,
-            0 0 16px <?php echo shaped_brand_color('error'); ?>50;
+            0 0 4px rgba(184, 60, 46, 0.53),
+            0 0 8px rgba(184, 60, 46, 0.47),
+            0 0 16px rgba(184, 60, 46, 0.31);
         }
         @media (max-width: 640px) {
             .shaped-manage-booking > div, .shaped-manage-booking {
@@ -466,22 +466,22 @@ class Shaped_Booking_Manager
         ob_start();
         ?>
         <div class="shaped-cancelled" style="width: 600px; margin: 0 auto; padding: 32px; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;background: #ffffff; border-radius: 12px; box-shadow: 0 8px 32px rgba(20, 19, 16, 0.12); text-align: center;">
-            <div id="checkwrap" style="width: 64px; height: 64px; background: <?php shaped_brand_color_e('success'); ?>; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: white; font-size: 32px;">✓</div>
+            <div id="checkwrap" style="width: 64px; height: 64px; background: var(--color-semantic-success); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: white; font-size: 32px;">✓</div>
 
-            <h2 style="color: <?php shaped_brand_color_e('textPrimary'); ?>; padding-top:8px; font-size: 2rem; font-weight: 700; margin-bottom: 24px; line-height: 1.2;" class="manageheaderbooking">Booking Cancelled</h2>
+            <h2 style="color: var(--color-text-primary); padding-top:8px; font-size: 2rem; font-weight: 700; margin-bottom: 24px; line-height: 1.2;" class="manageheaderbooking">Booking Cancelled</h2>
 
-            <div style="padding-bottom: 16px; margin-bottom: 24px; border-bottom: 2px solid <?php shaped_brand_color_e('primary'); ?>;">
-                <p style="font-size: 1.125rem; color: <?php shaped_brand_color_e('textPrimary'); ?>; margin-bottom: 0; line-height: 1.5;">
+            <div style="padding-bottom: 16px; margin-bottom: 24px; border-bottom: 2px solid var(--color-brand-primary);">
+                <p style="font-size: 1.125rem; color: var(--color-text-primary); margin-bottom: 0; line-height: 1.5;">
                     Your booking <strong>#<?php echo $booking_id; ?></strong> has been successfully cancelled.
                 </p>
             </div>
 
             <?php if (!$was_charged): ?>
                 <div style="background: #fffbf0; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
-                    <h2 style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">No Charge Applied</h2>
-                    <p style="font-size: 1.125rem; color: <?php shaped_brand_color_e('textPrimary'); ?>; margin: 0;">
+                    <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">No Charge Applied</h2>
+                    <p style="font-size: 1.125rem; color: var(--color-text-primary); margin: 0;">
                         Your card has not been charged. The reservation of
-                        <strong style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-weight: 600;">€<?php echo number_format((float)$pending_amount, 2); ?></strong>
+                        <strong style="color: var(--color-text-primary); font-weight: 600;">€<?php echo number_format((float)$pending_amount, 2); ?></strong>
                         has been cancelled.
                     </p>
                 </div>
@@ -489,14 +489,14 @@ class Shaped_Booking_Manager
                 $threshold_days = class_exists('Shaped_Pricing') ? Shaped_Pricing::get_scheduled_threshold_days() : 7;
             ?>
                 <div style="background: #fff5f5; border: 1px solid #f8d7da; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-                    <p style="color: <?php shaped_brand_color_e('error'); ?>; margin: 0;">
+                    <p style="color: var(--color-semantic-error); margin: 0;">
                         Your payment of <strong>€<?php echo number_format((float)$pending_amount, 2); ?></strong> was already processed.
                         Per our cancellation policy, bookings cancelled within <?php echo esc_html($threshold_days); ?> days of check-in are non-refundable.
                     </p>
                 </div>
             <?php endif; ?>
 
-            <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; font-size: 0.9375rem; margin: 0; line-height: 1.5;">
+            <p style="color: var(--color-text-muted); font-size: 0.9375rem; margin: 0; line-height: 1.5;">
                 A confirmation email has been sent to your registered email address.
             </p>
         </div>
@@ -646,74 +646,74 @@ class Shaped_Booking_Manager
 
         ob_start();
         ?>
-        <div class="shaped-thank-you" style="max-width: 600px; margin: 0 auto; margin-top: -12rem; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: <?php shaped_brand_color_e('surface'); ?>; border-radius: 12px; padding: 32px; box-shadow: 0 8px 32px rgba(20, 19, 16, 0.12);">
+        <div class="shaped-thank-you" style="max-width: 600px; margin: 0 auto; margin-top: -12rem; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--color-surface-page); border-radius: 12px; padding: 32px; box-shadow: 0 8px 32px rgba(20, 19, 16, 0.12);">
             <!-- Success -->
-            <div style="text-align: center; padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid <?php shaped_brand_color_e('border'); ?>;">
-                <div style="color: <?php shaped_brand_color_e('success'); ?>; font-size: 3rem; margin-bottom: 16px;">✓</div>
-                <h1 style="color: var(--color-text-primary, <?php shaped_brand_color_e('textDark'); ?>); font-size: 1.5rem; font-weight: 600; margin: 0 0 8px 0;">Booking Confirmed!</h1>
-                <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin: 0;">Your reservation has been successfully secured.</p>
+            <div style="text-align: center; padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--color-border-default);">
+                <div style="color: var(--color-semantic-success); font-size: 3rem; margin-bottom: 16px;">✓</div>
+                <h1 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin: 0 0 8px 0;">Booking Confirmed!</h1>
+                <p style="color: var(--color-text-muted); margin: 0;">Your reservation has been successfully secured.</p>
             </div>
 
             <!-- Details -->
-            <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid <?php shaped_brand_color_e('border'); ?>;">
-                <h2 style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-size: 1.5rem; font-weight: 600; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid <?php shaped_brand_color_e('primary'); ?>;">Booking Details</h2>
-                <div style="background: <?php shaped_brand_color_e('surfaceAlt'); ?>; border-radius: 8px; padding: 24px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; border: 1px solid <?php shaped_brand_color_e('border'); ?>;">
-                    <div style="display: grid; gap: 12px; color: <?php shaped_brand_color_e('textPrimary'); ?>;">
-                        <div><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Booking ID:</span> <strong>#<?php echo $booking_id; ?></strong></div>
-                        <div><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Guest Name:</span> <strong><?php echo esc_html($customer->getFirstName() . ' ' . $customer->getLastName()); ?></strong></div>
-                        <div><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Check-in:</span> <strong><?php echo $context['check_in']->format('F j, Y'); ?></strong> from 16:00h</div>
-                        <div><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Check-out:</span> <strong><?php echo $context['check_out']->format('F j, Y'); ?></strong> until 11:00h</div>
-                        <div><span style="color: <?php shaped_brand_color_e('textMuted'); ?>;">Accommodation:</span> <strong><?php echo esc_html($accommodation_name); ?></strong></div>
+            <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--color-border-default);">
+                <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--color-brand-primary);">Booking Details</h2>
+                <div style="background: var(--color-surface-highlight); border-radius: 8px; padding: 24px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; border: 1px solid var(--color-border-default);">
+                    <div style="display: grid; gap: 12px; color: var(--color-text-primary);">
+                        <div><span style="color: var(--color-text-muted);">Booking ID:</span> <strong>#<?php echo $booking_id; ?></strong></div>
+                        <div><span style="color: var(--color-text-muted);">Guest Name:</span> <strong><?php echo esc_html($customer->getFirstName() . ' ' . $customer->getLastName()); ?></strong></div>
+                        <div><span style="color: var(--color-text-muted);">Check-in:</span> <strong><?php echo $context['check_in']->format('F j, Y'); ?></strong> from 16:00h</div>
+                        <div><span style="color: var(--color-text-muted);">Check-out:</span> <strong><?php echo $context['check_out']->format('F j, Y'); ?></strong> until 11:00h</div>
+                        <div><span style="color: var(--color-text-muted);">Accommodation:</span> <strong><?php echo esc_html($accommodation_name); ?></strong></div>
                     </div>
                 </div>
             </div>
 
             <!-- Payment -->
-            <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid <?php shaped_brand_color_e('border'); ?>;">
-                <div style="background: <?php shaped_brand_color_e('highlight'); ?>; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; padding: 24px; border-radius: 8px; border: 1px solid <?php shaped_brand_color_e('successBorder'); ?>;">
-                    <h2 style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Payment Information</h2>
+            <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--color-border-default);">
+                <div style="background: var(--color-surface-highlight); box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; padding: 24px; border-radius: 8px; border: 1px solid var(--color-border-default);">
+                    <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Payment Information</h2>
 
                     <?php if ($context['payment_type'] === 'deposit' && $context['deposit_amount'] > 0): ?>
                         <!-- DEPOSIT PAYMENT -->
-                        <p style="color: <?php shaped_brand_color_e('textPrimary'); ?>; margin-bottom: 12px; line-height: 1.5;">
+                        <p style="color: var(--color-text-primary); margin-bottom: 12px; line-height: 1.5;">
                             <strong>Deposit Paid:</strong>
-                            <span style="color: <?php shaped_brand_color_e('primary'); ?>; font-size: 1.25rem; font-weight: 700;">
+                            <span style="color: var(--color-brand-primary); font-size: 1.25rem; font-weight: 700;">
                                 €<?php echo number_format((float)$context['deposit_amount'], 2); ?>
                             </span>
                         </p>
                         <?php if ($context['balance_due'] > 0): ?>
-                        <p style="color: <?php shaped_brand_color_e('textPrimary'); ?>; margin-bottom: 12px; line-height: 1.5;">
+                        <p style="color: var(--color-text-primary); margin-bottom: 12px; line-height: 1.5;">
                             <strong>Balance Due on Arrival:</strong>
                             <span style="font-size: 1.125rem; font-weight: 600;">
                                 €<?php echo number_format((float)$context['balance_due'], 2); ?>
                             </span>
                         </p>
                         <?php endif; ?>
-                        <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin-bottom: 8px; padding-top: 8px; border-top: 1px solid <?php shaped_brand_color_e('border'); ?>; font-size: 0.9375rem;">
+                        <p style="color: var(--color-text-muted); margin-bottom: 8px; padding-top: 8px; border-top: 1px solid var(--color-border-default); font-size: 0.9375rem;">
                             Total Booking Amount: <strong>€<?php echo number_format((float)($context['deposit_amount'] + $context['balance_due']), 2); ?></strong>
                         </p>
-                        <p style="color: <?php shaped_brand_color_e('textPrimary'); ?>; margin-bottom: 0; line-height: 1.5;">
+                        <p style="color: var(--color-text-primary); margin-bottom: 0; line-height: 1.5;">
                             Thank you for your deposit. The remaining balance is due upon arrival at the property. You'll receive a receipt by email shortly.
                         </p>
                     <?php else: ?>
                         <!-- FULL PAYMENT (immediate or delayed) -->
                         <?php if (is_numeric($context['amount'])): ?>
-                        <p style="color: <?php shaped_brand_color_e('textPrimary'); ?>; margin-bottom: 12px; line-height: 1.5;">
+                        <p style="color: var(--color-text-primary); margin-bottom: 12px; line-height: 1.5;">
                             <strong>Total Amount:</strong>
-                            <span style="color: <?php shaped_brand_color_e('primary'); ?>; font-size: 1.25rem; font-weight: 700;">
+                            <span style="color: var(--color-brand-primary); font-size: 1.25rem; font-weight: 700;">
                                 €<?php echo number_format((float)$context['amount'], 2); ?>
                             </span>
                         </p>
                         <?php endif; ?>
 
                         <?php if ($context['is_immediate']): ?>
-                            <p style="color: <?php shaped_brand_color_e('textPrimary'); ?>; margin-bottom: 8px; line-height: 1.5;">
+                            <p style="color: var(--color-text-primary); margin-bottom: 8px; line-height: 1.5;">
                                 Thank you for booking with us. You'll receive a receipt by email shortly.
                             </p>
                         <?php else:
                             $threshold_days = isset($context['threshold_days']) ? $context['threshold_days'] : 7;
                         ?>
-                            <p style="color: <?php shaped_brand_color_e('textPrimary'); ?>; margin-bottom: 8px; line-height: 1.5;">
+                            <p style="color: var(--color-text-primary); margin-bottom: 8px; line-height: 1.5;">
                                 Your card has been securely saved and will be charged <strong><?php echo esc_html($threshold_days); ?> days before check-in</strong>
                                 (<?php echo $context['charge_date']->format('F j, Y'); ?>).
                             </p>
@@ -723,17 +723,17 @@ class Shaped_Booking_Manager
             </div>
 
             <!-- Getting Here -->
-            <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid <?php shaped_brand_color_e('border'); ?>;">
-                <div style="background: <?php shaped_brand_color_e('surfaceAlt'); ?>; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; padding: 24px; border-radius: 8px;">
-                    <h2 style="color: <?php shaped_brand_color_e('textPrimary'); ?>; font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Getting Here</h2>
-                    <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin-bottom: 12px; line-height: 1.5;">
-                        <strong style="color: <?php shaped_brand_color_e('textPrimary'); ?>;">Address:</strong> <?php
+            <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--color-border-default);">
+                <div style="background: var(--color-surface-highlight); box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; padding: 24px; border-radius: 8px;">
+                    <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Getting Here</h2>
+                    <p style="color: var(--color-text-muted); margin-bottom: 12px; line-height: 1.5;">
+                        <strong style="color: var(--color-text-primary);">Address:</strong> <?php
                         $address_raw = shaped_brand('contact.address', '');
                         $address_formatted = function_exists('shaped_email_format_address') ? shaped_email_format_address($address_raw) : $address_raw;
                         echo esc_html($address_formatted);
                         ?>
                     </p>
-                    <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin: 0; line-height: 1.5;">
+                    <p style="color: var(--color-text-muted); margin: 0; line-height: 1.5;">
                         <?php echo esc_html(shaped_brand('email.checkInInstructions', 'Visit us at reception upon arrival.')); ?>
                     </p>
                 </div>
@@ -741,24 +741,24 @@ class Shaped_Booking_Manager
 
             <!-- Next Steps -->
             <div style="text-align: center;">
-                <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin-bottom: 20px;">
+                <p style="color: var(--color-text-muted); margin-bottom: 20px;">
                     We've sent details to <strong><?php echo esc_html($customer->getEmail()); ?></strong>
                 </p>
-                <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin-top: 24px; font-size: 0.875rem;">
-                    Questions? Contact us at <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', shaped_brand('contact.phone', ''))); ?>" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;"><?php echo esc_html(shaped_brand('contact.phone', '')); ?></a> or
-                    <a href="mailto:<?php echo esc_attr(shaped_brand('contact.email', '')); ?>" style="color: <?php shaped_brand_color_e('primary'); ?>; text-decoration: none;"><?php echo esc_html(shaped_brand('contact.email', '')); ?></a>
+                <p style="color: var(--color-text-muted); margin-top: 24px; font-size: 0.875rem;">
+                    Questions? Contact us at <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', shaped_brand('contact.phone', ''))); ?>" style="color: var(--color-brand-primary); text-decoration: none;"><?php echo esc_html(shaped_brand('contact.phone', '')); ?></a> or
+                    <a href="mailto:<?php echo esc_attr(shaped_brand('contact.email', '')); ?>" style="color: var(--color-brand-primary); text-decoration: none;"><?php echo esc_html(shaped_brand('contact.email', '')); ?></a>
                 </p>
             </div>
         </div>
 
         <style>
-            .shaped-thank-you a[style*="background: <?php echo shaped_brand_color('primary'); ?>"]:hover {
+            .shaped-thank-you a[style*="background: var(--color-brand-primary)"]:hover {
                 transform: translateY(-2px);
                 box-shadow:
                     0 0 4px rgba(209,175,93,0.6),
                     0 0 8px rgba(209,175,93,0.45),
                     0 0 16px rgba(209,175,93,0.3);
-                background: <?php shaped_brand_color_e('primaryHover'); ?> !important;
+                background: var(--color-brand-primary-hover) !important;
             }
 
             @media (max-width: 640px) {
