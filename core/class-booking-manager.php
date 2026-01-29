@@ -368,7 +368,7 @@ class Shaped_Booking_Manager
                                 <strong style="color: var(--color-semantic-error);">Payment Failed</strong>
                             <?php elseif ($context['payment_status'] === 'authorized'): ?>
                                 <?php if ($context['days_until_charge'] > 0): ?>
-                                    <strong style="color: var(--color-brand-primary);">Will be charged on <?php echo $context['charge_date']->format('F j'); ?></strong>
+                                    <strong style="color: var(--color-text-primary);">Will be charged on <?php echo $context['charge_date']->format('F j'); ?></strong>
                                 <?php else: ?>
                                     <strong style="color: var(--color-semantic-success);">Processing</strong>
                                 <?php endif; ?>
