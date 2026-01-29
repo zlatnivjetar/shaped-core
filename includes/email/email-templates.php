@@ -245,6 +245,20 @@ function shaped_email_get_styles() {
             supported-color-schemes: light dark;
         }
 
+        /* Gmail dark mode targeting */
+        u + .email-body .email-button-link,
+        u + .email-body .email-button a {
+            color: #ffffff !important;
+        }
+
+        /* Force button text color in all contexts */
+        .email-button-link,
+        .email-button-link span,
+        .email-button a,
+        .email-button a span {
+            color: #ffffff !important;
+        }
+
         @media (prefers-color-scheme: dark) {
             /* Prevent email clients from changing our colors */
             .email-body {
@@ -257,12 +271,22 @@ function shaped_email_get_styles() {
 
             /* Keep button colors intact - prevent dark mode inversion */
             .email-button,
-            .email-button td {
+            .email-button td,
+            .email-button table,
+            td[class="email-button"],
+            td.email-button {
                 background-color: <?php echo shaped_email_color('primary', '#2563EB'); ?> !important;
             }
 
+            /* Button text - multiple selectors for maximum compatibility */
             .email-button a,
-            .email-button-link {
+            .email-button-link,
+            .email-button a span,
+            .email-button-link span,
+            a.email-button-link,
+            a[class="email-button-link"],
+            .email-button td a,
+            td .email-button-link {
                 color: #ffffff !important;
                 background-color: <?php echo shaped_email_color('primary', '#2563EB'); ?> !important;
             }
@@ -723,9 +747,9 @@ function shaped_email_block_button($text, $url, $subtext = '') {
                                     <!--[if !mso]><!-->
                                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" class="email-button" style="margin: 0 auto;">
                                         <tr>
-                                            <td align="center" bgcolor="<?php echo $primary; ?>" style="background-color: <?php echo $primary; ?>; border-radius: 8px; mso-padding-alt: 14px 30px;">
-                                                <a href="<?php echo esc_url($url); ?>" class="email-button-link" target="_blank" style="display: inline-block; background-color: <?php echo $primary; ?>; color: <?php echo $text_inverse; ?>; padding: 14px 30px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 15px; letter-spacing: 0.2px; text-transform: uppercase; font-family: 'DM Sans', Arial, sans-serif; mso-line-height-rule: exactly; line-height: 1.2;">
-                                                    <?php echo esc_html($text); ?>
+                                            <td align="center" bgcolor="<?php echo $primary; ?>" style="background-color: <?php echo $primary; ?> !important; border-radius: 8px; mso-padding-alt: 14px 30px;">
+                                                <a href="<?php echo esc_url($url); ?>" class="email-button-link" target="_blank" style="display: inline-block; background-color: <?php echo $primary; ?> !important; color: <?php echo $text_inverse; ?> !important; padding: 14px 30px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 15px; letter-spacing: 0.2px; text-transform: uppercase; font-family: 'DM Sans', Arial, sans-serif; mso-line-height-rule: exactly; line-height: 1.2;">
+                                                    <span style="color: <?php echo $text_inverse; ?> !important;"><?php echo esc_html($text); ?></span>
                                                 </a>
                                             </td>
                                         </tr>
