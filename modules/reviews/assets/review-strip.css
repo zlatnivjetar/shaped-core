@@ -1,0 +1,186 @@
+/**
+ * Review Strip Styling
+ * Styles for [shaped_review_strip] and [shaped_review_strips] shortcodes
+ *
+ * @package Shaped_Core/Reviews
+ */
+
+/* ===== SINGLE STRIP ===== */
+.shaped-review-strip,
+.custom-review-strip {
+    display: inline-flex;
+    align-items: center;
+}
+
+.shaped-review-strip .review-item,
+.custom-review-strip .review-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Star Rating Container */
+.shaped-review-strip .star-rating,
+.custom-review-strip .star-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.shaped-review-strip .stars-container,
+.custom-review-strip .stars-container {
+    display: flex;
+    gap: 2px;
+    line-height: 1;
+}
+
+/* Star Styles */
+.shaped-review-strip .star,
+.custom-review-strip .star {
+    font-size: 14px;
+    line-height: 1;
+    display: inline-block;
+}
+
+.shaped-review-strip .star.full,
+.custom-review-strip .star.full {
+    color: var(--shaped-accent, #d4af37);
+}
+
+.shaped-review-strip .star.empty,
+.custom-review-strip .star.empty {
+    color: var(--color-border-default, #dcdcde);
+}
+
+/* Partial star with CSS gradient */
+.shaped-review-strip .star.partial,
+.custom-review-strip .star.partial {
+    position: relative;
+    color: var(--color-border-default, #dcdcde);
+}
+
+.shaped-review-strip .star.partial::before,
+.custom-review-strip .star.partial::before {
+    content: "\2605";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--fill, 50%);
+    overflow: hidden;
+    color: var(--shaped-accent, #d4af37);
+}
+
+/* Rate Wrap (single star + numeric) */
+.shaped-review-strip .rate-wrap,
+.custom-review-strip .rate-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.shaped-review-strip .rate-wrap .star,
+.custom-review-strip .rate-wrap .star {
+    font-size: 14px;
+    color: var(--shaped-accent, #d4af37);
+}
+
+.shaped-review-strip .rating-text,
+.custom-review-strip .rating-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-primary, #1d2327);
+    letter-spacing: -0.2px;
+}
+
+/* ===== GRID LAYOUT ===== */
+.shaped-review-strips-grid {
+    display: grid;
+    gap: 24px;
+    align-items: center;
+    justify-items: center;
+}
+
+/* Column count variants */
+.shaped-review-strips-grid[data-columns="2"] {
+    grid-template-columns: repeat(2, auto);
+}
+
+.shaped-review-strips-grid[data-columns="3"] {
+    grid-template-columns: repeat(3, auto);
+}
+
+.shaped-review-strips-grid[data-columns="1"] {
+    grid-template-columns: 1fr;
+}
+
+/* Grid columns */
+.shaped-strip-column {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 767px) {
+    .shaped-review-strip .star,
+    .custom-review-strip .star {
+        font-size: 12px;
+    }
+
+    .shaped-review-strip .rate-wrap .star,
+    .custom-review-strip .rate-wrap .star {
+        font-size: 12px;
+    }
+
+    .shaped-review-strip .rating-text,
+    .custom-review-strip .rating-text {
+        font-size: 12px;
+    }
+
+    .shaped-review-strip .review-item,
+    .custom-review-strip .review-item {
+        gap: 8px;
+    }
+
+    .shaped-review-strips-grid {
+        gap: 16px;
+    }
+}
+
+@media (max-width: 479px) {
+    /* Stack on mobile if needed */
+    .shaped-review-strips-grid[data-columns="3"] {
+        grid-template-columns: repeat(3, auto);
+        gap: 12px;
+    }
+
+    .shaped-review-strips-grid[data-columns="2"] {
+        grid-template-columns: repeat(2, auto);
+        gap: 12px;
+    }
+
+    .shaped-review-strip .stars-container,
+    .custom-review-strip .stars-container {
+        display: none;
+    }
+
+    .shaped-review-strip .star-rating,
+    .custom-review-strip .star-rating {
+        gap: 4px;
+    }
+}
+
+/* ===== DARK MODE SUPPORT ===== */
+@media (prefers-color-scheme: dark) {
+    .shaped-review-strip .rating-text,
+    .custom-review-strip .rating-text {
+        color: var(--color-text-primary, #ffffff);
+    }
+
+    .shaped-review-strip .star.empty,
+    .custom-review-strip .star.empty,
+    .shaped-review-strip .star.partial,
+    .custom-review-strip .star.partial {
+        color: var(--color-border-default, #444);
+    }
+}

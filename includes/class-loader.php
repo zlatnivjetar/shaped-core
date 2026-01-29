@@ -31,10 +31,11 @@ class Shaped_Loader {
         'Shaped_Design_Tokens_Generator'   => 'includes/class-design-tokens-generator.php',
 
         // Admin classes
-        'Shaped_Role_Manager'       => 'admin/class-role-manager.php',
-        'Shaped_Menu_Controller'    => 'admin/class-menu-controller.php',
-        'Shaped_Noise_Control'      => 'admin/class-noise-control.php',
-        'Shaped_Reviews_Dashboard'  => 'admin/class-reviews-dashboard.php',
+        'Shaped_Role_Manager'           => 'admin/class-role-manager.php',
+        'Shaped_Menu_Controller'        => 'admin/class-menu-controller.php',
+        'Shaped_Noise_Control'          => 'admin/class-noise-control.php',
+        'Shaped_Reviews_Dashboard'      => 'admin/class-reviews-dashboard.php',
+        'Shaped_Review_Strip_Settings'  => 'admin/class-review-strip-settings.php',
 
         // Schema
         'Shaped_Schema_Markup'      => 'schema/class-markup.php',

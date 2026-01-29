@@ -268,3 +268,170 @@ add_shortcode('shaped_reviews', function() {
 
     return Frontend::render_grid($provider, 1);
 });
+
+/**
+ * [shaped_review_strip] - Single provider review strip for header/footer
+ *
+ * Displays a provider badge with star rating and numeric score.
+ * Ratings are pulled from admin settings (Guest Reviews > Review Strip).
+ *
+ * Usage: [shaped_review_strip provider="booking"]
+ *
+ * @param string $provider   Provider key: booking, expedia, google, tripadvisor, airbnb, direct
+ * @param bool   $show_stars Whether to show star icons (default: true)
+ */
+add_shortcode('shaped_review_strip', function($atts) {
+    $atts = shortcode_atts([
+        'provider'   => 'booking',
+        'show_stars' => 'true',
+    ], $atts);
+
+    $provider_key = normalize_provider($atts['provider']);
+    $show_stars = filter_var($atts['show_stars'], FILTER_VALIDATE_BOOLEAN);
+
+    // Get provider config
+    $configs = get_provider_configs();
+    if (!isset($configs[$provider_key])) {
+        return '<!-- Invalid provider: ' . esc_html($provider_key) . ' -->';
+    }
+
+    $config = $configs[$provider_key];
+    $scale = $config['scale'];
+
+    // Get rating from admin settings
+    $rating_data = null;
+    if (class_exists('Shaped_Review_Strip_Settings')) {
+        $rating_data = \Shaped_Review_Strip_Settings::get_provider_rating($provider_key);
+    }
+
+    // Fall back to defaults if not configured
+    if (!$rating_data || !isset($rating_data['rating'])) {
+        $defaults = [
+            'booking'     => 9.0,
+            'expedia'     => 9.4,
+            'google'      => 4.6,
+            'tripadvisor' => 4.5,
+            'airbnb'      => 4.8,
+            'direct'      => 9.5,
+        ];
+        $rating = $defaults[$provider_key] ?? 0;
+    } else {
+        $rating = floatval($rating_data['rating']);
+    }
+
+    // Calculate star rating (convert 10-scale to 5 stars)
+    if ($scale === 10) {
+        $star_rating = $rating / 2;
+        $display_rating = number_format($rating, 1) . '/10';
+    } else {
+        $star_rating = $rating;
+        $display_rating = number_format($rating, 1) . '/5';
+    }
+
+    // Generate stars HTML
+    $stars_html = '';
+    if ($show_stars) {
+        $full_stars = floor($star_rating);
+        $partial = $star_rating - $full_stars;
+        $partial_percent = round($partial * 100);
+
+        for ($i = 0; $i < 5; $i++) {
+            if ($i < $full_stars) {
+                $stars_html .= '<span class="star full">&#9733;</span>';
+            } elseif ($i === $full_stars && $partial >= 0.25) {
+                $stars_html .= '<span class="star partial" style="--fill: ' . $partial_percent . '%">&#9733;</span>';
+            } else {
+                $stars_html .= '<span class="star empty">&#9733;</span>';
+            }
+        }
+    }
+
+    // Get provider link
+    $links = get_provider_links();
+    $url = $links[$provider_key] ?? '#';
+
+    // Build HTML output matching existing structure
+    $html = '<div class="shaped-review-strip">';
+    $html .= '<div class="review-item">';
+
+    // Provider badge (clickable, opens modal via existing JS)
+    $html .= sprintf(
+        '<span class="prs-provider-badge" data-provider="%s" style="background-color: %s; color: %s; cursor: pointer;">%s</span>',
+        esc_attr($provider_key),
+        esc_attr($config['bg']),
+        esc_attr($config['text']),
+        esc_html($config['name'])
+    );
+
+    // Star rating section
+    $html .= '<div class="star-rating" data-rating="' . esc_attr($star_rating) . '">';
+
+    if ($show_stars) {
+        $html .= '<div class="stars-container">' . $stars_html . '</div>';
+    }
+
+    $html .= '<div class="rate-wrap">';
+    $html .= '<span class="star full">&#9733;</span>';
+    $html .= '<span class="rating-text">' . esc_html($display_rating) . '</span>';
+    $html .= '</div>';
+
+    $html .= '</div>'; // .star-rating
+    $html .= '</div>'; // .review-item
+    $html .= '</div>'; // .shaped-review-strip
+
+    return $html;
+});
+
+/**
+ * [shaped_review_strips] - Grid of multiple review strips
+ *
+ * Displays 2 or 3 provider review strips in a responsive grid.
+ * Use this in Elementor shortcode widget to replace manual HTML.
+ *
+ * Usage: [shaped_review_strips providers="booking,expedia,google"]
+ *        [shaped_review_strips providers="booking,google"]
+ *
+ * @param string $providers Comma-separated list of provider keys
+ */
+add_shortcode('shaped_review_strips', function($atts) {
+    $atts = shortcode_atts([
+        'providers' => 'booking,expedia,google',
+    ], $atts);
+
+    // Parse providers
+    $provider_list = array_map('trim', explode(',', $atts['providers']));
+    $provider_list = array_filter($provider_list);
+
+    if (empty($provider_list)) {
+        return '<!-- No providers specified -->';
+    }
+
+    // Validate providers
+    $valid_providers = array_keys(get_provider_configs());
+    $provider_list = array_filter($provider_list, function($p) use ($valid_providers) {
+        return in_array(normalize_provider($p), $valid_providers, true);
+    });
+
+    if (empty($provider_list)) {
+        return '<!-- No valid providers specified -->';
+    }
+
+    // Determine column count
+    $columns = count($provider_list);
+    if ($columns > 3) {
+        $columns = 3; // Max 3 columns
+    }
+
+    // Build grid HTML
+    $html = '<div class="shaped-review-strips-grid" data-columns="' . esc_attr($columns) . '">';
+
+    foreach ($provider_list as $provider) {
+        $html .= '<div class="shaped-strip-column">';
+        $html .= do_shortcode('[shaped_review_strip provider="' . esc_attr($provider) . '"]');
+        $html .= '</div>';
+    }
+
+    $html .= '</div>';
+
+    return $html;
+});
