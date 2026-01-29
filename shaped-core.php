@@ -170,6 +170,7 @@ add_action('plugins_loaded', function() {
     Shaped_Menu_Controller::init();
     Shaped_Noise_Control::init();
     Shaped_Reviews_Dashboard::init();
+    Shaped_Review_Strip_Settings::init();
 
     // ─── Stripe Configuration ───
     require_once SHAPED_DIR . 'includes/class-stripe-config.php';

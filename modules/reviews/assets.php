@@ -45,6 +45,17 @@ add_action('wp_enqueue_scripts', function() {
         );
     }
 
+    // Enqueue review strip CSS
+    $strip_css = dirname(__FILE__) . '/assets/review-strip.css';
+    if (file_exists($strip_css)) {
+        wp_enqueue_style(
+            'shaped-review-strip',
+            plugin_dir_url(__FILE__) . 'assets/review-strip.css',
+            [],
+            filemtime($strip_css)
+        );
+    }
+
     // Enqueue frontend JS for standalone grid (filters, Load More)
     $js_file = dirname(__FILE__) . '/assets/reviews-frontend.js';
     if (file_exists($js_file)) {
@@ -117,6 +128,8 @@ function has_shortcode_on_page(): bool {
 
     $shortcodes = [
         'shaped_reviews', // Standalone grid shortcode
+        'shaped_review_strip', // Single provider strip
+        'shaped_review_strips', // Multi-provider grid
         'shaped_unified_rating',
         'shaped_review_author',
         'shaped_review_date',
