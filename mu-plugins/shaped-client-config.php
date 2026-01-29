@@ -43,7 +43,7 @@ function shaped_get_client_config() {
         // --- Contact ---
         'contact' => [
             'phone'   => '+385 91 613 3609',
-            'email'   => 'info@powderblue-falcon-973302.hostingersite.com',
+            'email'   => 'client@email.com',
             'address' => [
                 'street'      => 'Preluk 4',
                 'city'        => 'Rijeka',
@@ -113,7 +113,7 @@ function shaped_get_client_config() {
         // --- Email ---
         'email' => [
             'fromName'             => 'Preelook Apartments',
-            'fromEmail'            => 'info@powderblue-falcon-973302.hostingersite.com',
+            'fromEmail'            => 'client@email.com',
             'logoUrl'              => 'https://powderblue-falcon-973302.hostingersite.com/wp-content/uploads/2026/01/preelook-goldblack-1.png',
             'checkInTime'          => 'from 16:00',
             'checkOutTime'         => 'until 11:00',
