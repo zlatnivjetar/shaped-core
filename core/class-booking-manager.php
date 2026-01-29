@@ -273,8 +273,8 @@ class Shaped_Booking_Manager
                 </p>
                 <p style="color: var(--color-text-muted); font-size: 0.875rem; margin: 0;">
                     If you need assistance, please contact us at<br>
-                    <a href="tel:' . esc_attr(preg_replace('/[^0-9+]/', '', shaped_brand('contact.phone', ''))) . '" style="color: var(--color-brand-primary); text-decoration: none;">' . esc_html(shaped_brand('contact.phone', '')) . '</a> or
-                    <a href="mailto:' . esc_attr(shaped_brand('contact.email', '')) . '" style="color: var(--color-brand-primary); text-decoration: none;">' . esc_html(shaped_brand('contact.email', '')) . '</a>
+                    <a href="tel:' . esc_attr(preg_replace('/[^0-9+]/', '', shaped_brand('contact.phone', ''))) . '" style="color: var(--color-text-primary); text-decoration: none;">' . esc_html(shaped_brand('contact.phone', '')) . '</a> or
+                    <a href="mailto:' . esc_attr(shaped_brand('contact.email', '')) . '" style="color: var(--color-text-primary); text-decoration: none;">' . esc_html(shaped_brand('contact.email', '')) . '</a>
                 </p>
             </div>';
         }
