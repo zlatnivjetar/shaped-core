@@ -44,19 +44,19 @@
 
 .shaped-review-strip .star.full,
 .custom-review-strip .star.full {
-    color: var(--shaped-accent, #d4af37);
+    color: var(--shaped-accent);
 }
 
 .shaped-review-strip .star.empty,
 .custom-review-strip .star.empty {
-    color: var(--color-border-default, #dcdcde);
+    color: var(--color-border-default);
 }
 
 /* Partial star with CSS gradient */
 .shaped-review-strip .star.partial,
 .custom-review-strip .star.partial {
     position: relative;
-    color: var(--color-border-default, #dcdcde);
+    color: var(--color-border-default);
 }
 
 .shaped-review-strip .star.partial::before,
@@ -67,7 +67,7 @@
     top: 0;
     width: var(--fill, 50%);
     overflow: hidden;
-    color: var(--shaped-accent, #d4af37);
+    color: var(--shaped-accent);
 }
 
 /* Rate Wrap (single star + numeric) */
@@ -81,14 +81,14 @@
 .shaped-review-strip .rate-wrap .star,
 .custom-review-strip .rate-wrap .star {
     font-size: 14px;
-    color: var(--shaped-accent, #d4af37);
+    color: var(--shaped-accent);
 }
 
 .shaped-review-strip .rating-text,
 .custom-review-strip .rating-text {
     font-size: 13px;
     font-weight: 600;
-    color: var(--color-text-primary, #1d2327);
+    color: var(--color-text-inverted);
     letter-spacing: -0.2px;
 }
 
@@ -174,13 +174,13 @@
 @media (prefers-color-scheme: dark) {
     .shaped-review-strip .rating-text,
     .custom-review-strip .rating-text {
-        color: var(--color-text-primary, #ffffff);
+        color: var(--color-text-primary);
     }
 
     .shaped-review-strip .star.empty,
     .custom-review-strip .star.empty,
     .shaped-review-strip .star.partial,
     .custom-review-strip .star.partial {
-        color: var(--color-border-default, #444);
+        color: var(--color-border-default);
     }
 }

@@ -58,6 +58,9 @@ shaped-core/
 - Shortcode additions
 - Documentation
 
+## Other Notes
+- When implementing any kind of CSS, use only variables and avoid hardcoding colors
+
 
 ## External Dependencies (not in this repo)
 
