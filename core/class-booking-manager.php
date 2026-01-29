@@ -400,8 +400,8 @@ class Shaped_Booking_Manager
             <div style="text-align: center; margin-top:24px">
                 <p style="color: var(--color-text-muted); margin: 0; font-size: 0.875rem;">
                     Questions? Contact us at<br>
-                    <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', shaped_brand('contact.phone', ''))); ?>" style="color: var(--color-brand-primary); text-decoration: none;"><?php echo esc_html(shaped_brand('contact.phone', '')); ?></a> or
-                    <a href="mailto:<?php echo esc_attr(shaped_brand('contact.email', '')); ?>" style="color: var(--color-brand-primary); text-decoration: none;"><?php echo esc_html(shaped_brand('contact.email', '')); ?></a>
+                    <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', shaped_brand('contact.phone', ''))); ?>" style="color: var(--color-text-primary); text-decoration: none;"><?php echo esc_html(shaped_brand('contact.phone', '')); ?></a> or
+                    <a href="mailto:<?php echo esc_attr(shaped_brand('contact.email', '')); ?>" style="color: var(--color-text-primary); text-decoration: none;"><?php echo esc_html(shaped_brand('contact.email', '')); ?></a>
                 </p>
             </div>
         </div>
@@ -745,8 +745,8 @@ class Shaped_Booking_Manager
                     We've sent details to <strong><?php echo esc_html($customer->getEmail()); ?></strong>
                 </p>
                 <p style="color: var(--color-text-muted); margin-top: 24px; font-size: 0.875rem;">
-                    Questions? Contact us at <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', shaped_brand('contact.phone', ''))); ?>" style="color: var(--color-brand-primary); text-decoration: none;"><?php echo esc_html(shaped_brand('contact.phone', '')); ?></a> or
-                    <a href="mailto:<?php echo esc_attr(shaped_brand('contact.email', '')); ?>" style="color: var(--color-brand-primary); text-decoration: none;"><?php echo esc_html(shaped_brand('contact.email', '')); ?></a>
+                    Questions? Contact us at <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', shaped_brand('contact.phone', ''))); ?>" style="color: var(--color-text-primary); text-decoration: none;"><?php echo esc_html(shaped_brand('contact.phone', '')); ?></a> or
+                    <a href="mailto:<?php echo esc_attr(shaped_brand('contact.email', '')); ?>" style="color: var(--color-text-primary); text-decoration: none;"><?php echo esc_html(shaped_brand('contact.email', '')); ?></a>
                 </p>
             </div>
         </div>
