@@ -238,6 +238,69 @@ function shaped_email_get_styles() {
                 padding: 20px 16px !important;
             }
         }
+
+        /* Dark Mode Support */
+        :root {
+            color-scheme: light dark;
+            supported-color-schemes: light dark;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            /* Prevent email clients from changing our colors */
+            .email-body {
+                background-color: #1a1a1a !important;
+            }
+
+            .email-container {
+                background-color: #2d2d2d !important;
+            }
+
+            /* Keep button colors intact - prevent dark mode inversion */
+            .email-button,
+            .email-button td {
+                background-color: <?php echo shaped_email_color('primary', '#2563EB'); ?> !important;
+            }
+
+            .email-button a,
+            .email-button-link {
+                color: #ffffff !important;
+                background-color: <?php echo shaped_email_color('primary', '#2563EB'); ?> !important;
+            }
+
+            /* Card backgrounds for dark mode */
+            .email-card-highlight {
+                background-color: #3d3520 !important;
+            }
+
+            .email-card-neutral {
+                background-color: #363636 !important;
+            }
+
+            /* Text colors for dark mode */
+            .email-text-primary {
+                color: #ffffff !important;
+            }
+
+            .email-text-muted {
+                color: #b0b0b0 !important;
+            }
+
+            /* Header stays the same - gradient colors work fine */
+
+            /* Footer in dark mode */
+            .email-footer {
+                background-color: #1a1a1a !important;
+            }
+
+            /* Warning/alert boxes */
+            .email-alert-warning {
+                background-color: #4a3520 !important;
+            }
+
+            .email-alert-danger {
+                background-color: #4a2020 !important;
+            }
+        }
     </style>
     <?php
     return ob_get_clean();
@@ -268,6 +331,8 @@ function shaped_email_start($title = '') {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="x-apple-disable-message-reformatting">
     <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+    <meta name="color-scheme" content="light dark">
+    <meta name="supported-color-schemes" content="light dark">
     <title><?php echo esc_html($title); ?></title>
     <!--[if mso]>
     <noscript>
@@ -280,16 +345,16 @@ function shaped_email_start($title = '') {
     <![endif]-->
     <?php echo shaped_email_get_styles(); ?>
 </head>
-<body style="margin: 0; padding: 0; font-family: 'DM Sans', Arial, sans-serif; line-height: 1.6; background-color: #f5f5f5;">
+<body class="email-body" style="margin: 0; padding: 0; font-family: 'DM Sans', Arial, sans-serif; line-height: 1.6; background-color: #f5f5f5;">
     <!--[if mso]>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
     <tr>
     <td align="center">
     <![endif]-->
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="email-body" style="background-color: #ffffff;">
         <tr>
             <td align="center" style="padding: 24px 0;">
-                <table class="container" role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; max-width: 600px; margin: 0 auto;">
+                <table class="container email-container" role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; max-width: 600px; margin: 0 auto;">
     <?php
     return ob_get_clean();
 }
@@ -362,7 +427,7 @@ function shaped_email_footer($disclaimer = '') {
     ?>
                     <!-- Footer -->
                     <tr>
-                        <td class="footer-padding" style="background: #26272C; padding: 24px 32px; text-align: center;">
+                        <td class="footer-padding email-footer" style="background: #26272C; padding: 24px 32px; text-align: center;">
                             <p style="margin: 0 0 8px 0; color: #ffffff; font-size: 14px; line-height: 1.5;">
                                 <?php echo esc_html($footer_line); ?>
                             </p>
@@ -420,7 +485,7 @@ function shaped_email_block_greeting($name) {
     $text_primary = shaped_email_color('textPrimary', '#26272C');
     ob_start();
     ?>
-                                <p style="margin: 0 0 24px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
+                                <p class="email-text-primary" style="margin: 0 0 24px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
                                     Dear <strong><?php echo esc_html($name); ?></strong>,
                                 </p>
     <?php
@@ -437,7 +502,7 @@ function shaped_email_block_intro($text) {
     $text_muted = shaped_email_color('textMuted', '#666666');
     ob_start();
     ?>
-                                <p style="margin: 0 0 32px 0; font-size: 16px; color: <?php echo $text_muted; ?>; line-height: 1.6;">
+                                <p class="email-text-muted" style="margin: 0 0 32px 0; font-size: 16px; color: <?php echo $text_muted; ?>; line-height: 1.6;">
                                     <?php echo wp_kses_post($text); ?>
                                 </p>
     <?php
@@ -462,6 +527,9 @@ function shaped_email_block_card_start($variant = 'neutral', $margin_bottom = '2
     $primary = shaped_email_color('primary', '#2563EB');
     $border_color = shaped_brand('colors.border.default', '#e5e5e5');
 
+    // CSS class for dark mode targeting
+    $css_class = 'email-card-' . $variant;
+
     // Build border style and padding based on variant
     if ($variant === 'highlight') {
         // Brand light background gets 4px border-left in brand main color + extra left padding
@@ -479,7 +547,7 @@ function shaped_email_block_card_start($variant = 'neutral', $margin_bottom = '2
 
     ob_start();
     ?>
-                                <div style="background: <?php echo $bg; ?>; border-radius: 8px; <?php echo $padding; ?> margin: 0 0 <?php echo esc_attr($margin_bottom); ?> 0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); <?php echo $border_style; ?>">
+                                <div class="<?php echo esc_attr($css_class); ?>" style="background: <?php echo $bg; ?>; border-radius: 8px; <?php echo $padding; ?> margin: 0 0 <?php echo esc_attr($margin_bottom); ?> 0; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); <?php echo $border_style; ?>">
     <?php
     return ob_get_clean();
 }
@@ -508,7 +576,7 @@ function shaped_email_block_section_title($title, $emoji = '', $size = 'large') 
 
     ob_start();
     ?>
-                                    <h2 style="margin: 0 0 16px 0; font-size: <?php echo $font_size; ?>; color: <?php echo $text_primary; ?>; font-weight: 700;"><?php echo esc_html($display_title); ?></h2>
+                                    <h2 class="email-text-primary" style="margin: 0 0 16px 0; font-size: <?php echo $font_size; ?>; color: <?php echo $text_primary; ?>; font-weight: 700;"><?php echo esc_html($display_title); ?></h2>
     <?php
     return ob_get_clean();
 }
@@ -526,7 +594,7 @@ function shaped_email_block_section_title_h3($title, $emoji = '') {
 
     ob_start();
     ?>
-                                    <h3 style="margin: 0 0 16px 0; font-size: 18px; color: <?php echo $text_primary; ?>; font-weight: 700;"><?php echo esc_html($display_title); ?></h3>
+                                    <h3 class="email-text-primary" style="margin: 0 0 16px 0; font-size: 18px; color: <?php echo $text_primary; ?>; font-weight: 700;"><?php echo esc_html($display_title); ?></h3>
     <?php
     return ob_get_clean();
 }
@@ -572,15 +640,15 @@ function shaped_email_block_row($label, $value, $options = []) {
     $sub_text = isset($options['sub_text']) ? $options['sub_text'] : '';
     $mobile_stack = isset($options['mobile_stack']) ? $options['mobile_stack'] : false;
 
-    $row_class = $mobile_stack ? 'class="mobile-stack detail-row"' : 'class="detail-row"';
-    $value_class = $mobile_stack ? 'class="mobile-right"' : '';
+    $row_class = $mobile_stack ? 'mobile-stack detail-row' : 'detail-row';
+    $value_class = $mobile_stack ? 'mobile-right email-text-primary' : 'email-text-primary';
 
     ob_start();
     ?>
-                                        <tr <?php echo $row_class; ?>>
-                                            <td style="padding: 10px 0; color: <?php echo $text_muted; ?>; font-size: 14px; font-weight: 600; line-height: 1.6;"><?php echo esc_html($label); ?></td>
-                                            <td <?php echo $value_class; ?> style="padding: 10px 0; color: <?php echo $text_primary; ?>; font-size: 14px; text-align: right; line-height: 1.6;">
-                                                <?php if ($bold_value): ?><strong><?php endif; ?><?php echo esc_html($value); ?><?php if ($bold_value): ?></strong><?php endif; ?><?php if ($sub_text): ?><br><span style="font-weight: 600; color: <?php echo $text_muted; ?>;"><?php echo esc_html($sub_text); ?></span><?php endif; ?>
+                                        <tr class="<?php echo esc_attr($row_class); ?>">
+                                            <td class="email-text-muted" style="padding: 10px 0; color: <?php echo $text_muted; ?>; font-size: 14px; font-weight: 600; line-height: 1.6;"><?php echo esc_html($label); ?></td>
+                                            <td class="<?php echo esc_attr($value_class); ?>" style="padding: 10px 0; color: <?php echo $text_primary; ?>; font-size: 14px; text-align: right; line-height: 1.6;">
+                                                <?php if ($bold_value): ?><strong><?php endif; ?><?php echo esc_html($value); ?><?php if ($bold_value): ?></strong><?php endif; ?><?php if ($sub_text): ?><br><span class="email-text-muted" style="font-weight: 600; color: <?php echo $text_muted; ?>;"><?php echo esc_html($sub_text); ?></span><?php endif; ?>
                                             </td>
                                         </tr>
     <?php
@@ -619,9 +687,9 @@ function shaped_email_block_total_row($label, $value) {
     ob_start();
     ?>
                                         <tr>
-                                            <td style="padding: 0; color: <?php echo $text_primary; ?>; font-size: 16px; font-weight: 600; line-height: 1.6;"><?php echo esc_html($label); ?></td>
+                                            <td class="email-text-primary" style="padding: 0; color: <?php echo $text_primary; ?>; font-size: 16px; font-weight: 600; line-height: 1.6;"><?php echo esc_html($label); ?></td>
                                             <td style="padding: 0; text-align: right;">
-                                                <span class="total-price" style="color: <?php echo $text_primary; ?>; font-size: 24px; font-weight: 600;"><?php echo esc_html($value); ?></span>
+                                                <span class="total-price email-text-primary" style="color: <?php echo $text_primary; ?>; font-size: 24px; font-weight: 600;"><?php echo esc_html($value); ?></span>
                                             </td>
                                         </tr>
     <?php
@@ -630,6 +698,9 @@ function shaped_email_block_total_row($label, $value) {
 
 /**
  * Render a CTA button
+ *
+ * Uses table-based structure for maximum email client compatibility,
+ * including dark mode support on mobile devices.
  *
  * @param string $text Button text
  * @param string $url Button link URL
@@ -643,12 +714,25 @@ function shaped_email_block_button($text, $url, $subtext = '') {
     ob_start();
     ?>
                                 <div style="text-align: center; margin: 0 0 24px 0;">
-                                    <a href="<?php echo esc_url($url); ?>"
-                                       style="display: inline-block; background: <?php echo $primary; ?>; color: <?php echo $text_inverse; ?>; padding: 14px 30px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 15px; letter-spacing: 0.2px; text-transform: uppercase;">
-                                        <?php echo esc_html($text); ?>
-                                    </a>
+                                    <!--[if mso]>
+                                    <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="<?php echo esc_url($url); ?>" style="height:48px;v-text-anchor:middle;width:200px;" arcsize="17%" stroke="f" fillcolor="<?php echo $primary; ?>">
+                                        <w:anchorlock/>
+                                        <center style="color:<?php echo $text_inverse; ?>;font-family:Arial,sans-serif;font-size:15px;font-weight:bold;text-transform:uppercase;"><?php echo esc_html($text); ?></center>
+                                    </v:roundrect>
+                                    <![endif]-->
+                                    <!--[if !mso]><!-->
+                                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" class="email-button" style="margin: 0 auto;">
+                                        <tr>
+                                            <td align="center" bgcolor="<?php echo $primary; ?>" style="background-color: <?php echo $primary; ?>; border-radius: 8px; mso-padding-alt: 14px 30px;">
+                                                <a href="<?php echo esc_url($url); ?>" class="email-button-link" target="_blank" style="display: inline-block; background-color: <?php echo $primary; ?>; color: <?php echo $text_inverse; ?>; padding: 14px 30px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 15px; letter-spacing: 0.2px; text-transform: uppercase; font-family: 'DM Sans', Arial, sans-serif; mso-line-height-rule: exactly; line-height: 1.2;">
+                                                    <?php echo esc_html($text); ?>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <!--<![endif]-->
                                     <?php if ($subtext): ?>
-                                    <p style="margin: 12px 0 0 0; font-size: 13px; color: #999999; line-height: 1.6;">
+                                    <p class="email-text-muted" style="margin: 12px 0 0 0; font-size: 13px; color: #999999; line-height: 1.6;">
                                         <?php echo esc_html($subtext); ?>
                                     </p>
                                     <?php endif; ?>
@@ -669,14 +753,16 @@ function shaped_email_block_paragraph($text, $variant = 'muted') {
     $text_primary = shaped_email_color('textPrimary', '#26272C');
 
     $color = $variant === 'primary' ? $text_primary : $text_muted;
+    $css_class = $variant === 'primary' ? 'email-text-primary' : 'email-text-muted';
     $align = $variant === 'center' ? 'center' : 'left';
     if ($variant === 'center') {
         $color = $text_muted;
+        $css_class = 'email-text-muted';
     }
 
     ob_start();
     ?>
-                                    <p style="margin: 0 0 16px 0; font-size: 14px; color: <?php echo $color; ?>; line-height: 1.6; text-align: <?php echo $align; ?>;">
+                                    <p class="<?php echo esc_attr($css_class); ?>" style="margin: 0 0 16px 0; font-size: 14px; color: <?php echo $color; ?>; line-height: 1.6; text-align: <?php echo $align; ?>;">
                                         <?php echo wp_kses_post($text); ?>
                                     </p>
     <?php
@@ -697,10 +783,10 @@ function shaped_email_block_address($label, $address, $url = '') {
 
     ob_start();
     ?>
-                                    <p style="margin: 0 0 12px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
+                                    <p class="email-text-primary" style="margin: 0 0 12px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
                                         <strong><?php echo esc_html($label); ?></strong><br>
                                         <?php if ($url): ?>
-                                        <a href="<?php echo esc_url($url); ?>" style="color: <?php echo $text_dark; ?>; font-size: 16px; font-weight: 700;"><?php echo esc_html($address); ?></a>
+                                        <a href="<?php echo esc_url($url); ?>" class="email-text-primary" style="color: <?php echo $text_dark; ?>; font-size: 16px; font-weight: 700;"><?php echo esc_html($address); ?></a>
                                         <?php else: ?>
                                         <?php echo esc_html($address); ?>
                                         <?php endif; ?>
@@ -729,9 +815,9 @@ function shaped_email_block_contact($phone = '', $email = '') {
 
     ob_start();
     ?>
-                                    <p style="margin: 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.8;">
-                                        <strong>Phone:</strong> <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', $phone)); ?>" style="color: <?php echo $text_primary; ?>; font-weight: 700;"><?php echo esc_html($phone); ?></a><br>
-                                        <strong>Email:</strong> <a href="mailto:<?php echo esc_attr($email); ?>" style="color: <?php echo $text_primary; ?>; font-weight: 700;"><?php echo esc_html($email); ?></a>
+                                    <p class="email-text-primary" style="margin: 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.8;">
+                                        <strong>Phone:</strong> <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', $phone)); ?>" class="email-text-primary" style="color: <?php echo $text_primary; ?>; font-weight: 700;"><?php echo esc_html($phone); ?></a><br>
+                                        <strong>Email:</strong> <a href="mailto:<?php echo esc_attr($email); ?>" class="email-text-primary" style="color: <?php echo $text_primary; ?>; font-weight: 700;"><?php echo esc_html($email); ?></a>
                                     </p>
     <?php
     return ob_get_clean();
@@ -751,6 +837,9 @@ function shaped_email_block_closing($message = '', $signature = '', $variant = '
     $primary = shaped_email_color('primary', '#2563EB');
     $border_color = shaped_brand('colors.border.default', '#e5e5e5');
     $bg = $variant === 'highlight' ? '#fffbf0' : '#f8f8f8';
+
+    // CSS class for dark mode targeting
+    $css_class = 'email-card-' . $variant;
 
     // Build border style and padding based on variant
     if ($variant === 'highlight') {
@@ -776,11 +865,11 @@ function shaped_email_block_closing($message = '', $signature = '', $variant = '
 
     ob_start();
     ?>
-                                <div style="text-align: center; <?php echo $padding; ?> background: <?php echo $bg; ?>; border-radius: 8px; margin: 0; <?php echo $border_style; ?>">
-                                    <p style="margin: 0 0 12px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
+                                <div class="<?php echo esc_attr($css_class); ?>" style="text-align: center; <?php echo $padding; ?> background: <?php echo $bg; ?>; border-radius: 8px; margin: 0; <?php echo $border_style; ?>">
+                                    <p class="email-text-primary" style="margin: 0 0 12px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
                                         <?php echo esc_html($message); ?>
                                     </p>
-                                    <p style="margin: 0<?php if (!empty($logo_url)): ?> 0 16px 0<?php endif; ?>; font-size: 16px; color: <?php echo $text_primary; ?>; font-weight: 600; line-height: 1.6;">
+                                    <p class="email-text-primary" style="margin: 0<?php if (!empty($logo_url)): ?> 0 16px 0<?php endif; ?>; font-size: 16px; color: <?php echo $text_primary; ?>; font-weight: 600; line-height: 1.6;">
                                         <?php echo wp_kses_post($signature); ?>
                                     </p>
                                     <?php if (!empty($logo_url)): ?>
@@ -812,11 +901,11 @@ function shaped_email_block_payment_info($amount, $date, $note = '') {
 
     ob_start();
     ?>
-                                <div style="background: #fffbf0; border-radius: 8px; padding: 24px 24px 24px 21px; margin: 0 0 24px 0; text-align: center; <?php echo $border_style; ?>">
-                                    <p style="margin: 0 0 12px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
-                                        We'll charge <strong style="color: <?php echo $text_primary; ?>; font-size: 20px;"><?php echo esc_html($amount); ?></strong>
+                                <div class="email-card-highlight email-alert-warning" style="background: #fffbf0; border-radius: 8px; padding: 24px 24px 24px 21px; margin: 0 0 24px 0; text-align: center; <?php echo $border_style; ?>">
+                                    <p class="email-text-primary" style="margin: 0 0 12px 0; font-size: 16px; color: <?php echo $text_primary; ?>; line-height: 1.6;">
+                                        We'll charge <strong class="email-text-primary" style="color: <?php echo $text_primary; ?>; font-size: 20px;"><?php echo esc_html($amount); ?></strong>
                                     </p>
-                                    <p style="margin: 0; font-size: 14px; color: <?php echo $text_muted; ?>; line-height: 1.6;">
+                                    <p class="email-text-muted" style="margin: 0; font-size: 14px; color: <?php echo $text_muted; ?>; line-height: 1.6;">
                                         on <strong><?php echo esc_html($date); ?></strong>
                                         <?php if ($note): ?><br><?php echo esc_html($note); ?><?php endif; ?>
                                     </p>
@@ -829,7 +918,7 @@ function shaped_email_block_payment_info($amount, $date, $note = '') {
  * Render a text-only paragraph (no margin at bottom)
  *
  * @param string $text Text content
- * @param string $variant 'muted', 'primary', or 'center'
+ * @param string $variant 'muted', 'primary', 'center', or 'brand'
  * @return string Paragraph HTML
  */
 function shaped_email_block_text($text, $variant = 'muted') {
@@ -838,23 +927,26 @@ function shaped_email_block_text($text, $variant = 'muted') {
     $primary = shaped_email_color('primary', '#2563EB');
 
     $color = $variant === 'primary' ? $text_primary : $text_muted;
+    $css_class = $variant === 'primary' ? 'email-text-primary' : 'email-text-muted';
     $align = 'left';
     $font_weight = 'normal';
 
     if ($variant === 'center') {
         $color = $text_muted;
+        $css_class = 'email-text-muted';
         $align = 'center';
     }
 
     if ($variant === 'brand') {
         $color = $primary;
+        $css_class = 'email-text-primary';
         $align = 'center';
         $font_weight = '600';
     }
 
     ob_start();
     ?>
-                                <p style="margin: 0; font-size: 14px; color: <?php echo $color; ?>; line-height: 1.6; text-align: <?php echo $align; ?>; font-weight: <?php echo $font_weight; ?>;">
+                                <p class="<?php echo esc_attr($css_class); ?>" style="margin: 0; font-size: 14px; color: <?php echo $color; ?>; line-height: 1.6; text-align: <?php echo $align; ?>; font-weight: <?php echo $font_weight; ?>;">
                                     <?php echo wp_kses_post($text); ?>
                                 </p>
     <?php
