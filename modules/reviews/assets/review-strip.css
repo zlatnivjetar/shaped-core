@@ -169,8 +169,8 @@
         gap: 4px;
     }
 }
-
-/* ===== DARK MODE SUPPORT ===== */
+/*
+===== DARK MODE SUPPORT =====
 @media (prefers-color-scheme: dark) {
     .shaped-review-strip .rating-text,
     .custom-review-strip .rating-text {
@@ -184,3 +184,4 @@
         color: var(--color-border-default);
     }
 }
+*/
