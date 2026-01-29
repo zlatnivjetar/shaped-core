@@ -650,7 +650,7 @@ class Shaped_Booking_Manager
             <!-- Success -->
             <div style="text-align: center; padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid <?php shaped_brand_color_e('border'); ?>;">
                 <div style="color: <?php shaped_brand_color_e('success'); ?>; font-size: 3rem; margin-bottom: 16px;">✓</div>
-                <h1 style="color: <?php shaped_brand_color_e('textDark'); ?>; font-size: 1.5rem; font-weight: 600; margin: 0 0 8px 0;">Booking Confirmed!</h1>
+                <h1 style="color: var(--color-text-primary, <?php shaped_brand_color_e('textDark'); ?>); font-size: 1.5rem; font-weight: 600; margin: 0 0 8px 0;">Booking Confirmed!</h1>
                 <p style="color: <?php shaped_brand_color_e('textMuted'); ?>; margin: 0;">Your reservation has been successfully secured.</p>
             </div>
 
