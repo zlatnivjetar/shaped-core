@@ -253,13 +253,13 @@ function shaped_get_reservation_template($data) {
     );
 
     // Footer note
-    $primary = shaped_email_color('primary', '#2563EB');
+    $text_primary = shaped_email_color('textMuted', '#26272c');
     $text_muted = shaped_email_color('textMuted', '#666666');
     $content .= '<p style="margin: 0; font-size: 14px; color: ' . $text_muted . '; text-align: center; line-height: 1.6;">';
     $content .= "You'll receive full booking details after payment is processed.<br>";
     if ($phone) {
         $phone_clean = preg_replace('/[^0-9+]/', '', $phone);
-        $content .= 'Questions? Contact us at <a href="tel:' . $phone_clean . '" style="color: ' . $primary . ';">' . esc_html($phone) . '</a>';
+        $content .= 'Questions? Contact us at <a href="tel:' . $phone_clean . '" style="color: ' . $text_primary . ';">' . esc_html($phone) . '</a>';
     }
     $content .= '</p>';
 
@@ -427,7 +427,7 @@ function shaped_get_payment_failed_template($data) {
     $content .= shaped_email_block_card_end();
 
     // Warning card
-    $text_primary = shaped_email_color('textPrimary', '#26272C');
+    $text_primary = shaped_email_color('textMuted', '#26272C');
     $text_muted = shaped_email_color('textMuted', '#666666');
     $content .= '<div class="email-alert-danger" style="background: #FFF5F5; border-left: 4px solid #b83c2e; border-radius: 8px; padding: 20px; margin: 0 0 24px 0;">';
     $content .= '<p class="email-text-primary" style="margin: 0 0 12px 0; font-size: 16px; color: ' . $text_primary . '; font-weight: 700;">⚠️ Action Required</p>';
