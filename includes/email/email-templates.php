@@ -248,8 +248,8 @@ function shaped_email_get_styles() {
         /* Gmail dark mode targeting */
         u + .email-body .email-button-link,
         u + .email-body .email-button a {
-            color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
+            color: <?php echo shaped_email_color('onPrimary', '#0B0B09'); ?> !important;
+            -webkit-text-fill-color: <?php echo shaped_email_color('onPrimary', '#0B0B09'); ?> !important;
         }
 
         /* Force button text color in all contexts */
@@ -257,8 +257,8 @@ function shaped_email_get_styles() {
         .email-button-link span,
         .email-button a,
         .email-button a span {
-            color: #ffffff !important;
-            -webkit-text-fill-color: #ffffff !important;
+            color: <?php echo shaped_email_color('onPrimary', '#0B0B09'); ?> !important;
+            -webkit-text-fill-color: <?php echo shaped_email_color('onPrimary', '#0B0B09'); ?> !important;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -277,7 +277,8 @@ function shaped_email_get_styles() {
             .email-button table,
             td[class="email-button"],
             td.email-button {
-                background-color: <?php echo shaped_email_color('primary', '#2563EB'); ?> !important;
+                background-color: <?php echo shaped_email_color('primary', '#E2BD27'); ?> !important;
+                border-color: <?php echo shaped_email_color('primary', '#E2BD27'); ?> !important;
             }
 
             /* Button text - multiple selectors for maximum compatibility */
@@ -289,9 +290,14 @@ function shaped_email_get_styles() {
             a[class="email-button-link"],
             .email-button td a,
             td .email-button-link {
-                color: #ffffff !important;
-                -webkit-text-fill-color: #ffffff !important;
-                background-color: <?php echo shaped_email_color('primary', '#2563EB'); ?> !important;
+                color: <?php echo shaped_email_color('onPrimary', '#0B0B09'); ?> !important;
+                -webkit-text-fill-color: <?php echo shaped_email_color('onPrimary', '#0B0B09'); ?> !important;
+                background-color: <?php echo shaped_email_color('primary', '#E2BD27'); ?> !important;
+            }
+
+            /* Prevent email clients from auto-adjusting brand colors in dark mode */
+            .email-card-highlight {
+                border-left-color: <?php echo shaped_email_color('primary', '#E2BD27'); ?> !important;
             }
 
             /* Card backgrounds for dark mode */
@@ -551,7 +557,7 @@ function shaped_email_block_card_start($variant = 'neutral', $margin_bottom = '2
     ];
 
     $bg = isset($backgrounds[$variant]) ? $backgrounds[$variant] : $backgrounds['neutral'];
-    $primary = shaped_email_color('primary', '#2563EB');
+    $primary = shaped_email_color('primary', '#E2BD27');
     $border_color = shaped_brand('colors.border.default', '#e5e5e5');
 
     // CSS class for dark mode targeting
@@ -735,8 +741,8 @@ function shaped_email_block_total_row($label, $value) {
  * @return string Button HTML
  */
 function shaped_email_block_button($text, $url, $subtext = '') {
-    $primary = shaped_email_color('primary', '#2563EB');
-    $text_inverse = shaped_email_color('textInverse', '#FFFFFF');
+    $primary = shaped_email_color('primary', '#E2BD27');
+    $on_primary = shaped_email_color('onPrimary', '#0B0B09');
 
     ob_start();
     ?>
@@ -744,15 +750,15 @@ function shaped_email_block_button($text, $url, $subtext = '') {
                                     <!--[if mso]>
                                     <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="<?php echo esc_url($url); ?>" style="height:48px;v-text-anchor:middle;width:200px;" arcsize="17%" stroke="f" fillcolor="<?php echo $primary; ?>">
                                         <w:anchorlock/>
-                                        <center style="color:<?php echo $text_inverse; ?>;font-family:Arial,sans-serif;font-size:15px;font-weight:bold;text-transform:uppercase;"><?php echo esc_html($text); ?></center>
+                                        <center style="color:<?php echo $on_primary; ?>;font-family:Arial,sans-serif;font-size:15px;font-weight:600;text-transform:uppercase;"><?php echo esc_html($text); ?></center>
                                     </v:roundrect>
                                     <![endif]-->
                                     <!--[if !mso]><!-->
                                     <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" class="email-button" style="margin: 0 auto;">
                                         <tr>
                                             <td align="center" bgcolor="<?php echo $primary; ?>" style="background-color: <?php echo $primary; ?> !important; border-radius: 8px; mso-padding-alt: 16px 32px;">
-                                                <a href="<?php echo esc_url($url); ?>" class="email-button-link" target="_blank" style="display: inline-block; background-color: <?php echo $primary; ?> !important; color: <?php echo $text_inverse; ?> !important; -webkit-text-fill-color: <?php echo $text_inverse; ?> !important; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; letter-spacing: 0.2px; text-transform: uppercase; font-family: 'DM Sans', Arial, sans-serif; mso-line-height-rule: exactly; line-height: 1.2;">
-                                                    <span style="color: <?php echo $text_inverse; ?> !important; -webkit-text-fill-color: <?php echo $text_inverse; ?> !important;"><?php echo esc_html($text); ?></span>
+                                                <a href="<?php echo esc_url($url); ?>" class="email-button-link" target="_blank" style="display: inline-block; background-color: <?php echo $primary; ?> !important; color: <?php echo $on_primary; ?> !important; -webkit-text-fill-color: <?php echo $on_primary; ?> !important; padding: 16px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; letter-spacing: 0.2px; text-transform: uppercase; font-family: 'DM Sans', Arial, sans-serif; mso-line-height-rule: exactly; line-height: 1.2;">
+                                                    <span style="color: <?php echo $on_primary; ?> !important; -webkit-text-fill-color: <?php echo $on_primary; ?> !important;"><?php echo esc_html($text); ?></span>
                                                 </a>
                                             </td>
                                         </tr>
@@ -861,7 +867,7 @@ function shaped_email_block_contact($phone = '', $email = '') {
  */
 function shaped_email_block_closing($message = '', $signature = '', $variant = 'highlight', $logo_url = null) {
     $text_primary = shaped_email_color('textPrimary', '#26272C');
-    $primary = shaped_email_color('primary', '#2563EB');
+    $primary = shaped_email_color('primary', '#E2BD27');
     $border_color = shaped_brand('colors.border.default', '#e5e5e5');
     $bg = $variant === 'highlight' ? '#fffbf0' : '#f8f8f8';
 
@@ -920,7 +926,7 @@ function shaped_email_block_closing($message = '', $signature = '', $variant = '
 function shaped_email_block_payment_info($amount, $date, $note = '') {
     $text_primary = shaped_email_color('textPrimary', '#26272C');
     $text_muted = shaped_email_color('textMuted', '#666666');
-    $primary = shaped_email_color('primary', '#2563EB');
+    $primary = shaped_email_color('primary', '#E2BD27');
     $border_color = shaped_brand('colors.border.default', '#e5e5e5');
 
     // Brand light background gets 4px border-left in brand main color + extra left padding
@@ -951,7 +957,7 @@ function shaped_email_block_payment_info($amount, $date, $note = '') {
 function shaped_email_block_text($text, $variant = 'muted') {
     $text_muted = shaped_email_color('textMuted', '#666666');
     $text_primary = shaped_email_color('textPrimary', '#26272C');
-    $primary = shaped_email_color('primary', '#2563EB');
+    $primary = shaped_email_color('primary', '#E2BD27');
 
     $color = $variant === 'primary' ? $text_primary : $text_muted;
     $css_class = $variant === 'primary' ? 'email-text-primary' : 'email-text-muted';
