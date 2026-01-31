@@ -289,6 +289,10 @@ a.datepick-cmd {
   margin-top: 0px !important;
 }
 
+.datepick-month-header {
+    line-height: 32px !important;
+}
+
 
 /* Mobile Responsive */
 @media (max-width: 767px) {
