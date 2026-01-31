@@ -659,7 +659,7 @@ class Shaped_Booking_Manager
                 <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--color-brand-primary);">Booking Details</h2>
                 <div style="background: var(--color-surface-alt); border-radius: 8px; padding: 24px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; border: 1px solid var(--color-border-default);">
                     <div style="display: grid; gap: 12px; color: var(--color-text-primary);">
-                        <div><span style="color: var(--color-text-muted);">Booking ID:</span> <strong>#<?php echo $booking_id; ?></strong></div>
+                        <div><span style="color: var(--color-text-muted);">Booking ID:</span> <strong>#<?php echo $booking_id; ?></strong><span id="shaped-booking-id" style="display:none;"><?php echo esc_html($booking_id); ?></span></div>
                         <div><span style="color: var(--color-text-muted);">Guest Name:</span> <strong><?php echo esc_html($customer->getFirstName() . ' ' . $customer->getLastName()); ?></strong></div>
                         <div><span style="color: var(--color-text-muted);">Check-in:</span> <strong><?php echo $context['check_in']->format('F j, Y'); ?></strong> from 16:00h</div>
                         <div><span style="color: var(--color-text-muted);">Check-out:</span> <strong><?php echo $context['check_out']->format('F j, Y'); ?></strong> until 11:00h</div>
@@ -677,20 +677,23 @@ class Shaped_Booking_Manager
                         <!-- DEPOSIT PAYMENT -->
                         <p style="color: var(--color-text-primary); margin-bottom: 12px; line-height: 1.5;">
                             <strong style="font-weight:600">Deposit paid:</strong>
-                            <span style="color: var(--color-text-primary); font-size: 1.25rem; font-weight: 600;">
+                            <span id="shaped-paid-now" style="color: var(--color-text-primary); font-size: 1.25rem; font-weight: 600;">
                                 €<?php echo number_format((float)$context['deposit_amount'], 2); ?>
                             </span>
                         </p>
                         <?php if ($context['balance_due'] > 0): ?>
                         <p style="color: var(--color-text-primary); margin-bottom: 12px; line-height: 1.5;">
                             <strong style="font-weight:600">Balance due on arrival:</strong>
-                            <span style="font-size: 1.125rem; font-weight: 600;">
+                            <span id="shaped-balance-due" style="font-size: 1.125rem; font-weight: 600;">
                                 €<?php echo number_format((float)$context['balance_due'], 2); ?>
                             </span>
                         </p>
                         <?php endif; ?>
-                        <p style="color: var(--color-text-primary); margin-bottom: 8px; padding-top: 8px; border-top: 1px solid var(--color-border-default); font-size: 1rem;">
-                            Total booking amount: <strong style="font-weight:600">€<?php echo number_format((float)($context['deposit_amount'] + $context['balance_due']), 2); ?></strong>
+                        <p style="color: var(--color-text-primary); margin-bottom: 8px; padding-top: 8px; border-top: 1px solid var(--color-border-default); font-size: 1rem; font-weight: 600;">
+                            Total booking amount: 
+                            <strong style="font-weight:600">
+                              <span id="shaped-booking-total">€<?php echo number_format((float)($context['deposit_amount'] + $context['balance_due']), 2); ?></span>
+                            </strong>
                         </p>
                         <p style="color: var(--color-text-primary); margin-bottom: 0; line-height: 1.5;">
                             Thank you for your deposit. The remaining balance is due upon arrival at the property. You'll receive a receipt by email shortly.
@@ -700,8 +703,11 @@ class Shaped_Booking_Manager
                         <?php if (is_numeric($context['amount'])): ?>
                         <p style="color: var(--color-text-primary); margin-bottom: 12px; line-height: 1.5;">
                             <strong style="font-weight:600">Total Amount:</strong>
-                            <span style="color: var(--color-text-primary); font-size: 1.25rem; font-weight: 600;">
+                            <span id="shaped-booking-total" style="color: var(--color-text-primary); font-size: 1.25rem; font-weight: 600;">
                                 €<?php echo number_format((float)$context['amount'], 2); ?>
+                            </span>
+                            <span id="shaped-paid-now" style="display:none;">
+                                €<?php echo $context['is_immediate'] ? number_format((float)$context['amount'], 2) : '0.00'; ?>
                             </span>
                         </p>
                         <?php endif; ?>
@@ -719,6 +725,13 @@ class Shaped_Booking_Manager
                             </p>
                         <?php endif; ?>
                     <?php endif; ?>
+                    <span id="shaped-payment-mode" style="display:none;">
+                      <?php
+                        echo ($context['payment_type']==='deposit' && $context['deposit_amount']>0)
+                          ? 'deposit'
+                          : ($context['is_immediate'] ? 'full' : 'authorize');
+                      ?>
+                    </span>
                 </div>
             </div>
 
