@@ -81,18 +81,23 @@
 	}
 
 .datepick-month-header select.datepick-month-year:nth-of-type(2) {
-  padding-right: 16px;
-  padding-left: 16px;
-  width: 76px !important;
-  font-weight: 700 !important;
+  padding-right: 8px;
+  padding-left: 0px;
+  width: fit-content !important;
+  font-weight: 600 !important;
+}
+
+select.datepick-month-year {
+  color: var(--color-text-primary) !important;
+  font-weight: 600;
 }
 
 .datepick-month-header select.datepick-month-year {
-  width: 104px !important;
+  width: fit-content !important;
   cursor: pointer;
-          font-weight: 700 !important;
-          text-align: right;
-              padding: 0 16px 0 0;
+  font-weight: 600 !important;
+  text-align: right;
+  padding: 0 8px 0 0;
 }
 
 .datepick-month-header select:not([size]):not([multiple]) {
@@ -101,7 +106,7 @@
 
 .mphb-datepicker-minimal .datepick-nav a {
   color: var(--color-text-primary) !important;
-  font-weight: 700;
+  font-weight: 600;
   width: 100%;
   padding: 0.75rem 1rem;
   border-radius: 0rem;
@@ -197,7 +202,7 @@ a.datepick-cmd {
 .mphb-datepicker-minimal .mphb-selected-date {
   background: var(--color-brand-primary) !important;
   color: var(--color-text-on-primary) !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   width: 3rem !important;
 }
 
@@ -251,7 +256,7 @@ a.datepick-cmd {
   border-radius: 0.375rem;
   letter-spacing: .2px;
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: 600;
   transition: all 200ms ease;
   font-size: 14px;
   line-height: 1.5em !important;
@@ -320,18 +325,13 @@ a.datepick-cmd {
 
 
   .datepick-month-header select.datepick-month-year {
-    width: 100px !important;
     cursor: pointer;
-    padding: 0 16px 0 0;
+    padding: 0 8px 0 0;
     font-size: .9375rem;
-    font-weight: 700 !important;
+    font-weight: 600 !important;
     text-align: end;
     text-align: -moz-end;
   text-align: -webkit-end;
-}
-
-.datepick-month-header select.datepick-month-year:nth-of-type(2) {
-  width: 72px !important;
 }
 
 .mphb-calendar .mphb-datepicker-minimal .datepick-ctrl, .datepick-popup .mphb-datepicker-minimal .datepick-ctrl {
