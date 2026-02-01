@@ -139,6 +139,25 @@ class Shaped_Assets {
         
         // ─── Search Form & Calendar (on pages with search form) ───
         if ($this->has_search_form()) {
+            // Dequeue MPHB's native datepicker
+            $this->dequeue_mphb_datepicker();
+
+            // Enqueue Litepicker from CDN
+            wp_enqueue_style(
+                'litepicker',
+                'https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css',
+                [],
+                '2.0.12'
+            );
+
+            wp_enqueue_script(
+                'litepicker',
+                'https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js',
+                [],
+                '2.0.12',
+                true
+            );
+
             if (file_exists(SHAPED_DIR . 'assets/css/search-form.css')) {
                 wp_enqueue_style(
                     'shaped-search-form',
@@ -152,9 +171,26 @@ class Shaped_Assets {
                 wp_enqueue_style(
                     'shaped-search-calendar',
                     SHAPED_URL . 'assets/css/search-calendar.css',
-                    ['shaped-design-tokens'],
+                    ['shaped-design-tokens', 'litepicker'],
                     SHAPED_VERSION
                 );
+            }
+
+            // Enqueue Litepicker initialization
+            if (file_exists(SHAPED_DIR . 'assets/js/litepicker-init.js')) {
+                wp_enqueue_script(
+                    'shaped-litepicker-init',
+                    SHAPED_URL . 'assets/js/litepicker-init.js',
+                    ['jquery', 'litepicker'],
+                    SHAPED_VERSION,
+                    true
+                );
+
+                // Pass AJAX URL to JavaScript
+                wp_localize_script('shaped-litepicker-init', 'shapedLitepicker', [
+                    'ajaxurl' => admin_url('admin-ajax.php'),
+                    'nonce' => wp_create_nonce('shaped_litepicker')
+                ]);
             }
         }
 
@@ -378,5 +414,21 @@ class Shaped_Assets {
      */
     private function has_multilingual_plugin(): bool {
         return defined('ICL_SITEPRESS_VERSION') || defined('POLYLANG_VERSION');
+    }
+
+    /**
+     * Dequeue MPHB's native datepicker to make room for Litepicker
+     */
+    private function dequeue_mphb_datepicker(): void {
+        // Dequeue MPHB datepicker scripts and styles
+        wp_dequeue_script('mphb-jquery-datepick');
+        wp_deregister_script('mphb-jquery-datepick');
+
+        wp_dequeue_style('mphb-jquery-datepick');
+        wp_deregister_style('mphb-jquery-datepick');
+
+        // Also dequeue the main datepicker style if exists
+        wp_dequeue_style('mphb-datepick');
+        wp_deregister_style('mphb-datepick');
     }
 }
