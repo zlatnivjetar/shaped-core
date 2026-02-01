@@ -195,6 +195,7 @@ add_action('plugins_loaded', function() {
     require_once SHAPED_DIR . 'shortcodes/room-cards.php';
     require_once SHAPED_DIR . 'shortcodes/class-provider-badge.php';
     require_once SHAPED_DIR . 'shortcodes/class-modal-link.php';
+    require_once SHAPED_DIR . 'shortcodes/class-landing-rooms.php';
     
     // ─── Schema Markup ───
     if (file_exists(SHAPED_DIR . 'schema/markup.php')) {
