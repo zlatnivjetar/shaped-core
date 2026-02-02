@@ -112,10 +112,13 @@
         margin-top: 8px;
     }
 
-    .mphb-search-benefits-inline .benefit-separator:last-child {
+    .mphb-search-benefits-inline .benefit-separator {
         display: none;
     }
 
+    .mphb-search-benefits-inline .benefit-separator:first-child {
+        display: block;
+    }
 
     .mphb-search-benefits-inline .benefit-item {
         font-size: 13px;
