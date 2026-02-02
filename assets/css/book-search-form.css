@@ -110,14 +110,23 @@
     .mphb-search-benefits-inline {
         flex-direction: column;
         gap: 4px;
-        margin-top: 16px;
+        margin-top: 8px;
     }
 
     .mphb-search-benefits-inline .benefit-separator {
         display: none;
     }
 
+    .mphb-search-benefits-inline .benefit-separator:first-child {
+        display: block;
+    }
+
+
     .mphb-search-benefits-inline .benefit-item {
-        font-size: 12px;
+        font-size: 13px;
+    }
+
+    .mphb-search-benefits-inline .benefit-item:last-child {
+        display: none;
     }
 }
