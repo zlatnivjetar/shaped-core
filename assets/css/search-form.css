@@ -193,6 +193,7 @@ abbr[title="Formatted as dd/mm/yyyy"] {
     
     .mphb_sc_search-submit-button-wrapper input.button,.mphb_sc_search-submit-button-wrapper {
         width:100%;
+        height: 48px;
     }
     
     .trust-mobile {
