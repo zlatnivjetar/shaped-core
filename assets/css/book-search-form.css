@@ -111,6 +111,10 @@
         border-radius: var(--radius-lg);
     }
 
+    .mphb_sc_search-form {
+      width: 100%;
+    }
+
     .mphb-search-benefits-inline {
         gap: 4px;
         margin-top: 8px;
