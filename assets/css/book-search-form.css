@@ -1,12 +1,21 @@
 /**
  * Book Page Search Form - Benefits Line
  *
- * Styles for the inline benefits text displayed in the search form
+ * Styles for the inline benefits text displayed below the search form
  * on the /book page: "Best rate direct • Instant confirmation • Secure payment"
  *
  * @package Shaped_Core
  * @since 2.0.0
  */
+
+/* =================================================================
+ * CONTAINER - WRAPS FORM AND BENEFITS
+ * ================================================================= */
+.mphb-book-search-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
 
 /* =================================================================
  * BENEFITS LINE - CONTAINER
@@ -19,8 +28,6 @@
     gap: 8px;
     width: 100%;
     margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid var(--color-border-default);
     font-family: var(--font-body);
 }
 
@@ -50,7 +57,6 @@
 @media (max-width: 1024px) and (min-width: 769px) {
     .mphb-search-benefits-inline {
         margin-top: 14px;
-        padding-top: 14px;
     }
 }
 
@@ -60,7 +66,6 @@
 @media (max-width: 768px) {
     .mphb-search-benefits-inline {
         margin-top: 12px;
-        padding-top: 12px;
         gap: 6px;
     }
 
@@ -78,7 +83,6 @@
         flex-direction: column;
         gap: 4px;
         margin-top: 16px;
-        padding-top: 16px;
     }
 
     .mphb-search-benefits-inline .benefit-separator {

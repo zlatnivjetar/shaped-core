@@ -31,8 +31,11 @@ class Shaped_Book_Search_Form {
             return;
         }
 
-        // Add benefits line inside the form (after submit button)
-        add_action('mphb_sc_search_form_bottom', [$this, 'render_benefits_line'], 10);
+        // Open container wrapper before the form
+        add_action('mphb_sc_search_before_form', [$this, 'render_container_open'], 10);
+
+        // Add benefits line after the form and close container
+        add_action('mphb_sc_search_after_form', [$this, 'render_benefits_and_close_container'], 10);
 
         // Add custom class to wrapper for Elementor targeting
         add_filter('mphb_sc_search_wrapper_class', [$this, 'add_book_page_wrapper_class']);
@@ -59,9 +62,18 @@ class Shaped_Book_Search_Form {
     }
 
     /**
-     * Render the inline benefits line inside the search form
+     * Open the container wrapper before the form
      */
-    public function render_benefits_line(): void {
+    public function render_container_open(): void {
+        ?>
+        <div class="mphb-book-search-container">
+        <?php
+    }
+
+    /**
+     * Render the inline benefits line after the form and close container
+     */
+    public function render_benefits_and_close_container(): void {
         ?>
         <div class="mphb-search-benefits-inline">
             <span class="benefit-item">Best rate direct</span>
@@ -70,6 +82,7 @@ class Shaped_Book_Search_Form {
             <span class="benefit-separator">&bull;</span>
             <span class="benefit-item">Secure payment</span>
         </div>
+        </div><!-- .mphb-book-search-container -->
         <?php
     }
 
