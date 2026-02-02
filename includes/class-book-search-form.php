@@ -35,7 +35,7 @@ class Shaped_Book_Search_Form {
         // Open container wrapper before the form
         add_action('mphb_sc_search_before_form', [$this, 'render_container_open'], 10);
 
-        // Add guests field before submit button
+        // Add guests field before submit button (will be moved via JS)
         add_action('mphb_sc_search_form_before_submit_btn', [$this, 'render_guests_field'], 10);
 
         // Add benefits line after the form and close container
@@ -43,6 +43,9 @@ class Shaped_Book_Search_Form {
 
         // Add custom class to wrapper for Elementor targeting
         add_filter('mphb_sc_search_wrapper_class', [$this, 'add_book_page_wrapper_class']);
+
+        // Add inline script to move guests field into search-input-wrapper
+        add_action('wp_footer', [$this, 'render_guests_field_script'], 20);
     }
 
     /**
@@ -95,6 +98,23 @@ class Shaped_Book_Search_Form {
                 <?php endforeach; ?>
             </select>
         </p>
+        <?php
+    }
+
+    /**
+     * Render inline script to move guests field into search-input-wrapper
+     */
+    public function render_guests_field_script(): void {
+        ?>
+        <script>
+        (function() {
+            var guestsField = document.querySelector('.mphb-book-search-container .mphb_sc_search-guests');
+            var inputWrapper = document.querySelector('.mphb-book-search-container .search-input-wrapper');
+            if (guestsField && inputWrapper) {
+                inputWrapper.appendChild(guestsField);
+            }
+        })();
+        </script>
         <?php
     }
 
