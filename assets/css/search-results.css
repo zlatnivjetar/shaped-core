@@ -128,7 +128,11 @@
     font-size: 1rem;
     line-height: 1.5;
     margin-bottom: 0rem;
+}
+
+p.post-thumbnail.mphb-loop-room-thumbnail {
     margin-top: 0;
+
 }
 
 .mphb-room-type p:not(:first-of-type) {
