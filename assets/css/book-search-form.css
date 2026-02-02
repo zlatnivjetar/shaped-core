@@ -60,7 +60,7 @@
 .mphb-search-benefits-inline .benefit-item {
     font-size: 14px;
     font-weight: 500;
-    color: var(--color-text-muted);
+    color: var(--color-text-primary);
     line-height: 1.5;
     white-space: nowrap;
 }
@@ -69,7 +69,7 @@
  * BENEFITS LINE - SEPARATORS
  * ================================================================= */
 .mphb-search-benefits-inline .benefit-separator {
-    color: var(--color-text-light);
+    color: var(--color-text-muted);
     font-size: 12px;
     line-height: 1;
 }
@@ -107,7 +107,7 @@
 
 @media (max-width: 480px) {
     .mphb-book-search-container {
-        padding: 24px;
+        padding: 24px 24px 16px;
         border-radius: var(--radius-lg);
     }
 
