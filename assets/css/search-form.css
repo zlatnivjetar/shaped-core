@@ -24,7 +24,7 @@
     position: relative;
 }
 
-.search-form-wrapper {
+.search-input-wrapper {
     display: flex;
     width: 100%;
     gap: 24px;
