@@ -112,8 +112,8 @@
         margin-top: 8px;
     }
 
-    .mphb-search-benefits-inline span:last-child {
-        display: none;
+    .benefit-separator:last-child {
+        display: none !important;
     }
 
 
