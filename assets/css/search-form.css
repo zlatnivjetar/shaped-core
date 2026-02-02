@@ -8,6 +8,8 @@
 
 .mphb_sc_search-submit-button-wrapper input {
     height: 52px;
+    transition: all var(--transition-base);
+    cursor: pointer;
 }
 
 .mphb_sc_search-form {
