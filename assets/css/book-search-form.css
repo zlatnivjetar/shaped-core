@@ -15,14 +15,18 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: var(--color-surface-page);
-    border: 1px solid var(--color-border-default);
+    /*background: var(--color-surface-page);*/
+    /*border: 1px solid var(--color-border-default);*/
     padding: 24px;
-    box-shadow: var(--shadow-search-form);
+    /*box-shadow: var(--shadow-search-form);*/
     border-radius: var(--radius-lg);
     font-family: var(--font-body);
     position: relative;
     width: 100%;
+}
+
+.mphb_sc_search-form {
+  width: 700px;
 }
 
 /* =================================================================
