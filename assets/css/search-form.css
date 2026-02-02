@@ -10,7 +10,6 @@
     height: 52px;
 }
 
-/* Form container - horizontal layout with glass effect */
 .mphb_sc_search-form {
     display: flex;
     flex-direction:column;
