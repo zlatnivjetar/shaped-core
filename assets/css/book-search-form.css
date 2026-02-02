@@ -112,12 +112,8 @@
         margin-top: 8px;
     }
 
-    .mphb-search-benefits-inline .benefit-separator {
+    .mphb-search-benefits-inline .benefit-separator:last-child {
         display: none;
-    }
-
-    .mphb-search-benefits-inline .benefit-separator:first-child {
-        display: block !important;
     }
 
 
