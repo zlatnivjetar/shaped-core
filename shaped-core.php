@@ -162,6 +162,7 @@ add_action('plugins_loaded', function() {
     new Shaped_Amenity_Mapper();
     new Shaped_Payment_Processor();
     new Shaped_Booking_Manager();
+    new Shaped_Book_Search_Form();
     Shaped_Pricing::init();
     Shaped_Admin::init();
 

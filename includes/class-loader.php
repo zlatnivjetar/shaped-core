@@ -29,6 +29,7 @@ class Shaped_Loader {
         'Shaped_Brand_Config'              => 'includes/class-brand-config.php',
         'Shaped_Font_Loader'               => 'includes/class-font-loader.php',
         'Shaped_Design_Tokens_Generator'   => 'includes/class-design-tokens-generator.php',
+        'Shaped_Book_Search_Form'          => 'includes/class-book-search-form.php',
 
         // Admin classes
         'Shaped_Role_Manager'           => 'admin/class-role-manager.php',
