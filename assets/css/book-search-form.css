@@ -1,8 +1,10 @@
 /**
- * Book Page Search Form - Benefits Line
+ * Book Page Search Form - Custom Modifications
  *
- * Styles for the inline benefits text displayed below the search form
- * on the /book page: "Best rate direct • Instant confirmation • Secure payment"
+ * Styles for the /book page search form including:
+ * - Container wrapper with card styling
+ * - Guests dropdown field
+ * - Benefits line below the form
  *
  * @package Shaped_Core
  * @since 2.0.0
@@ -34,6 +36,64 @@
     padding: 0;
     box-shadow: none;
     border-radius: 0;
+}
+
+/* =================================================================
+ * GUESTS FIELD - CONTAINER
+ * ================================================================= */
+.mphb_sc_search-guests {
+    flex: 1;
+    min-width: 120px;
+    margin: 0;
+}
+
+.mphb_sc_search-guests label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    width: fit-content;
+    line-height: 1.5em;
+    font-family: var(--font-body);
+    margin-bottom: 8px;
+}
+
+.mphb_sc_search-guests br {
+    display: none;
+}
+
+/* =================================================================
+ * GUESTS FIELD - SELECT DROPDOWN
+ * ================================================================= */
+.mphb_sc_search-guests select {
+    width: 100%;
+    height: 52px;
+    padding: 10px 14px;
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-md);
+    font-size: 16px;
+    font-family: var(--font-body);
+    color: var(--color-text-primary);
+    background: var(--color-surface-white);
+    transition: all var(--transition-slow);
+    line-height: 1.5;
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M2.5 4.5L6 8l3.5-3.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+}
+
+.mphb_sc_search-guests select:focus {
+    outline: none;
+    border-color: rgba(209, 175, 93, 0.6);
+    background-color: rgba(255, 255, 255, 0.95);
+    box-shadow:
+        0 0 0 3px rgba(209, 175, 93, 0.15),
+        0 4px 12px rgba(20, 19, 16, 0.1);
 }
 
 /* =================================================================
@@ -105,6 +165,23 @@
     .mphb-book-search-container {
         padding: 24px;
         border-radius: var(--radius-lg);
+    }
+
+    .mphb_sc_search-guests {
+        width: 100%;
+    }
+
+    .mphb_sc_search-guests select {
+        padding: 8px 8px 8px 12px;
+        font-size: 1rem;
+        border-radius: 8px;
+        height: 44px;
+        padding-right: 36px;
+    }
+
+    .mphb_sc_search-guests label {
+        height: auto;
+        margin-bottom: 8px;
     }
 
     .mphb-search-benefits-inline {

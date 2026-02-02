@@ -4,6 +4,7 @@
  *
  * Modifies the MotoPress Hotel Booking search form on the /book page
  * to include inline benefits text: "Best rate direct • Instant confirmation • Secure payment"
+ * and a visible Guests dropdown field.
  *
  * @package Shaped_Core
  * @since 2.0.0
@@ -33,6 +34,9 @@ class Shaped_Book_Search_Form {
 
         // Open container wrapper before the form
         add_action('mphb_sc_search_before_form', [$this, 'render_container_open'], 10);
+
+        // Add guests field before submit button
+        add_action('mphb_sc_search_form_before_submit_btn', [$this, 'render_guests_field'], 10);
 
         // Add benefits line after the form and close container
         add_action('mphb_sc_search_after_form', [$this, 'render_benefits_and_close_container'], 10);
@@ -68,6 +72,59 @@ class Shaped_Book_Search_Form {
         ?>
         <div class="mphb-book-search-container">
         <?php
+    }
+
+    /**
+     * Render the guests select field before the submit button
+     */
+    public function render_guests_field(): void {
+        $uniqid = 'book-page-' . wp_unique_id();
+        $adults_list = $this->get_adults_list();
+        $current_adults = isset($_GET['mphb_adults']) ? absint($_GET['mphb_adults']) : $this->get_default_adults();
+        ?>
+        <p class="mphb_sc_search-guests">
+            <label for="<?php echo esc_attr('mphb_adults-' . $uniqid); ?>">
+                <?php esc_html_e('Guests', 'motopress-hotel-booking'); ?>
+            </label>
+            <br />
+            <select id="<?php echo esc_attr('mphb_adults-' . $uniqid); ?>" name="mphb_adults">
+                <?php foreach ($adults_list as $value) : ?>
+                    <option value="<?php echo esc_attr($value); ?>" <?php selected($current_adults, $value); ?>>
+                        <?php echo esc_html($value); ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </p>
+        <?php
+    }
+
+    /**
+     * Get the list of adults values for the dropdown
+     *
+     * @return array
+     */
+    private function get_adults_list(): array {
+        if (!class_exists('MPHB')) {
+            return range(1, 10);
+        }
+
+        $min_adults = MPHB()->settings()->main()->getMinAdults();
+        $max_adults = MPHB()->settings()->main()->getSearchMaxAdults();
+
+        return range($min_adults, $max_adults);
+    }
+
+    /**
+     * Get the default number of adults
+     *
+     * @return int
+     */
+    private function get_default_adults(): int {
+        if (!class_exists('MPHB')) {
+            return 2;
+        }
+
+        return MPHB()->settings()->main()->getMinAdults();
     }
 
     /**
