@@ -47,7 +47,7 @@
  * ================================================================= */
 .mphb_sc_search-guests {
     flex: 1;
-    min-width: 80px;
+    max-width: 64px;
     margin: 0;
 }
 
@@ -173,6 +173,7 @@
 
     .mphb_sc_search-guests {
         width: 100%;
+        max-width: 56px;
     }
 
     .mphb_sc_search-guests select {
