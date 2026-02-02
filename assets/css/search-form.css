@@ -8,9 +8,10 @@
 
 .mphb_sc_search-submit-button-wrapper input {
     height: 52px;
+    transition: all var(--transition-base);
+    cursor: pointer;
 }
 
-/* Form container - horizontal layout with glass effect */
 .mphb_sc_search-form {
     display: flex;
     flex-direction:column;
