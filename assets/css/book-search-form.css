@@ -112,10 +112,6 @@
         margin-top: 8px;
     }
 
-    .mphb-search-benefits-inline .benefit-separator {
-        display: none;
-    }
-
     .mphb-search-benefits-inline .benefit-separator:last-child {
         font-size: 0px;
         position: absolute;
