@@ -18,18 +18,23 @@
     background: var(--color-surface-page);
     border: 1px solid var(--color-border-default);
     padding: 24px;
-        box-shadow: var(--shadow-search-form);
+    box-shadow: var(--shadow-search-form);
     border-radius: var(--radius-lg);
-
-
     font-family: var(--font-body);
     position: relative;
 }
 
+.search-form-wrapper {
+    display: flex;
+    width: 100%;
+    gap: 24px;
+    align-items: flex-end;
+}
+
 
 .trust-mobile {
-        display:none;
-    }
+    display:none;
+  }
 
 /* Completely hide required fields tip */
 .mphb-required-fields-tip {
@@ -47,9 +52,8 @@
 .mphb_sc_search-check-in-date label, .mphb_sc_search-check-out-date label {
     display: block;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--color-text-primary);
-    letter-spacing: 0.5px;
     text-transform: uppercase;
     width: fit-content;
     line-height: 1.5em;
