@@ -158,6 +158,16 @@ class Shaped_Assets {
             }
         }
 
+        // ─── Book Page Search Form (benefits line) ───
+        if ($this->is_book_page() && file_exists(SHAPED_DIR . 'assets/css/book-search-form.css')) {
+            wp_enqueue_style(
+                'shaped-book-search-form',
+                SHAPED_URL . 'assets/css/book-search-form.css',
+                ['shaped-design-tokens', 'shaped-search-form'],
+                SHAPED_VERSION
+            );
+        }
+
         // ─── Modals (always load for modal links) ───
         $this->enqueue_modal_assets();
 
@@ -295,6 +305,24 @@ class Shaped_Assets {
      * ========================================================================= */
     
     /**
+     * Check if current page is the /book page specifically
+     */
+    private function is_book_page(): bool {
+        // Check by page slug
+        if (is_page('book')) {
+            return true;
+        }
+
+        // Check by URL path (fallback)
+        global $wp;
+        if (isset($wp->request) && $wp->request === 'book') {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Check if current page is checkout
      */
     private function is_checkout_page(): bool {
@@ -302,19 +330,19 @@ class Shaped_Assets {
         if (is_page(['checkout', 'book', 'booking'])) {
             return true;
         }
-        
+
         // Check for MPHB checkout shortcode
         global $post;
         if ($post && has_shortcode($post->post_content, 'mphb_checkout')) {
             return true;
         }
-        
+
         // URL pattern check
         $uri = $_SERVER['REQUEST_URI'] ?? '';
         if (strpos($uri, '/checkout') !== false) {
             return true;
         }
-        
+
         return false;
     }
     
