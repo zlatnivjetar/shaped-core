@@ -79,7 +79,7 @@ class Shaped_Book_Search_Form {
             <span class="benefit-item">Best rate direct</span>
             <span class="benefit-separator">&bull;</span>
             <span class="benefit-item">Instant confirmation</span>
-            <span class="benefit-separator">&bull;</span>
+            <span class="benefit-separator nomobile">&bull;</span>
             <span class="benefit-item">Secure payment</span>
         </div>
         </div><!-- .mphb-book-search-container -->
