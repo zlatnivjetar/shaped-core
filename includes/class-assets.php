@@ -14,6 +14,7 @@ class Shaped_Assets {
     
     public function __construct() {
         add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend'], 20);
+        add_action('wp_head', [$this, 'inline_critical_search_css'], 1);
     }
     
     /**
@@ -203,7 +204,45 @@ class Shaped_Assets {
             );
         }
     }
-    
+
+    /**
+     * Inline critical search-form CSS in <head> to prevent FOUC.
+     *
+     * Outputs the minimum layout rules so the form is correctly laid out on
+     * first paint. The full external stylesheet (search-form.css) still loads
+     * for transitions, focus states, responsive overrides, etc.
+     */
+    public function inline_critical_search_css(): void {
+        if (!$this->has_search_form()) {
+            return;
+        }
+        ?>
+        <style id="shaped-search-critical">
+            .mphb-required-fields-tip{display:none!important}
+            .mphb_sc_search-check-in-date br,
+            .mphb_sc_search-check-out-date br,
+            .mphb_sc_search-guests br{display:none}
+            .mphb_sc_search-check-in-date abbr,
+            .mphb_sc_search-check-out-date abbr{display:none!important}
+            .mphb_sc_search-form{display:flex;flex-direction:column;align-items:center;background:var(--color-surface-page);border:1px solid var(--color-border-default);padding:24px;box-shadow:var(--shadow-search-form);border-radius:var(--radius-lg);font-family:var(--font-body)}
+            .search-form-wrapper{display:flex;width:100%;gap:24px;align-items:flex-end}
+            .search-input-wrapper{display:flex;width:100%;gap:24px;align-items:flex-end}
+            .mphb_sc_search-check-in-date,
+            .mphb_sc_search-check-out-date{flex:1;min-width:160px;margin:0}
+            .mphb_sc_search-check-in-date label,
+            .mphb_sc_search-check-out-date label,
+            .mphb_sc_search-guests label{display:block;font-size:14px;font-weight:600;color:var(--color-text-primary);text-transform:uppercase;line-height:1.5em;font-family:var(--font-body);margin-bottom:8px}
+            .mphb-datepick.mphb_datepicker{width:100%;height:48px;padding:10px 14px;border:1px solid var(--color-border-default);border-radius:var(--radius-md);font-size:16px;font-family:var(--font-body);color:var(--color-text-primary);background:var(--color-surface-white);box-shadow:var(--shadow-sm)}
+            .mphb_sc_search-submit-button-wrapper{margin:0;flex-shrink:0}
+            .mphb_sc_search-submit-button-wrapper input{height:48px;padding:14px 32px!important}
+            .mphb_sc_search-guests{flex:1;max-width:64px;margin:0}
+            .mphb_sc_search-guests select{width:100%;height:48px;padding:10px 14px;border:1px solid var(--color-border-default);border-radius:var(--radius-md);font-size:16px;font-family:var(--font-body);color:var(--color-text-primary);background:var(--color-surface-white);box-shadow:var(--shadow-sm);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M2.5 4.5L6 8l3.5-3.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:16px}
+            #search-fixed{opacity:0;pointer-events:none;transform:translateY(100%)}
+            #search-hero .mphb-search-benefits-inline{display:none}
+        </style>
+        <?php
+    }
+
     /**
      * Enqueue checkout-specific assets
      */
