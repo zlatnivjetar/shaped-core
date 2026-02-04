@@ -11,15 +11,6 @@
  */
 
 /* =================================================================
- * FOUC PREVENTION - Reveals form once this stylesheet loads.
- * Paired with inline <style>.mphb-search-book-page{opacity:0}</style> in <head>
- * ================================================================= */
-.mphb-search-book-page {
-    opacity: 1;
-    transition: opacity 0.2s ease;
-}
-
-/* =================================================================
  * CONTAINER - WRAPS FORM AND BENEFITS (has the "card" styling)
  * ================================================================= */
 .mphb-book-search-container {
