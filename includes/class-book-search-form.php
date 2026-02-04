@@ -6,6 +6,9 @@
  * to include inline benefits text: "Best rate direct • Instant confirmation • Secure payment"
  * and a visible Guests dropdown field.
  *
+ * The guests field is injected directly into .search-input-wrapper via
+ * output buffering so the layout is correct on first paint (no FOUC).
+ *
  * @package Shaped_Core
  * @since 2.0.0
  */
@@ -32,20 +35,17 @@ class Shaped_Book_Search_Form {
             return;
         }
 
-        // Open container wrapper before the form
+        // Open container wrapper before the form and start output buffering
         add_action('mphb_sc_search_before_form', [$this, 'render_container_open'], 10);
 
-        // Add guests field before submit button (will be moved via JS)
+        // Add guests field before submit button (captured by output buffer)
         add_action('mphb_sc_search_form_before_submit_btn', [$this, 'render_guests_field'], 10);
 
-        // Add benefits line after the form and close container
+        // Capture buffer, inject guests into correct DOM position, add benefits, close container
         add_action('mphb_sc_search_after_form', [$this, 'render_benefits_and_close_container'], 10);
 
         // Add custom class to wrapper for Elementor targeting
         add_filter('mphb_sc_search_wrapper_class', [$this, 'add_book_page_wrapper_class']);
-
-        // Add inline script to move guests field into search-input-wrapper
-        add_action('wp_footer', [$this, 'render_guests_field_script'], 20);
     }
 
     /**
@@ -69,16 +69,21 @@ class Shaped_Book_Search_Form {
     }
 
     /**
-     * Open the container wrapper before the form
+     * Open the container wrapper before the form and start output buffering.
+     *
+     * Everything between this hook and mphb_sc_search_after_form is captured
+     * so we can relocate the guests field into .search-input-wrapper server-side.
      */
     public function render_container_open(): void {
-        ?>
-        <div class="mphb-book-search-container">
-        <?php
+        echo '<div class="mphb-book-search-container">';
+        ob_start();
     }
 
     /**
-     * Render the guests select field before the submit button
+     * Render the guests select field before the submit button.
+     *
+     * This HTML is captured by the output buffer and later moved into
+     * .search-input-wrapper by render_benefits_and_close_container().
      */
     public function render_guests_field(): void {
         $uniqid = 'book-page-' . wp_unique_id();
@@ -98,31 +103,6 @@ class Shaped_Book_Search_Form {
                 <?php endforeach; ?>
             </select>
         </p>
-        <?php
-    }
-
-    /**
-     * Render inline script to move guests field into search-input-wrapper
-     */
-    public function render_guests_field_script(): void {
-        ?>
-        <script>
-        (function() {
-            var container = document.querySelector('.mphb-book-search-container');
-            if (!container) return;
-
-            var guestsField = container.querySelector('.mphb_sc_search-guests');
-            var inputWrapper = container.querySelector('.search-input-wrapper');
-            if (guestsField && inputWrapper) {
-                inputWrapper.appendChild(guestsField);
-            }
-
-            var submitBtn = container.querySelector('.mphb_sc_search-submit-button-wrapper input[type="submit"]');
-            if (submitBtn) {
-                submitBtn.value = 'Check availability';
-            }
-        })();
-        </script>
         <?php
     }
 
@@ -156,9 +136,37 @@ class Shaped_Book_Search_Form {
     }
 
     /**
-     * Render the inline benefits line after the form and close container
+     * Capture buffered form HTML, move guests field into .search-input-wrapper,
+     * then output the corrected form, benefits line, and close the container.
+     *
+     * .search-input-wrapper contains only <p> elements (no nested divs), so the
+     * first </div> after its opening tag is its closing tag. We insert the guests
+     * <p> right before that closing </div>.
      */
     public function render_benefits_and_close_container(): void {
+        $form_html = ob_get_clean();
+
+        // Extract the guests field HTML from the buffer
+        if (preg_match('/<p class="mphb_sc_search-guests">.*?<\/p>/s', $form_html, $matches)) {
+            $guests_html = $matches[0];
+
+            // Remove guests field from its original position
+            $form_html = str_replace($guests_html, '', $form_html);
+
+            // Find .search-input-wrapper and inject guests before its closing </div>.
+            // The wrapper only contains <p> children (no nested divs), so the first
+            // </div> after the opening tag is the correct closing tag.
+            $marker = 'class="search-input-wrapper"';
+            $pos = strpos($form_html, $marker);
+            if ($pos !== false) {
+                $close_div = strpos($form_html, '</div>', $pos);
+                if ($close_div !== false) {
+                    $form_html = substr_replace($form_html, $guests_html, $close_div, 0);
+                }
+            }
+        }
+
+        echo $form_html;
         ?>
         <div class="mphb-search-benefits-inline">
             <span class="benefit-item">Best rate direct</span>
