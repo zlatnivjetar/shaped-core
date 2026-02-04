@@ -107,6 +107,32 @@ class Shaped_Book_Search_Form {
     }
 
     /**
+     * Render inline script to move guests field into search-input-wrapper
+     */
+    public function render_guests_field_script(): void {
+        ?>
+        <script>
+        (function() {
+            var containers = document.querySelectorAll('.mphb-book-search-container');
+            
+            containers.forEach(function(container) {
+                var guestsField = container.querySelector('.mphb_sc_search-guests');
+                var inputWrapper = container.querySelector('.search-input-wrapper');
+                if (guestsField && inputWrapper) {
+                    inputWrapper.appendChild(guestsField);
+                }
+
+                var submitBtn = container.querySelector('.mphb_sc_search-submit-button-wrapper input[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.value = 'Check availability';
+                }
+            });
+        })();
+        </script>
+        <?php
+    }
+
+    /**
      * Get the list of adults values for the dropdown
      *
      * @return array

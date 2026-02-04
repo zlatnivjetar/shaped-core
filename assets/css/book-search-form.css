@@ -138,6 +138,10 @@
     .mphb-search-benefits-inline {
         margin-top: 14px;
     }
+
+    .mphb_sc_search-form {
+      width: 100%;
+    }
 }
 
 /* =================================================================
@@ -170,7 +174,7 @@
 
     .mphb_sc_search-guests {
         width: 100%;
-        max-width: 56px;
+        max-width: 48px;
     }
 
     .mphb_sc_search-guests select {
@@ -179,12 +183,16 @@
         border-radius: 8px;
         height: 44px;
         padding-right: 16px;
+        background-position: right 8px center;
+
     }
 
     .mphb_sc_search-guests label {
         height: auto;
         margin-bottom: 8px;
+        margin-left: -2px;
     }
+    
     .mphb_sc_search-form {
       width: 100%;
     }
