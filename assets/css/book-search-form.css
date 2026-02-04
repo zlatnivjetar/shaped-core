@@ -11,16 +11,6 @@
  */
 
 /* =================================================================
- * FOUC PREVENTION - Reveals form once this stylesheet loads.
- * The container div has inline style="opacity:0" to hide it before
- * CSS loads. !important here overrides the inline style.
- * ================================================================= */
-.mphb-book-search-container {
-    opacity: 1 !important;
-    transition: opacity 0.15s ease;
-}
-
-/* =================================================================
  * CONTAINER - WRAPS FORM AND BENEFITS (has the "card" styling)
  * ================================================================= */
 .mphb-book-search-container {
@@ -38,7 +28,7 @@
 }
 
 .mphb_sc_search-form {
-  width: 700px;
+  width: 800px;
 }
 
 /* =================================================================
@@ -57,7 +47,7 @@
  * ================================================================= */
 .mphb_sc_search-guests {
     flex: 1;
-    min-width: 120px;
+    max-width: 64px;
     margin: 0;
 }
 
@@ -82,7 +72,7 @@
  * ================================================================= */
 .mphb_sc_search-guests select {
     width: 100%;
-    height: 52px;
+    height: 48px;
     padding: 10px 14px;
     border: 1px solid var(--color-border-default);
     border-radius: var(--radius-md);
@@ -90,24 +80,21 @@
     font-family: var(--font-body);
     color: var(--color-text-primary);
     background: var(--color-surface-white);
-    transition: all var(--transition-slow);
     line-height: 1.5;
     box-shadow: var(--shadow-sm);
     cursor: pointer;
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M2.5 4.5L6 8l3.5-3.5'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 14px center;
-    padding-right: 36px;
+    background-position: right 12px center;
+    padding-right: 16px;
 }
 
 .mphb_sc_search-guests select:focus {
     outline: none;
-    border-color: rgba(209, 175, 93, 0.6);
-    background-color: rgba(255, 255, 255, 0.95);
-    box-shadow:
-        0 0 0 3px rgba(209, 175, 93, 0.15),
-        0 4px 12px rgba(20, 19, 16, 0.1);
+    border-width: 1.5px;
+    border-color: var(--color-brand-primary-hover);
+    background: white;
 }
 
 /* =================================================================
@@ -183,6 +170,7 @@
 
     .mphb_sc_search-guests {
         width: 100%;
+        max-width: 56px;
     }
 
     .mphb_sc_search-guests select {
@@ -190,13 +178,13 @@
         font-size: 1rem;
         border-radius: 8px;
         height: 44px;
-        padding-right: 36px;
+        padding-right: 16px;
     }
 
     .mphb_sc_search-guests label {
         height: auto;
         margin-bottom: 8px;
-      
+    }
     .mphb_sc_search-form {
       width: 100%;
     }

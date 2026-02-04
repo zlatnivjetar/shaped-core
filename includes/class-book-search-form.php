@@ -69,9 +69,7 @@ class Shaped_Book_Search_Form {
     }
 
     /**
-     * Open the container wrapper before the form.
-     * Inline style="opacity:0" prevents FOUC -- the external CSS
-     * overrides it with opacity:1 !important once the stylesheet loads.
+     * Open the container wrapper before the form
      */
     public function render_container_open(): void {
         ?>

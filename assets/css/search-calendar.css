@@ -98,6 +98,7 @@ select.datepick-month-year {
   font-weight: 600 !important;
   text-align: right;
   padding: 0 8px 0 0;
+  font-family: var(--font-body);
 }
 
 .datepick-month-header select:not([size]):not([multiple]) {
