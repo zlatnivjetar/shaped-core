@@ -158,6 +158,17 @@ class Shaped_Assets {
             }
         }
 
+        // ─── Front Page: hero ↔ fixed search bar visibility toggle ───
+        if (is_front_page() && file_exists(SHAPED_DIR . 'assets/js/search-form-visibility.js')) {
+            wp_enqueue_script(
+                'shaped-search-form-visibility',
+                SHAPED_URL . 'assets/js/search-form-visibility.js',
+                [],
+                SHAPED_VERSION,
+                true
+            );
+        }
+
         // ─── Book Page Search Form (benefits line) ───
         if ($this->is_book_page() && file_exists(SHAPED_DIR . 'assets/css/book-search-form.css')) {
             wp_enqueue_style(

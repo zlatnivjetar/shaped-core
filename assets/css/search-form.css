@@ -218,3 +218,29 @@ display: none;
 .datepick-month first  > span {
     padding: 1px;
 }
+
+/* =================================================================
+ * FIXED SEARCH BAR - VISIBILITY TOGGLE
+ *
+ * Hidden by default; revealed by search-form-visibility.js
+ * when #search-hero scrolls out of the viewport.
+ * ================================================================= */
+#search-fixed {
+    transition: opacity var(--transition-base), transform var(--transition-base);
+}
+
+#search-fixed.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(100%);
+}
+
+/* =================================================================
+ * HERO SEARCH FORM - HIDE BENEFITS LINE
+ *
+ * The "Best rate direct • Instant confirmation • Secure payment"
+ * line should only appear inside the fixed bar, not the hero form.
+ * ================================================================= */
+#search-hero .mphb-search-benefits-inline {
+    display: none;
+}
