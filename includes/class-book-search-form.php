@@ -108,10 +108,18 @@ class Shaped_Book_Search_Form {
         ?>
         <script>
         (function() {
-            var guestsField = document.querySelector('.mphb-book-search-container .mphb_sc_search-guests');
-            var inputWrapper = document.querySelector('.mphb-book-search-container .search-input-wrapper');
+            var container = document.querySelector('.mphb-book-search-container');
+            if (!container) return;
+
+            var guestsField = container.querySelector('.mphb_sc_search-guests');
+            var inputWrapper = container.querySelector('.search-input-wrapper');
             if (guestsField && inputWrapper) {
                 inputWrapper.appendChild(guestsField);
+            }
+
+            var submitBtn = container.querySelector('.mphb_sc_search-submit-button-wrapper input[type="submit"]');
+            if (submitBtn) {
+                submitBtn.value = 'Check availability';
             }
         })();
         </script>
