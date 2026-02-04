@@ -250,6 +250,8 @@ class Shaped_Assets {
             .mphb_sc_search-submit-button-wrapper input{height:48px;padding:14px 32px!important}
             .mphb_sc_search-guests{flex:1;max-width:64px;margin:0}
             .mphb_sc_search-guests select{width:100%;height:48px;padding:10px 14px;border:1px solid var(--color-border-default);border-radius:var(--radius-md);font-size:16px;font-family:var(--font-body);color:var(--color-text-primary);background:var(--color-surface-white);box-shadow:var(--shadow-sm);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M2.5 4.5L6 8l3.5-3.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:16px}
+            .mphb-book-search-container{display:flex;flex-direction:column;align-items:center;padding:24px;border-radius:var(--radius-lg);font-family:var(--font-body);position:relative;width:100%}
+            .mphb-book-search-container .mphb_sc_search-form{background:transparent;border:none;padding:0;box-shadow:none;border-radius:0;width:800px;max-width:100%}
             #search-fixed{opacity:0;pointer-events:none;transform:translateY(100%)}
             #search-hero .mphb-search-benefits-inline{display:none}
         </style>
