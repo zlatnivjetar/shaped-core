@@ -98,7 +98,7 @@ class Frontend {
                 <button type="button"
                         class="shaped-load-more-btn"
                         data-page="<?php echo esc_attr($page); ?>">
-                    <span class="shaped-load-more-text">Load More</span>
+                    <span class="shaped-load-more-text">Read more reviews</span>
                     <span class="shaped-load-more-spinner" style="display:none;"></span>
                 </button>
             </div>
