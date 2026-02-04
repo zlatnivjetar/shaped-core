@@ -10,25 +10,27 @@
  * @package Shaped_Core
  */
 (function () {
-  var hero = document.getElementById('search-hero');
-  var fixed = document.getElementById('search-fixed');
+  document.addEventListener('DOMContentLoaded', function () {
+    var hero = document.getElementById('search-hero');
+    var fixed = document.getElementById('search-fixed');
 
-  if (!hero || !fixed) {
-    return;
-  }
+    if (!hero || !fixed) {
+      return;
+    }
 
-  var observer = new IntersectionObserver(
-    function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          fixed.classList.add('is-hidden');
-        } else {
-          fixed.classList.remove('is-hidden');
-        }
-      });
-    },
-    { threshold: 0 }
-  );
+    var observer = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            fixed.classList.remove('is-visible');
+          } else {
+            fixed.classList.add('is-visible');
+          }
+        });
+      },
+      { threshold: 0 }
+    );
 
-  observer.observe(hero);
+    observer.observe(hero);
+  });
 })();

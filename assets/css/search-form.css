@@ -226,13 +226,16 @@ display: none;
  * when #search-hero scrolls out of the viewport.
  * ================================================================= */
 #search-fixed {
-    transition: opacity var(--transition-base), transform var(--transition-base);
-}
-
-#search-fixed.is-hidden {
     opacity: 0;
     pointer-events: none;
     transform: translateY(100%);
+    transition: opacity var(--transition-base), transform var(--transition-base);
+}
+
+#search-fixed.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
 }
 
 /* =================================================================
