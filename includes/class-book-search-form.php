@@ -32,9 +32,6 @@ class Shaped_Book_Search_Form {
             return;
         }
 
-        // Inject critical CSS in head to prevent FOUC
-        add_action('wp_head', [$this, 'render_critical_css'], 1);
-
         // Open container wrapper before the form
         add_action('mphb_sc_search_before_form', [$this, 'render_container_open'], 10);
 
@@ -72,21 +69,13 @@ class Shaped_Book_Search_Form {
     }
 
     /**
-     * Inject critical inline CSS to hide the form until stylesheets load.
-     * Prevents FOUC (Flash of Unstyled Content).
-     */
-    public function render_critical_css(): void {
-        ?>
-        <style>.mphb-search-book-page{opacity:0}</style>
-        <?php
-    }
-
-    /**
-     * Open the container wrapper before the form
+     * Open the container wrapper before the form.
+     * Inline style="opacity:0" prevents FOUC -- the external CSS
+     * overrides it with opacity:1 !important once the stylesheet loads.
      */
     public function render_container_open(): void {
         ?>
-        <div class="mphb-book-search-container">
+        <div class="mphb-book-search-container" style="opacity:0">
         <?php
     }
 

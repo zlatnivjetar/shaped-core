@@ -12,11 +12,12 @@
 
 /* =================================================================
  * FOUC PREVENTION - Reveals form once this stylesheet loads.
- * Paired with inline <style>.mphb-search-book-page{opacity:0}</style> in <head>
+ * The container div has inline style="opacity:0" to hide it before
+ * CSS loads. !important here overrides the inline style.
  * ================================================================= */
-.mphb-search-book-page {
-    opacity: 1;
-    transition: opacity 0.2s ease;
+.mphb-book-search-container {
+    opacity: 1 !important;
+    transition: opacity 0.15s ease;
 }
 
 /* =================================================================
