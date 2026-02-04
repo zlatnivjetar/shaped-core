@@ -208,16 +208,29 @@ class Shaped_Assets {
     /**
      * Inline critical search-form CSS in <head> to prevent FOUC.
      *
-     * Outputs the minimum layout rules so the form is correctly laid out on
-     * first paint. The full external stylesheet (search-form.css) still loads
-     * for transitions, focus states, responsive overrides, etc.
+     * Outputs design tokens (both the static fallbacks and dynamic
+     * client-specific values) followed by the minimum layout rules so the
+     * form is correctly laid out on first paint. The full external
+     * stylesheets still load for transitions, focus states, responsive
+     * overrides, etc.
      */
     public function inline_critical_search_css(): void {
         if (!$this->has_search_form()) {
             return;
         }
+
+        // ── Collect design tokens so CSS variables resolve immediately ──
+        $tokens = '';
+        $tokens_file = SHAPED_DIR . 'assets/css/design-tokens.css';
+        if (file_exists($tokens_file)) {
+            $tokens .= file_get_contents($tokens_file);
+        }
+        if (class_exists('Shaped_Design_Tokens_Generator')) {
+            $tokens .= Shaped_Design_Tokens_Generator::generate_tokens_css();
+        }
         ?>
         <style id="shaped-search-critical">
+            <?php if ($tokens) { echo $tokens; } ?>
             .mphb-required-fields-tip{display:none!important}
             .mphb_sc_search-check-in-date br,
             .mphb_sc_search-check-out-date br,
