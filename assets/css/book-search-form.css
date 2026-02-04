@@ -168,7 +168,7 @@
 
 @media (max-width: 480px) {
     .mphb-book-search-container {
-        padding: 24px 24px 16px;
+        padding: 16px;
         border-radius: var(--radius-lg);
     }
 
