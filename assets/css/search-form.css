@@ -166,11 +166,11 @@ abbr[title="Formatted as dd/mm/yyyy"] {
 
     .search-form-wrapper {
      flex-direction:column;
-     gap: 16px;
+     gap: 12px;
 }
 
     .search-input-wrapper {
-      gap:16px;
+      gap:12px;
     }
 
     .mphb-datepick.mphb_datepicker::placeholder {
@@ -184,7 +184,7 @@ abbr[title="Formatted as dd/mm/yyyy"] {
     }
     
     .mphb-datepick.mphb_datepicker {
-        padding: 8px 4px 8px 8px;
+        padding: 8px 4px 8px 12px;
         font-size: 1rem; 
         border-radius: 8px;
         height:44px;

@@ -174,7 +174,7 @@
 
     .mphb_sc_search-guests {
         width: 100%;
-        max-width: 48px;
+        max-width: 44px;
     }
 
     .mphb_sc_search-guests select {
@@ -183,6 +183,7 @@
         border-radius: 8px;
         height: 44px;
         padding-right: 16px;
+        background-size: 10px 10px;
         background-position: right 8px center;
 
     }
