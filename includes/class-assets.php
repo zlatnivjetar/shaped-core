@@ -245,7 +245,7 @@ class Shaped_Assets {
             .mphb_sc_search-check-in-date label,
             .mphb_sc_search-check-out-date label,
             .mphb_sc_search-guests label{display:block;font-size:14px;font-weight:600;color:var(--color-text-primary);text-transform:uppercase;line-height:1.5em;font-family:var(--font-body);margin-bottom:8px}
-            .mphb-datepick.mphb_datepicker{width:100%;height:48px;padding:10px 14px;border:1px solid var(--color-border-default);border-radius:var(--radius-md);font-size:16px;font-family:var(--font-body);color:var(--color-text-primary);background:var(--color-surface-white);box-shadow:var(--shadow-sm)}
+            .mphb-datepick{width:100%;height:48px;padding:10px 14px;border:1px solid var(--color-border-default);border-radius:var(--radius-md);font-size:16px;font-family:var(--font-body);color:var(--color-text-primary);background:var(--color-surface-white);box-shadow:var(--shadow-sm);line-height:1.5;box-sizing:border-box}
             .mphb_sc_search-submit-button-wrapper{margin:0;flex-shrink:0}
             .mphb_sc_search-submit-button-wrapper input{height:48px;padding:14px 32px!important}
             .mphb_sc_search-guests{flex:1;max-width:64px;margin:0}
