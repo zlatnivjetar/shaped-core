@@ -138,6 +138,10 @@
     .mphb-search-benefits-inline {
         margin-top: 14px;
     }
+
+    .mphb_sc_search-form {
+      width: 100%;
+    }
 }
 
 /* =================================================================

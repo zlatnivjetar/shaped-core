@@ -111,8 +111,8 @@ class Shaped_Book_Search_Form {
             var container = document.querySelector('.mphb-book-search-container');
             if (!container) return;
 
-            var guestsField = container.querySelector('.mphb_sc_search-guests');
-            var inputWrapper = container.querySelector('.search-input-wrapper');
+            var guestsField = container.querySelectorAll('.mphb_sc_search-guests');
+            var inputWrapper = container.querySelectorAll('.search-input-wrapper');
             if (guestsField && inputWrapper) {
                 inputWrapper.appendChild(guestsField);
             }
