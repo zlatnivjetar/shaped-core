@@ -89,7 +89,6 @@ abbr[title="Formatted as dd/mm/yyyy"] {
     font-family: var(--font-body);
     color: var(--color-text-primary);
     background: var(--color-surface-white);
-    transition: all var(--transition-slow);
     line-height: 1.5;
     box-shadow: var(--shadow-sm);
 }
