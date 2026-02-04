@@ -73,7 +73,7 @@ class Shaped_Book_Search_Form {
      */
     public function render_container_open(): void {
         ?>
-        <div class="mphb-book-search-container">
+        <div class="mphb-book-search-container" style="opacity:0">
         <?php
     }
 
