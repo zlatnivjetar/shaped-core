@@ -219,38 +219,30 @@ class Shaped_Assets {
             return;
         }
 
-        // ── Collect design tokens so CSS variables resolve immediately ──
-        $tokens = '';
-        $tokens_file = SHAPED_DIR . 'assets/css/design-tokens.css';
-        if (file_exists($tokens_file)) {
-            $tokens .= file_get_contents($tokens_file);
-        }
+        // ── Only the token defaults referenced by the critical rules below ──
+        $tokens = ':root{--color-surface-page: ;--color-surface-white:#FFFFFF;--color-border-default:#e4e4e4;--shadow-search-form:0 6px 24px rgba(0,0,0,0.1);--shadow-sm:0 1px 2px rgba(0,0,0,0.05);--radius-md:8px;--radius-lg:12px}';
+
+        // Client-specific overrides (fills --color-surface-page, --font-body, etc.)
         if (class_exists('Shaped_Design_Tokens_Generator')) {
             $tokens .= Shaped_Design_Tokens_Generator::generate_tokens_css();
         }
         ?>
         <style id="shaped-search-critical">
-            <?php if ($tokens) { echo $tokens; } ?>
+            <?php echo $tokens; ?>
             .mphb-required-fields-tip{display:none!important}
-            .mphb_sc_search-check-in-date br,
-            .mphb_sc_search-check-out-date br,
-            .mphb_sc_search-guests br{display:none}
-            .mphb_sc_search-check-in-date abbr,
-            .mphb_sc_search-check-out-date abbr{display:none!important}
-            .mphb_sc_search-form{display:flex;flex-direction:column;align-items:center;background:var(--color-surface-page);border:1px solid var(--color-border-default);padding:24px;box-shadow:var(--shadow-search-form);border-radius:var(--radius-lg);font-family:var(--font-body)}
+            .mphb_sc_search-check-in-date br,.mphb_sc_search-check-out-date br,.mphb_sc_search-guests br{display:none}
+            .mphb_sc_search-check-in-date abbr,.mphb_sc_search-check-out-date abbr{display:none!important}
+            .mphb_sc_search-form{display:flex;flex-direction:column;align-items:center;background:var(--color-surface-page);border:1px solid var(--color-border-default);padding:24px;box-shadow:var(--shadow-search-form);border-radius:var(--radius-lg)}
             .search-form-wrapper{display:flex;width:100%;gap:24px;align-items:flex-end}
             .search-input-wrapper{display:flex;width:100%;gap:24px;align-items:flex-end}
-            .mphb_sc_search-check-in-date,
-            .mphb_sc_search-check-out-date{flex:1;min-width:160px;margin:0}
-            .mphb_sc_search-check-in-date label,
-            .mphb_sc_search-check-out-date label,
-            .mphb_sc_search-guests label{display:block;font-size:14px;font-weight:600;color:var(--color-text-primary);text-transform:uppercase;line-height:1.5em;font-family:var(--font-body);margin-bottom:8px}
-            .mphb-datepick{width:100%;height:48px;padding:10px 14px;border:1px solid var(--color-border-default);border-radius:var(--radius-md);font-size:16px;font-family:var(--font-body);color:var(--color-text-primary);background:var(--color-surface-white);box-shadow:var(--shadow-sm);line-height:1.5;box-sizing:border-box}
+            .mphb_sc_search-check-in-date,.mphb_sc_search-check-out-date{flex:1;min-width:160px;margin:0}
+            .mphb_sc_search-check-in-date label,.mphb_sc_search-check-out-date label,.mphb_sc_search-guests label{display:block;font-size:14px;font-weight:600;text-transform:uppercase;margin-bottom:8px}
+            .mphb-datepick{width:100%;height:48px;padding:10px 14px;border:1px solid var(--color-border-default);border-radius:var(--radius-md);font-size:16px;background:var(--color-surface-white);box-shadow:var(--shadow-sm);box-sizing:border-box}
             .mphb_sc_search-submit-button-wrapper{margin:0;flex-shrink:0}
             .mphb_sc_search-submit-button-wrapper input{height:48px;padding:14px 32px!important}
             .mphb_sc_search-guests{flex:1;max-width:64px;margin:0}
-            .mphb_sc_search-guests select{width:100%;height:48px;padding:10px 14px;border:1px solid var(--color-border-default);border-radius:var(--radius-md);font-size:16px;font-family:var(--font-body);color:var(--color-text-primary);background:var(--color-surface-white);box-shadow:var(--shadow-sm);appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M2.5 4.5L6 8l3.5-3.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:16px}
-            .mphb-book-search-container{display:flex;flex-direction:column;align-items:center;padding:24px;border-radius:var(--radius-lg);font-family:var(--font-body);position:relative;width:100%}
+            .mphb_sc_search-guests select{width:100%;height:48px;padding:10px 14px;border:1px solid var(--color-border-default);border-radius:var(--radius-md);background:var(--color-surface-white);box-sizing:border-box;appearance:none}
+            .mphb-book-search-container{display:flex;flex-direction:column;align-items:center;padding:24px;border-radius:var(--radius-lg);width:100%}
             .mphb-book-search-container .mphb_sc_search-form{background:transparent;border:none;padding:0;box-shadow:none;border-radius:0;width:800px;max-width:100%}
             #search-fixed{opacity:0;pointer-events:none;transform:translateY(100%)}
             #search-hero .mphb-search-benefits-inline{display:none}
