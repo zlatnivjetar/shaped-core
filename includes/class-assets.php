@@ -158,8 +158,10 @@ class Shaped_Assets {
             }
         }
 
-        // ─── Front Page: hero ↔ fixed search bar visibility toggle ───
-        if (is_front_page() && file_exists(SHAPED_DIR . 'assets/js/search-form-visibility.js')) {
+        // ─── Hero ↔ fixed search bar visibility toggle ───
+        // Loaded on any page with a search form; the script self-guards
+        // by checking for #search-hero and #search-fixed elements.
+        if ($this->has_search_form() && file_exists(SHAPED_DIR . 'assets/js/search-form-visibility.js')) {
             wp_enqueue_script(
                 'shaped-search-form-visibility',
                 SHAPED_URL . 'assets/js/search-form-visibility.js',
