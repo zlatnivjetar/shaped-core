@@ -229,7 +229,7 @@ display: none;
     opacity: 0;
     pointer-events: none;
     transform: translateY(100%);
-    transition: opacity var(--transition-base), transform var(--transition-base);
+    transition: opacity var(--transition-slow), transform var(--transition-slow);
 }
 
 #search-fixed.is-visible {
