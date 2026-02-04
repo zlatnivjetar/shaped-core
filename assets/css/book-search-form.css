@@ -80,7 +80,6 @@
     font-family: var(--font-body);
     color: var(--color-text-primary);
     background: var(--color-surface-white);
-    transition: all var(--transition-slow);
     line-height: 1.5;
     box-shadow: var(--shadow-sm);
     cursor: pointer;
@@ -93,11 +92,9 @@
 
 .mphb_sc_search-guests select:focus {
     outline: none;
-    border-color: rgba(209, 175, 93, 0.6);
-    background-color: rgba(255, 255, 255, 0.95);
-    box-shadow:
-        0 0 0 3px rgba(209, 175, 93, 0.15),
-        0 4px 12px rgba(20, 19, 16, 0.1);
+    border-width: 1.5px;
+    border-color: var(--color-brand-primary-hover);
+    background: white;
 }
 
 /* =================================================================

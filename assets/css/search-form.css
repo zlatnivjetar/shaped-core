@@ -8,7 +8,7 @@
 
 .mphb_sc_search-submit-button-wrapper input {
     height: 48px;
-    transition: all var(--transition-base);
+    transition: background-color var(--transition-base), color var(--transition-base);
     cursor: pointer;
     padding: 14px 32px !important;
 }
@@ -96,12 +96,9 @@ abbr[title="Formatted as dd/mm/yyyy"] {
 
 .mphb-datepick.mphb_datepicker:focus {
     outline: none;
-    border-color: rgba(209, 175, 93, 0.6);
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 
-        0 0 0 3px rgba(209, 175, 93, 0.15),
-        0 4px 12px rgba(20, 19, 16, 0.1);
-    transform: translateY(-1px);
+    border-width: 1.5px;
+    border-color: var(--color-brand-primary-hover);
+    background: white;
 }
 
 .mphb-datepick.mphb_datepicker::placeholder {
