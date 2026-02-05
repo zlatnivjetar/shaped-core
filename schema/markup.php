@@ -76,6 +76,21 @@ final class Shaped_Schema {
             'petsAllowed'        => $config['pets_allowed'],
             'amenityFeature'     => $config['amenities'],
             'sameAs'             => $config['same_as'],
+            'potentialAction'    => [
+                '@type'  => 'ReserveAction',
+                'target' => [
+                    '@type'          => 'EntryPoint',
+                    'urlTemplate'    => apply_filters('shaped_booking_url', trailingslashit(home_url())),
+                    'actionPlatform' => [
+                        'http://schema.org/DesktopWebPlatform',
+                        'http://schema.org/MobilePlatform',
+                    ],
+                ],
+                'result' => [
+                    '@type' => 'LodgingReservation',
+                    'name'  => 'Book Direct',
+                ],
+            ],
         ]);
 
         /* ─────────────────────────
@@ -125,6 +140,28 @@ final class Shaped_Schema {
         $max_occupancy = null;
         $floor_m2      = null;
 
+        // Build room price offer from discounted base price
+        $offer = null;
+        if (function_exists('shaped_get_room_pricing_data')) {
+            $slug    = get_post_field('post_name', $post_id);
+            $pricing = shaped_get_room_pricing_data($post_id, $slug);
+
+            if ($pricing['base_price'] > 0) {
+                $schema_config = function_exists('shaped_brand') ? shaped_brand('schema') : [];
+                $currency      = $schema_config['currency'] ?? 'EUR';
+                $price         = $pricing['has_discount'] ? $pricing['discount_price'] : $pricing['base_price'];
+
+                $offer = [
+                    '@type'           => 'Offer',
+                    'price'           => round($price, 2),
+                    'priceCurrency'   => $currency,
+                    'priceValidUntil' => (new DateTime('+30 days'))->format('Y-m-d'),
+                    'availability'    => 'https://schema.org/InStock',
+                    'url'             => $url,
+                ];
+            }
+        }
+
         return array_filter([
             '@type' => 'Accommodation',
             '@id'   => $url . '#unit',
@@ -133,6 +170,7 @@ final class Shaped_Schema {
             'containedInPlace' => [
                 '@id' => $lodging_id,
             ],
+            'offers' => $offer,
             'occupancy' => $max_occupancy ? [
                 '@type' => 'QuantitativeValue',
                 'maxValue' => (int) $max_occupancy,
