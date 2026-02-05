@@ -157,6 +157,17 @@ class Shaped_Assets {
                     SHAPED_VERSION
                 );
             }
+
+            // data-open-datepick handler (opens check-in picker from any element)
+            if (file_exists(SHAPED_DIR . 'assets/js/room-cards-landing.js')) {
+                wp_enqueue_script(
+                    'shaped-open-datepick',
+                    SHAPED_URL . 'assets/js/room-cards-landing.js',
+                    ['jquery'],
+                    SHAPED_VERSION,
+                    true
+                );
+            }
         }
 
         // ─── Hero ↔ fixed search bar visibility toggle ───

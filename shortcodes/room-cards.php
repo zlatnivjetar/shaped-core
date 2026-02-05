@@ -108,7 +108,7 @@ function shaped_enqueue_room_cards_css() {
 }
 
 /**
- * Enqueue landing card CSS and JS when landing template is used
+ * Enqueue landing card CSS when landing template is used
  */
 function shaped_enqueue_room_cards_landing_assets() {
     if (file_exists(SHAPED_DIR . 'assets/css/room-cards-landing.css')) {
@@ -117,16 +117,6 @@ function shaped_enqueue_room_cards_landing_assets() {
             SHAPED_URL . 'assets/css/room-cards-landing.css',
             [],
             SHAPED_VERSION
-        );
-    }
-
-    if (file_exists(SHAPED_DIR . 'assets/js/room-cards-landing.js')) {
-        wp_enqueue_script(
-            'shaped-room-cards-landing',
-            SHAPED_URL . 'assets/js/room-cards-landing.js',
-            ['jquery'],
-            SHAPED_VERSION,
-            true
         );
     }
 }
