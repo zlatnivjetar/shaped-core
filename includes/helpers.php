@@ -288,10 +288,10 @@ function shaped_get_landing_amenities(int $room_type_id, int $count = 3): array 
             $total = $mphb_room->getTotalCapacity();
             if ($total > 0) {
                 $sleeps_amenity = [
-                    'icon'     => 'users',
+                    'icon'     => 'bed',
                     'label'    => 'Sleeps ' . $total,
-                    'html'     => '<i class="ph ph-users" aria-hidden="true"></i>',
-                    'priority' => 0,
+                    'html'     => '<i class="ph ph-bed" aria-hidden="true"></i>',
+                    'priority' => 1,
                 ];
 
                 $result[] = $sleeps_amenity;
