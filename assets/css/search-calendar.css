@@ -241,9 +241,8 @@ a.datepick-cmd {
   background: var(--color-surface-white) !important;
   border: none !important;
   border-top: 1px solid var(--color-border-default) !important;
-  padding: 0.75rem;
   display: flex;
-  gap: 0.5rem;
+  gap: 1rem;
   justify-content: flex-end;
 }
 
@@ -253,8 +252,8 @@ a.datepick-cmd {
 
 .mphb-datepicker-minimal .datepick-ctrl a {
   width: auto !important;
-  padding: 12px 30px !important;
-  border-radius: 0.375rem;
+  padding: 16px 36px !important;
+  border-radius: 8px;
   letter-spacing: .2px;
   text-transform: uppercase;
   font-weight: 600;
@@ -283,20 +282,32 @@ a.datepick-cmd {
 .mphb-datepicker-minimal .datepick-cmd-close:hover {
   background: var(--color-brand-primary-hover) !important;
   border-color: var(--color-brand-primary-hover);
+  color: var(--color-text-light);
 }
 
 .mphb-calendar .mphb-datepicker-minimal .datepick-ctrl, .datepick-popup .mphb-datepicker-minimal .datepick-ctrl {
   padding: 1rem 0 !important;
-  margin-top: 0px !important;
+  margin-top: 4px;
 }
 
 .datepick-month-header {
     line-height: 32px !important;
 }
 
+.datepick-popup .mphb-datepicker-minimal .datepick-month th {
+  padding: 4px 0 !important;
+}
+
 
 /* Mobile Responsive */
 @media (max-width: 767px) {
+
+  .mphb-calendar .mphb-datepicker-minimal.datepick,
+  .datepick-popup .mphb-datepicker-minimal.datepick {
+    padding: 0;
+  }
+
+
   .datepick-popup {
     padding: 0 !important;
     width: 100%;
@@ -304,7 +315,7 @@ a.datepick-cmd {
 }  
 
 .mphb-datepicker-minimal .datepick-month-header {
-  padding: 0.5rem 1.5rem 0.5rem 0.5rem !important;
+  padding: 0.25rem 0.5rem !important;
 }
   
 .datepick-month.last {
