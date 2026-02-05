@@ -235,3 +235,81 @@ function shaped_get_amenities_for_room(int $room_type_id, array $args = []): arr
 
     return $mapper->get_room_amenities($room_type_id, $args);
 }
+
+/**
+ * Get priority-ordered amenities for landing page room cards
+ *
+ * Walks the landing amenity priority list and returns the first $count
+ * amenities that the room actually has. 'sleeps' is a special token
+ * that pulls total capacity from MPHB.
+ *
+ * @param int $room_type_id Room type post ID
+ * @param int $count        Max amenities to return (default 3)
+ * @return array Array of amenity data arrays with keys: icon, label, html, priority
+ */
+function shaped_get_landing_amenities(int $room_type_id, int $count = 3): array {
+    static $priority_list = null;
+
+    if ($priority_list === null) {
+        $file = SHAPED_DIR . 'config/landing-amenity-priorities.php';
+        $priority_list = file_exists($file) ? include $file : [];
+    }
+
+    if (empty($priority_list)) {
+        return [];
+    }
+
+    // Get all facility slugs for this room
+    $facilities = get_the_terms($room_type_id, 'mphb_room_type_facility');
+    $facility_slugs = [];
+    $facility_map = [];
+
+    if (!empty($facilities) && !is_wp_error($facilities)) {
+        foreach ($facilities as $facility) {
+            $facility_slugs[] = $facility->slug;
+            $facility_map[$facility->slug] = $facility;
+        }
+    }
+
+    $result = [];
+
+    foreach ($priority_list as $slug) {
+        if (count($result) >= $count) {
+            break;
+        }
+
+        // Special token: sleeps (from MPHB capacity, not taxonomy)
+        if ($slug === 'sleeps') {
+            if (!function_exists('MPHB')) {
+                continue;
+            }
+            $mphb_room = MPHB()->getRoomTypeRepository()->findById($room_type_id);
+            if (!$mphb_room) {
+                continue;
+            }
+            $total = $mphb_room->getAdultsCapacity() + $mphb_room->getChildrenCapacity();
+            if ($total > 0) {
+                $result[] = [
+                    'icon'     => 'users',
+                    'label'    => 'Sleeps ' . $total,
+                    'html'     => '<i class="ph ph-users" aria-hidden="true"></i>',
+                    'priority' => 0,
+                ];
+            }
+            continue;
+        }
+
+        // Check if room has this facility
+        if (!in_array($slug, $facility_slugs, true)) {
+            continue;
+        }
+
+        // Get icon data from the mapper
+        $icon_data = shaped_get_amenity_icon($facility_map[$slug], ['skip_fallback' => true]);
+        if ($icon_data) {
+            $result[] = $icon_data;
+        }
+    }
+
+    return $result;
+}

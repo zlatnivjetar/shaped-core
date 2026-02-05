@@ -7,6 +7,7 @@
  * Usage:
  *   [shaped_room_cards] - Show all rooms with homepage template
  *   [shaped_room_cards template="listing"] - Show all rooms with listing template
+ *   [shaped_room_cards template="landing"] - Compact cards for landing pages
  *   [shaped_room_cards ids="94,95,96"] - Show specific rooms by ID
  *   [shaped_room_cards limit="3"] - Limit number of rooms
  *   [shaped_room_cards template="home" class="my-custom-class"] - Add custom wrapper class
@@ -21,11 +22,8 @@ if (!defined('ABSPATH')) {
 add_shortcode('shaped_room_cards', 'shaped_room_cards_shortcode');
 
 function shaped_room_cards_shortcode($atts) {
-    // Flag that the shortcode is being used (for CSS enqueuing)
-    add_action('wp_footer', 'shaped_enqueue_room_cards_css', 1);
-
     $atts = shortcode_atts([
-        'template' => 'home',        // 'home' or 'listing'
+        'template' => 'home',        // 'home', 'listing', or 'landing'
         'ids'      => '',            // Comma-separated room IDs
         'limit'    => -1,            // Number of rooms to show (-1 = all)
         'orderby'  => 'menu_order',  // Order by: menu_order, title, date, rand
@@ -34,7 +32,14 @@ function shaped_room_cards_shortcode($atts) {
     ], $atts);
 
     // Validate template
-    $template = in_array($atts['template'], ['home', 'listing']) ? $atts['template'] : 'home';
+    $template = in_array($atts['template'], ['home', 'listing', 'landing']) ? $atts['template'] : 'home';
+
+    // Enqueue appropriate assets
+    if ($template === 'landing') {
+        add_action('wp_footer', 'shaped_enqueue_room_cards_landing_assets', 1);
+    } else {
+        add_action('wp_footer', 'shaped_enqueue_room_cards_css', 1);
+    }
 
     // Build query args
     $query_args = [
@@ -98,6 +103,30 @@ function shaped_enqueue_room_cards_css() {
             SHAPED_URL . 'assets/css/search-results.css',
             [],
             SHAPED_VERSION
+        );
+    }
+}
+
+/**
+ * Enqueue landing card CSS and JS when landing template is used
+ */
+function shaped_enqueue_room_cards_landing_assets() {
+    if (file_exists(SHAPED_DIR . 'assets/css/room-cards-landing.css')) {
+        wp_enqueue_style(
+            'shaped-room-cards-landing',
+            SHAPED_URL . 'assets/css/room-cards-landing.css',
+            [],
+            SHAPED_VERSION
+        );
+    }
+
+    if (file_exists(SHAPED_DIR . 'assets/js/room-cards-landing.js')) {
+        wp_enqueue_script(
+            'shaped-room-cards-landing',
+            SHAPED_URL . 'assets/js/room-cards-landing.js',
+            ['jquery'],
+            SHAPED_VERSION,
+            true
         );
     }
 }
