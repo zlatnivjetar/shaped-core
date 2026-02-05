@@ -83,22 +83,23 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    padding: 0.625rem 1.25rem;
+    padding: 0.625rem 1.25rem !important;
     margin-top: auto;
     font-family: var(--font-body);
-    font-size: 0.9375rem;
+    font-size: 0.9375rem !important;
     font-weight: 600;
     color: var(--color-text-primary);
-    background: transparent;
+    background-color: transparent !important;
     border: 1.5px solid var(--color-border-default);
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: border-color var(--transition-base), color var(--transition-base);
+    transition: border-color var(--transition-base), color var(--transition-base), background-color var(--transition-base);
+    border-style: solid !important;
 }
 
 .shaped-landing-card__select-dates:hover {
     border-color: var(--color-brand-primary);
-    color: var(--color-brand-primary);
+    color: var(--color-brand-primary) !important;
 }
 
 /* --- Price --- */
