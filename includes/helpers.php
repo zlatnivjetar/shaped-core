@@ -310,7 +310,7 @@ function shaped_get_landing_amenities(int $room_type_id, int $count = 3): array 
         if ($icon_data) {
             $result[] = $icon_data;
             $selected_slugs[$slug] = true;
-            $selected_keys[$icon_data['icon'] . '|' . $icon_data['label']] = true;
+            $selected_keys[($icon_data['slug'] ?? '') ?: ($icon_data['icon'] . '|' . $icon_data['label'])] = true;
         }
     }
 
@@ -323,7 +323,7 @@ function shaped_get_landing_amenities(int $room_type_id, int $count = 3): array 
                 break;
             }
 
-            $amenity_key = ($amenity['icon'] ?? '') . '|' . ($amenity['label'] ?? '');
+            $amenity_key = ($amenity['slug'] ?? '') ?: (($amenity['icon'] ?? '') . '|' . ($amenity['label'] ?? ''));
 
             if (isset($selected_keys[$amenity_key])) {
                 continue;
@@ -332,6 +332,14 @@ function shaped_get_landing_amenities(int $room_type_id, int $count = 3): array 
             $result[] = $amenity;
             $selected_keys[$amenity_key] = true;
         }
+    }
+
+    usort($result, function($a, $b) {
+        return ($a['priority'] ?? 999) <=> ($b['priority'] ?? 999);
+    });
+
+    if (count($result) > $count) {
+        $result = array_slice($result, 0, $count);
     }
 
     return $result;

@@ -20,10 +20,21 @@ if (!defined('ABSPATH')) {
 return [
     'sleeps',
     'swimming-pool',
+    // Keep all kitchen-related slugs before view to honor registry top priority.
     'full-kitchen',
+    'kitchen',
     'kitchenette',
     'sea-view',
     'private-parking',
+    'smoke-free',
+    'pet-friendly',
+    'heating-system',
+    'air-conditioning',
+    'wifi',
+    'room-service',
+    'private-bathroom',
+    'bedding',
+    // Additional display options after top-priority set.
     'private-balcony',
     'rooftop-terrace',
 ];
