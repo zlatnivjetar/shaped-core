@@ -49,19 +49,19 @@ class Shaped_Book_Search_Form {
     }
 
     /**
-     * Check if current page is the /book page
+     * Check if current page is the /book or /search-results page
      *
      * @return bool
      */
     private function is_book_page(): bool {
         // Method 1: Check by page slug
-        if (is_page('book')) {
+        if (is_page('book') || is_page('search-results')) {
             return true;
         }
 
         // Method 2: Check by URL path (fallback)
         global $wp;
-        if (isset($wp->request) && $wp->request === 'book') {
+        if (isset($wp->request) && ($wp->request === 'book' || $wp->request === 'search-results')) {
             return true;
         }
 

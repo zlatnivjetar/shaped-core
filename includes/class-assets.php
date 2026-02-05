@@ -375,17 +375,17 @@ class Shaped_Assets {
      * ========================================================================= */
     
     /**
-     * Check if current page is the /book page specifically
+     * Check if current page is the /book or /search-results page specifically
      */
     private function is_book_page(): bool {
         // Check by page slug
-        if (is_page('book')) {
+        if (is_page('book') || is_page('search-results')) {
             return true;
         }
 
         // Check by URL path (fallback)
         global $wp;
-        if (isset($wp->request) && $wp->request === 'book') {
+        if (isset($wp->request) && ($wp->request === 'book' || $wp->request === 'search-results')) {
             return true;
         }
 
