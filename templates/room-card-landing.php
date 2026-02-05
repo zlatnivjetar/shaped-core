@@ -26,16 +26,21 @@ if (!function_exists('MPHB')) {
     return;
 }
 
-// Pricing (clean, no discount display)
-$base_price = shaped_get_room_base_price($room_id);
+// Get room slug for discount lookup
+$room_slug = sanitize_title($room_title);
+
+// Pricing (single display price using standard discount computation)
+$pricing = shaped_get_room_pricing_data($room_id, $room_slug);
+$display_price = $pricing['has_discount'] ? $pricing['discount_price'] : $pricing['base_price'];
+
 $currency   = function_exists('MPHB')
     ? MPHB()->settings()->currency()->getCurrencySymbol()
     : '€';
 
 // Format price: whole number = no decimals
-$price_display = floor($base_price) == $base_price
-    ? number_format($base_price, 0, ',', '.')
-    : number_format($base_price, 1, ',', '.');
+$price_display = floor($display_price) == $display_price
+    ? number_format($display_price, 0, ',', '.')
+    : number_format($display_price, 1, ',', '.');
 
 // Landing amenities (top 3 from priority list)
 $amenities = shaped_get_landing_amenities($room_id, 3);
@@ -74,7 +79,7 @@ $amenities = shaped_get_landing_amenities($room_id, 3);
             Select dates
         </button>
 
-        <?php if ($base_price > 0): ?>
+        <?php if ($pricing['base_price'] > 0): ?>
         <p class="shaped-landing-card__price">
             From <?php echo esc_html($currency . $price_display); ?>
             <span class="shaped-landing-card__price-note">(lowest nightly, varies by dates)</span>
