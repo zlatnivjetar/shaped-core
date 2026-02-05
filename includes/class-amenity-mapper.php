@@ -305,19 +305,38 @@ class Shaped_Amenity_Mapper {
     public function get_room_amenities(int $room_type_id, array $args = []): array {
         $facilities = get_the_terms($room_type_id, 'mphb_room_type_facility');
 
-        if (empty($facilities) || is_wp_error($facilities)) {
-            return [];
-        }
-
         // Default to skipping fallback icons (hide amenities without icons)
         $skip_fallback = $args['skip_fallback'] ?? true;
 
         $amenities = [];
 
-        foreach ($facilities as $facility) {
-            $icon_data = $this->get_icon($facility, ['skip_fallback' => $skip_fallback]);
-            if ($icon_data) {
-                $amenities[] = $icon_data;
+        // Check if "sleeps" is in the registry (special case: uses room capacity, not taxonomy)
+        $sleeps_item = $this->find_by_slug('sleeps');
+        if ($sleeps_item && function_exists('MPHB')) {
+            $mphb_room = MPHB()->getRoomTypeRepository()->findById($room_type_id);
+            if ($mphb_room) {
+                $total_capacity = $mphb_room->getTotalCapacity();
+                if ($total_capacity > 0) {
+                    $sleeps_label = 'Sleeps ' . $total_capacity;
+                    $sleeps_data = $this->build_icon_data(
+                        $sleeps_item['icon'],
+                        $sleeps_label,
+                        $args,
+                        $sleeps_item
+                    );
+                    $sleeps_data['is_fallback'] = false;
+                    $amenities[] = $sleeps_data;
+                }
+            }
+        }
+
+        // Add taxonomy-based facilities
+        if (!empty($facilities) && !is_wp_error($facilities)) {
+            foreach ($facilities as $facility) {
+                $icon_data = $this->get_icon($facility, ['skip_fallback' => $skip_fallback]);
+                if ($icon_data) {
+                    $amenities[] = $icon_data;
+                }
             }
         }
 
