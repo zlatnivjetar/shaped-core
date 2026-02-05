@@ -20,11 +20,6 @@
 }
 
 /* --- Image --- */
-.shaped-landing-card__image-link {
-    display: block;
-    line-height: 0;
-}
-
 .shaped-landing-card__image {
     width: 100%;
     aspect-ratio: 7 / 4;

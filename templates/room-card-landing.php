@@ -19,7 +19,6 @@ if (!isset($room_type) || !($room_type instanceof WP_Post)) {
 
 $room_id        = $room_type->ID;
 $room_title     = get_the_title($room_id);
-$room_permalink = get_permalink($room_id);
 $room_thumbnail = get_the_post_thumbnail_url($room_id, 'large');
 
 if (!function_exists('MPHB')) {
@@ -49,13 +48,11 @@ $amenities = shaped_get_landing_amenities($room_id, 3);
 <div class="shaped-landing-card" id="<?php echo esc_attr(sanitize_title($room_title)); ?>">
 
     <?php if ($room_thumbnail): ?>
-    <a href="<?php echo esc_url($room_permalink); ?>" class="shaped-landing-card__image-link">
-        <img loading="lazy"
-             decoding="async"
-             src="<?php echo esc_url($room_thumbnail); ?>"
-             class="shaped-landing-card__image"
-             alt="<?php echo esc_attr($room_title); ?>">
-    </a>
+    <img loading="lazy"
+         decoding="async"
+         src="<?php echo esc_url($room_thumbnail); ?>"
+         class="shaped-landing-card__image"
+         alt="<?php echo esc_attr($room_title); ?>">
     <?php endif; ?>
 
     <div class="shaped-landing-card__body">
