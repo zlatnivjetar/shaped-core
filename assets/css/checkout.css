@@ -197,7 +197,7 @@ p.mphb-room-rate-variant:last-child {
 	color: var(--color-text-primary);
 	font-size: 1.5rem;
 	margin: 0 0 1.5rem 0;
-	padding-top: 1rem;
+	padding-top: 0rem;
 	letter-spacing: -0.4px;
 }
 
