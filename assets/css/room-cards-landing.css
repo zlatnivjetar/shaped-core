@@ -99,7 +99,8 @@
 
 .shaped-landing-card__select-dates:hover {
     border-color: var(--color-brand-primary);
-    color: var(--color-brand-primary) !important;
+    color: var(--color-text-primary) !important;
+    background-color: var(--color-surface-page) !important;
 }
 
 /* --- Price --- */
