@@ -287,7 +287,7 @@ function shaped_get_landing_amenities(int $room_type_id, int $count = 3): array 
             if (!$mphb_room) {
                 continue;
             }
-            $total = $mphb_room->getAdultsCapacity() + $mphb_room->getChildrenCapacity();
+            $total = $mphb_room->getTotalCapacity();
             if ($total > 0) {
                 $result[] = [
                     'icon'     => 'users',
