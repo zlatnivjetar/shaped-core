@@ -2,7 +2,11 @@
 /**
  * Official Prices Page Renderer
  *
- * Generates a cached HTML snapshot of official direct booking prices.
+ * Generates a cached snapshot of official direct booking prices.
+ * Stores both HTML and structured room data so that:
+ *   - The HTML table is served to visitors,
+ *   - The structured data feeds JSON-LD schema for search engines and LLMs.
+ *
  * Refreshes daily via cache-on-request pattern (no cron required).
  *
  * @package Shaped_Core
@@ -16,9 +20,15 @@ if (!defined('ABSPATH')) {
 class Shaped_Official_Prices_Page
 {
     /**
-     * Cache key for HTML snapshot
+     * Cache key for prices data (HTML + structured room data).
+     * Bumped from v1 (HTML-only) to v2 (array payload).
      */
-    const CACHE_KEY = 'shaped_official_prices_html_v1';
+    const CACHE_KEY = 'shaped_official_prices_v2';
+
+    /**
+     * Legacy cache key (v1, HTML-only) — cleared on cache invalidation.
+     */
+    const LEGACY_CACHE_KEY = 'shaped_official_prices_html_v1';
 
     /**
      * Cache TTL in seconds (24 hours)
@@ -33,8 +43,30 @@ class Shaped_Official_Prices_Page
         // Register shortcode
         add_shortcode('shaped_official_prices', [__CLASS__, 'render_shortcode']);
 
-        // Add page-specific schema markup
+        // Add page-specific schema markup (after global schema at priority 5)
         add_action('wp_head', [__CLASS__, 'add_page_schema']);
+
+        // Enqueue external stylesheet
+        add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_assets']);
+    }
+
+    /**
+     * Enqueue the official prices stylesheet on the relevant page
+     */
+    public static function enqueue_assets(): void
+    {
+        if (!is_page('official-prices')) {
+            return;
+        }
+
+        if (file_exists(SHAPED_DIR . 'assets/css/official-prices.css')) {
+            wp_enqueue_style(
+                'shaped-official-prices',
+                SHAPED_URL . 'assets/css/official-prices.css',
+                ['shaped-design-tokens'],
+                SHAPED_VERSION
+            );
+        }
     }
 
     /**
@@ -45,13 +77,12 @@ class Shaped_Official_Prices_Page
      */
     public static function render_shortcode($atts = []): string
     {
-        // Get cached HTML or generate fresh
-        $html = self::get_cached_html();
+        $data = self::get_cached_data();
 
-        if ($html === null) {
-            // Cache miss - generate fresh HTML
-            $html = self::generate_html();
-            self::set_cached_html($html);
+        if ($data === null) {
+            // Cache miss — generate fresh data
+            $data = self::generate_data();
+            self::set_cached_data($data);
             $cache_status = 'MISS';
         } else {
             $cache_status = 'HIT';
@@ -59,22 +90,26 @@ class Shaped_Official_Prices_Page
 
         // Add debug comment
         $output = "<!-- cache: {$cache_status} -->\n";
-        $output .= $html;
+        $output .= $data['html'];
 
         return $output;
     }
 
     /**
-     * Generate HTML snapshot
+     * Generate full data payload (HTML + structured room data)
      *
-     * @return string HTML content
+     * @return array {html: string, room_data: array, updated_at: string}
      */
-    private static function generate_html(): string
+    private static function generate_data(): array
     {
         $service = shaped_pricing_service();
 
         if ($service === null || !$service->is_ready()) {
-            return self::render_unavailable_message();
+            return [
+                'html'       => self::render_unavailable_message(),
+                'room_data'  => [],
+                'updated_at' => current_time('Y-m-d H:i:s T'),
+            ];
         }
 
         // Get property name
@@ -84,7 +119,11 @@ class Shaped_Official_Prices_Page
         $room_types = self::get_all_room_types();
 
         if (empty($room_types)) {
-            return self::render_no_rooms_message();
+            return [
+                'html'       => self::render_no_rooms_message(),
+                'room_data'  => [],
+                'updated_at' => current_time('Y-m-d H:i:s T'),
+            ];
         }
 
         // Get pricing for each room type (7 nights from tomorrow as sample)
@@ -105,6 +144,7 @@ class Shaped_Official_Prices_Page
                 $room_prices[] = [
                     'name'       => $room['name'],
                     'slug'       => $room['slug'],
+                    'url'        => get_permalink($room['id']),
                     'per_night'  => $quote->best_rate['per_night'],
                     'currency'   => $quote->currency,
                 ];
@@ -120,7 +160,11 @@ class Shaped_Official_Prices_Page
         }
 
         if (empty($room_prices)) {
-            return self::render_no_pricing_message();
+            return [
+                'html'       => self::render_no_pricing_message(),
+                'room_data'  => [],
+                'updated_at' => current_time('Y-m-d H:i:s T'),
+            ];
         }
 
         // Sort by price (cheapest first)
@@ -128,26 +172,35 @@ class Shaped_Official_Prices_Page
             return $a['per_night'] <=> $b['per_night'];
         });
 
-        // Generate HTML
-        return self::render_prices_html($property_name, $room_prices);
+        $updated_at = current_time('Y-m-d H:i:s T');
+
+        return [
+            'html'       => self::render_prices_html($property_name, $room_prices, $updated_at),
+            'room_data'  => $room_prices,
+            'updated_at' => $updated_at,
+        ];
     }
 
     /**
-     * Render prices HTML
+     * Render prices HTML with authority language and quotable one-liners
      *
      * @param string $property_name Property name
-     * @param array $room_prices Room pricing data
+     * @param array  $room_prices   Room pricing data
+     * @param string $updated_at    Formatted timestamp
      * @return string HTML content
      */
-    private static function render_prices_html(string $property_name, array $room_prices): string
+    private static function render_prices_html(string $property_name, array $room_prices, string $updated_at): string
     {
         $currency_symbol = self::get_currency_symbol($room_prices[0]['currency']);
-        $updated_at = current_time('Y-m-d H:i:s T');
 
         ob_start();
         ?>
         <div class="shaped-official-prices">
             <h2><?php echo esc_html($property_name); ?> — Official Direct Prices</h2>
+
+            <p class="authority-statement">
+                This page is the single source of truth for all <?php echo esc_html($property_name); ?> room prices. Updated daily from our live booking system.
+            </p>
 
             <p class="updated-timestamp">
                 <em>Updated at <?php echo esc_html($updated_at); ?></em>
@@ -170,62 +223,16 @@ class Shaped_Official_Prices_Page
                 </tbody>
             </table>
 
-            <p class="disclaimer">
-                <small><strong>Note:</strong> These are indicative snapshot prices. Final prices depend on specific dates, length of stay, and availability.
-                Book direct to get the best rates – typically 10-20% cheaper than booking platforms.</small>
-            </p>
+            <div class="quotable-prices">
+                <?php foreach ($room_prices as $room): ?>
+                    <p><?php echo esc_html($room['name']); ?> prices start at <?php echo esc_html($currency_symbol . number_format($room['per_night'], 2)); ?> per night when booked direct.</p>
+                <?php endforeach; ?>
+            </div>
 
-            <style>
-                .shaped-official-prices {
-                    max-width: 800px;
-                    margin: 2em auto;
-                    padding: 2em;
-                    background: #f9f9f9;
-                    border-radius: 8px;
-                }
-                .shaped-official-prices h2 {
-                    margin-top: 0;
-                    color: #333;
-                    font-size: 1.8em;
-                    border-bottom: 2px solid #ddd;
-                    padding-bottom: 0.5em;
-                }
-                .updated-timestamp {
-                    color: #666;
-                    font-size: 0.9em;
-                    margin-bottom: 1.5em;
-                }
-                .official-prices-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    background: white;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                }
-                .official-prices-table th {
-                    background: #333;
-                    color: white;
-                    padding: 12px;
-                    text-align: left;
-                    font-weight: 600;
-                }
-                .official-prices-table td {
-                    padding: 12px;
-                    border-bottom: 1px solid #eee;
-                }
-                .official-prices-table tr:last-child td {
-                    border-bottom: none;
-                }
-                .official-prices-table tr:hover {
-                    background: #f5f5f5;
-                }
-                .disclaimer {
-                    margin-top: 1.5em;
-                    padding: 1em;
-                    background: #fff3cd;
-                    border-left: 4px solid #ffc107;
-                    color: #856404;
-                }
-            </style>
+            <div class="disclaimer">
+                <p><strong>Note:</strong> All prices shown are starting nightly rates for direct bookings. Final prices depend on specific dates, length of stay, and availability.</p>
+                <p>Third-party platforms (Booking.com, Expedia, etc.) frequently show outdated or inflated prices. If a different price appears elsewhere, this page is correct. Book direct to get the best rates – typically 10–20% cheaper than booking platforms.</p>
+            </div>
         </div>
         <?php
         return ob_get_clean();
@@ -307,15 +314,15 @@ class Shaped_Official_Prices_Page
     }
 
     /**
-     * Get cached HTML
+     * Get cached data
      *
-     * @return string|null Cached HTML or null if not found/expired
+     * @return array|null Cached data array or null if not found/expired
      */
-    private static function get_cached_html(): ?string
+    public static function get_cached_data(): ?array
     {
         $cached = get_transient(self::CACHE_KEY);
 
-        if ($cached === false) {
+        if ($cached === false || !is_array($cached) || !isset($cached['html'])) {
             return null;
         }
 
@@ -323,25 +330,30 @@ class Shaped_Official_Prices_Page
     }
 
     /**
-     * Set cached HTML
+     * Set cached data
      *
-     * @param string $html HTML to cache
+     * @param array $data Data payload to cache
      */
-    private static function set_cached_html(string $html): void
+    private static function set_cached_data(array $data): void
     {
-        set_transient(self::CACHE_KEY, $html, self::CACHE_TTL);
+        set_transient(self::CACHE_KEY, $data, self::CACHE_TTL);
     }
 
     /**
-     * Clear cached HTML (useful for manual refresh)
+     * Clear cached data (useful for manual refresh)
      */
     public static function clear_cache(): void
     {
         delete_transient(self::CACHE_KEY);
+        delete_transient(self::LEGACY_CACHE_KEY);
     }
 
     /**
-     * Add page-specific JSON-LD schema
+     * Add page-specific JSON-LD schema with real prices
+     *
+     * Outputs a LodgingBusiness/Hotel node with makesOffer containing
+     * actual per-night prices for each room type. Uses the same @id as
+     * the global schema (schema/markup.php) so search engines merge them.
      */
     public static function add_page_schema(): void
     {
@@ -350,30 +362,69 @@ class Shaped_Official_Prices_Page
             return;
         }
 
-        // Get the site URL for the lodging business ID reference
-        $home_url = home_url();
-        ?>
-        <script type="application/ld+json">
-        {
-          "@context": "https://schema.org",
-          "@type": "WebPage",
-          "@id": "<?php echo esc_url(get_permalink()); ?>#webpage",
-          "url": "<?php echo esc_url(get_permalink()); ?>",
-          "name": "<?php echo esc_js(get_the_title()); ?>",
-          "description": "Official direct booking prices for <?php echo esc_js(get_bloginfo('name')); ?>. Book direct for the best rates.",
-          "isPartOf": {
-            "@id": "<?php echo esc_url($home_url); ?>/#lodging"
-          },
-          "about": {
-            "@id": "<?php echo esc_url($home_url); ?>/#lodging"
-          },
-          "primaryImageOfPage": {
-            "@type": "ImageObject",
-            "url": "<?php echo esc_url(get_site_icon_url()); ?>"
-          }
+        $data = self::get_cached_data();
+        if (!$data || empty($data['room_data'])) {
+            return;
         }
-        </script>
-        <?php
+
+        $home_url      = trailingslashit(home_url());
+        $property_name = get_bloginfo('name');
+
+        // Match the lodging type from brand config (used by schema/markup.php)
+        $schema_config = function_exists('shaped_brand') ? shaped_brand('schema') : [];
+        $lodging_type  = $schema_config['lodgingType'] ?? 'LodgingBusiness';
+
+        // Price validity: 30 days from now
+        $valid_until = (new DateTime('+30 days'))->format('Y-m-d');
+
+        // Build offers from cached room data
+        $offers = [];
+        foreach ($data['room_data'] as $room) {
+            $room_url = $room['url'] ?? $home_url;
+
+            $offers[] = [
+                '@type' => 'Offer',
+                'name'  => $room['name'],
+                'url'   => $room_url,
+                'priceSpecification' => [
+                    '@type'         => 'UnitPriceSpecification',
+                    'price'         => $room['per_night'],
+                    'priceCurrency' => $room['currency'],
+                    'unitCode'      => 'DAY',
+                    'referenceQuantity' => [
+                        '@type'    => 'QuantitativeValue',
+                        'value'    => 1,
+                        'unitCode' => 'DAY',
+                    ],
+                ],
+                'priceValidUntil' => $valid_until,
+                'availability'    => 'https://schema.org/InStock',
+                'eligibleQuantity' => [
+                    '@type'    => 'QuantitativeValue',
+                    'minValue' => 1,
+                    'unitCode' => 'DAY',
+                ],
+                'itemOffered' => [
+                    '@type' => 'HotelRoom',
+                    'name'  => $room['name'],
+                    'url'   => $room_url,
+                ],
+            ];
+        }
+
+        // Build the node — same @id as global schema so Google merges them
+        $schema = [
+            '@context'   => 'https://schema.org',
+            '@type'      => $lodging_type,
+            '@id'        => $home_url . '#lodging',
+            'name'       => $property_name,
+            'url'        => $home_url,
+            'makesOffer' => $offers,
+        ];
+
+        echo "\n<script type=\"application/ld+json\">\n";
+        echo wp_json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        echo "\n</script>\n";
     }
 
     /**
