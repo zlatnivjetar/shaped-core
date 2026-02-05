@@ -41,7 +41,7 @@ $price_display = floor($display_price) == $display_price
     ? number_format($display_price, 0, ',', '.')
     : number_format($display_price, 1, ',', '.');
 
-// Landing amenities (top 3 from priority list)
+// Landing amenities (top 3 using universal registry priority)
 $amenities = shaped_get_landing_amenities($room_id, 3);
 ?>
 

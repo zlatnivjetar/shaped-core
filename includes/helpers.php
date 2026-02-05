@@ -237,101 +237,43 @@ function shaped_get_amenities_for_room(int $room_type_id, array $args = []): arr
 }
 
 /**
- * Get priority-ordered amenities for landing page room cards
+ * Get priority-ordered amenities for landing page room cards.
  *
- * Walks the landing amenity priority list and returns the first $count
- * amenities that the room actually has. 'sleeps' is a special token
- * that pulls total capacity from MPHB.
+ * Uses the universal amenity mapper ordering (config/amenities-registry.json)
+ * and optionally prepends a synthetic "Sleeps X" amenity when capacity exists.
  *
  * @param int $room_type_id Room type post ID
  * @param int $count        Max amenities to return (default 3)
  * @return array Array of amenity data arrays with keys: icon, label, html, priority
  */
 function shaped_get_landing_amenities(int $room_type_id, int $count = 3): array {
-    static $priority_list = null;
-
-    if ($priority_list === null) {
-        $file = SHAPED_DIR . 'config/landing-amenity-priorities.php';
-        $priority_list = file_exists($file) ? include $file : [];
-    }
-
-    // Get all facility slugs for this room
-    $facilities = get_the_terms($room_type_id, 'mphb_room_type_facility');
-    $facility_slugs = [];
-    $facility_map = [];
-
-    if (!empty($facilities) && !is_wp_error($facilities)) {
-        foreach ($facilities as $facility) {
-            $facility_slugs[] = $facility->slug;
-            $facility_map[$facility->slug] = $facility;
-        }
-    }
-
     $result = [];
-    $selected_slugs = [];
-    $selected_keys = [];
 
-    foreach ($priority_list as $slug) {
-        if (count($result) >= $count) {
-            break;
-        }
-
-        // Special token: sleeps (from MPHB capacity, not taxonomy)
-        if ($slug === 'sleeps') {
-            if (!function_exists('MPHB')) {
-                continue;
-            }
-            $mphb_room = MPHB()->getRoomTypeRepository()->findById($room_type_id);
-            if (!$mphb_room) {
-                continue;
-            }
-            $total = $mphb_room->getTotalCapacity();
+    // Keep "Sleeps" first when capacity data exists.
+    if (function_exists('MPHB')) {
+        $mphb_room = MPHB()->getRoomTypeRepository()->findById($room_type_id);
+        if ($mphb_room) {
+            $total = (int) $mphb_room->getTotalCapacity();
             if ($total > 0) {
-                $sleeps_amenity = [
+                $result[] = [
                     'icon'     => 'users',
+                    'slug'     => 'sleeps',
                     'label'    => 'Sleeps ' . $total,
                     'html'     => '<i class="ph ph-users" aria-hidden="true"></i>',
                     'priority' => 0,
                 ];
-
-                $result[] = $sleeps_amenity;
-                $selected_keys['__sleeps__'] = true;
             }
-            continue;
-        }
-
-        // Check if room has this facility and skip already-selected slugs
-        if (!in_array($slug, $facility_slugs, true) || isset($selected_slugs[$slug])) {
-            continue;
-        }
-
-        // Get icon data from the mapper
-        $icon_data = shaped_get_amenity_icon($facility_map[$slug], ['skip_fallback' => true]);
-        if ($icon_data) {
-            $result[] = $icon_data;
-            $selected_slugs[$slug] = true;
-            $selected_keys[$icon_data['icon'] . '|' . $icon_data['label']] = true;
         }
     }
 
-    // Two-stage strategy: keep business-priority picks first, then backfill from mapper output.
-    if (count($result) < $count) {
-        $mapped_amenities = shaped_get_amenities_for_room($room_type_id, ['skip_fallback' => true]);
+    $mapped_amenities = shaped_get_amenities_for_room($room_type_id, ['skip_fallback' => true]);
 
-        foreach ($mapped_amenities as $amenity) {
-            if (count($result) >= $count) {
-                break;
-            }
-
-            $amenity_key = ($amenity['icon'] ?? '') . '|' . ($amenity['label'] ?? '');
-
-            if (isset($selected_keys[$amenity_key])) {
-                continue;
-            }
-
-            $result[] = $amenity;
-            $selected_keys[$amenity_key] = true;
+    foreach ($mapped_amenities as $amenity) {
+        if (count($result) >= $count) {
+            break;
         }
+
+        $result[] = $amenity;
     }
 
     return $result;

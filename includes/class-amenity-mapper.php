@@ -260,6 +260,7 @@ class Shaped_Amenity_Mapper {
 
         return [
             'icon' => $icon_name,
+            'slug' => $registry_item['slug'] ?? '',
             'label' => $label,
             'weight' => $weight,
             'class' => $class_string,
