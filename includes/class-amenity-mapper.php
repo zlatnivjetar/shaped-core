@@ -105,6 +105,9 @@ class Shaped_Amenity_Mapper {
 
         $skip_fallback = $args['skip_fallback'] ?? false;
 
+        // Support known taxonomy slug aliases.
+        $slug = $this->normalize_alias_slug($slug);
+
         // Check cache first
         $cache_key = $slug . '_' . md5(serialize($args));
         if (isset(self::$icon_cache[$cache_key])) {
@@ -149,6 +152,20 @@ class Shaped_Amenity_Mapper {
         $icon_data['is_fallback'] = true;
         self::$icon_cache[$cache_key] = $icon_data;
         return $icon_data;
+    }
+
+    /**
+     * Normalize known slug aliases to canonical registry slugs.
+     *
+     * @param string $slug Incoming taxonomy slug
+     * @return string Canonical slug
+     */
+    private function normalize_alias_slug(string $slug): string {
+        $aliases = [
+            'free-parking' => 'private-parking',
+        ];
+
+        return $aliases[$slug] ?? $slug;
     }
 
     /**
