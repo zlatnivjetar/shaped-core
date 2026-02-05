@@ -70,7 +70,7 @@ $amenities = shaped_get_landing_amenities($room_id, 3);
         </ul>
         <?php endif; ?>
 
-        <button type="button" class="shaped-landing-card__select-dates js-shaped-open-checkin">
+        <button type="button" class="shaped-landing-card__select-dates" data-open-datepick>
             Select dates
         </button>
 
