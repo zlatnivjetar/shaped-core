@@ -255,10 +255,6 @@ function shaped_get_landing_amenities(int $room_type_id, int $count = 3): array 
         $priority_list = file_exists($file) ? include $file : [];
     }
 
-    if (empty($priority_list)) {
-        return [];
-    }
-
     // Get all facility slugs for this room
     $facilities = get_the_terms($room_type_id, 'mphb_room_type_facility');
     $facility_slugs = [];
@@ -272,6 +268,8 @@ function shaped_get_landing_amenities(int $room_type_id, int $count = 3): array 
     }
 
     $result = [];
+    $selected_slugs = [];
+    $selected_keys = [];
 
     foreach ($priority_list as $slug) {
         if (count($result) >= $count) {
@@ -289,18 +287,21 @@ function shaped_get_landing_amenities(int $room_type_id, int $count = 3): array 
             }
             $total = $mphb_room->getAdultsCapacity() + $mphb_room->getChildrenCapacity();
             if ($total > 0) {
-                $result[] = [
+                $sleeps_amenity = [
                     'icon'     => 'users',
                     'label'    => 'Sleeps ' . $total,
                     'html'     => '<i class="ph ph-users" aria-hidden="true"></i>',
                     'priority' => 0,
                 ];
+
+                $result[] = $sleeps_amenity;
+                $selected_keys['__sleeps__'] = true;
             }
             continue;
         }
 
-        // Check if room has this facility
-        if (!in_array($slug, $facility_slugs, true)) {
+        // Check if room has this facility and skip already-selected slugs
+        if (!in_array($slug, $facility_slugs, true) || isset($selected_slugs[$slug])) {
             continue;
         }
 
@@ -308,6 +309,28 @@ function shaped_get_landing_amenities(int $room_type_id, int $count = 3): array 
         $icon_data = shaped_get_amenity_icon($facility_map[$slug], ['skip_fallback' => true]);
         if ($icon_data) {
             $result[] = $icon_data;
+            $selected_slugs[$slug] = true;
+            $selected_keys[$icon_data['icon'] . '|' . $icon_data['label']] = true;
+        }
+    }
+
+    // Two-stage strategy: keep business-priority picks first, then backfill from mapper output.
+    if (count($result) < $count) {
+        $mapped_amenities = shaped_get_amenities_for_room($room_type_id, ['skip_fallback' => true]);
+
+        foreach ($mapped_amenities as $amenity) {
+            if (count($result) >= $count) {
+                break;
+            }
+
+            $amenity_key = ($amenity['icon'] ?? '') . '|' . ($amenity['label'] ?? '');
+
+            if (isset($selected_keys[$amenity_key])) {
+                continue;
+            }
+
+            $result[] = $amenity;
+            $selected_keys[$amenity_key] = true;
         }
     }
 
