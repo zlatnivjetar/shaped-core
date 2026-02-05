@@ -263,17 +263,44 @@ function shaped_get_landing_amenities(int $room_type_id, int $count = 3): array 
                     'priority' => 0,
                 ];
             }
+            continue;
+        }
+
+        // Check if room has this facility and skip already-selected slugs
+        if (!in_array($slug, $facility_slugs, true) || isset($selected_slugs[$slug])) {
+            continue;
+        }
+
+        // Get icon data from the mapper
+        $icon_data = shaped_get_amenity_icon($facility_map[$slug], ['skip_fallback' => true]);
+        if ($icon_data) {
+            $result[] = $icon_data;
+            $selected_slugs[$slug] = true;
+            $selected_keys[($icon_data['slug'] ?? '') ?: ($icon_data['icon'] . '|' . $icon_data['label'])] = true;
         }
     }
 
     $mapped_amenities = shaped_get_amenities_for_room($room_type_id, ['skip_fallback' => true]);
 
-    foreach ($mapped_amenities as $amenity) {
-        if (count($result) >= $count) {
-            break;
+            $amenity_key = ($amenity['slug'] ?? '') ?: (($amenity['icon'] ?? '') . '|' . ($amenity['label'] ?? ''));
+
+            if (isset($selected_keys[$amenity_key])) {
+                continue;
+            }
+
+            $result[] = $amenity;
+            $selected_keys[$amenity_key] = true;
         }
 
         $result[] = $amenity;
+    }
+
+    usort($result, function($a, $b) {
+        return ($a['priority'] ?? 999) <=> ($b['priority'] ?? 999);
+    });
+
+    if (count($result) > $count) {
+        $result = array_slice($result, 0, $count);
     }
 
     return $result;

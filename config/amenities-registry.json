@@ -52,7 +52,7 @@
       ]
     },
     {
-      "slug": "private-parking",
+      "slug": "free-parking",
       "icon": "letter-circle-p",
       "label": "Free Parking",
       "priority": 5,
@@ -118,7 +118,7 @@
     {
       "slug": "sea-view",
       "icon": "waves",
-      "label": "View",
+      "label": "Sea View",
       "priority": 4,
       "keywords": [
         "sea view",
