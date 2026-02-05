@@ -16,7 +16,7 @@
 
 .shaped-landing-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(20, 19, 16, 0.15);
+    box-shadow: var(--shadow-lg)
 }
 
 /* --- Image --- */
