@@ -47,6 +47,9 @@ function shaped_room_cards_shortcode($atts) {
     // Enqueue appropriate assets
     if ($template === 'landing') {
         add_action('wp_footer', 'shaped_enqueue_room_cards_landing_assets', 1);
+    } elseif ($template === 'search') {
+        add_action('wp_footer', 'shaped_enqueue_room_cards_css', 1);
+        add_action('wp_footer', 'shaped_enqueue_room_cards_search_assets', 1);
     } else {
         add_action('wp_footer', 'shaped_enqueue_room_cards_css', 1);
     }
@@ -194,6 +197,48 @@ function shaped_enqueue_room_cards_css() {
             SHAPED_URL . 'assets/css/search-results.css',
             [],
             SHAPED_VERSION
+        );
+    }
+}
+
+/**
+ * Enqueue search template dependencies (checkout.js + room modal)
+ *
+ * The search template needs checkout.js for discount/urgency badge injection
+ * and the room modal JS/CSS for the detail overlay. This ensures assets load
+ * even if class-assets.php page detection doesn't trigger (e.g. page without
+ * MPHB URL params).
+ */
+function shaped_enqueue_room_cards_search_assets() {
+    // Checkout JS (discount badges, urgency badges, price formatting)
+    if (file_exists(SHAPED_DIR . 'assets/js/checkout.js')) {
+        wp_enqueue_script(
+            'shaped-checkout',
+            SHAPED_URL . 'assets/js/checkout.js',
+            ['jquery'],
+            SHAPED_VERSION,
+            true
+        );
+    }
+
+    // Room modal CSS
+    if (file_exists(SHAPED_DIR . 'assets/css/room-modal.css')) {
+        wp_enqueue_style(
+            'shaped-room-modal',
+            SHAPED_URL . 'assets/css/room-modal.css',
+            [],
+            SHAPED_VERSION
+        );
+    }
+
+    // Room modal JS
+    if (file_exists(SHAPED_DIR . 'assets/js/room-modal.js')) {
+        wp_enqueue_script(
+            'shaped-room-modal',
+            SHAPED_URL . 'assets/js/room-modal.js',
+            [],
+            SHAPED_VERSION,
+            true
         );
     }
 }
