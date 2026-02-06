@@ -32,7 +32,6 @@ button.cmplz-show {
 
 .cmplz-cookiebanner {
     box-shadow: var(--shadow-xl);
-    bottom: 0svh !important;
 }
 
 .cmplz-cookiebanner .cmplz-title {
