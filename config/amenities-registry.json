@@ -28,7 +28,7 @@
     {
       "slug": "full-kitchen",
       "icon": "cooking-pot",
-      "label": "Full Kitchen",
+      "label": "Kitchen",
       "priority": 3,
       "keywords": [
         "kitchen",
