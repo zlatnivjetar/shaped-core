@@ -8,9 +8,14 @@
  *   [shaped_room_cards] - Show all rooms with homepage template
  *   [shaped_room_cards template="listing"] - Show all rooms with listing template
  *   [shaped_room_cards template="landing"] - Compact cards for landing pages
+ *   [shaped_room_cards template="search"] - Search results with date-aware pricing
  *   [shaped_room_cards ids="94,95,96"] - Show specific rooms by ID
  *   [shaped_room_cards limit="3"] - Limit number of rooms
  *   [shaped_room_cards template="home" class="my-custom-class"] - Add custom wrapper class
+ *
+ * Search template also accepts:
+ *   [shaped_room_cards template="search" check_in="2025-07-01" check_out="2025-07-04" adults="2"]
+ *   Dates auto-detected from URL params (mphb_check_in_date, mphb_check_out_date) when not specified.
  *
  * @package ShapedCore
  */
@@ -23,22 +28,33 @@ add_shortcode('shaped_room_cards', 'shaped_room_cards_shortcode');
 
 function shaped_room_cards_shortcode($atts) {
     $atts = shortcode_atts([
-        'template' => 'home',        // 'home', 'listing', or 'landing'
-        'ids'      => '',            // Comma-separated room IDs
-        'limit'    => -1,            // Number of rooms to show (-1 = all)
-        'orderby'  => 'menu_order',  // Order by: menu_order, title, date, rand
-        'order'    => 'ASC',         // ASC or DESC
-        'class'    => '',            // Additional wrapper classes
+        'template'  => 'home',        // 'home', 'listing', 'landing', or 'search'
+        'ids'       => '',            // Comma-separated room IDs
+        'limit'     => -1,            // Number of rooms to show (-1 = all)
+        'orderby'   => 'menu_order',  // Order by: menu_order, title, date, rand
+        'order'     => 'ASC',         // ASC or DESC
+        'class'     => '',            // Additional wrapper classes
+        'check_in'  => '',            // Check-in date (Y-m-d) — search template
+        'check_out' => '',            // Check-out date (Y-m-d) — search template
+        'adults'    => '',            // Number of adults — search template
+        'children'  => '',            // Number of children — search template
     ], $atts);
 
     // Validate template
-    $template = in_array($atts['template'], ['home', 'listing', 'landing']) ? $atts['template'] : 'home';
+    $valid_templates = ['home', 'listing', 'landing', 'search'];
+    $template = in_array($atts['template'], $valid_templates) ? $atts['template'] : 'home';
 
     // Enqueue appropriate assets
     if ($template === 'landing') {
         add_action('wp_footer', 'shaped_enqueue_room_cards_landing_assets', 1);
     } else {
         add_action('wp_footer', 'shaped_enqueue_room_cards_css', 1);
+    }
+
+    // For search template, resolve date/guest context from shortcode attrs or URL params
+    $search_context = null;
+    if ($template === 'search') {
+        $search_context = shaped_resolve_search_context($atts);
     }
 
     // Build query args
@@ -62,6 +78,9 @@ function shaped_room_cards_shortcode($atts) {
 
     // Build wrapper classes
     $wrapper_classes = ['shaped-room-cards-wrapper', 'template-' . $template];
+    if ($template === 'search') {
+        $wrapper_classes[] = 'mphb_sc_search_results-wrapper';
+    }
     if (!empty($atts['class'])) {
         $wrapper_classes[] = sanitize_html_class($atts['class']);
     }
@@ -91,6 +110,78 @@ function shaped_room_cards_shortcode($atts) {
     }
 
     return ob_get_clean();
+}
+
+/**
+ * Resolve search context from shortcode attributes and URL parameters
+ *
+ * Priority: shortcode attribute > MPHB URL params > empty
+ *
+ * @param array $atts Shortcode attributes
+ * @return array Search context with keys: check_in, check_out, adults, children
+ */
+function shaped_resolve_search_context(array $atts): array {
+    // Check-in: shortcode attr > MPHB URL param
+    $check_in = !empty($atts['check_in'])
+        ? sanitize_text_field($atts['check_in'])
+        : sanitize_text_field($_GET['mphb_check_in_date'] ?? '');
+
+    // Check-out: shortcode attr > MPHB URL param
+    $check_out = !empty($atts['check_out'])
+        ? sanitize_text_field($atts['check_out'])
+        : sanitize_text_field($_GET['mphb_check_out_date'] ?? '');
+
+    // Normalize date formats: MPHB uses DD/MM/YYYY, we need Y-m-d
+    $check_in  = shaped_normalize_date($check_in);
+    $check_out = shaped_normalize_date($check_out);
+
+    // Adults: shortcode attr > MPHB URL param > default 2
+    $adults = !empty($atts['adults'])
+        ? (int) $atts['adults']
+        : (int) ($_GET['mphb_adults'] ?? 2);
+
+    // Children: shortcode attr > MPHB URL param > default 0
+    $children = !empty($atts['children'])
+        ? (int) $atts['children']
+        : (int) ($_GET['mphb_children'] ?? 0);
+
+    return [
+        'check_in'  => $check_in,
+        'check_out' => $check_out,
+        'adults'    => max(1, $adults),
+        'children'  => max(0, $children),
+    ];
+}
+
+/**
+ * Normalize date to Y-m-d format
+ *
+ * Handles DD/MM/YYYY (MPHB default) and Y-m-d formats.
+ *
+ * @param string $date Date string
+ * @return string Date in Y-m-d format, or empty string if invalid
+ */
+function shaped_normalize_date(string $date): string {
+    if (empty($date)) {
+        return '';
+    }
+
+    // Already Y-m-d
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+        return $date;
+    }
+
+    // DD/MM/YYYY
+    if (preg_match('#^(\d{2})/(\d{2})/(\d{4})$#', $date, $m)) {
+        return sprintf('%s-%s-%s', $m[3], $m[2], $m[1]);
+    }
+
+    // Try DateTime as last resort
+    try {
+        return (new DateTime($date))->format('Y-m-d');
+    } catch (Exception $e) {
+        return '';
+    }
 }
 
 /**
