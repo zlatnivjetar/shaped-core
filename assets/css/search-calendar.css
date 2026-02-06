@@ -2,7 +2,7 @@
 
 
 .datepick-popup {
-  width: 750px;
+  width: 800px;
 }
 
 .mphb-calendar .mphb-datepicker-minimal.datepick,
@@ -41,7 +41,7 @@
 	
 	span.datepick-dow-1, span.datepick-dow-2, span.datepick-dow-3, span.datepick-dow-4, span.datepick-dow-5, span.datepick-dow-6, span.datepick-dow-0 {
 		color: var(--color-text-muted);
-		
+		font-weight: 600;
 	}
 	
 		span.datepick-dow-1:after {
@@ -362,7 +362,7 @@ a.datepick-cmd {
 
 .mphb-calendar .mphb-datepicker-minimal .datepick-ctrl, .datepick-popup .mphb-datepicker-minimal .datepick-ctrl {
 
-  margin-top: 4px !important;
+  margin-top: 0px !important;
 }
 	
 	.datepick-month.first span.datepick-other-month {
@@ -375,11 +375,12 @@ a.datepick-cmd {
 	
 	.datepick-popup .mphb-datepicker-minimal .datepick-month th {
     font-size: .8125rem;
+    padding: 2px 0 !important;
 	}
 	
 	.mphb-datepicker-minimal .datepick-month td a, .mphb-datepicker-minimal .datepick-month td span {
 		font-size:0.9375rem;
-		height:2.5rem !important;
+		height:2.25rem !important;
 	}
 }
 
