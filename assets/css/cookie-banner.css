@@ -150,7 +150,9 @@ button.cmplz-show {
   #cmplz-cookiebanner-container .cmplz-cookiebanner {
      right:0px;
     border-radius:0;
+    grid-row-gap: 6px !important;
 }
+
 
 .gt_float_switcher {
     font-size: 1.0625rem !important;
