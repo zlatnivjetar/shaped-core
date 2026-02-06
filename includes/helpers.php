@@ -344,3 +344,63 @@ function shaped_get_landing_amenities(int $room_type_id, int $count = 3): array 
 
     return $result;
 }
+
+/* =========================================================================
+ * ROOM GALLERY HELPERS
+ * ========================================================================= */
+
+/**
+ * Get gallery image IDs for a room type
+ *
+ * Queries WordPress attachments parented to the room type post.
+ * Optionally prepends the featured image.
+ *
+ * @param int  $room_type_id   Room type post ID
+ * @param bool $with_featured  Include featured image as first item (default true)
+ * @return int[] Array of attachment IDs
+ */
+function shaped_get_room_gallery_ids(int $room_type_id, bool $with_featured = true): array {
+    $attachment_ids = get_posts([
+        'post_type'      => 'attachment',
+        'post_parent'    => $room_type_id,
+        'post_mime_type' => 'image',
+        'posts_per_page' => -1,
+        'orderby'        => 'menu_order',
+        'order'          => 'ASC',
+        'fields'         => 'ids',
+    ]);
+
+    if ($with_featured) {
+        $thumbnail_id = get_post_thumbnail_id($room_type_id);
+        if ($thumbnail_id && !in_array($thumbnail_id, $attachment_ids, true)) {
+            array_unshift($attachment_ids, (int) $thumbnail_id);
+        }
+    }
+
+    return array_map('intval', $attachment_ids);
+}
+
+/**
+ * Get gallery image data for a room type (IDs + URLs)
+ *
+ * @param int    $room_type_id Room type post ID
+ * @param string $size         Image size (default 'large')
+ * @return array[] Array of ['id' => int, 'url' => string, 'alt' => string]
+ */
+function shaped_get_room_gallery(int $room_type_id, string $size = 'large'): array {
+    $ids    = shaped_get_room_gallery_ids($room_type_id);
+    $images = [];
+
+    foreach ($ids as $id) {
+        $url = wp_get_attachment_image_url($id, $size);
+        if ($url) {
+            $images[] = [
+                'id'  => $id,
+                'url' => $url,
+                'alt' => get_post_meta($id, '_wp_attachment_image_alt', true) ?: get_the_title($room_type_id),
+            ];
+        }
+    }
+
+    return $images;
+}

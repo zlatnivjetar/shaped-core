@@ -368,6 +368,26 @@ class Shaped_Assets {
                 true
             );
         }
+
+        // Room detail modal (opens from search result cards)
+        if (file_exists(SHAPED_DIR . 'assets/css/room-modal.css')) {
+            wp_enqueue_style(
+                'shaped-room-modal',
+                SHAPED_URL . 'assets/css/room-modal.css',
+                ['shaped-design-tokens'],
+                SHAPED_VERSION
+            );
+        }
+
+        if (file_exists(SHAPED_DIR . 'assets/js/room-modal.js')) {
+            wp_enqueue_script(
+                'shaped-room-modal',
+                SHAPED_URL . 'assets/js/room-modal.js',
+                [],
+                SHAPED_VERSION,
+                true
+            );
+        }
     }
     
     /* =========================================================================
