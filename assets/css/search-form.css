@@ -217,26 +217,18 @@ display: none;
  *
  * Hidden by default; revealed by search-form-visibility.js
  * when #search-hero scrolls out of the viewport.
- *
- * Uses bottom (not transform) for the slide animation to avoid
- * iOS WebKit compositor-layer bugs with fixed-position elements
- * and to override Elementor's bottom: 0svh which can miscompute
- * on first paint in iOS Chrome.
  * ================================================================= */
 #search-fixed {
-    bottom: -300px;
     opacity: 0;
     pointer-events: none;
-    visibility: hidden;
-    transition: bottom var(--transition-slow), opacity var(--transition-slow), visibility 0s linear 300ms;
+    transform: translateY(100%);
+    transition: opacity var(--transition-slow), transform var(--transition-slow);
 }
 
 #search-fixed.is-visible {
-    bottom: 0;
     opacity: 1;
     pointer-events: auto;
-    visibility: visible;
-    transition: bottom var(--transition-slow), opacity var(--transition-slow), visibility 0s linear 0s;
+    transform: translateY(0);
 }
 
 /* =================================================================
