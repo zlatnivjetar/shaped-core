@@ -297,6 +297,15 @@ a.datepick-cmd {
   padding: 4px 0 !important;
 }
 
+/* tablet Responsive */
+@media (max-width: 1024px) {
+
+
+  .datepick-popup {
+    width: 100%;
+  }
+}
+
 
 /* Mobile Responsive */
 @media (max-width: 767px) {
