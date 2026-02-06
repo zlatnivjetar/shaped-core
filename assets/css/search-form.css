@@ -130,17 +130,9 @@ abbr[title="Formatted as dd/mm/yyyy"] {
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     .elementor-section .mphb_sc_search-wrapper {
         margin-top: 24px;
-    }
-    
-    .mphb_sc_search-form {
-        flex-direction: row; /* Keep horizontal for inputs */
-        flex-wrap: wrap;
-        gap: 12px 16px;
-        padding: 28px 24px;
-        background: rgba(251, 250, 249, 0.2);
     }
     
     .mphb_sc_search-check-in-date,
@@ -154,7 +146,7 @@ abbr[title="Formatted as dd/mm/yyyy"] {
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 479px) {
     .mphb_sc_search-form {
         padding: 24px;
         gap: 16px;

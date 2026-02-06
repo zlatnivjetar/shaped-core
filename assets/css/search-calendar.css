@@ -304,7 +304,7 @@ a.datepick-cmd {
 
   .mphb-calendar .mphb-datepicker-minimal.datepick,
   .datepick-popup .mphb-datepicker-minimal.datepick {
-    padding: 0;
+    padding: 0 !important;
   }
 
 
@@ -368,8 +368,8 @@ a.datepick-cmd {
 	}
 	
 	.mphb-datepicker-minimal .datepick-month td a, .mphb-datepicker-minimal .datepick-month td span {
-		font-size:1.0625rem;
-		height:3rem !important;
+		font-size:0.9375rem;
+		height:2.5rem !important;
 	}
 }
 
