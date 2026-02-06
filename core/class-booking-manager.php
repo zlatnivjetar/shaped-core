@@ -265,7 +265,7 @@ class Shaped_Booking_Manager
         }
 
         if ($booking->getStatus() === 'cancelled') {
-            return '<div style="max-width: 600px; margin: 0 auto; font-family: \'DM Sans\', -apple-system, BlinkMacSystemFont, sans-serif; background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 8px 32px rgba(20, 19, 16, 0.12); text-align: center;">
+            return '<div style="max-width: 600px; margin: 0 auto; font-family: \'DM Sans\', -apple-system, BlinkMacSystemFont, sans-serif; background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 8px 32px rgba(0,0,0,0.13); text-align: center;">
                 <div style="color: var(--color-semantic-error); font-size: 3rem; margin-bottom: 16px;">✗</div>
                 <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Booking Cancelled</h2>
                 <p style="color: var(--color-text-muted); margin-bottom: 24px; line-height: 1.5;">
@@ -328,7 +328,7 @@ class Shaped_Booking_Manager
 
         ob_start();
         ?>
-        <div class="shaped-manage-booking" style="max-width: 600px; margin: 0 auto; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 8px 32px rgba(20, 19, 16, 0.12);">
+        <div class="shaped-manage-booking" style="max-width: 600px; margin: 0 auto; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 8px 32px rgba(0,0,0,0.13);">
             <!-- Booking Details -->
             <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid #f0f0f0;">
                 <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 24px; padding-bottom:16px; border-bottom: 2px solid var(--color-brand-primary);">Booking Details</h2>
@@ -465,7 +465,7 @@ class Shaped_Booking_Manager
 
         ob_start();
         ?>
-        <div class="shaped-cancelled" style="width: 600px; margin: 0 auto; padding: 32px; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;background: #ffffff; border-radius: 12px; box-shadow: 0 8px 32px rgba(20, 19, 16, 0.12); text-align: center;">
+        <div class="shaped-cancelled" style="width: 600px; margin: 0 auto; padding: 32px; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;background: #ffffff; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.13); text-align: center;">
             <div id="checkwrap" style="width: 64px; height: 64px; background: var(--color-semantic-success); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: white; font-size: 32px;">✓</div>
 
             <h2 style="color: var(--color-text-primary); padding-top:8px; font-size: 2rem; font-weight: 700; margin-bottom: 24px; line-height: 1.2;" class="manageheaderbooking">Booking Cancelled</h2>
@@ -646,7 +646,7 @@ class Shaped_Booking_Manager
 
         ob_start();
         ?>
-        <div class="shaped-thank-you" style="max-width: 600px; margin: 0 auto; margin-top: -12rem; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--color-surface-page); border-radius: 12px; padding: 32px; box-shadow: 0 8px 32px rgba(20, 19, 16, 0.12);">
+        <div class="shaped-thank-you" style="max-width: 600px; margin: 0 auto; margin-top: -12rem; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--color-surface-white); border-radius: 12px; padding: 32px; box-shadow: 0 8px 32px rgba(0,0,0,0.13);">
             <!-- Success -->
             <div style="text-align: center; padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--color-border-default);">
                 <div style="color: var(--color-semantic-success); font-size: 3rem; margin-bottom: 16px;">✓</div>
