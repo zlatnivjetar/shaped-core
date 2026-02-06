@@ -17,17 +17,29 @@
     return;
   }
 
-  // ── iOS WebKit viewport fix ──
-  // On iOS Chrome/Safari, pull-to-refresh and fresh tab navigations can
-  // leave the layout viewport in a stale state. scrollTo to the current
-  // position is a no-op visually but forces WebKit to recalculate layout,
-  // which fixes fixed-position elements that appear offset from the
-  // actual viewport bottom.
+  // ── iOS WebKit viewport recalculation ──
+  // On iOS Chrome/Safari, fresh navigations and pull-to-refresh can leave
+  // the layout viewport in a stale state, causing position:fixed elements
+  // to appear offset from the actual viewport bottom. Scrolling to the
+  // *same* position is a no-op — WebKit only recalculates when the scroll
+  // position actually changes. A 1px nudge-and-restore forces a full
+  // viewport geometry recalculation.
   if (/iPhone|iPad/.test(navigator.userAgent)) {
-    window.addEventListener('pageshow', function () {
+    var nudge = function () {
+      var y = window.scrollY;
+      window.scrollTo(window.scrollX, y + 1);
       requestAnimationFrame(function () {
-        window.scrollTo(window.scrollX, window.scrollY);
+        window.scrollTo(window.scrollX, y);
       });
+    };
+
+    // pageshow fires on initial load, pull-to-refresh, and BFCache restore.
+    // The 300ms delay lets the pull-to-refresh animation and browser chrome
+    // settle before we nudge.
+    window.addEventListener('pageshow', function () {
+      setTimeout(function () {
+        requestAnimationFrame(nudge);
+      }, 300);
     });
   }
 
