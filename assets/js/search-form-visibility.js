@@ -17,32 +17,6 @@
     return;
   }
 
-  // ── iOS WebKit viewport recalculation ──
-  // On iOS Chrome/Safari, fresh navigations and pull-to-refresh can leave
-  // the layout viewport in a stale state, causing position:fixed elements
-  // to appear offset from the actual viewport bottom. Scrolling to the
-  // *same* position is a no-op — WebKit only recalculates when the scroll
-  // position actually changes. A 1px nudge-and-restore forces a full
-  // viewport geometry recalculation.
-  if (/iPhone|iPad/.test(navigator.userAgent)) {
-    var nudge = function () {
-      var y = window.scrollY;
-      window.scrollTo(window.scrollX, y + 1);
-      requestAnimationFrame(function () {
-        window.scrollTo(window.scrollX, y);
-      });
-    };
-
-    // pageshow fires on initial load, pull-to-refresh, and BFCache restore.
-    // The 300ms delay lets the pull-to-refresh animation and browser chrome
-    // settle before we nudge.
-    window.addEventListener('pageshow', function () {
-      setTimeout(function () {
-        requestAnimationFrame(nudge);
-      }, 300);
-    });
-  }
-
   // ── IntersectionObserver with rootMargin buffer ──
   // A negative bottom margin (-48px) means the hero must be at least 48px
   // into the viewport before it counts as "intersecting". This prevents the
