@@ -1,0 +1,474 @@
+/**
+ * Room Detail Modal Styles
+ *
+ * Overlay + container for the room detail modal opened from search result cards.
+ * Desktop: gallery left, details right (Hilton-inspired layout).
+ * Mobile: full-screen stacked layout.
+ *
+ * @package Shaped_Core
+ */
+
+/* ==========================================================================
+   OVERLAY
+   ========================================================================== */
+
+.shaped-room-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--color-overlay-scrim);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--transition-slow), visibility var(--transition-slow);
+}
+
+.shaped-room-modal-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+body.shaped-room-modal-open {
+    overflow: hidden;
+}
+
+/* ==========================================================================
+   CONTAINER
+   ========================================================================== */
+
+.shaped-room-modal-container {
+    background: var(--color-surface-white);
+    border-radius: var(--radius-lg);
+    max-width: 960px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: var(--shadow-xl);
+    transform: scale(0.95) translateY(8px);
+    transition: transform var(--transition-slow);
+}
+
+.shaped-room-modal-overlay.is-open .shaped-room-modal-container {
+    transform: scale(1) translateY(0);
+}
+
+/* ==========================================================================
+   CLOSE BUTTON
+   ========================================================================== */
+
+.shaped-room-modal-close {
+    position: sticky;
+    top: 0;
+    float: right;
+    z-index: 10;
+    background: var(--color-surface-white);
+    border: 1px solid var(--color-border-default);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    color: var(--color-text-primary);
+    margin: 16px 16px 0 0;
+    transition: background var(--transition-base), color var(--transition-base);
+    box-shadow: var(--shadow-sm);
+}
+
+.shaped-room-modal-close:hover {
+    background: var(--color-surface-alt);
+}
+
+.shaped-room-modal-close:focus-visible {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: 2px;
+}
+
+/* ==========================================================================
+   BODY (holds cloned template content)
+   ========================================================================== */
+
+.shaped-room-modal-body {
+    padding: 0;
+}
+
+/* ==========================================================================
+   TOP SECTION: Gallery + Details (side-by-side on desktop)
+   ========================================================================== */
+
+.shaped-room-modal__top {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+}
+
+/* ==========================================================================
+   GALLERY SLIDER
+   ========================================================================== */
+
+.shaped-room-modal__gallery {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-surface-alt);
+    aspect-ratio: 4 / 3;
+}
+
+.shaped-room-modal__gallery-track {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.shaped-room-modal__slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity var(--transition-slow);
+}
+
+.shaped-room-modal__slide.is-active {
+    opacity: 1;
+}
+
+.shaped-room-modal__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Nav arrows */
+.shaped-room-modal__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--color-surface-white);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--color-text-primary);
+    box-shadow: var(--shadow-md);
+    transition: background var(--transition-base), transform var(--transition-base);
+    z-index: 2;
+}
+
+.shaped-room-modal__nav:hover {
+    background: var(--color-surface-alt);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.shaped-room-modal__nav--prev {
+    left: 12px;
+}
+
+.shaped-room-modal__nav--next {
+    right: 12px;
+}
+
+/* Image counter badge */
+.shaped-room-modal__counter {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    color: var(--color-text-inverse);
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 2;
+}
+
+/* ==========================================================================
+   DETAILS PANEL (right side on desktop)
+   ========================================================================== */
+
+.shaped-room-modal__details {
+    padding: 32px 28px;
+    overflow-y: auto;
+    max-height: 100%;
+}
+
+.shaped-room-modal__title {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 16px 0;
+    line-height: 1.3;
+}
+
+.shaped-room-modal__description {
+    color: var(--color-text-muted);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    margin-bottom: 24px;
+}
+
+.shaped-room-modal__description p:last-child {
+    margin-bottom: 0;
+}
+
+/* Section titles */
+.shaped-room-modal__section-title {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--color-border-default);
+}
+
+/* ==========================================================================
+   ROOM HIGHLIGHTS
+   ========================================================================== */
+
+.shaped-room-modal__highlights {
+    margin-bottom: 24px;
+}
+
+.shaped-room-modal__highlights-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.shaped-room-modal__highlight {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.shaped-room-modal__highlight-icon {
+    color: var(--color-brand-primary-hover);
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.shaped-room-modal__highlight div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.shaped-room-modal__highlight strong {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.shaped-room-modal__highlight span {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+}
+
+/* ==========================================================================
+   FULL AMENITIES GRID
+   ========================================================================== */
+
+.shaped-room-modal__amenities {
+    padding: 24px 28px;
+    border-top: 1px solid var(--color-border-default);
+}
+
+.shaped-room-modal__amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px 16px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.shaped-room-modal__amenity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.shaped-room-modal__amenity-icon {
+    color: var(--color-brand-primary-hover);
+    font-size: 1rem;
+    width: 20px;
+    flex-shrink: 0;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.shaped-room-modal__amenity-label {
+    font-size: 0.8125rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   FOOTER: Pricing + CTA
+   ========================================================================== */
+
+.shaped-room-modal__footer {
+    border-top: 1px solid var(--color-border-default);
+    padding: 0;
+}
+
+.shaped-room-modal__footer .mphb-regular-price {
+    margin: 0;
+    padding: 20px 28px;
+    border-top: none;
+}
+
+.shaped-room-modal__footer .shaped-rates-indicator {
+    padding: 0 28px 12px;
+    margin-top: -12px;
+}
+
+.shaped-room-modal__cta {
+    padding: 0 28px 28px;
+}
+
+.shaped-room-modal__book-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+}
+
+/* ==========================================================================
+   TABLET (max-width: 1023px)
+   ========================================================================== */
+
+@media (max-width: 1023px) {
+    .shaped-room-modal-overlay {
+        padding: 16px;
+    }
+
+    .shaped-room-modal__top {
+        grid-template-columns: 1fr;
+    }
+
+    .shaped-room-modal__gallery {
+        aspect-ratio: 16 / 9;
+    }
+
+    .shaped-room-modal__details {
+        padding: 24px 24px;
+    }
+
+    .shaped-room-modal__amenities {
+        padding: 20px 24px;
+    }
+
+    .shaped-room-modal__amenities-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .shaped-room-modal__footer .mphb-regular-price {
+        padding: 20px 24px;
+    }
+
+    .shaped-room-modal__footer .shaped-rates-indicator {
+        padding: 0 24px 12px;
+    }
+
+    .shaped-room-modal__cta {
+        padding: 0 24px 24px;
+    }
+}
+
+/* ==========================================================================
+   MOBILE (max-width: 767px)
+   ========================================================================== */
+
+@media (max-width: 767px) {
+    .shaped-room-modal-overlay {
+        padding: 0;
+        align-items: flex-start;
+    }
+
+    .shaped-room-modal-container {
+        border-radius: 0;
+        max-height: 100vh;
+        max-width: 100%;
+        min-height: 100vh;
+    }
+
+    .shaped-room-modal-close {
+        margin: 12px 12px 0 0;
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+
+    .shaped-room-modal__gallery {
+        aspect-ratio: 3 / 2;
+    }
+
+    .shaped-room-modal__details {
+        padding: 20px 16px;
+    }
+
+    .shaped-room-modal__title {
+        font-size: 1.25rem;
+    }
+
+    .shaped-room-modal__description {
+        font-size: 0.875rem;
+    }
+
+    .shaped-room-modal__highlights-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .shaped-room-modal__amenities {
+        padding: 16px;
+    }
+
+    .shaped-room-modal__amenities-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .shaped-room-modal__footer .mphb-regular-price {
+        padding: 16px;
+    }
+
+    .shaped-room-modal__footer .shaped-rates-indicator {
+        padding: 0 16px 8px;
+    }
+
+    .shaped-room-modal__cta {
+        padding: 0 16px 20px;
+    }
+
+    .shaped-room-modal__nav {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+
+    .shaped-room-modal__nav--prev {
+        left: 8px;
+    }
+
+    .shaped-room-modal__nav--next {
+        right: 8px;
+    }
+}

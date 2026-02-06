@@ -368,6 +368,26 @@ class Shaped_Assets {
                 true
             );
         }
+
+        // Room detail modal (opens from search result cards)
+        if (file_exists(SHAPED_DIR . 'assets/css/room-modal.css')) {
+            wp_enqueue_style(
+                'shaped-room-modal',
+                SHAPED_URL . 'assets/css/room-modal.css',
+                ['shaped-design-tokens'],
+                SHAPED_VERSION
+            );
+        }
+
+        if (file_exists(SHAPED_DIR . 'assets/js/room-modal.js')) {
+            wp_enqueue_script(
+                'shaped-room-modal',
+                SHAPED_URL . 'assets/js/room-modal.js',
+                [],
+                SHAPED_VERSION,
+                true
+            );
+        }
     }
     
     /* =========================================================================
@@ -420,23 +440,30 @@ class Shaped_Assets {
      * Check if current page is search results
      */
     private function is_search_results_page(): bool {
-        // Check for MPHB search results shortcode
         global $post;
+
+        // Check for MPHB search results shortcode
         if ($post && has_shortcode($post->post_content, 'mphb_search_results')) {
             return true;
         }
-        
+
+        // Check for Shaped room cards search template
+        if ($post && has_shortcode($post->post_content, 'shaped_room_cards')
+            && strpos($post->post_content, 'template="search"') !== false) {
+            return true;
+        }
+
         // URL pattern check
         $uri = $_SERVER['REQUEST_URI'] ?? '';
         if (strpos($uri, 'mphb_room_type') !== false || strpos($uri, '/search-results') !== false) {
             return true;
         }
-        
+
         // Query string check (MPHB uses these parameters)
         if (isset($_GET['mphb_room_type_id']) || isset($_GET['mphb_check_in_date'])) {
             return true;
         }
-        
+
         return false;
     }
     
