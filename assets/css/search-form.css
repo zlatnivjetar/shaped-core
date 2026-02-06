@@ -224,15 +224,13 @@ display: none;
     visibility: hidden;
     transform: translateY(100%);
     transition: opacity var(--transition-slow), transform var(--transition-slow), visibility 0s linear 300ms;
-    -webkit-backface-visibility: hidden;
-    will-change: transform, opacity;
 }
 
 #search-fixed.is-visible {
     opacity: 1;
     pointer-events: auto;
     visibility: visible;
-    transform: translateY(0);
+    transform: none;
     transition: opacity var(--transition-slow), transform var(--transition-slow), visibility 0s linear 0s;
 }
 

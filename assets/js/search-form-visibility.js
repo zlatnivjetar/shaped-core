@@ -17,32 +17,18 @@
     return;
   }
 
-  // ── iOS Chrome first-load viewport workaround ──
-  // On a fresh iOS Chrome tab the visual viewport may not match the layout
-  // viewport until after the first resize/scroll. Force a reflow once the
-  // viewport settles so the parent fixed-position container recalculates.
-  if (/iPhone|iPad/.test(navigator.userAgent) && window.visualViewport) {
-    var settled = false;
-    var onViewportResize = function () {
-      if (!settled) {
-        settled = true;
-        window.visualViewport.removeEventListener('resize', onViewportResize);
-        // Force a layout recalc on the fixed container
-        var parent = fixed.parentElement;
-        if (parent) {
-          parent.style.display = 'none';
-          // Read offsetHeight to flush the style change synchronously
-          void parent.offsetHeight;
-          parent.style.display = '';
-        }
-      }
-    };
-    window.visualViewport.addEventListener('resize', onViewportResize);
-
-    // Clean up if it never fires (desktop UA spoofing, etc.)
-    setTimeout(function () {
-      window.visualViewport.removeEventListener('resize', onViewportResize);
-    }, 5000);
+  // ── iOS WebKit viewport fix ──
+  // On iOS Chrome/Safari, pull-to-refresh and fresh tab navigations can
+  // leave the layout viewport in a stale state. scrollTo to the current
+  // position is a no-op visually but forces WebKit to recalculate layout,
+  // which fixes fixed-position elements that appear offset from the
+  // actual viewport bottom.
+  if (/iPhone|iPad/.test(navigator.userAgent)) {
+    window.addEventListener('pageshow', function () {
+      requestAnimationFrame(function () {
+        window.scrollTo(window.scrollX, window.scrollY);
+      });
+    });
   }
 
   // ── IntersectionObserver with rootMargin buffer ──
