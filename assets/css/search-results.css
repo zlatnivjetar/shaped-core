@@ -43,7 +43,7 @@
     padding: 1.5rem 2rem;
     margin-bottom: 0;
     border-radius: var(--radius-md);
-    font-size: 1rem;
+    font-size: 1.125rem;
     font-weight: 600;
     color: var(--color-text-primary);
     box-shadow: var(--shadow-card);
@@ -431,6 +431,7 @@ p.post-thumbnail.mphb-loop-room-thumbnail {
     
     .mphb_sc_search_results-info {
         margin-bottom: 0;
+        font-size: 1.0625rem;
     }
     
     .mphb-room-amenities-list {
@@ -447,14 +448,14 @@ p.post-thumbnail.mphb-loop-room-thumbnail {
     .mphb_sc_search_results-wrapper {
         display: flex;
         flex-direction: column;
-        gap:3rem
+        gap:2rem
     }
     
     p.mphb_sc_search_results-info {
         text-align: center;
         background: var(--color-surface-white);
         padding: 1rem 2rem;
-        margin: 1rem 0 -.5rem 0;
+        margin: 0;
 
     }
     
