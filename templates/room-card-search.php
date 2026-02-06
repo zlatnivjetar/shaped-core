@@ -180,4 +180,9 @@ if (!empty($facilities) && !is_wp_error($facilities)) {
         </a>
     </div>
 
+    <?php // ─── Hidden Modal Content (cloned into overlay by room-modal.js on click) ─── ?>
+    <template data-room-modal>
+        <?php include SHAPED_DIR . 'templates/room-modal-content.php'; ?>
+    </template>
+
 </div>
