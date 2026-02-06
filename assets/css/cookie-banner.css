@@ -61,6 +61,7 @@ button.cmplz-show {
 
 .cmplz-cookiebanner .cmplz-buttons {
   gap:16px!important;
+  flex-direction: row-reverse !important;
 }
 
 .cmplz-btn.cmplz-accept {
