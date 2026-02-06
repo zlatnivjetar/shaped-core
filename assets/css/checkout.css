@@ -24,6 +24,10 @@
 	color: var(--color-semantic-success);
 }
 
+  #checkoutbutton {
+    height: 52px;
+  }
+
 /* ==========================================================================
    BASE CHECKOUT CONTAINER
    ========================================================================== */
@@ -470,6 +474,7 @@ abbr[title="Required"] {
 	padding: 2rem 2rem 0 2rem;
 	text-align: center;
 	margin-bottom: 1rem;
+  margin-top: 0;
 }
 
 .mphb-total-price output {
@@ -627,7 +632,7 @@ ul.mphb_sc_checkout-services-list.mphb_checkout-services-list {
 	background: var(--color-surface-highlight);
 	padding: 1.5rem 0 1rem 0;
 	text-align: center;
-	margin-bottom: 0;
+	margin: 0;
 }
 
 /* ==========================================================================
@@ -1082,7 +1087,15 @@ input:focus,
 		width: 100%;
 		min-width: auto;
 		font-size: 0.9375rem;
+    height: 48px;
 	}
+
+  #checkoutbutton {
+    width: 100%;
+		min-width: auto;
+		font-size: 0.9375rem;
+    height: 48px;
+  }
 
 	.mphb_sc_checkout-submit-wrapper {
 		padding: 1rem 1.5rem;
