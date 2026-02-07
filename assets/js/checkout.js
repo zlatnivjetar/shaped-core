@@ -229,13 +229,31 @@ document.addEventListener('DOMContentLoaded', function() {
             const roomTitle = room.querySelector('.mphb-room-type-title')?.textContent.trim();
             const roomSlug = roomTitle?.toLowerCase().replace(/\s+/g, '-');
             const discountPercent = discountConfig[roomSlug];
-            
+
             // Find the price element
             const priceEl = room.querySelector('.mphb-price');
             if (!priceEl) return;
-            
-            // Check if already processed
-            if (priceEl.closest('.mphb-price-discount-wrapper')) return;
+
+            // Check if already processed (server-rendered discount wrapper)
+            const existingWrapper = priceEl.closest('.mphb-price-discount-wrapper');
+            if (existingWrapper) {
+                // Already has discount wrapper (e.g. shaped_room_cards search template).
+                // Still inject urgency badge if applicable.
+                if (!existingWrapper.querySelector('.mphb-urgency-badge')) {
+                    const availableCount = detectAvailability(room);
+                    if (availableCount !== null && availableCount <= urgencyConfig.low) {
+                        const urgencyBadge = document.createElement('span');
+                        urgencyBadge.className = 'mphb-urgency-badge';
+                        if (availableCount === urgencyConfig.critical) {
+                            urgencyBadge.textContent = `Last room`;
+                        } else if (availableCount === urgencyConfig.low) {
+                            urgencyBadge.textContent = `2 left`;
+                        }
+                        existingWrapper.appendChild(urgencyBadge);
+                    }
+                }
+                return;
+            }
             
             // Get availability count from RoomCloud
             const availableCount = detectAvailability(room);
