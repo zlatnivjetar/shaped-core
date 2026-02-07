@@ -180,9 +180,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // PRIORITY 3: Single room scenario (no counter shown)
-        const multipleWrapper = room.querySelector('.mphb-rooms-quantity-wrapper');
-        if (!multipleWrapper || multipleWrapper.classList.contains('mphb-hide')) {
-            return 1;
+        // Skip this fallback for Shaped search template cards — they never render
+        // .mphb-rooms-quantity-wrapper, so hitting this would mark every room as "Last room".
+        if (!room.closest('.template-search')) {
+            const multipleWrapper = room.querySelector('.mphb-rooms-quantity-wrapper');
+            if (!multipleWrapper || multipleWrapper.classList.contains('mphb-hide')) {
+                return 1;
+            }
         }
         
         return null;

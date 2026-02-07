@@ -80,13 +80,15 @@
             // Make entire card clickable
             card.style.cursor = 'pointer';
 
-            card.addEventListener('click', function (e) {
-                // Don't intercept clicks on the CTA form/button (let it POST to checkout)
-                if (e.target.closest('.mphb-reserve-room-section form') ||
-                    e.target.closest('.mphb-reserve-room-section a')) {
-                    return;
-                }
+            // Prevent checkout form clicks from bubbling up to the card click handler
+            var forms = card.querySelectorAll('.mphb-reserve-room-section form, .mphb-reserve-room-section a');
+            forms.forEach(function (el) {
+                el.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                });
+            });
 
+            card.addEventListener('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
 
