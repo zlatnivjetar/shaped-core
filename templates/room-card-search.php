@@ -49,25 +49,46 @@ $adults    = $search_context['adults'] ?? 2;
 $children  = $search_context['children'] ?? 0;
 $has_dates = !empty($check_in) && !empty($check_out);
 
-// ─── Availability Count (for urgency badges) ───
+// ─── Availability Count (for urgency badges + zero-room gating) ───
+// Priority: RoomCloud (if active) → MPHB fallback
 $available_count = 0;
+$rc_handled = false;
+
 if (!empty($check_in) && !empty($check_out)) {
     $check_in_dt  = new \DateTime($check_in);
     $check_out_dt = new \DateTime($check_out);
 
-    // Stage A: rooms not locked by bookings
-    $available = MPHB()->getRoomRepository()->getAvailableRooms($check_in_dt, $check_out_dt, $room_id);
-    $available_count = isset($available[$room_id]) ? count($available[$room_id]) : 0;
+    // PRIORITY 1: RoomCloud availability (source of truth when active)
+    if (shaped_is_roomcloud_active() && class_exists('Shaped_RC_Availability_Manager')) {
+        $rc_id = Shaped_RC_Availability_Manager::get_roomcloud_id_for_room_type($room_id);
+        if ($rc_id !== null) {
+            $rc_count = Shaped_RC_Availability_Manager::get_min_availability_for_stay($rc_id, $check_in_dt, $check_out_dt);
+            if ($rc_count !== null) {
+                $available_count = max(0, $rc_count);
+                $rc_handled = true;
+            }
+        }
+    }
 
-    // Stage B: subtract rooms blocked by rules/restrictions
-    $unavailable_ids = mphb_availability_facade()->getUnavailableRoomIds(
-        $room_id,
-        $check_in_dt,
-        $check_out_dt,
-        false
-    );
-    $available_count -= count($unavailable_ids);
-    $available_count = max(0, $available_count);
+    // PRIORITY 2: MPHB fallback (when RoomCloud has no data for this room)
+    if (!$rc_handled) {
+        $available = MPHB()->getRoomRepository()->getAvailableRooms($check_in_dt, $check_out_dt, $room_id);
+        $available_count = isset($available[$room_id]) ? count($available[$room_id]) : 0;
+
+        $unavailable_ids = mphb_availability_facade()->getUnavailableRoomIds(
+            $room_id,
+            $check_in_dt,
+            $check_out_dt,
+            false
+        );
+        $available_count -= count($unavailable_ids);
+        $available_count = max(0, $available_count);
+    }
+
+    // Skip rendering if zero rooms available
+    if ($available_count === 0) {
+        return;
+    }
 }
 
 // ─── Pricing ───
