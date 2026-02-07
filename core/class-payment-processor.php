@@ -752,6 +752,9 @@ class Shaped_Payment_Processor
                         try { $booking->setStatus('confirmed'); MPHB()->getBookingRepository()->save($booking); } catch (\Throwable $e) {}
                     }
 
+                    // Notify RoomCloud immediately so it blocks dates for authorized bookings
+                    do_action('shaped_booking_authorized', $booking_id);
+
                     self::mark_session_processed($session_id);
                 }
 

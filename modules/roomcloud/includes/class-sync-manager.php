@@ -33,6 +33,7 @@ class Shaped_RC_Sync_Manager
     {
         // Hook into Shaped Core payment events
         add_action('shaped_payment_completed', [$this, 'on_payment_completed'], 10, 2);
+        add_action('shaped_booking_authorized', [$this, 'on_booking_authorized'], 10, 1);
         add_action('shaped_booking_cancelled', [$this, 'on_booking_cancelled'], 10, 1);
         
         // Hook into MotoPress booking creation
@@ -84,6 +85,31 @@ class Shaped_RC_Sync_Manager
         }
     }
     
+    /**
+     * When a card is authorized for a delayed charge (setup mode completed)
+     * Sends CONFIRMED to RoomCloud immediately so it blocks the dates
+     */
+    public function on_booking_authorized($booking_id)
+    {
+        // Check if this booking came FROM RoomCloud (prevent loop)
+        if (get_post_meta($booking_id, '_roomcloud_source', true)) {
+            Shaped_RC_Error_Logger::log_info('Skipping authorization sync - booking came from RoomCloud', [
+                'booking_id' => $booking_id,
+            ]);
+            return;
+        }
+
+        $amount = get_post_meta($booking_id, '_stripe_pending_amount', true);
+
+        Shaped_RC_Error_Logger::log_info('Card authorized - sending CONFIRMED to RoomCloud to block dates', [
+            'booking_id' => $booking_id,
+            'pending_amount' => $amount,
+        ]);
+
+        // Send as CONFIRMED so RoomCloud blocks the dates immediately
+        Shaped_RC_API::send_reservation($booking_id, 'CONFIRMED', $amount ?: 0);
+    }
+
     /**
      * When payment is completed (immediate or delayed)
      */
