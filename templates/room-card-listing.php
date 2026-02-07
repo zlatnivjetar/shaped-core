@@ -90,7 +90,7 @@ if (!empty($facilities) && !is_wp_error($facilities)) {
     <?php
     $total_capacity = $mphb_room ? $mphb_room->getTotalCapacity() : 0;
     $amenities = shaped_get_amenities_for_room($room_id, ['skip_fallback' => true]);
-    $amenities = array_slice($amenities, 0, 7); // 7 mapper + Sleeps = 8 total
+    $amenities = array_slice($amenities, 0, 8);
     ?>
     <ul class="mphb-loop-room-type-attributes">
         <li class="mphb-room-type-total-capacity" style="display:none;">
@@ -100,13 +100,6 @@ if (!empty($facilities) && !is_wp_error($facilities)) {
 
         <div class="mphb-room-amenities-wrapper">
             <ul class="mphb-room-amenities-list">
-
-                <?php if ($total_capacity > 0): ?>
-                <li class="mphb-amenity-item">
-                    <span class="mphb-amenity-icon"><i class="ph ph-bed" aria-hidden="true"></i></span>
-                    <span class="mphb-amenity-text">Sleeps <?php echo esc_html($total_capacity); ?></span>
-                </li>
-                <?php endif; ?>
 
                 <?php foreach ($amenities as $amenity): ?>
                 <li class="mphb-amenity-item">
