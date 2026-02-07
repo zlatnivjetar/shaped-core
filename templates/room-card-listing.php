@@ -87,43 +87,28 @@ if (!empty($facilities) && !is_wp_error($facilities)) {
     <p><?php echo esc_html($room_excerpt); ?></p>
     <?php endif; ?>
 
-    <?php if (!empty($facilities) && !is_wp_error($facilities)): ?>
-    <h3 class="mphb-room-type-details-title">Amenities</h3>
+    <?php
+    $total_capacity = $mphb_room ? $mphb_room->getTotalCapacity() : 0;
+    $amenities = shaped_get_amenities_for_room($room_id, ['skip_fallback' => true]);
+    $amenities = array_slice($amenities, 0, 7); // 7 mapper + Sleeps = 8 total
+    ?>
     <ul class="mphb-loop-room-type-attributes">
         <li class="mphb-room-type-total-capacity" style="display:none;">
             <span class="mphb-attribute-title mphb-total-capacity-title">Guests:</span>
-            <span class="mphb-attribute-value">6</span>
+            <span class="mphb-attribute-value"><?php echo esc_html($total_capacity); ?></span>
         </li>
 
         <div class="mphb-room-amenities-wrapper">
             <ul class="mphb-room-amenities-list">
 
-                <?php
-                // Add Size
-                if (!empty($size)):
-                ?>
-                <li class="mphb-amenity-item">
-                    <span class="mphb-amenity-icon"><i class="ph ph-ruler" aria-hidden="true"></i></span>
-                    <span class="mphb-amenity-text"><?php echo esc_html($size); ?>m²</span>
-                </li>
-                <?php endif; ?>
-
-                <?php
-                // Add Bed Type
-                if (!empty($bed_type)):
-                ?>
+                <?php if ($total_capacity > 0): ?>
                 <li class="mphb-amenity-item">
                     <span class="mphb-amenity-icon"><i class="ph ph-bed" aria-hidden="true"></i></span>
-                    <span class="mphb-amenity-text"><?php echo esc_html($bed_type); ?></span>
+                    <span class="mphb-amenity-text">Sleeps <?php echo esc_html($total_capacity); ?></span>
                 </li>
                 <?php endif; ?>
 
-                <?php
-                // Get amenities using Shaped system (all amenities for listing page)
-                $amenities = shaped_get_amenities_for_room($room_id, ['skip_fallback' => true]);
-
-                foreach ($amenities as $amenity):
-                ?>
+                <?php foreach ($amenities as $amenity): ?>
                 <li class="mphb-amenity-item">
                     <span class="mphb-amenity-icon"><?php echo $amenity['html']; ?></span>
                     <span class="mphb-amenity-text"><?php echo esc_html($amenity['label']); ?></span>
@@ -146,7 +131,6 @@ if (!empty($facilities) && !is_wp_error($facilities)) {
             <span class="mphb-attribute-value"><?php echo esc_html($bed_type); ?></span>
         </li>
     </ul>
-    <?php endif; ?>
 
     <?php shaped_render_room_price($room_id, $room_slug); ?>
 
