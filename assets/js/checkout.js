@@ -169,6 +169,15 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
+        // PRIORITY 1.5: Server-rendered availability (Shaped search template)
+        const serverCount = room.getAttribute('data-available-rooms');
+        if (serverCount !== null && serverCount !== '') {
+            const count = parseInt(serverCount, 10);
+            if (!isNaN(count)) {
+                return count;
+            }
+        }
+
         // PRIORITY 2: No RoomCloud data - check MotoPress DOM
         const availableRoomsEl = room.querySelector('.mphb-available-rooms-count');
         if (availableRoomsEl) {
