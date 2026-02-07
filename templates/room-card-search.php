@@ -146,36 +146,29 @@ if (!empty($facilities) && !is_wp_error($facilities)) {
     <?php endif; ?>
 
     <?php // ─── Amenities ─── ?>
-    <?php if (!empty($facilities) && !is_wp_error($facilities)): ?>
-    <h3 class="mphb-room-type-details-title">Amenities</h3>
+    <?php
+    $total_capacity = $mphb_room ? $mphb_room->getTotalCapacity() : 0;
+    $amenities = shaped_get_amenities_for_room($room_id, ['skip_fallback' => true]);
+    $amenities = array_slice($amenities, 0, 7); // 7 mapper + Sleeps = 8 total
+    ?>
     <ul class="mphb-loop-room-type-attributes">
         <?php // Hidden capacity element for urgency detection by checkout.js ?>
         <li class="mphb-room-type-total-capacity" style="display:none;">
             <span class="mphb-attribute-title mphb-total-capacity-title">Guests:</span>
-            <span class="mphb-attribute-value"><?php echo esc_html($mphb_room ? $mphb_room->getTotalCapacity() : ''); ?></span>
+            <span class="mphb-attribute-value"><?php echo esc_html($total_capacity); ?></span>
         </li>
 
         <div class="mphb-room-amenities-wrapper">
             <ul class="mphb-room-amenities-list">
 
-                <?php if (!empty($size)): ?>
-                <li class="mphb-amenity-item">
-                    <span class="mphb-amenity-icon"><i class="ph ph-ruler" aria-hidden="true"></i></span>
-                    <span class="mphb-amenity-text"><?php echo esc_html($size); ?>m²</span>
-                </li>
-                <?php endif; ?>
-
-                <?php if (!empty($bed_type)): ?>
+                <?php if ($total_capacity > 0): ?>
                 <li class="mphb-amenity-item">
                     <span class="mphb-amenity-icon"><i class="ph ph-bed" aria-hidden="true"></i></span>
-                    <span class="mphb-amenity-text"><?php echo esc_html($bed_type); ?></span>
+                    <span class="mphb-amenity-text">Sleeps <?php echo esc_html($total_capacity); ?></span>
                 </li>
                 <?php endif; ?>
 
-                <?php
-                $amenities = shaped_get_amenities_for_room($room_id, ['skip_fallback' => true]);
-                foreach ($amenities as $amenity):
-                ?>
+                <?php foreach ($amenities as $amenity): ?>
                 <li class="mphb-amenity-item">
                     <span class="mphb-amenity-icon"><?php echo $amenity['html']; ?></span>
                     <span class="mphb-amenity-text"><?php echo esc_html($amenity['label']); ?></span>
@@ -197,7 +190,6 @@ if (!empty($facilities) && !is_wp_error($facilities)) {
             <span class="mphb-attribute-value"><?php echo esc_html($bed_type); ?></span>
         </li>
     </ul>
-    <?php endif; ?>
 
     <?php // ─── Price Section (date-aware) ─── ?>
     <?php shaped_render_search_price($room_id, $room_slug, $search_pricing); ?>
@@ -205,11 +197,12 @@ if (!empty($facilities) && !is_wp_error($facilities)) {
     <?php // ─── Rates Indicator ─── ?>
     <?php shaped_render_rates_indicator($room_id); ?>
 
-    <?php // ─── CTA: POST form to MPHB checkout page ─── ?>
+    <?php // ─── CTA ─── ?>
     <div class="mphb-reserve-room-section"
          data-room-type-id="<?php echo esc_attr($room_id); ?>"
          data-room-type-title="<?php echo esc_attr($room_title); ?>"
          data-room-price="<?php echo esc_attr($search_pricing['total']); ?>">
+        <?php if ($has_dates): ?>
         <form method="POST" action="<?php echo esc_url($checkout_url); ?>" class="shaped-checkout-form">
             <input type="hidden" name="mphb_check_in_date" value="<?php echo esc_attr($check_in); ?>">
             <input type="hidden" name="mphb_check_out_date" value="<?php echo esc_attr($check_out); ?>">
@@ -217,6 +210,9 @@ if (!empty($facilities) && !is_wp_error($facilities)) {
             <?php wp_nonce_field('mphb-checkout', 'mphb-checkout-nonce', false); ?>
             <button type="submit" class="button mphb-button mphb-book-button">Secure Your Stay</button>
         </form>
+        <?php else: ?>
+        <button type="button" class="button mphb-button mphb-book-button" data-open-datepick>Check Availability</button>
+        <?php endif; ?>
     </div>
 
     <?php // ─── Hidden Modal Content (cloned into overlay by room-modal.js on click) ─── ?>
