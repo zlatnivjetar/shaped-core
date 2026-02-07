@@ -94,6 +94,32 @@ function shaped_room_cards_shortcode($atts) {
     if ($rooms_query->have_posts()) {
         echo '<div class="' . esc_attr(implode(' ', $wrapper_classes)) . '">';
 
+        // Search results info bar (matches MPHB's mphb_sc_search_results-info)
+        if ($template === 'search' && !empty($search_context['check_in']) && !empty($search_context['check_out'])) {
+            $ci_dt = \DateTime::createFromFormat('Y-m-d', $search_context['check_in']);
+            $co_dt = \DateTime::createFromFormat('Y-m-d', $search_context['check_out']);
+
+            if ($ci_dt && $co_dt) {
+                if (class_exists('\\MPHB\\Utils\\DateUtils')) {
+                    $formatted_in  = \MPHB\Utils\DateUtils::formatDateWPFront($ci_dt);
+                    $formatted_out = \MPHB\Utils\DateUtils::formatDateWPFront($co_dt);
+                } else {
+                    $wp_fmt        = get_option('date_format');
+                    $formatted_in  = date_i18n($wp_fmt, $ci_dt->getTimestamp() + $ci_dt->getOffset());
+                    $formatted_out = date_i18n($wp_fmt, $co_dt->getTimestamp() + $co_dt->getOffset());
+                }
+
+                printf(
+                    '<p class="mphb_sc_search_results-info">%s</p>',
+                    esc_html(sprintf(
+                        __('Available units from %s until %s', 'motopress-hotel-booking'),
+                        $formatted_in,
+                        $formatted_out
+                    ))
+                );
+            }
+        }
+
         while ($rooms_query->have_posts()) {
             $rooms_query->the_post();
             $room_type = get_post();
