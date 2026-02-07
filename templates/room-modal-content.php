@@ -16,7 +16,9 @@
  * @var string $size             Room size (e.g. "55")
  * @var string $bed_type         Bed type description
  * @var array  $search_pricing   Pricing data from shaped_get_room_search_pricing()
- * @var string $cta_url          Checkout URL with date params
+ * @var string $checkout_url     MPHB checkout page URL (POST target)
+ * @var string $check_in         Check-in date (Y-m-d)
+ * @var string $check_out        Check-out date (Y-m-d)
  * @var array  $search_context   Search parameters (check_in, check_out, adults, children)
  */
 
@@ -168,10 +170,16 @@ $currency = function_exists('MPHB')
         <?php shaped_render_rates_indicator($room_id); ?>
 
         <div class="shaped-room-modal__cta">
-            <a href="<?php echo esc_url($cta_url); ?>"
-               class="button mphb-button mphb-book-button shaped-room-modal__book-btn">
-                Secure Your Stay
-            </a>
+            <form method="POST" action="<?php echo esc_url($checkout_url); ?>" class="shaped-checkout-form">
+                <input type="hidden" name="mphb_check_in_date" value="<?php echo esc_attr($check_in); ?>">
+                <input type="hidden" name="mphb_check_out_date" value="<?php echo esc_attr($check_out); ?>">
+                <input type="hidden" name="mphb_rooms_details[<?php echo esc_attr($room_id); ?>]" value="1">
+                <?php wp_nonce_field('mphb-checkout', 'mphb-checkout-nonce', false); ?>
+                <button type="submit"
+                        class="button mphb-button mphb-book-button shaped-room-modal__book-btn">
+                    Secure Your Stay
+                </button>
+            </form>
         </div>
     </div>
 

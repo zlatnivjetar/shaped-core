@@ -59,16 +59,8 @@ $search_pricing = shaped_get_room_search_pricing(
     $children
 );
 
-// ─── Build CTA URL (room page with date params for checkout flow) ───
-$cta_url = $room_permalink;
-if ($has_dates) {
-    $cta_url = add_query_arg([
-        'mphb_check_in_date'  => $check_in,
-        'mphb_check_out_date' => $check_out,
-        'mphb_adults'         => $adults,
-        'mphb_children'       => $children,
-    ], $cta_url);
-}
+// ─── Checkout URL (MPHB checkout page, POST target) ───
+$checkout_url = MPHB()->settings()->pages()->getCheckoutPageUrl();
 
 // ─── Wrapper Classes (compatible with existing CSS and checkout.js selectors) ───
 $wrapper_classes = [
@@ -170,14 +162,18 @@ if (!empty($facilities) && !is_wp_error($facilities)) {
     <?php // ─── Rates Indicator ─── ?>
     <?php shaped_render_rates_indicator($room_id); ?>
 
-    <?php // ─── CTA Button ─── ?>
+    <?php // ─── CTA: POST form to MPHB checkout page ─── ?>
     <div class="mphb-reserve-room-section"
          data-room-type-id="<?php echo esc_attr($room_id); ?>"
          data-room-type-title="<?php echo esc_attr($room_title); ?>"
          data-room-price="<?php echo esc_attr($search_pricing['total']); ?>">
-        <a href="<?php echo esc_url($cta_url); ?>">
-            <button class="button mphb-button mphb-book-button">Secure Your Stay</button>
-        </a>
+        <form method="POST" action="<?php echo esc_url($checkout_url); ?>" class="shaped-checkout-form">
+            <input type="hidden" name="mphb_check_in_date" value="<?php echo esc_attr($check_in); ?>">
+            <input type="hidden" name="mphb_check_out_date" value="<?php echo esc_attr($check_out); ?>">
+            <input type="hidden" name="mphb_rooms_details[<?php echo esc_attr($room_id); ?>]" value="1">
+            <?php wp_nonce_field('mphb-checkout', 'mphb-checkout-nonce', false); ?>
+            <button type="submit" class="button mphb-button mphb-book-button">Secure Your Stay</button>
+        </form>
     </div>
 
     <?php // ─── Hidden Modal Content (cloned into overlay by room-modal.js on click) ─── ?>

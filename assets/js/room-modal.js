@@ -81,8 +81,9 @@
             card.style.cursor = 'pointer';
 
             card.addEventListener('click', function (e) {
-                // Don't intercept clicks on the CTA button (let it navigate to checkout)
-                if (e.target.closest('.mphb-reserve-room-section a')) {
+                // Don't intercept clicks on the CTA form/button (let it POST to checkout)
+                if (e.target.closest('.mphb-reserve-room-section form') ||
+                    e.target.closest('.mphb-reserve-room-section a')) {
                     return;
                 }
 
