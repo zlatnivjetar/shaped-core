@@ -352,7 +352,7 @@ function shaped_get_landing_amenities(int $room_type_id, int $count = 3): array 
 /**
  * Get gallery image IDs for a room type
  *
- * Queries WordPress attachments parented to the room type post.
+ * Reads the mphb_gallery post meta (comma-separated attachment IDs).
  * Optionally prepends the featured image.
  *
  * @param int  $room_type_id   Room type post ID
@@ -360,24 +360,18 @@ function shaped_get_landing_amenities(int $room_type_id, int $count = 3): array 
  * @return int[] Array of attachment IDs
  */
 function shaped_get_room_gallery_ids(int $room_type_id, bool $with_featured = true): array {
-    $attachment_ids = get_posts([
-        'post_type'      => 'attachment',
-        'post_parent'    => $room_type_id,
-        'post_mime_type' => 'image',
-        'posts_per_page' => -1,
-        'orderby'        => 'menu_order',
-        'order'          => 'ASC',
-        'fields'         => 'ids',
-    ]);
+    // MPHB stores gallery as comma-separated IDs in mphb_gallery meta
+    $gallery_meta = get_post_meta($room_type_id, 'mphb_gallery', true);
+    $attachment_ids = !empty($gallery_meta) ? array_map('intval', explode(',', $gallery_meta)) : [];
 
     if ($with_featured) {
         $thumbnail_id = get_post_thumbnail_id($room_type_id);
-        if ($thumbnail_id && !in_array($thumbnail_id, $attachment_ids, true)) {
+        if ($thumbnail_id && !in_array((int) $thumbnail_id, $attachment_ids, true)) {
             array_unshift($attachment_ids, (int) $thumbnail_id);
         }
     }
 
-    return array_map('intval', $attachment_ids);
+    return $attachment_ids;
 }
 
 /**
