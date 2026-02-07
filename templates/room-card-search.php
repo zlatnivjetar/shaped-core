@@ -49,6 +49,27 @@ $adults    = $search_context['adults'] ?? 2;
 $children  = $search_context['children'] ?? 0;
 $has_dates = !empty($check_in) && !empty($check_out);
 
+// ─── Availability Count (for urgency badges) ───
+$available_count = 0;
+if (!empty($check_in) && !empty($check_out)) {
+    $check_in_dt  = new \DateTime($check_in);
+    $check_out_dt = new \DateTime($check_out);
+
+    // Stage A: rooms not locked by bookings
+    $available = MPHB()->getRoomRepository()->getAvailableRooms($check_in_dt, $check_out_dt, $room_id);
+    $available_count = isset($available[$room_id]) ? count($available[$room_id]) : 0;
+
+    // Stage B: subtract rooms blocked by rules/restrictions
+    $unavailable_ids = mphb_availability_facade()->getUnavailableRoomIds(
+        $room_id,
+        $check_in_dt,
+        $check_out_dt,
+        false
+    );
+    $available_count -= count($unavailable_ids);
+    $available_count = max(0, $available_count);
+}
+
 // ─── Pricing ───
 $search_pricing = shaped_get_room_search_pricing(
     $room_id,
@@ -80,7 +101,8 @@ if (!empty($facilities) && !is_wp_error($facilities)) {
 
 <div id="<?php echo esc_attr($room_slug); ?>"
      class="<?php echo esc_attr(implode(' ', $wrapper_classes)); ?>"
-     data-room-type-id="<?php echo esc_attr($room_id); ?>">
+     data-room-type-id="<?php echo esc_attr($room_id); ?>"
+     data-available-rooms="<?php echo esc_attr($available_count); ?>">
 
     <?php // ─── Image ─── ?>
     <?php if ($room_thumbnail): ?>
