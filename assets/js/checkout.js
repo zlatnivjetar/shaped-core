@@ -2,7 +2,42 @@
 document.addEventListener('DOMContentLoaded', function() {
 
     const discountConfig = ShapedConfig.discounts || {};
-    
+    const discountRanges = (typeof ShapedPricing !== 'undefined' && ShapedPricing.discountRanges)
+        ? ShapedPricing.discountRanges
+        : [];
+
+    /**
+     * Get the check-in date from URL params or form inputs (YYYY-MM-DD format).
+     */
+    function getCheckInDate() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var raw = urlParams.get('mphb_check_in_date') ||
+                  (document.querySelector('input[name="mphb_check_in_date"]') || {}).value || '';
+        return convertDateFormat(raw) || '';
+    }
+
+    /**
+     * Resolve the discount percentage for a room slug, considering date ranges.
+     * If check-in falls within a configured range, use that range's discount.
+     * Otherwise fall back to the flat default discount.
+     */
+    function getDiscountForRoom(roomSlug, checkInDate) {
+        var checkin = checkInDate || getCheckInDate();
+
+        if (checkin && discountRanges.length > 0) {
+            for (var i = 0; i < discountRanges.length; i++) {
+                var range = discountRanges[i];
+                if (checkin >= range.start_date && checkin <= range.end_date) {
+                    var discounts = range.discounts || {};
+                    return discounts[roomSlug] ? parseInt(discounts[roomSlug], 10) : 0;
+                }
+            }
+        }
+
+        // No matching range — use flat default
+        return discountConfig[roomSlug] ? parseInt(discountConfig[roomSlug], 10) : 0;
+    }
+
     // Updated urgency thresholds - only 1 and 2
     const urgencyConfig = {
         critical: 1,  // "Only 1 left"
@@ -241,7 +276,7 @@ document.addEventListener('DOMContentLoaded', function() {
         roomTypes.forEach(room => {
             const roomTitle = room.querySelector('.mphb-room-type-title')?.textContent.trim();
             const roomSlug = roomTitle?.toLowerCase().replace(/\s+/g, '-');
-            const discountPercent = discountConfig[roomSlug];
+            const discountPercent = getDiscountForRoom(roomSlug, checkIn);
 
             // Find the price element
             const priceEl = room.querySelector('.mphb-price');
@@ -403,7 +438,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const roomTitle = roomTitleElement.textContent.trim();
         const roomSlug = roomTitle.toLowerCase().replace(/\s+/g, '-');
-        const discountPercent = discountConfig[roomSlug] || 0;
+        const discountPercent = getDiscountForRoom(roomSlug) || 0;
 
         const form = document.querySelector('.mphb_sc_checkout-form');
         if (form && discountPercent) {
@@ -667,7 +702,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!roomTitleEl) return;
 
         const roomSlug = roomTitleEl.textContent.trim().toLowerCase().replace(/\s+/g, '-');
-        const discountPercent = (discountConfig[roomSlug] || 0);
+        const discountPercent = getDiscountForRoom(roomSlug) || 0;
         if (!discountPercent || discountPercent <= 0) return;
 
         const priceSpans = rateChooser.querySelectorAll('.mphb-room-rate-variant .mphb-price');

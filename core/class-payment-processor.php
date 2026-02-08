@@ -205,9 +205,15 @@ class Shaped_Payment_Processor
             $room_type  = MPHB()->getRoomTypeRepository()->findById($room->getRoomTypeId());
             if ($room_type) {
                 $room_slug = sanitize_title($room_type->getTitle());
-                $cfg       = class_exists('Shaped_Pricing') ? Shaped_Pricing::get_discounts_config() : [];
-                if (isset($cfg[$room_slug])) {
-                    $discount_percent = (float) $cfg[$room_slug];
+                // Use date-aware discount lookup based on check-in date
+                $check_in_date = null;
+                if (method_exists($booking, 'getCheckInDate') && $booking->getCheckInDate()) {
+                    $check_in_date = $booking->getCheckInDate()->format('Y-m-d');
+                }
+                $discount_percent = class_exists('Shaped_Pricing')
+                    ? (float) Shaped_Pricing::get_room_discount($room_slug, $check_in_date)
+                    : 0;
+                if ($discount_percent > 0) {
                     $discount_amount  = round($accommodation_total * ($discount_percent / 100));
                     $total_amount     = $total_amount - $discount_amount;
                 }
