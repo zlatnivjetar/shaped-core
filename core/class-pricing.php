@@ -19,6 +19,7 @@ class Shaped_Pricing {
      * Option keys
      */
     const OPT_DISCOUNTS                     = 'shaped_discounts';
+    const OPT_DISCOUNT_RANGES               = 'shaped_discount_ranges';               // array of date-range discount configs
     const OPT_PAYMENT_MODE                  = 'shaped_payment_mode';                  // 'scheduled' | 'deposit'
     const OPT_DEPOSIT_PERCENT               = 'shaped_deposit_percent';               // int 1-100
     const OPT_SCHEDULED_CHARGE_THRESHOLD    = 'shaped_scheduled_charge_threshold';    // int 0-60 days
@@ -128,6 +129,77 @@ class Shaped_Pricing {
     }
 
     /**
+     * Sanitize discount ranges input
+     *
+     * Validates date ranges, clamps percentages, and rejects overlapping ranges.
+     *
+     * @param mixed $input Raw form input
+     * @return array Sanitized array of date-range discount configs
+     */
+    public static function sanitize_discount_ranges($input): array {
+        if (!is_array($input)) {
+            return [];
+        }
+
+        $room_types = self::fetch_room_types();
+        $output = [];
+
+        foreach ($input as $range) {
+            if (empty($range['start_date']) || empty($range['end_date'])) {
+                continue;
+            }
+
+            $start = sanitize_text_field($range['start_date']);
+            $end   = sanitize_text_field($range['end_date']);
+
+            // Validate date format
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $start) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $end)) {
+                continue;
+            }
+
+            // Ensure start <= end
+            if ($start > $end) {
+                continue;
+            }
+
+            // Sanitize per-room discount percentages
+            $discounts = [];
+            foreach ($room_types as $slug => $title) {
+                $val = isset($range['discounts'][$slug]) ? intval($range['discounts'][$slug]) : 0;
+                $discounts[$slug] = max(0, min(100, $val));
+            }
+
+            $output[] = [
+                'start_date' => $start,
+                'end_date'   => $end,
+                'discounts'  => $discounts,
+            ];
+        }
+
+        // Sort by start_date
+        usort($output, function ($a, $b) {
+            return strcmp($a['start_date'], $b['start_date']);
+        });
+
+        // Check for overlapping ranges — reject overlaps by keeping only non-overlapping
+        $cleaned = [];
+        foreach ($output as $range) {
+            $overlaps = false;
+            foreach ($cleaned as $existing) {
+                if ($range['start_date'] <= $existing['end_date'] && $range['end_date'] >= $existing['start_date']) {
+                    $overlaps = true;
+                    break;
+                }
+            }
+            if (!$overlaps) {
+                $cleaned[] = $range;
+            }
+        }
+
+        return $cleaned;
+    }
+
+    /**
      * Register settings
      */
     public static function register_settings(): void {
@@ -135,6 +207,12 @@ class Shaped_Pricing {
             'type'              => 'array',
             'sanitize_callback' => [__CLASS__, 'sanitize_discounts'],
             'default'           => self::discount_defaults(),
+        ]);
+
+        register_setting('shaped_pricing_group', self::OPT_DISCOUNT_RANGES, [
+            'type'              => 'array',
+            'sanitize_callback' => [__CLASS__, 'sanitize_discount_ranges'],
+            'default'           => [],
         ]);
 
         register_setting('shaped_pricing_group', self::OPT_PAYMENT_MODE, [
@@ -185,6 +263,14 @@ class Shaped_Pricing {
             [],
             SHAPED_VERSION
         );
+
+        wp_enqueue_script(
+            'shaped-discount-ranges',
+            SHAPED_URL . 'assets/js/admin-discount-ranges.js',
+            [],
+            SHAPED_VERSION,
+            true
+        );
     }
 
     /**
@@ -196,6 +282,7 @@ class Shaped_Pricing {
         }
 
         $discounts           = get_option(self::OPT_DISCOUNTS, self::discount_defaults());
+        $discount_ranges     = get_option(self::OPT_DISCOUNT_RANGES, []);
         $payment_mode        = get_option(self::OPT_PAYMENT_MODE, 'scheduled');
         $deposit_percent     = get_option(self::OPT_DEPOSIT_PERCENT, 30);
         $scheduled_threshold = get_option(self::OPT_SCHEDULED_CHARGE_THRESHOLD, 7);
@@ -302,11 +389,17 @@ class Shaped_Pricing {
                         Set the discount percentage guests receive when booking directly vs OTAs.
                     </p>
 
+                    <!-- Default Discounts -->
+                    <h3 class="shaped-subsection-title">Default Discounts</h3>
+                    <p class="description">
+                        Applied when check-in date does not fall within any date range below.
+                    </p>
+
                     <table class="wp-list-table widefat fixed striped shaped-pricing-table">
                         <thead>
                             <tr>
                                 <th>Room Type</th>
-                                <th>Direct Booking Discount (%)</th>
+                                <th>Default Discount (%)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -331,6 +424,122 @@ class Shaped_Pricing {
                             <?php endforeach; ?>
                         </tbody>
                     </table>
+
+                    <!-- Date Range Discounts -->
+                    <h3 class="shaped-subsection-title">Seasonal / Date-Range Discounts</h3>
+                    <p class="description">
+                        Override default discounts for specific periods. When a guest's check-in date falls within a range, that range's discounts apply instead of the defaults.
+                    </p>
+
+                    <div id="shaped-discount-ranges">
+                        <?php if (!empty($discount_ranges)): ?>
+                            <?php foreach ($discount_ranges as $index => $range): ?>
+                                <div class="shaped-date-range-card" data-range-index="<?php echo esc_attr($index); ?>">
+                                    <div class="shaped-date-range-header">
+                                        <div class="shaped-date-range-dates">
+                                            <label>
+                                                From
+                                                <input type="date"
+                                                       name="<?php echo esc_attr(self::OPT_DISCOUNT_RANGES); ?>[<?php echo esc_attr($index); ?>][start_date]"
+                                                       value="<?php echo esc_attr($range['start_date']); ?>"
+                                                       required>
+                                            </label>
+                                            <label>
+                                                To
+                                                <input type="date"
+                                                       name="<?php echo esc_attr(self::OPT_DISCOUNT_RANGES); ?>[<?php echo esc_attr($index); ?>][end_date]"
+                                                       value="<?php echo esc_attr($range['end_date']); ?>"
+                                                       required>
+                                            </label>
+                                        </div>
+                                        <button type="button" class="shaped-remove-range" title="Remove this date range">&times;</button>
+                                    </div>
+                                    <table class="wp-list-table widefat fixed striped shaped-pricing-table shaped-range-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Room Type</th>
+                                                <th>Discount (%)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($room_types as $slug => $title):
+                                                $range_discount = isset($range['discounts'][$slug]) ? intval($range['discounts'][$slug]) : 0;
+                                            ?>
+                                            <tr>
+                                                <td><strong><?php echo esc_html($title); ?></strong></td>
+                                                <td>
+                                                    <input type="number"
+                                                           name="<?php echo esc_attr(self::OPT_DISCOUNT_RANGES); ?>[<?php echo esc_attr($index); ?>][discounts][<?php echo esc_attr($slug); ?>]"
+                                                           value="<?php echo esc_attr($range_discount); ?>"
+                                                           min="0"
+                                                           max="100"
+                                                           step="1"
+                                                           class="small-text" />
+                                                    <span class="description">%</span>
+                                                </td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="shaped-date-range-actions">
+                        <button type="button" id="shaped-add-range" class="button button-secondary">+ Add Date Range</button>
+                        <span id="shaped-overlap-warning" class="shaped-overlap-warning" style="display:none;">Date ranges must not overlap.</span>
+                    </div>
+
+                    <!-- Hidden template for new range cards (used by JS) -->
+                    <template id="shaped-range-template">
+                        <div class="shaped-date-range-card" data-range-index="__INDEX__">
+                            <div class="shaped-date-range-header">
+                                <div class="shaped-date-range-dates">
+                                    <label>
+                                        From
+                                        <input type="date"
+                                               name="<?php echo esc_attr(self::OPT_DISCOUNT_RANGES); ?>[__INDEX__][start_date]"
+                                               value=""
+                                               required>
+                                    </label>
+                                    <label>
+                                        To
+                                        <input type="date"
+                                               name="<?php echo esc_attr(self::OPT_DISCOUNT_RANGES); ?>[__INDEX__][end_date]"
+                                               value=""
+                                               required>
+                                    </label>
+                                </div>
+                                <button type="button" class="shaped-remove-range" title="Remove this date range">&times;</button>
+                            </div>
+                            <table class="wp-list-table widefat fixed striped shaped-pricing-table shaped-range-table">
+                                <thead>
+                                    <tr>
+                                        <th>Room Type</th>
+                                        <th>Discount (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($room_types as $slug => $title): ?>
+                                    <tr>
+                                        <td><strong><?php echo esc_html($title); ?></strong></td>
+                                        <td>
+                                            <input type="number"
+                                                   name="<?php echo esc_attr(self::OPT_DISCOUNT_RANGES); ?>[__INDEX__][discounts][<?php echo esc_attr($slug); ?>]"
+                                                   value="0"
+                                                   min="0"
+                                                   max="100"
+                                                   step="1"
+                                                   class="small-text" />
+                                            <span class="description">%</span>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </template>
                 </div>
 
                 <?php submit_button('Save Settings'); ?>
@@ -422,6 +631,54 @@ class Shaped_Pricing {
     }
 
     /**
+     * Get discount date ranges configuration
+     *
+     * @return array Array of date-range discount configs, each with start_date, end_date, discounts
+     */
+    public static function get_discount_ranges(): array {
+        $saved = get_option(self::OPT_DISCOUNT_RANGES, []);
+        return is_array($saved) ? $saved : [];
+    }
+
+    /**
+     * Get discount for a specific room type, optionally considering date ranges
+     *
+     * If a check-in date is provided and falls within a configured date range,
+     * that range's discount is returned. Otherwise, the default flat discount is used.
+     *
+     * @param string      $room_slug      Room type slug
+     * @param string|null $check_in_date  Check-in date in Y-m-d format (optional)
+     * @return int Discount percentage (0-100)
+     */
+    public static function get_room_discount_for_date(string $room_slug, ?string $check_in_date = null): int {
+        $slug = sanitize_title($room_slug);
+
+        // If no date, return default flat discount
+        if (empty($check_in_date)) {
+            $discounts = self::get_discounts();
+            return isset($discounts[$slug]) ? intval($discounts[$slug]) : 0;
+        }
+
+        $ranges = self::get_discount_ranges();
+
+        if (!empty($ranges)) {
+            foreach ($ranges as $range) {
+                if (empty($range['start_date']) || empty($range['end_date'])) {
+                    continue;
+                }
+
+                if ($check_in_date >= $range['start_date'] && $check_in_date <= $range['end_date']) {
+                    return isset($range['discounts'][$slug]) ? intval($range['discounts'][$slug]) : 0;
+                }
+            }
+        }
+
+        // No matching range — fall back to default flat discount
+        $discounts = self::get_discounts();
+        return isset($discounts[$slug]) ? intval($discounts[$slug]) : 0;
+    }
+
+    /**
      * Get payment mode setting
      * 
      * @return string 'scheduled' | 'deposit'
@@ -487,6 +744,7 @@ class Shaped_Pricing {
     public static function localize_config(): void {
         $config = [
             'discounts'               => self::get_discounts(),
+            'discountRanges'          => self::get_discount_ranges(),
             'paymentMode'             => self::get_payment_mode(),
             'depositPercent'          => self::get_deposit_percent(),
             'scheduledThresholdDays'  => self::get_scheduled_threshold_days(),
@@ -539,17 +797,21 @@ class Shaped_Pricing {
 
             $room_slug = sanitize_title($room_type->getTitle());
 
-            $discounts = self::get_discounts();
-            $discount_percent = isset($discounts[$room_slug]) ? intval($discounts[$room_slug]) : 0;
+            // Use check-in date for date-range-aware discount lookup
+            $check_in_date = null;
+            if (method_exists($booking, 'getCheckInDate') && $booking->getCheckInDate()) {
+                $check_in_date = $booking->getCheckInDate()->format('Y-m-d');
+            }
+
+            $discount_percent = self::get_room_discount_for_date($room_slug, $check_in_date);
             $discount_multiplier = (100 - $discount_percent) / 100;
             return round($base_amount * $discount_multiplier, 2);
         }
 
         // New API: explicit base amount and room slug
         $base_amount = (float) $base_amount_or_booking;
-        $discounts = self::get_discounts();
         $slug = sanitize_title($room_slug);
-        $discount_percent = isset($discounts[$slug]) ? intval($discounts[$slug]) : 0;
+        $discount_percent = self::get_room_discount_for_date($slug);
         $discount_multiplier = (100 - $discount_percent) / 100;
         $final = round($base_amount * $discount_multiplier, 2);
         $saved = round($base_amount - $final, 2);
@@ -564,11 +826,13 @@ class Shaped_Pricing {
 
     /**
      * Get discount for specific room type
+     *
+     * @param string      $room_slug      Room type slug
+     * @param string|null $check_in_date  Check-in date in Y-m-d format (optional, enables date-range lookup)
+     * @return int Discount percentage (0-100)
      */
-    public static function get_room_discount(string $room_slug): int {
-        $discounts = self::get_discounts();
-        $slug = sanitize_title($room_slug);
-        return isset($discounts[$slug]) ? intval($discounts[$slug]) : 0;
+    public static function get_room_discount(string $room_slug, ?string $check_in_date = null): int {
+        return self::get_room_discount_for_date($room_slug, $check_in_date);
     }
 
     /**
