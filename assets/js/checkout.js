@@ -13,6 +13,15 @@ document.addEventListener('DOMContentLoaded', function() {
         var urlParams = new URLSearchParams(window.location.search);
         var raw = urlParams.get('mphb_check_in_date') ||
                   (document.querySelector('input[name="mphb_check_in_date"]') || {}).value || '';
+
+        // Fall back to localStorage booking context (saved from search results)
+        if (!raw) {
+            try {
+                var ctx = JSON.parse(localStorage.getItem('preBookingCtx') || '{}');
+                raw = ctx.checkIn || '';
+            } catch (e) { /* ignore */ }
+        }
+
         return convertDateFormat(raw) || '';
     }
 
