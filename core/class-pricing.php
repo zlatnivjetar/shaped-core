@@ -476,10 +476,25 @@ class Shaped_Pricing {
             return;
         }
 
+        // Load design tokens so CSS custom properties (brand colors, etc.) are available
+        if (file_exists(SHAPED_DIR . 'assets/css/design-tokens.css')) {
+            wp_enqueue_style(
+                'shaped-design-tokens',
+                SHAPED_URL . 'assets/css/design-tokens.css',
+                [],
+                SHAPED_VERSION
+            );
+
+            if (class_exists('Shaped_Design_Tokens_Generator')) {
+                $tokens_css = Shaped_Design_Tokens_Generator::generate_tokens_css();
+                wp_add_inline_style('shaped-design-tokens', $tokens_css);
+            }
+        }
+
         wp_enqueue_style(
             'shaped-pricing-admin',
             SHAPED_URL . 'assets/css/admin-pricing.css',
-            [],
+            ['shaped-design-tokens'],
             SHAPED_VERSION
         );
 
