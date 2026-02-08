@@ -69,7 +69,7 @@ function shaped_format_room_price(float $price, string $currency = 'EUR'): strin
  * @param string $room_slug Room slug for discount lookup
  * @return array Pricing data array
  */
-function shaped_get_room_pricing_data(int $room_type_id, string $room_slug): array {
+function shaped_get_room_pricing_data(int $room_type_id, string $room_slug, string $check_in_date = ''): array {
     $base_price = shaped_get_room_base_price($room_type_id);
 
     if ($base_price <= 0) {
@@ -81,7 +81,7 @@ function shaped_get_room_pricing_data(int $room_type_id, string $room_slug): arr
         ];
     }
 
-    $discount_percent = Shaped_Pricing::get_room_discount($room_slug);
+    $discount_percent = Shaped_Pricing::get_room_discount($room_slug, $check_in_date ?: null);
     $discount_price = $base_price * (1 - $discount_percent / 100);
 
     return [
@@ -225,9 +225,9 @@ function shaped_get_room_search_pricing(
 ): array {
     $has_dates = !empty($check_in) && !empty($check_out);
 
-    // No dates: fall back to base price per-night display
+    // No dates: fall back to base price per-night display (uses default flat discount)
     if (!$has_dates) {
-        $pricing = shaped_get_room_pricing_data($room_type_id, $room_slug);
+        $pricing = shaped_get_room_pricing_data($room_type_id, $room_slug, '');
         return [
             'total'            => $pricing['has_discount'] ? $pricing['discount_price'] : $pricing['base_price'],
             'total_original'   => $pricing['base_price'],
@@ -261,8 +261,8 @@ function shaped_get_room_search_pricing(
 
             if ($result && !empty($result->best_rate)) {
                 $rate = $result->best_rate;
-                // The pricing service already applies discounts
-                $discount_percent = Shaped_Pricing::get_room_discount($room_slug);
+                // The pricing service already applies discounts (date-aware)
+                $discount_percent = Shaped_Pricing::get_room_discount($room_slug, $check_in);
                 $has_discount     = $discount_percent > 0;
 
                 // Reverse-engineer original total from discounted total
@@ -286,11 +286,11 @@ function shaped_get_room_search_pricing(
         }
     }
 
-    // Fallback: base price * nights with manual discount
+    // Fallback: base price * nights with manual discount (date-aware)
     $base_price       = shaped_get_room_base_price($room_type_id);
     $total_original   = $base_price * $nights;
     $discount_percent = class_exists('Shaped_Pricing')
-        ? Shaped_Pricing::get_room_discount($room_slug)
+        ? Shaped_Pricing::get_room_discount($room_slug, $check_in)
         : 0;
     $has_discount     = $discount_percent > 0;
     $total_discounted = $has_discount

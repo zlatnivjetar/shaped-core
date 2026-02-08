@@ -58,10 +58,9 @@ if (!function_exists('shaped_calculate_final_amount')) {
 }
 
 if (!function_exists('shaped_get_room_discount')) {
-    function shaped_get_room_discount(string $room_slug): float {
+    function shaped_get_room_discount(string $room_slug, ?string $check_in_date = null): float {
         if (class_exists('Shaped_Pricing')) {
-            $config = Shaped_Pricing::get_discounts_config();
-            return (float) ($config[$room_slug] ?? 0);
+            return (float) Shaped_Pricing::get_room_discount($room_slug, $check_in_date);
         }
         return 0.0;
     }
