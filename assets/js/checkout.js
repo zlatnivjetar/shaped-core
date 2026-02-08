@@ -2,9 +2,9 @@
 document.addEventListener('DOMContentLoaded', function() {
 
     const discountConfig = ShapedConfig.discounts || {};
-    const discountRanges = (typeof ShapedPricing !== 'undefined' && ShapedPricing.discountRanges)
-        ? ShapedPricing.discountRanges
-        : [];
+    const discountSeasons = (typeof ShapedPricing !== 'undefined' && ShapedPricing.discountSeasons)
+        ? ShapedPricing.discountSeasons
+        : { recurring: [], overrides: [] };
 
     /**
      * Get the check-in date from URL params or form inputs (YYYY-MM-DD format).
@@ -17,24 +17,52 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Resolve the discount percentage for a room slug, considering date ranges.
-     * If check-in falls within a configured range, use that range's discount.
-     * Otherwise fall back to the flat default discount.
+     * Resolve the discount percentage for a room slug using 3-tier priority:
+     * 1. Year-specific overrides (yyyy-mm-dd comparison)
+     * 2. Recurring seasons (mm-dd comparison, year-agnostic)
+     * 3. Default flat discount
      */
     function getDiscountForRoom(roomSlug, checkInDate) {
         var checkin = checkInDate || getCheckInDate();
 
-        if (checkin && discountRanges.length > 0) {
-            for (var i = 0; i < discountRanges.length; i++) {
-                var range = discountRanges[i];
-                if (checkin >= range.start_date && checkin <= range.end_date) {
-                    var discounts = range.discounts || {};
+        if (checkin) {
+            // Priority 1: Year-specific overrides
+            var overrides = discountSeasons.overrides || [];
+            for (var i = 0; i < overrides.length; i++) {
+                var override = overrides[i];
+                if (override.start_date && override.end_date &&
+                    checkin >= override.start_date && checkin <= override.end_date) {
+                    var discounts = override.discounts || {};
                     return discounts[roomSlug] ? parseInt(discounts[roomSlug], 10) : 0;
+                }
+            }
+
+            // Priority 2: Recurring seasons (mm-dd comparison)
+            var recurring = discountSeasons.recurring || [];
+            if (recurring.length > 0) {
+                var checkMd = checkin.substring(5); // "mm-dd"
+                for (var j = 0; j < recurring.length; j++) {
+                    var season = recurring[j];
+                    if (!season.start_day || !season.end_day) continue;
+
+                    if (season.start_day <= season.end_day) {
+                        // Normal range (e.g. Jan-Apr)
+                        if (checkMd >= season.start_day && checkMd <= season.end_day) {
+                            var d = season.discounts || {};
+                            return d[roomSlug] ? parseInt(d[roomSlug], 10) : 0;
+                        }
+                    } else {
+                        // Wrapping range (e.g. Nov-Feb)
+                        if (checkMd >= season.start_day || checkMd <= season.end_day) {
+                            var d = season.discounts || {};
+                            return d[roomSlug] ? parseInt(d[roomSlug], 10) : 0;
+                        }
+                    }
                 }
             }
         }
 
-        // No matching range — use flat default
+        // Priority 3: Default flat discount
         return discountConfig[roomSlug] ? parseInt(discountConfig[roomSlug], 10) : 0;
     }
 

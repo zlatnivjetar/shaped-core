@@ -18,6 +18,7 @@ if (!defined('WP_UNINSTALL_PLUGIN')) {
 // Core options
 delete_option('shaped_discounts');
 delete_option('shaped_discount_ranges');
+delete_option('shaped_discount_seasons');
 
 // RoomCloud module options (credentials and channel_id are in wp-config.php, not database)
 delete_option('shaped_rc_hotel_id');

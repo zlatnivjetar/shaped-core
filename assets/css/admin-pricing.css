@@ -240,6 +240,36 @@
     padding: 4px 8px;
 }
 
+.shaped-date-text {
+    padding: 4px 8px;
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.shaped-date-ddmm {
+    width: 70px;
+}
+
+.shaped-date-ddmmyyyy {
+    width: 110px;
+}
+
+.shaped-season-label {
+    padding: 4px 8px;
+    width: 140px;
+    font-size: 13px;
+}
+
+/* Recurring season card — green left border */
+.shaped-season-card--recurring {
+    border-left: 4px solid var(--color-semantic-success, #4C9155);
+}
+
+/* Override card — amber/brand left border */
+.shaped-season-card--override {
+    border-left: 4px solid var(--color-brand-primary, #2563EB);
+}
+
 .shaped-remove-range {
     background: none;
     border: 1px solid var(--color-border-default, #ddd);

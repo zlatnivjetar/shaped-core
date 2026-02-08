@@ -19,7 +19,8 @@ class Shaped_Pricing {
      * Option keys
      */
     const OPT_DISCOUNTS                     = 'shaped_discounts';
-    const OPT_DISCOUNT_RANGES               = 'shaped_discount_ranges';               // array of date-range discount configs
+    const OPT_DISCOUNT_RANGES               = 'shaped_discount_ranges';               // legacy, migrated to seasons
+    const OPT_DISCOUNT_SEASONS              = 'shaped_discount_seasons';              // recurring + year-specific overrides
     const OPT_PAYMENT_MODE                  = 'shaped_payment_mode';                  // 'scheduled' | 'deposit'
     const OPT_DEPOSIT_PERCENT               = 'shaped_deposit_percent';               // int 1-100
     const OPT_SCHEDULED_CHARGE_THRESHOLD    = 'shaped_scheduled_charge_threshold';    // int 0-60 days
@@ -39,6 +40,7 @@ class Shaped_Pricing {
      */
     public static function init(): void {
         add_action('admin_menu', [__CLASS__, 'add_admin_menu']);
+        add_action('admin_init', [__CLASS__, 'maybe_migrate_discount_ranges']);
         add_action('admin_init', [__CLASS__, 'register_settings']);
         add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_admin_assets']);
 
@@ -129,74 +131,317 @@ class Shaped_Pricing {
     }
 
     /**
-     * Sanitize discount ranges input
+     * Sanitize discount seasons input
      *
-     * Validates date ranges, clamps percentages, and rejects overlapping ranges.
+     * Handles both recurring (dd/mm → mm-dd) and overrides (dd/mm/yyyy → yyyy-mm-dd).
+     * Validates formats, clamps percentages, and rejects overlapping ranges within each tier.
      *
-     * @param mixed $input Raw form input
-     * @return array Sanitized array of date-range discount configs
+     * @param mixed $input Raw form input with 'recurring' and 'overrides' keys
+     * @return array Sanitized seasons array
      */
-    public static function sanitize_discount_ranges($input): array {
+    public static function sanitize_discount_seasons($input): array {
         if (!is_array($input)) {
-            return [];
+            return ['recurring' => [], 'overrides' => []];
         }
 
         $room_types = self::fetch_room_types();
-        $output = [];
+        $output = ['recurring' => [], 'overrides' => []];
 
-        foreach ($input as $range) {
+        // --- Recurring seasons (dd/mm text inputs → mm-dd storage) ---
+        if (!empty($input['recurring']) && is_array($input['recurring'])) {
+            $recurring = [];
+            foreach ($input['recurring'] as $season) {
+                $start_raw = isset($season['start_day']) ? sanitize_text_field($season['start_day']) : '';
+                $end_raw   = isset($season['end_day'])   ? sanitize_text_field($season['end_day'])   : '';
+
+                if (empty($start_raw) || empty($end_raw)) {
+                    continue;
+                }
+
+                // Accept dd/mm display format and convert to mm-dd
+                $start_md = self::ddmm_to_mmdd($start_raw);
+                $end_md   = self::ddmm_to_mmdd($end_raw);
+
+                // Also accept already-stored mm-dd format
+                if (!$start_md && preg_match('/^\d{2}-\d{2}$/', $start_raw)) {
+                    $start_md = $start_raw;
+                }
+                if (!$end_md && preg_match('/^\d{2}-\d{2}$/', $end_raw)) {
+                    $end_md = $end_raw;
+                }
+
+                if (!$start_md || !$end_md) {
+                    continue;
+                }
+
+                $label = isset($season['label']) ? sanitize_text_field($season['label']) : '';
+
+                $discounts = [];
+                foreach ($room_types as $slug => $title) {
+                    $val = isset($season['discounts'][$slug]) ? intval($season['discounts'][$slug]) : 0;
+                    $discounts[$slug] = max(0, min(100, $val));
+                }
+
+                $recurring[] = [
+                    'start_day' => $start_md,
+                    'end_day'   => $end_md,
+                    'label'     => $label,
+                    'discounts' => $discounts,
+                ];
+            }
+
+            // Sort by start_day
+            usort($recurring, function ($a, $b) {
+                return strcmp($a['start_day'], $b['start_day']);
+            });
+
+            // Reject overlapping recurring seasons (keeping first)
+            $cleaned = [];
+            foreach ($recurring as $season) {
+                $overlaps = false;
+                foreach ($cleaned as $existing) {
+                    if (self::recurring_ranges_overlap(
+                        $existing['start_day'], $existing['end_day'],
+                        $season['start_day'], $season['end_day']
+                    )) {
+                        $overlaps = true;
+                        break;
+                    }
+                }
+                if (!$overlaps) {
+                    $cleaned[] = $season;
+                }
+            }
+            $output['recurring'] = $cleaned;
+        }
+
+        // --- Year-specific overrides (dd/mm/yyyy text inputs → yyyy-mm-dd storage) ---
+        if (!empty($input['overrides']) && is_array($input['overrides'])) {
+            $overrides = [];
+            foreach ($input['overrides'] as $override) {
+                $start_raw = isset($override['start_date']) ? sanitize_text_field($override['start_date']) : '';
+                $end_raw   = isset($override['end_date'])   ? sanitize_text_field($override['end_date'])   : '';
+
+                if (empty($start_raw) || empty($end_raw)) {
+                    continue;
+                }
+
+                // Accept dd/mm/yyyy display format and convert to yyyy-mm-dd
+                $start_ymd = self::ddmmyyyy_to_ymd($start_raw);
+                $end_ymd   = self::ddmmyyyy_to_ymd($end_raw);
+
+                // Also accept already-stored yyyy-mm-dd format
+                if (!$start_ymd && preg_match('/^\d{4}-\d{2}-\d{2}$/', $start_raw)) {
+                    $start_ymd = $start_raw;
+                }
+                if (!$end_ymd && preg_match('/^\d{4}-\d{2}-\d{2}$/', $end_raw)) {
+                    $end_ymd = $end_raw;
+                }
+
+                if (!$start_ymd || !$end_ymd) {
+                    continue;
+                }
+
+                // Ensure start <= end
+                if ($start_ymd > $end_ymd) {
+                    continue;
+                }
+
+                $label = isset($override['label']) ? sanitize_text_field($override['label']) : '';
+
+                $discounts = [];
+                foreach ($room_types as $slug => $title) {
+                    $val = isset($override['discounts'][$slug]) ? intval($override['discounts'][$slug]) : 0;
+                    $discounts[$slug] = max(0, min(100, $val));
+                }
+
+                $overrides[] = [
+                    'start_date' => $start_ymd,
+                    'end_date'   => $end_ymd,
+                    'label'      => $label,
+                    'discounts'  => $discounts,
+                ];
+            }
+
+            // Sort by start_date
+            usort($overrides, function ($a, $b) {
+                return strcmp($a['start_date'], $b['start_date']);
+            });
+
+            // Reject overlapping overrides (keeping first)
+            $cleaned = [];
+            foreach ($overrides as $override) {
+                $overlaps = false;
+                foreach ($cleaned as $existing) {
+                    if ($override['start_date'] <= $existing['end_date'] && $override['end_date'] >= $existing['start_date']) {
+                        $overlaps = true;
+                        break;
+                    }
+                }
+                if (!$overlaps) {
+                    $cleaned[] = $override;
+                }
+            }
+            $output['overrides'] = $cleaned;
+        }
+
+        return $output;
+    }
+
+    /**
+     * Convert dd/mm display format to mm-dd storage format
+     *
+     * @param string $ddmm Date in dd/mm format
+     * @return string|false mm-dd string or false on invalid input
+     */
+    private static function ddmm_to_mmdd(string $ddmm) {
+        if (!preg_match('/^(\d{2})\/(\d{2})$/', $ddmm, $m)) {
+            return false;
+        }
+        $day   = $m[1];
+        $month = $m[2];
+        if ((int) $month < 1 || (int) $month > 12 || (int) $day < 1 || (int) $day > 31) {
+            return false;
+        }
+        return $month . '-' . $day;
+    }
+
+    /**
+     * Convert mm-dd storage format to dd/mm display format
+     *
+     * @param string $mmdd Date in mm-dd format
+     * @return string dd/mm string
+     */
+    private static function mmdd_to_ddmm(string $mmdd): string {
+        $parts = explode('-', $mmdd);
+        if (count($parts) !== 2) {
+            return $mmdd;
+        }
+        return $parts[1] . '/' . $parts[0];
+    }
+
+    /**
+     * Convert dd/mm/yyyy display format to yyyy-mm-dd storage format
+     *
+     * @param string $ddmmyyyy Date in dd/mm/yyyy format
+     * @return string|false yyyy-mm-dd string or false on invalid input
+     */
+    private static function ddmmyyyy_to_ymd(string $ddmmyyyy) {
+        if (!preg_match('/^(\d{2})\/(\d{2})\/(\d{4})$/', $ddmmyyyy, $m)) {
+            return false;
+        }
+        $day   = $m[1];
+        $month = $m[2];
+        $year  = $m[3];
+        if ((int) $month < 1 || (int) $month > 12 || (int) $day < 1 || (int) $day > 31) {
+            return false;
+        }
+        return $year . '-' . $month . '-' . $day;
+    }
+
+    /**
+     * Convert yyyy-mm-dd storage format to dd/mm/yyyy display format
+     *
+     * @param string $ymd Date in yyyy-mm-dd format
+     * @return string dd/mm/yyyy string
+     */
+    private static function ymd_to_ddmmyyyy(string $ymd): string {
+        $parts = explode('-', $ymd);
+        if (count($parts) !== 3) {
+            return $ymd;
+        }
+        return $parts[2] . '/' . $parts[1] . '/' . $parts[0];
+    }
+
+    /**
+     * Check if two recurring mm-dd ranges overlap (handles year-wrap)
+     *
+     * @param string $a_start mm-dd
+     * @param string $a_end   mm-dd
+     * @param string $b_start mm-dd
+     * @param string $b_end   mm-dd
+     * @return bool
+     */
+    private static function recurring_ranges_overlap(string $a_start, string $a_end, string $b_start, string $b_end): bool {
+        $a_days = self::mmdd_range_to_day_set($a_start, $a_end);
+        $b_days = self::mmdd_range_to_day_set($b_start, $b_end);
+        return !empty(array_intersect($a_days, $b_days));
+    }
+
+    /**
+     * Expand an mm-dd range into a set of mm-dd day strings (handles year-wrap)
+     *
+     * @param string $start mm-dd
+     * @param string $end   mm-dd
+     * @return array
+     */
+    private static function mmdd_range_to_day_set(string $start, string $end): array {
+        // Use a reference non-leap year (2001) to iterate
+        $year = 2001;
+        $start_date = new \DateTime("$year-$start");
+        $end_date   = new \DateTime("$year-$end");
+        $days = [];
+
+        if ($start <= $end) {
+            // Normal range within one year
+            $current = clone $start_date;
+            while ($current <= $end_date) {
+                $days[] = $current->format('m-d');
+                $current->modify('+1 day');
+            }
+        } else {
+            // Wrapping range: start..Dec31 + Jan01..end
+            $current = clone $start_date;
+            $dec31 = new \DateTime("$year-12-31");
+            while ($current <= $dec31) {
+                $days[] = $current->format('m-d');
+                $current->modify('+1 day');
+            }
+            $jan01 = new \DateTime("$year-01-01");
+            $current = clone $jan01;
+            while ($current <= $end_date) {
+                $days[] = $current->format('m-d');
+                $current->modify('+1 day');
+            }
+        }
+        return $days;
+    }
+
+    /**
+     * Migrate old shaped_discount_ranges to new shaped_discount_seasons format
+     *
+     * Converts existing date-range configs into the 'overrides' array.
+     * Runs once on admin_init, then deletes the old option.
+     */
+    public static function maybe_migrate_discount_ranges(): void {
+        $old = get_option(self::OPT_DISCOUNT_RANGES);
+        $new = get_option(self::OPT_DISCOUNT_SEASONS);
+
+        // Only migrate if old exists and new does not
+        if (empty($old) || !is_array($old) || $new !== false) {
+            return;
+        }
+
+        $overrides = [];
+        foreach ($old as $range) {
             if (empty($range['start_date']) || empty($range['end_date'])) {
                 continue;
             }
-
-            $start = sanitize_text_field($range['start_date']);
-            $end   = sanitize_text_field($range['end_date']);
-
-            // Validate date format
-            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $start) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $end)) {
-                continue;
-            }
-
-            // Ensure start <= end
-            if ($start > $end) {
-                continue;
-            }
-
-            // Sanitize per-room discount percentages
-            $discounts = [];
-            foreach ($room_types as $slug => $title) {
-                $val = isset($range['discounts'][$slug]) ? intval($range['discounts'][$slug]) : 0;
-                $discounts[$slug] = max(0, min(100, $val));
-            }
-
-            $output[] = [
-                'start_date' => $start,
-                'end_date'   => $end,
-                'discounts'  => $discounts,
+            $overrides[] = [
+                'start_date' => $range['start_date'],
+                'end_date'   => $range['end_date'],
+                'label'      => '',
+                'discounts'  => isset($range['discounts']) ? $range['discounts'] : [],
             ];
         }
 
-        // Sort by start_date
-        usort($output, function ($a, $b) {
-            return strcmp($a['start_date'], $b['start_date']);
-        });
+        $seasons = [
+            'recurring'  => [],
+            'overrides'  => $overrides,
+        ];
 
-        // Check for overlapping ranges — reject overlaps by keeping only non-overlapping
-        $cleaned = [];
-        foreach ($output as $range) {
-            $overlaps = false;
-            foreach ($cleaned as $existing) {
-                if ($range['start_date'] <= $existing['end_date'] && $range['end_date'] >= $existing['start_date']) {
-                    $overlaps = true;
-                    break;
-                }
-            }
-            if (!$overlaps) {
-                $cleaned[] = $range;
-            }
-        }
-
-        return $cleaned;
+        update_option(self::OPT_DISCOUNT_SEASONS, $seasons);
+        delete_option(self::OPT_DISCOUNT_RANGES);
     }
 
     /**
@@ -209,10 +454,10 @@ class Shaped_Pricing {
             'default'           => self::discount_defaults(),
         ]);
 
-        register_setting('shaped_pricing_group', self::OPT_DISCOUNT_RANGES, [
+        register_setting('shaped_pricing_group', self::OPT_DISCOUNT_SEASONS, [
             'type'              => 'array',
-            'sanitize_callback' => [__CLASS__, 'sanitize_discount_ranges'],
-            'default'           => [],
+            'sanitize_callback' => [__CLASS__, 'sanitize_discount_seasons'],
+            'default'           => ['recurring' => [], 'overrides' => []],
         ]);
 
         register_setting('shaped_pricing_group', self::OPT_PAYMENT_MODE, [
@@ -265,8 +510,8 @@ class Shaped_Pricing {
         );
 
         wp_enqueue_script(
-            'shaped-discount-ranges',
-            SHAPED_URL . 'assets/js/admin-discount-ranges.js',
+            'shaped-discount-seasons',
+            SHAPED_URL . 'assets/js/admin-discount-seasons.js',
             [],
             SHAPED_VERSION,
             true
@@ -282,7 +527,9 @@ class Shaped_Pricing {
         }
 
         $discounts           = get_option(self::OPT_DISCOUNTS, self::discount_defaults());
-        $discount_ranges     = get_option(self::OPT_DISCOUNT_RANGES, []);
+        $seasons             = get_option(self::OPT_DISCOUNT_SEASONS, ['recurring' => [], 'overrides' => []]);
+        $recurring_seasons   = isset($seasons['recurring']) ? $seasons['recurring'] : [];
+        $override_seasons    = isset($seasons['overrides']) ? $seasons['overrides'] : [];
         $payment_mode        = get_option(self::OPT_PAYMENT_MODE, 'scheduled');
         $deposit_percent     = get_option(self::OPT_DEPOSIT_PERCENT, 30);
         $scheduled_threshold = get_option(self::OPT_SCHEDULED_CHARGE_THRESHOLD, 7);
@@ -390,10 +637,7 @@ class Shaped_Pricing {
                     </p>
 
                     <!-- Default Discounts -->
-                    <h3 class="shaped-subsection-title">Default Discounts</h3>
-                    <p class="description">
-                        Applied when check-in date does not fall within any date range below.
-                    </p>
+                    <h3 class="shaped-subsection-title">Default Discounts (when no seasonal range matches)</h3>
 
                     <table class="wp-list-table widefat fixed striped shaped-pricing-table">
                         <thead>
@@ -425,34 +669,50 @@ class Shaped_Pricing {
                         </tbody>
                     </table>
 
-                    <!-- Date Range Discounts -->
-                    <h3 class="shaped-subsection-title">Seasonal / Date-Range Discounts</h3>
+                    <!-- ── Recurring Seasonal Discounts ── -->
+                    <h3 class="shaped-subsection-title">Recurring Seasonal Discounts</h3>
                     <p class="description">
-                        Override default discounts for specific periods. When a guest's check-in date falls within a range, that range's discounts apply instead of the defaults.
+                        Repeat every year. Use dd/mm format.
                     </p>
 
-                    <div id="shaped-discount-ranges">
-                        <?php if (!empty($discount_ranges)): ?>
-                            <?php foreach ($discount_ranges as $index => $range): ?>
-                                <div class="shaped-date-range-card" data-range-index="<?php echo esc_attr($index); ?>">
+                    <div id="shaped-recurring-seasons">
+                        <?php if (!empty($recurring_seasons)): ?>
+                            <?php foreach ($recurring_seasons as $index => $season): ?>
+                                <div class="shaped-date-range-card shaped-season-card--recurring" data-range-index="<?php echo esc_attr($index); ?>">
                                     <div class="shaped-date-range-header">
                                         <div class="shaped-date-range-dates">
                                             <label>
                                                 From
-                                                <input type="date"
-                                                       name="<?php echo esc_attr(self::OPT_DISCOUNT_RANGES); ?>[<?php echo esc_attr($index); ?>][start_date]"
-                                                       value="<?php echo esc_attr($range['start_date']); ?>"
+                                                <input type="text"
+                                                       name="<?php echo esc_attr(self::OPT_DISCOUNT_SEASONS); ?>[recurring][<?php echo esc_attr($index); ?>][start_day]"
+                                                       value="<?php echo esc_attr(self::mmdd_to_ddmm($season['start_day'])); ?>"
+                                                       placeholder="dd/mm"
+                                                       pattern="\d{2}/\d{2}"
+                                                       maxlength="5"
+                                                       class="shaped-date-text shaped-date-ddmm"
                                                        required>
                                             </label>
                                             <label>
                                                 To
-                                                <input type="date"
-                                                       name="<?php echo esc_attr(self::OPT_DISCOUNT_RANGES); ?>[<?php echo esc_attr($index); ?>][end_date]"
-                                                       value="<?php echo esc_attr($range['end_date']); ?>"
+                                                <input type="text"
+                                                       name="<?php echo esc_attr(self::OPT_DISCOUNT_SEASONS); ?>[recurring][<?php echo esc_attr($index); ?>][end_day]"
+                                                       value="<?php echo esc_attr(self::mmdd_to_ddmm($season['end_day'])); ?>"
+                                                       placeholder="dd/mm"
+                                                       pattern="\d{2}/\d{2}"
+                                                       maxlength="5"
+                                                       class="shaped-date-text shaped-date-ddmm"
                                                        required>
                                             </label>
+                                            <label>
+                                                Label
+                                                <input type="text"
+                                                       name="<?php echo esc_attr(self::OPT_DISCOUNT_SEASONS); ?>[recurring][<?php echo esc_attr($index); ?>][label]"
+                                                       value="<?php echo esc_attr($season['label']); ?>"
+                                                       placeholder="e.g. Low Season"
+                                                       class="shaped-season-label">
+                                            </label>
                                         </div>
-                                        <button type="button" class="shaped-remove-range" title="Remove this date range">&times;</button>
+                                        <button type="button" class="shaped-remove-range" title="Remove this season">&times;</button>
                                     </div>
                                     <table class="wp-list-table widefat fixed striped shaped-pricing-table shaped-range-table">
                                         <thead>
@@ -463,14 +723,14 @@ class Shaped_Pricing {
                                         </thead>
                                         <tbody>
                                             <?php foreach ($room_types as $slug => $title):
-                                                $range_discount = isset($range['discounts'][$slug]) ? intval($range['discounts'][$slug]) : 0;
+                                                $season_discount = isset($season['discounts'][$slug]) ? intval($season['discounts'][$slug]) : 0;
                                             ?>
                                             <tr>
                                                 <td><strong><?php echo esc_html($title); ?></strong></td>
                                                 <td>
                                                     <input type="number"
-                                                           name="<?php echo esc_attr(self::OPT_DISCOUNT_RANGES); ?>[<?php echo esc_attr($index); ?>][discounts][<?php echo esc_attr($slug); ?>]"
-                                                           value="<?php echo esc_attr($range_discount); ?>"
+                                                           name="<?php echo esc_attr(self::OPT_DISCOUNT_SEASONS); ?>[recurring][<?php echo esc_attr($index); ?>][discounts][<?php echo esc_attr($slug); ?>]"
+                                                           value="<?php echo esc_attr($season_discount); ?>"
                                                            min="0"
                                                            max="100"
                                                            step="1"
@@ -487,31 +747,129 @@ class Shaped_Pricing {
                     </div>
 
                     <div class="shaped-date-range-actions">
-                        <button type="button" id="shaped-add-range" class="button button-secondary">+ Add Date Range</button>
-                        <span id="shaped-overlap-warning" class="shaped-overlap-warning" style="display:none;">Date ranges must not overlap.</span>
+                        <button type="button" id="shaped-add-recurring" class="button button-secondary">+ Add Season</button>
+                        <span id="shaped-recurring-overlap-warning" class="shaped-overlap-warning" style="display:none;">Recurring seasons must not overlap.</span>
                     </div>
 
-                    <!-- Hidden template for new range cards (used by JS) -->
-                    <template id="shaped-range-template">
-                        <div class="shaped-date-range-card" data-range-index="__INDEX__">
+                    <!-- ── Year-Specific Overrides ── -->
+                    <h3 class="shaped-subsection-title">Year-Specific Overrides</h3>
+                    <p class="description">
+                        Override recurring seasons for a specific year. Use dd/mm/yyyy format. Takes priority over seasons above.
+                    </p>
+
+                    <div id="shaped-override-seasons">
+                        <?php if (!empty($override_seasons)): ?>
+                            <?php foreach ($override_seasons as $index => $override): ?>
+                                <div class="shaped-date-range-card shaped-season-card--override" data-range-index="<?php echo esc_attr($index); ?>">
+                                    <div class="shaped-date-range-header">
+                                        <div class="shaped-date-range-dates">
+                                            <label>
+                                                From
+                                                <input type="text"
+                                                       name="<?php echo esc_attr(self::OPT_DISCOUNT_SEASONS); ?>[overrides][<?php echo esc_attr($index); ?>][start_date]"
+                                                       value="<?php echo esc_attr(self::ymd_to_ddmmyyyy($override['start_date'])); ?>"
+                                                       placeholder="dd/mm/yyyy"
+                                                       pattern="\d{2}/\d{2}/\d{4}"
+                                                       maxlength="10"
+                                                       class="shaped-date-text shaped-date-ddmmyyyy"
+                                                       required>
+                                            </label>
+                                            <label>
+                                                To
+                                                <input type="text"
+                                                       name="<?php echo esc_attr(self::OPT_DISCOUNT_SEASONS); ?>[overrides][<?php echo esc_attr($index); ?>][end_date]"
+                                                       value="<?php echo esc_attr(self::ymd_to_ddmmyyyy($override['end_date'])); ?>"
+                                                       placeholder="dd/mm/yyyy"
+                                                       pattern="\d{2}/\d{2}/\d{4}"
+                                                       maxlength="10"
+                                                       class="shaped-date-text shaped-date-ddmmyyyy"
+                                                       required>
+                                            </label>
+                                            <label>
+                                                Label
+                                                <input type="text"
+                                                       name="<?php echo esc_attr(self::OPT_DISCOUNT_SEASONS); ?>[overrides][<?php echo esc_attr($index); ?>][label]"
+                                                       value="<?php echo esc_attr($override['label']); ?>"
+                                                       placeholder="e.g. Summer 2026"
+                                                       class="shaped-season-label">
+                                            </label>
+                                        </div>
+                                        <button type="button" class="shaped-remove-range" title="Remove this override">&times;</button>
+                                    </div>
+                                    <table class="wp-list-table widefat fixed striped shaped-pricing-table shaped-range-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Room Type</th>
+                                                <th>Discount (%)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($room_types as $slug => $title):
+                                                $override_discount = isset($override['discounts'][$slug]) ? intval($override['discounts'][$slug]) : 0;
+                                            ?>
+                                            <tr>
+                                                <td><strong><?php echo esc_html($title); ?></strong></td>
+                                                <td>
+                                                    <input type="number"
+                                                           name="<?php echo esc_attr(self::OPT_DISCOUNT_SEASONS); ?>[overrides][<?php echo esc_attr($index); ?>][discounts][<?php echo esc_attr($slug); ?>]"
+                                                           value="<?php echo esc_attr($override_discount); ?>"
+                                                           min="0"
+                                                           max="100"
+                                                           step="1"
+                                                           class="small-text" />
+                                                    <span class="description">%</span>
+                                                </td>
+                                            </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="shaped-date-range-actions">
+                        <button type="button" id="shaped-add-override" class="button button-secondary">+ Add Override</button>
+                        <span id="shaped-override-overlap-warning" class="shaped-overlap-warning" style="display:none;">Year-specific overrides must not overlap.</span>
+                    </div>
+
+                    <!-- Hidden template for new recurring season cards -->
+                    <template id="shaped-recurring-template">
+                        <div class="shaped-date-range-card shaped-season-card--recurring" data-range-index="__INDEX__">
                             <div class="shaped-date-range-header">
                                 <div class="shaped-date-range-dates">
                                     <label>
                                         From
-                                        <input type="date"
-                                               name="<?php echo esc_attr(self::OPT_DISCOUNT_RANGES); ?>[__INDEX__][start_date]"
+                                        <input type="text"
+                                               name="<?php echo esc_attr(self::OPT_DISCOUNT_SEASONS); ?>[recurring][__INDEX__][start_day]"
                                                value=""
+                                               placeholder="dd/mm"
+                                               pattern="\d{2}/\d{2}"
+                                               maxlength="5"
+                                               class="shaped-date-text shaped-date-ddmm"
                                                required>
                                     </label>
                                     <label>
                                         To
-                                        <input type="date"
-                                               name="<?php echo esc_attr(self::OPT_DISCOUNT_RANGES); ?>[__INDEX__][end_date]"
+                                        <input type="text"
+                                               name="<?php echo esc_attr(self::OPT_DISCOUNT_SEASONS); ?>[recurring][__INDEX__][end_day]"
                                                value=""
+                                               placeholder="dd/mm"
+                                               pattern="\d{2}/\d{2}"
+                                               maxlength="5"
+                                               class="shaped-date-text shaped-date-ddmm"
                                                required>
                                     </label>
+                                    <label>
+                                        Label
+                                        <input type="text"
+                                               name="<?php echo esc_attr(self::OPT_DISCOUNT_SEASONS); ?>[recurring][__INDEX__][label]"
+                                               value=""
+                                               placeholder="e.g. Low Season"
+                                               class="shaped-season-label">
+                                    </label>
                                 </div>
-                                <button type="button" class="shaped-remove-range" title="Remove this date range">&times;</button>
+                                <button type="button" class="shaped-remove-range" title="Remove this season">&times;</button>
                             </div>
                             <table class="wp-list-table widefat fixed striped shaped-pricing-table shaped-range-table">
                                 <thead>
@@ -526,7 +884,73 @@ class Shaped_Pricing {
                                         <td><strong><?php echo esc_html($title); ?></strong></td>
                                         <td>
                                             <input type="number"
-                                                   name="<?php echo esc_attr(self::OPT_DISCOUNT_RANGES); ?>[__INDEX__][discounts][<?php echo esc_attr($slug); ?>]"
+                                                   name="<?php echo esc_attr(self::OPT_DISCOUNT_SEASONS); ?>[recurring][__INDEX__][discounts][<?php echo esc_attr($slug); ?>]"
+                                                   value="0"
+                                                   min="0"
+                                                   max="100"
+                                                   step="1"
+                                                   class="small-text" />
+                                            <span class="description">%</span>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </template>
+
+                    <!-- Hidden template for new override cards -->
+                    <template id="shaped-override-template">
+                        <div class="shaped-date-range-card shaped-season-card--override" data-range-index="__INDEX__">
+                            <div class="shaped-date-range-header">
+                                <div class="shaped-date-range-dates">
+                                    <label>
+                                        From
+                                        <input type="text"
+                                               name="<?php echo esc_attr(self::OPT_DISCOUNT_SEASONS); ?>[overrides][__INDEX__][start_date]"
+                                               value=""
+                                               placeholder="dd/mm/yyyy"
+                                               pattern="\d{2}/\d{2}/\d{4}"
+                                               maxlength="10"
+                                               class="shaped-date-text shaped-date-ddmmyyyy"
+                                               required>
+                                    </label>
+                                    <label>
+                                        To
+                                        <input type="text"
+                                               name="<?php echo esc_attr(self::OPT_DISCOUNT_SEASONS); ?>[overrides][__INDEX__][end_date]"
+                                               value=""
+                                               placeholder="dd/mm/yyyy"
+                                               pattern="\d{2}/\d{2}/\d{4}"
+                                               maxlength="10"
+                                               class="shaped-date-text shaped-date-ddmmyyyy"
+                                               required>
+                                    </label>
+                                    <label>
+                                        Label
+                                        <input type="text"
+                                               name="<?php echo esc_attr(self::OPT_DISCOUNT_SEASONS); ?>[overrides][__INDEX__][label]"
+                                               value=""
+                                               placeholder="e.g. Summer 2026"
+                                               class="shaped-season-label">
+                                    </label>
+                                </div>
+                                <button type="button" class="shaped-remove-range" title="Remove this override">&times;</button>
+                            </div>
+                            <table class="wp-list-table widefat fixed striped shaped-pricing-table shaped-range-table">
+                                <thead>
+                                    <tr>
+                                        <th>Room Type</th>
+                                        <th>Discount (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($room_types as $slug => $title): ?>
+                                    <tr>
+                                        <td><strong><?php echo esc_html($title); ?></strong></td>
+                                        <td>
+                                            <input type="number"
+                                                   name="<?php echo esc_attr(self::OPT_DISCOUNT_SEASONS); ?>[overrides][__INDEX__][discounts][<?php echo esc_attr($slug); ?>]"
                                                    value="0"
                                                    min="0"
                                                    max="100"
@@ -631,20 +1055,34 @@ class Shaped_Pricing {
     }
 
     /**
-     * Get discount date ranges configuration
+     * Get discount seasons configuration
      *
-     * @return array Array of date-range discount configs, each with start_date, end_date, discounts
+     * @return array Array with 'recurring' and 'overrides' keys
      */
-    public static function get_discount_ranges(): array {
-        $saved = get_option(self::OPT_DISCOUNT_RANGES, []);
-        return is_array($saved) ? $saved : [];
+    public static function get_discount_seasons(): array {
+        $saved = get_option(self::OPT_DISCOUNT_SEASONS, ['recurring' => [], 'overrides' => []]);
+        if (!is_array($saved)) {
+            return ['recurring' => [], 'overrides' => []];
+        }
+        return wp_parse_args($saved, ['recurring' => [], 'overrides' => []]);
     }
 
     /**
-     * Get discount for a specific room type, optionally considering date ranges
+     * Get discount date ranges configuration (legacy wrapper)
      *
-     * If a check-in date is provided and falls within a configured date range,
-     * that range's discount is returned. Otherwise, the default flat discount is used.
+     * @return array Array of date-range discount configs
+     * @deprecated Use get_discount_seasons() instead
+     */
+    public static function get_discount_ranges(): array {
+        $seasons = self::get_discount_seasons();
+        return isset($seasons['overrides']) ? $seasons['overrides'] : [];
+    }
+
+    /**
+     * Get discount for a specific room type using 3-tier priority:
+     * 1. Year-specific overrides (yyyy-mm-dd comparison)
+     * 2. Recurring seasons (mm-dd comparison, year-agnostic)
+     * 3. Default flat discount
      *
      * @param string      $room_slug      Room type slug
      * @param string|null $check_in_date  Check-in date in Y-m-d format (optional)
@@ -659,21 +1097,42 @@ class Shaped_Pricing {
             return isset($discounts[$slug]) ? intval($discounts[$slug]) : 0;
         }
 
-        $ranges = self::get_discount_ranges();
+        $seasons = self::get_discount_seasons();
 
-        if (!empty($ranges)) {
-            foreach ($ranges as $range) {
-                if (empty($range['start_date']) || empty($range['end_date'])) {
+        // Priority 1: Year-specific overrides (yyyy-mm-dd comparison)
+        if (!empty($seasons['overrides'])) {
+            foreach ($seasons['overrides'] as $override) {
+                if (empty($override['start_date']) || empty($override['end_date'])) {
                     continue;
                 }
-
-                if ($check_in_date >= $range['start_date'] && $check_in_date <= $range['end_date']) {
-                    return isset($range['discounts'][$slug]) ? intval($range['discounts'][$slug]) : 0;
+                if ($check_in_date >= $override['start_date'] && $check_in_date <= $override['end_date']) {
+                    return isset($override['discounts'][$slug]) ? intval($override['discounts'][$slug]) : 0;
                 }
             }
         }
 
-        // No matching range — fall back to default flat discount
+        // Priority 2: Recurring seasons (mm-dd comparison, year-agnostic)
+        if (!empty($seasons['recurring'])) {
+            $check_md = substr($check_in_date, 5); // "mm-dd"
+            foreach ($seasons['recurring'] as $season) {
+                if (empty($season['start_day']) || empty($season['end_day'])) {
+                    continue;
+                }
+                if ($season['start_day'] <= $season['end_day']) {
+                    // Normal range (e.g. Jan-Apr)
+                    if ($check_md >= $season['start_day'] && $check_md <= $season['end_day']) {
+                        return isset($season['discounts'][$slug]) ? intval($season['discounts'][$slug]) : 0;
+                    }
+                } else {
+                    // Wrapping range (e.g. Nov-Feb, crosses year boundary)
+                    if ($check_md >= $season['start_day'] || $check_md <= $season['end_day']) {
+                        return isset($season['discounts'][$slug]) ? intval($season['discounts'][$slug]) : 0;
+                    }
+                }
+            }
+        }
+
+        // Priority 3: Default flat discount
         $discounts = self::get_discounts();
         return isset($discounts[$slug]) ? intval($discounts[$slug]) : 0;
     }
@@ -744,7 +1203,7 @@ class Shaped_Pricing {
     public static function localize_config(): void {
         $config = [
             'discounts'               => self::get_discounts(),
-            'discountRanges'          => self::get_discount_ranges(),
+            'discountSeasons'         => self::get_discount_seasons(),
             'paymentMode'             => self::get_payment_mode(),
             'depositPercent'          => self::get_deposit_percent(),
             'scheduledThresholdDays'  => self::get_scheduled_threshold_days(),
