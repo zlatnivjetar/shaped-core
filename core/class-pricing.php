@@ -356,6 +356,9 @@ class Shaped_Pricing {
     /**
      * Check if two recurring mm-dd ranges overlap (handles year-wrap)
      *
+     * Uses boundary-point checks instead of day-set expansion to avoid
+     * DateTime overflow issues with dates like 09-31 (Sep only has 30 days).
+     *
      * @param string $a_start mm-dd
      * @param string $a_end   mm-dd
      * @param string $b_start mm-dd
@@ -363,48 +366,19 @@ class Shaped_Pricing {
      * @return bool
      */
     private static function recurring_ranges_overlap(string $a_start, string $a_end, string $b_start, string $b_end): bool {
-        $a_days = self::mmdd_range_to_day_set($a_start, $a_end);
-        $b_days = self::mmdd_range_to_day_set($b_start, $b_end);
-        return !empty(array_intersect($a_days, $b_days));
-    }
+        $in_range = function (string $point, string $start, string $end): bool {
+            if ($start <= $end) {
+                // Normal range (e.g. 01-01 to 05-31)
+                return $point >= $start && $point <= $end;
+            }
+            // Wrapping range (e.g. 11-01 to 02-28)
+            return $point >= $start || $point <= $end;
+        };
 
-    /**
-     * Expand an mm-dd range into a set of mm-dd day strings (handles year-wrap)
-     *
-     * @param string $start mm-dd
-     * @param string $end   mm-dd
-     * @return array
-     */
-    private static function mmdd_range_to_day_set(string $start, string $end): array {
-        // Use a reference non-leap year (2001) to iterate
-        $year = 2001;
-        $start_date = new \DateTime("$year-$start");
-        $end_date   = new \DateTime("$year-$end");
-        $days = [];
-
-        if ($start <= $end) {
-            // Normal range within one year
-            $current = clone $start_date;
-            while ($current <= $end_date) {
-                $days[] = $current->format('m-d');
-                $current->modify('+1 day');
-            }
-        } else {
-            // Wrapping range: start..Dec31 + Jan01..end
-            $current = clone $start_date;
-            $dec31 = new \DateTime("$year-12-31");
-            while ($current <= $dec31) {
-                $days[] = $current->format('m-d');
-                $current->modify('+1 day');
-            }
-            $jan01 = new \DateTime("$year-01-01");
-            $current = clone $jan01;
-            while ($current <= $end_date) {
-                $days[] = $current->format('m-d');
-                $current->modify('+1 day');
-            }
-        }
-        return $days;
+        return $in_range($b_start, $a_start, $a_end)
+            || $in_range($b_end, $a_start, $a_end)
+            || $in_range($a_start, $b_start, $b_end)
+            || $in_range($a_end, $b_start, $b_end);
     }
 
     /**
