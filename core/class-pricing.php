@@ -725,10 +725,10 @@ class Shaped_Pricing {
                         <span id="shaped-recurring-overlap-warning" class="shaped-overlap-warning" style="display:none;">Recurring seasons must not overlap.</span>
                     </div>
 
-                    <!-- ── Year-Specific Overrides ── -->
-                    <h3 class="shaped-subsection-title">Year-Specific Overrides</h3>
+                    <!-- ── Year-Specific Promos ── -->
+                    <h3 class="shaped-subsection-title">Year-Specific Promos</h3>
                     <p class="description">
-                        Override recurring seasons for a specific year. Use dd/mm/yyyy format. Takes priority over seasons above.
+                        Promotional discounts for a specific year. Use dd/mm/yyyy format. Takes priority over seasons above.
                     </p>
 
                     <div id="shaped-override-seasons">
@@ -768,7 +768,7 @@ class Shaped_Pricing {
                                                        class="shaped-season-label">
                                             </label>
                                         </div>
-                                        <button type="button" class="shaped-remove-range" title="Remove this override">&times;</button>
+                                        <button type="button" class="shaped-remove-range" title="Remove this promo">&times;</button>
                                     </div>
                                     <table class="wp-list-table widefat fixed striped shaped-pricing-table shaped-range-table">
                                         <thead>
@@ -803,8 +803,8 @@ class Shaped_Pricing {
                     </div>
 
                     <div class="shaped-date-range-actions">
-                        <button type="button" id="shaped-add-override" class="button button-secondary">+ Add Override</button>
-                        <span id="shaped-override-overlap-warning" class="shaped-overlap-warning" style="display:none;">Year-specific overrides must not overlap.</span>
+                        <button type="button" id="shaped-add-override" class="button button-secondary">+ Add Promo</button>
+                        <span id="shaped-override-overlap-warning" class="shaped-overlap-warning" style="display:none;">Year-specific promos must not overlap.</span>
                     </div>
 
                     <!-- Hidden template for new recurring season cards -->
@@ -873,7 +873,7 @@ class Shaped_Pricing {
                         </div>
                     </template>
 
-                    <!-- Hidden template for new override cards -->
+                    <!-- Hidden template for new promo cards -->
                     <template id="shaped-override-template">
                         <div class="shaped-date-range-card shaped-season-card--override" data-range-index="__INDEX__">
                             <div class="shaped-date-range-header">
@@ -909,7 +909,7 @@ class Shaped_Pricing {
                                                class="shaped-season-label">
                                     </label>
                                 </div>
-                                <button type="button" class="shaped-remove-range" title="Remove this override">&times;</button>
+                                <button type="button" class="shaped-remove-range" title="Remove this promo">&times;</button>
                             </div>
                             <table class="wp-list-table widefat fixed striped shaped-pricing-table shaped-range-table">
                                 <thead>
