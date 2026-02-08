@@ -1,7 +1,7 @@
 /**
  * Admin Discount Seasons
  *
- * Handles add/remove for recurring season cards and year-specific override cards,
+ * Handles add/remove for recurring season cards and year-specific promo cards,
  * input masking for dd/mm and dd/mm/yyyy formats, and overlap validation.
  */
 (function () {
@@ -13,7 +13,7 @@
     var recurringTemplate  = document.getElementById('shaped-recurring-template');
     var recurringWarning   = document.getElementById('shaped-recurring-overlap-warning');
 
-    // ── Year-Specific Overrides ──
+    // ── Year-Specific Promos ──
     var overrideContainer  = document.getElementById('shaped-override-seasons');
     var addOverrideBtn     = document.getElementById('shaped-add-override');
     var overrideTemplate   = document.getElementById('shaped-override-template');
@@ -176,7 +176,7 @@
                inRange(aEnd, bStart, bEnd);
     }
 
-    // ── Overlap checking for overrides (yyyy-mm-dd comparison) ──
+    // ── Overlap checking for promos (yyyy-mm-dd comparison) ──
 
     function ddmmyyyyToYmd(ddmmyyyy) {
         var parts = ddmmyyyy.split('/');
