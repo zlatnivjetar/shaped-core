@@ -925,8 +925,8 @@ input:focus,
 	.discount-badge-checkout,
 	.mphb-urgency-badge {
 		margin-left: 0px;
-		margin-top: 8px;
-		margin-bottom: 8px;
+		margin-top: 4px;
+		margin-bottom: 4px;
 		font-size: .8125rem;
 	}
 
@@ -955,7 +955,7 @@ input:focus,
 	}
 
 	.checkout-form-bottom> :last-child {
-		padding-bottom: 48px;
+		padding-bottom: 32px;
 	}
 
 	.mphb-terms-and-conditions-accept input[type="checkbox"] {
@@ -1027,7 +1027,7 @@ input:focus,
 	.mphb-price-breakdown tfoot .mphb-price,
 	.mphb-price-breakdown tfoot th,
 	.mphb-total-price output {
-		font-size: 1.375rem;
+		font-size: 1.1875rem;
 	}
 
 	.mphb-total-price-field .mphb-price {
@@ -1085,12 +1085,16 @@ input:focus,
 	.mphb-check-in-date,
 	.mphb-check-out-date {
 		width: 100%;
-		margin: 0 0 1.75rem 0;
+		margin: 0 0 2rem 0;
     padding: 1rem;
 	}
 
   .mphb-children-chooser {
-    margin-bottom: 1.75rem;
+    margin-bottom: 2rem;
+  }
+
+  .mphb-customer-phone {
+    margin-bottom: .75rem !important;
   }
 
   .mphb-room-type-title {
