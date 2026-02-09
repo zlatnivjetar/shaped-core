@@ -69,7 +69,8 @@
 .mphb-booking-details-title,
 .mphb-customer-details-title,
 .mphb-gateway-chooser-title,
-.mphb-price-breakdown-title {
+.mphb-price-breakdown-title,
+.mphb-room-type-title {
 	color: var(--color-text-primary);
 	font-size: 1.5rem;
 	margin: 0 0 1.5rem 0;
