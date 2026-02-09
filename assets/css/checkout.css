@@ -1043,6 +1043,11 @@ input:focus,
     font-size: 1.375rem !important;
 	}
 
+  	.mphb-booking-details-title {
+      display: none;
+    }
+
+
 	.mphb_sc_checkout-wrapper {
 		padding: 0;
 	}
@@ -1061,7 +1066,7 @@ input:focus,
 	}
 
 	.mphb-checkout-section {
-		padding: 2rem 1.5rem 1.5rem 1.5rem;
+		padding: 2rem 1rem 1.5rem 1rem;
 	}
 
 	.mphb_sc_checkout-form {
