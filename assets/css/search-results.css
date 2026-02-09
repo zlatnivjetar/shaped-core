@@ -366,7 +366,7 @@ p.post-thumbnail.mphb-loop-room-thumbnail {
     gap: 1rem;
     list-style: none;
     margin: 1rem 0 0 0;
-    padding: 0 1.5rem;
+    padding: 0 1rem;
     align-items: center;
     min-height: 0 !important;
     align-content: flex-start;
@@ -479,13 +479,18 @@ p.post-thumbnail.mphb-loop-room-thumbnail {
         margin-bottom: 0
 
     }
+
+    .mphb-room-type p:not(:first-of-type) {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
     
     /* Room Content Padding */
     .mphb-room-type > h2,
     .mphb-room-type > .mphb-regular-price,
     .mphb-room-type > .mphb-reserve-room-section {
-        padding-left: 1.5rem;
-        padding-right: 1.5rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
     
     .mphb-room-type > .mphb-view-details-button-wrapper {
@@ -502,14 +507,14 @@ p.post-thumbnail.mphb-loop-room-thumbnail {
     /* Typography */
     .mphb-room-type-title {
         font-size: 1.375rem;
-        margin-top: 16px !important;
-        margin-bottom: 8px !important;
+        margin-top: 8px !important;
+        margin-bottom: 12px !important;
     }
 
     .mphb-price {
         font-size: 1.375rem;
-        margin-top: 8px !important;
-        margin-bottom: 8px !important;
+        margin-top: 4px !important;
+        margin-bottom: 4px !important;
     }
     
     .mphb-room-type > p {
@@ -531,7 +536,7 @@ p.post-thumbnail.mphb-loop-room-thumbnail {
 
     .mphb-regular-price strong {
       font-size: 17px;
-      margin-bottom: 4px;
+      margin-bottom: 0px;
     }
 
     
@@ -575,6 +580,6 @@ p.post-thumbnail.mphb-loop-room-thumbnail {
     /* Rates Indicator Mobile */
     .shaped-rates-indicator {
         font-size: 13px;
-        padding: 0 1.5rem 1rem;
+        padding: 0 1rem 1rem;
     }
 }
