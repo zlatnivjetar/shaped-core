@@ -143,7 +143,7 @@ p.post-thumbnail.mphb-loop-room-thumbnail {
 /* Price Display */
 .mphb-regular-price {
     background: var(--color-surface-highlight);
-    margin: 2rem 0;
+    margin: 1.5rem 0;
     padding: 1.25rem;
     border-top: 1px solid var(--color-border-default);
     display: flex;
@@ -156,7 +156,7 @@ p.post-thumbnail.mphb-loop-room-thumbnail {
     color: var(--color-text-primary);
     font-size: 1.125rem;
     font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
     margin-right: 4px;
 }
 
@@ -239,7 +239,7 @@ p.post-thumbnail.mphb-loop-room-thumbnail {
 
 /* Rates Available Indicator */
 .shaped-rates-indicator {
-    margin-top: -12px;
+    margin-top: -16px;
     gap: 0.25rem;
     color: var(--color-text-muted);
     font-size: 14px;
