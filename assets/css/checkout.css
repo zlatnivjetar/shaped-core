@@ -8,6 +8,10 @@
 	font-weight: normal;
 }
 
+section#mphb-price-details {
+  display: none;
+}
+
 
 .discount-badge-checkout {
 	background: var(--color-semantic-success);
