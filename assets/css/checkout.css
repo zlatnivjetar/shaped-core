@@ -95,7 +95,7 @@ p.mphb-room-rate-variant {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 }
 
 p.mphb-room-rate-variant:last-child {
@@ -217,12 +217,13 @@ p.mphb-room-rate-variant:last-child {
 }
 
 /* Form Controls */
-.mphb-adults-chooser,
-.mphb-children-chooser,
-.mphb-guest-name-wrapper {
+.mphb-adults-chooser {
 	margin-bottom: 1.5rem;
 }
 
+.mphb-children-chooser {
+	margin-bottom: 2rem;
+}
 
 .mphb-adults-chooser label,
 .mphb-children-chooser label,
