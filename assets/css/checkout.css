@@ -26,6 +26,7 @@
 
   #checkoutbutton {
     height: 52px;
+    transition: var(--transition-base);
   }
 
 /* ==========================================================================
@@ -1091,6 +1092,10 @@ input:focus,
   .mphb-room-type-title {
     margin-bottom: 1.25rem;
 }
+p.mphb-room-rate-variant{
+  gap: 4px;
+}
+
 p.mphb-room-rate-variant:last-child {
     margin-bottom: -20px;
 }
