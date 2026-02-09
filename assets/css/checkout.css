@@ -399,7 +399,7 @@ span.mphb-price-discount {
 }
 
 .mphb-customer-phone {
-	margin-bottom: 1rem;
+	margin-bottom: 1.5rem !important;
 }
 
 .mphb-customer-details label {
@@ -843,14 +843,14 @@ input:focus,
 
 .checkout-form-bottom> :last-child {
 	margin-bottom: 0;
-	padding-bottom: 32px;
+	padding-bottom: 16px;
 }
 
 
 #shaped-payment-note {
 	background: var(--color-surface-white);
 	border: 1.5px solid var(--color-border-default);
-	padding: 24px 200px;
+	padding: 20px 200px;
 	margin: 20px 0;
 	box-shadow: var(--shadow-md);
 }
@@ -883,6 +883,10 @@ input:focus,
 }
 
 @media (max-width: 767px) {
+
+  .mphb_sc_checkout-form {
+    padding-top: 0;
+  }
 
 	.mphb-price-breakdown .mphb-price-breakdown-subtotal th,
 	.mphb-price-breakdown .mphb-discount-row th {
@@ -1069,9 +1073,10 @@ input:focus,
 	}
 
 	.mphb-check-in-date,
-	.mphb-check-out-date {
+	.mphb-check-out-date,
+  .mphb-children-chooser {
 		width: 100%;
-		margin: 0 0 1rem 0;
+		margin: 0 0 1.75rem 0;
 	}
 
 	.mphb-customer-details label,
