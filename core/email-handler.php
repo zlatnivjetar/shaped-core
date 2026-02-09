@@ -49,7 +49,12 @@ function shaped_send_confirmation_email( $booking_id ) {
         $room_type_ids = $booking->getReservedRoomTypeIds();
         $room_names = array_map( 'get_the_title', $room_type_ids );
         $room_list = implode( ', ', $room_names );
-        
+
+        // Get rate name (e.g., "Room only" or "Breakfast included")
+        $rate_name = function_exists( 'shaped_get_booking_rate_name' )
+            ? shaped_get_booking_rate_name( $booking_id )
+            : '';
+
         // FIX: Use the same logic as admin email to get the actual paid amount
         $total_paid_raw = get_post_meta( $booking_id, '_mphb_paid_amount', true );
         $total_paid = (float) $total_paid_raw;
@@ -75,6 +80,7 @@ function shaped_send_confirmation_email( $booking_id ) {
             'check_in' => $check_in,
             'check_out' => $check_out,
             'room_list' => $room_list,
+            'rate_name' => $rate_name,
             'total_paid' => $currency . number_format( $total_paid, 2 ),
             'customer_email' => $customer->getEmail(),
             'customer_phone' => $customer->getPhone()
@@ -129,6 +135,7 @@ function shaped_get_confirmation_template( $data ) {
         'check_in'   => $data['check_in'],
         'check_out'  => $data['check_out'],
         'room_list'  => $data['room_list'],
+        'rate_name'  => isset($data['rate_name']) ? $data['rate_name'] : '',
         'total_paid' => $data['total_paid'],
     ]);
 
@@ -177,6 +184,11 @@ function shaped_send_reservation_email($booking_id) {
         
         $charge_date_formatted = date('F j, Y', strtotime($charge_date));
 
+        // Get rate name
+        $rate_name = function_exists('shaped_get_booking_rate_name')
+            ? shaped_get_booking_rate_name($booking_id)
+            : '';
+
         // Get email config
         $from_name = shaped_email_config('from_name', get_bloginfo('name'));
         $from_email = shaped_email_config('from_email', get_option('admin_email'));
@@ -189,6 +201,7 @@ function shaped_send_reservation_email($booking_id) {
             'customer_first' => $customer->getFirstName(),
             'check_in' => $check_in,
             'check_out' => $check_out,
+            'rate_name' => $rate_name,
             'charge_date' => $charge_date_formatted,
             'amount' => number_format($pending_amount, 2),
             'customer_email' => $customer->getEmail()
@@ -234,6 +247,7 @@ function shaped_get_reservation_template($data) {
         'booking_id' => $data['booking_id'],
         'check_in'   => $data['check_in'],
         'check_out'  => $data['check_out'],
+        'rate_name'  => isset($data['rate_name']) ? $data['rate_name'] : '',
     ]);
 
     // Payment Info
@@ -492,6 +506,11 @@ function shaped_send_deposit_confirmation_email($booking_id) {
         $room_names = array_map('get_the_title', $room_type_ids);
         $room_list = implode(', ', $room_names);
 
+        // Get rate name
+        $rate_name = function_exists('shaped_get_booking_rate_name')
+            ? shaped_get_booking_rate_name($booking_id)
+            : '';
+
         // Get deposit details
         $deposit_amount = (float) get_post_meta($booking_id, '_shaped_deposit_paid', true);
         $balance_due = (float) get_post_meta($booking_id, '_shaped_balance_due', true);
@@ -522,6 +541,7 @@ function shaped_send_deposit_confirmation_email($booking_id) {
             'check_in' => $check_in,
             'check_out' => $check_out,
             'room_list' => $room_list,
+            'rate_name' => $rate_name,
             'deposit_paid' => $currency . number_format($deposit_amount, 2),
             'balance_due' => $currency . number_format($balance_due, 2),
             'total_amount' => $currency . number_format($total_price, 2),
@@ -585,6 +605,11 @@ function shaped_get_deposit_confirmation_template($data) {
         'sub_text' => $check_out_time,
     ]);
     $content .= shaped_email_block_row('Accommodation:', $data['room_list'], ['bold_value' => true]);
+
+    if (!empty($data['rate_name'])) {
+        $content .= shaped_email_block_row('Rate:', $data['rate_name'], ['bold_value' => true]);
+    }
+
     $content .= shaped_email_block_rows_end();
     $content .= shaped_email_block_card_end();
 
