@@ -55,7 +55,12 @@ function shaped_send_admin_confirmation_email( $booking_id ) {
         $room_type_ids  = $booking->getReservedRoomTypeIds();
         $room_names     = array_map( 'get_the_title', $room_type_ids );
         $room_list      = implode( ', ', $room_names );
-        
+
+        // Get rate name
+        $rate_name = function_exists( 'shaped_get_booking_rate_name' )
+            ? shaped_get_booking_rate_name( $booking_id )
+            : '';
+
         // FIX: Cast to float before formatting
         $total_paid_raw = get_post_meta( $booking_id, '_mphb_paid_amount', true );
         $total_paid     = (float) $total_paid_raw; // Cast to float
@@ -77,6 +82,7 @@ function shaped_send_admin_confirmation_email( $booking_id ) {
             'check_in'        => $check_in,
             'check_out'       => $check_out,
             'room_list'       => $room_list,
+            'rate_name'       => $rate_name,
             'total_paid'      => $currency . number_format( $total_paid, 2 ),
         ) );
         
@@ -139,7 +145,12 @@ function shaped_send_admin_reservation_email( $booking_id ) {
         $room_type_ids  = $booking->getReservedRoomTypeIds();
         $room_names     = array_map( 'get_the_title', $room_type_ids );
         $room_list      = implode( ', ', $room_names );
-        
+
+        // Get rate name
+        $rate_name = function_exists( 'shaped_get_booking_rate_name' )
+            ? shaped_get_booking_rate_name( $booking_id )
+            : '';
+
         // Get pending amount for delayed payment
         $pending_amount_raw = get_post_meta( $booking_id, '_stripe_pending_amount', true );
         $pending_amount = (float) $pending_amount_raw;
@@ -163,6 +174,7 @@ function shaped_send_admin_reservation_email( $booking_id ) {
             'check_in'        => $check_in,
             'check_out'       => $check_out,
             'room_list'       => $room_list,
+            'rate_name'       => $rate_name,
             'pending_amount'  => $currency . number_format( $pending_amount, 2 ),
             'charge_date'     => $charge_date_formatted,
         ) );
@@ -276,6 +288,9 @@ function shaped_get_admin_confirmation_template( $data ) {
         <div style="padding: 20px;">
             <h3 style="margin-top: 0;">Booking Details:</h3>
             <p><strong>Accommodation:</strong> <?php echo esc_html( $data['room_list'] ); ?></p>
+            <?php if ( ! empty( $data['rate_name'] ) ) : ?>
+            <p><strong>Rate:</strong> <?php echo esc_html( $data['rate_name'] ); ?></p>
+            <?php endif; ?>
             <p><strong>Check-in:</strong> <?php echo esc_html( $data['check_in'] ); ?></p>
             <p><strong>Check-out:</strong> <?php echo esc_html( $data['check_out'] ); ?></p>
             <p><strong>Booking Total:</strong> <strong style="color: #2e7d32;"><?php echo esc_html( $data['total_paid'] ); ?></strong></p>
@@ -300,6 +315,9 @@ function shaped_get_admin_reservation_template( $data ) {
         <div style="padding: 20px;">
             <h3 style="margin-top: 0;">Booking Details:</h3>
             <p><strong>Accommodation:</strong> <?php echo esc_html( $data['room_list'] ); ?></p>
+            <?php if ( ! empty( $data['rate_name'] ) ) : ?>
+            <p><strong>Rate:</strong> <?php echo esc_html( $data['rate_name'] ); ?></p>
+            <?php endif; ?>
             <p><strong>Check-in:</strong> <?php echo esc_html( $data['check_in'] ); ?></p>
             <p><strong>Check-out:</strong> <?php echo esc_html( $data['check_out'] ); ?></p>
             <p><strong>Total Amount:</strong> <strong style="color: #1976d2;"><?php echo esc_html( $data['pending_amount'] ); ?></strong></p>
@@ -369,6 +387,11 @@ function shaped_send_admin_deposit_email( $booking_id ) {
         $room_names = array_map( 'get_the_title', $room_type_ids );
         $room_list = implode( ', ', $room_names );
 
+        // Get rate name
+        $rate_name = function_exists( 'shaped_get_booking_rate_name' )
+            ? shaped_get_booking_rate_name( $booking_id )
+            : '';
+
         // Get deposit details
         $deposit_amount = (float) get_post_meta( $booking_id, '_shaped_deposit_paid', true );
         $balance_due = (float) get_post_meta( $booking_id, '_shaped_balance_due', true );
@@ -393,6 +416,7 @@ function shaped_send_admin_deposit_email( $booking_id ) {
             'check_in'        => $check_in,
             'check_out'       => $check_out,
             'room_list'       => $room_list,
+            'rate_name'       => $rate_name,
             'deposit_paid'    => $currency . number_format( $deposit_amount, 2 ),
             'balance_due'     => $currency . number_format( $balance_due, 2 ),
             'total_amount'    => $currency . number_format( $total_price, 2 ),
@@ -439,6 +463,9 @@ function shaped_get_admin_deposit_template( $data ) {
             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
             <h3 style="margin-top: 0;">Booking Details:</h3>
             <p><strong>Accommodation:</strong> <?php echo esc_html( $data['room_list'] ); ?></p>
+            <?php if ( ! empty( $data['rate_name'] ) ) : ?>
+            <p><strong>Rate:</strong> <?php echo esc_html( $data['rate_name'] ); ?></p>
+            <?php endif; ?>
             <p><strong>Check-in:</strong> <?php echo esc_html( $data['check_in'] ); ?></p>
             <p><strong>Check-out:</strong> <?php echo esc_html( $data['check_out'] ); ?></p>
             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
