@@ -1073,11 +1073,22 @@ input:focus,
 	}
 
 	.mphb-check-in-date,
-	.mphb-check-out-date,
-  .mphb-children-chooser {
+	.mphb-check-out-date {
 		width: 100%;
 		margin: 0 0 1.75rem 0;
+    padding: 1rem;
 	}
+
+  .mphb-children-chooser {
+    margin-bottom: 1.75rem;
+  }
+
+  .mphb-room-type-title {
+    margin-bottom: 1.25rem;
+}
+p.mphb-room-rate-variant:last-child {
+    margin-bottom: -20px;
+}
 
 	.mphb-customer-details label,
 	.mphb-adults-chooser label,
