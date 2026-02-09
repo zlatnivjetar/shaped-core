@@ -971,7 +971,7 @@ input:focus,
 
 	#shaped-payment-note {
 		padding: 16px 24px;
-		margin: 16px 0 24px;
+		margin: 16px 0;
 	}
 
 	.shaped-note__headline {
