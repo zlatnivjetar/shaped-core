@@ -120,11 +120,22 @@ function shaped_room_cards_shortcode($atts) {
             }
         }
 
+        // Collect posts; sort by capacity proximity for search template
+        $posts = [];
         while ($rooms_query->have_posts()) {
             $rooms_query->the_post();
-            $room_type = get_post();
+            $posts[] = get_post();
+        }
 
-            // Load the appropriate template
+        if ($template === 'search' && $search_context && $search_context['adults'] > 0) {
+            $posts = shaped_sort_rooms_by_capacity_proximity($posts, $search_context['adults']);
+        }
+
+        foreach ($posts as $room_type) {
+            // Set up global $post so template tags work
+            $GLOBALS['post'] = $room_type;
+            setup_postdata($room_type);
+
             $template_file = SHAPED_DIR . 'templates/room-card-' . $template . '.php';
 
             if (file_exists($template_file)) {
@@ -281,6 +292,56 @@ function shaped_enqueue_room_cards_landing_assets() {
             SHAPED_VERSION
         );
     }
+}
+
+/**
+ * Sort room type posts by how close their total capacity is to the
+ * desired guest count.
+ *
+ * Rooms that can fit the guests come first (sorted by smallest surplus),
+ * followed by rooms that are too small (sorted by smallest deficit).
+ *
+ * Example with desired_guests = 5, rooms with capacity 2, 4, 6, 8:
+ *   Group A (fits):      6 (surplus 1), 8 (surplus 3)
+ *   Group B (too small): 4 (deficit 1), 2 (deficit 3)
+ *   Result order: 6, 8, 4, 2
+ *
+ * @param WP_Post[] $posts          Array of room type posts
+ * @param int       $desired_guests Number of guests from search
+ * @return WP_Post[] Sorted array
+ */
+function shaped_sort_rooms_by_capacity_proximity(array $posts, int $desired_guests): array {
+    if (!function_exists('MPHB') || $desired_guests <= 0) {
+        return $posts;
+    }
+
+    // Attach capacity to each post
+    $rooms_with_capacity = [];
+    foreach ($posts as $post) {
+        $mphb_room = MPHB()->getRoomTypeRepository()->findById($post->ID);
+        $capacity = $mphb_room ? $mphb_room->getTotalCapacity() : 0;
+        $rooms_with_capacity[] = [
+            'post'     => $post,
+            'capacity' => $capacity,
+        ];
+    }
+
+    usort($rooms_with_capacity, function ($a, $b) use ($desired_guests) {
+        $a_fits = $a['capacity'] >= $desired_guests;
+        $b_fits = $b['capacity'] >= $desired_guests;
+
+        // Rooms that fit come before rooms that don't
+        if ($a_fits && !$b_fits) return -1;
+        if (!$a_fits && $b_fits) return 1;
+
+        // Within the same group, sort by distance to desired capacity
+        $a_diff = abs($a['capacity'] - $desired_guests);
+        $b_diff = abs($b['capacity'] - $desired_guests);
+
+        return $a_diff - $b_diff;
+    });
+
+    return array_column($rooms_with_capacity, 'post');
 }
 
 /**
