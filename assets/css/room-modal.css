@@ -290,7 +290,6 @@ body.shaped-room-modal-open {
 
 .shaped-room-modal__amenities {
     padding: 20px 0 0 0;
-    border-top: 1px solid var(--color-border-default);
 }
 
 .shaped-room-modal__amenities-grid {
