@@ -1,13 +1,17 @@
 <?php
 /**
- * Book Page Search Form Modifications
+ * Search Form Guests Field & Book Page Enhancements
  *
- * Modifies the MotoPress Hotel Booking search form on the /book page
- * to include inline benefits text: "Best rate direct • Instant confirmation • Secure payment"
- * and a visible Guests dropdown field.
+ * Adds a visible Guests dropdown to every MPHB search form rendered via
+ * [mphb_availability_search]. On /book and /search-results pages it also
+ * wraps the form in a container with inline benefits text.
  *
- * The guests field is injected directly into .search-input-wrapper via
- * output buffering so the layout is correct on first paint (no FOUC).
+ * On book pages the guests field is repositioned server-side via output
+ * buffering (no FOUC). On all other pages a tiny inline script moves the
+ * field into .search-input-wrapper after first paint.
+ *
+ * Also hooks into MPHB's checkout to pre-fill the adults dropdown with
+ * the guest count carried over from the search form.
  *
  * @package Shaped_Core
  * @since 2.0.0
@@ -24,28 +28,32 @@ class Shaped_Book_Search_Form {
      */
     public function __construct() {
         // Use 'wp' action to check page context (runs after query is set up)
-        add_action('wp', [$this, 'maybe_init_book_page_hooks']);
+        add_action('wp', [$this, 'init_hooks']);
+
+        // Pre-fill adults on checkout from search context (runs everywhere)
+        add_filter('mphb_sc_checkout_preset_adults', [$this, 'preset_checkout_adults'], 10, 4);
     }
 
     /**
-     * Conditionally add hooks only on /book page
+     * Register hooks based on page context.
+     *
+     * Guests field: added on every page (global).
+     * Container wrapper + benefits text: only on /book and /search-results.
      */
-    public function maybe_init_book_page_hooks(): void {
-        if (!$this->is_book_page()) {
-            return;
+    public function init_hooks(): void {
+        $is_book_page = $this->is_book_page();
+
+        if ($is_book_page) {
+            // Book pages: use output buffering to inject guests field server-side
+            add_action('mphb_sc_search_before_form', [$this, 'render_container_open'], 10);
+            add_action('mphb_sc_search_form_before_submit_btn', [$this, 'render_guests_field'], 10);
+            add_action('mphb_sc_search_after_form', [$this, 'render_benefits_and_close_container'], 10);
+            add_filter('mphb_sc_search_wrapper_class', [$this, 'add_book_page_wrapper_class']);
+        } else {
+            // All other pages: render guests field inline + reposition via JS
+            add_action('mphb_sc_search_form_before_submit_btn', [$this, 'render_guests_field'], 10);
+            add_action('mphb_sc_search_after_form', [$this, 'render_guests_field_reposition_script'], 10);
         }
-
-        // Open container wrapper before the form and start output buffering
-        add_action('mphb_sc_search_before_form', [$this, 'render_container_open'], 10);
-
-        // Add guests field before submit button (captured by output buffer)
-        add_action('mphb_sc_search_form_before_submit_btn', [$this, 'render_guests_field'], 10);
-
-        // Capture buffer, inject guests into correct DOM position, add benefits, close container
-        add_action('mphb_sc_search_after_form', [$this, 'render_benefits_and_close_container'], 10);
-
-        // Add custom class to wrapper for Elementor targeting
-        add_filter('mphb_sc_search_wrapper_class', [$this, 'add_book_page_wrapper_class']);
     }
 
     /**
@@ -82,8 +90,9 @@ class Shaped_Book_Search_Form {
     /**
      * Render the guests select field before the submit button.
      *
-     * This HTML is captured by the output buffer and later moved into
-     * .search-input-wrapper by render_benefits_and_close_container().
+     * On book pages this HTML is captured by the output buffer and later moved
+     * into .search-input-wrapper by render_benefits_and_close_container().
+     * On other pages it renders inline and is repositioned by JS.
      */
     public function render_guests_field(): void {
         $uniqid = 'book-page-' . wp_unique_id();
@@ -107,24 +116,20 @@ class Shaped_Book_Search_Form {
     }
 
     /**
-     * Render inline script to move guests field into search-input-wrapper
+     * Inline script to reposition guests field into .search-input-wrapper.
+     *
+     * Used on non-book pages where the output-buffer approach is not active.
+     * Targets forms that have .mphb_sc_search-guests outside of .search-input-wrapper.
      */
-    public function render_guests_field_script(): void {
+    public function render_guests_field_reposition_script(): void {
         ?>
         <script>
         (function() {
-            var containers = document.querySelectorAll('.mphb-book-search-container');
-            
-            containers.forEach(function(container) {
-                var guestsField = container.querySelector('.mphb_sc_search-guests');
-                var inputWrapper = container.querySelector('.search-input-wrapper');
-                if (guestsField && inputWrapper) {
+            document.querySelectorAll('.mphb_sc_search-form').forEach(function(form) {
+                var guestsField = form.querySelector('.mphb_sc_search-guests');
+                var inputWrapper = form.querySelector('.search-input-wrapper');
+                if (guestsField && inputWrapper && !inputWrapper.contains(guestsField)) {
                     inputWrapper.appendChild(guestsField);
-                }
-
-                var submitBtn = container.querySelector('.mphb_sc_search-submit-button-wrapper input[type="submit"]');
-                if (submitBtn) {
-                    submitBtn.value = 'Check availability';
                 }
             });
         })();
@@ -213,5 +218,35 @@ class Shaped_Book_Search_Form {
      */
     public function add_book_page_wrapper_class(string $class): string {
         return $class . ' mphb-search-book-page';
+    }
+
+    /**
+     * Pre-fill the adults dropdown on MPHB checkout with the guest count
+     * carried over from the search form.
+     *
+     * Priority: POST data (from room card form) > GET param.
+     * Clamped to the room type's adult capacity so the value is always valid.
+     *
+     * @param string|int                  $preset      Current preset value
+     * @param \MPHB\Entities\RoomType     $roomType    The room type being booked
+     * @param \MPHB\Entities\ReservedRoom $reservedRoom
+     * @param \MPHB\Entities\Booking      $booking
+     * @return string|int
+     */
+    public function preset_checkout_adults($preset, $roomType, $reservedRoom = null, $booking = null) {
+        $guests = 0;
+
+        if (isset($_POST['mphb_adults'])) {
+            $guests = absint($_POST['mphb_adults']);
+        } elseif (isset($_GET['mphb_adults'])) {
+            $guests = absint($_GET['mphb_adults']);
+        }
+
+        if ($guests > 0 && $roomType) {
+            $max_adults = $roomType->getAdultsCapacity();
+            return min($guests, $max_adults);
+        }
+
+        return $preset;
     }
 }

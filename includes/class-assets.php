@@ -183,8 +183,11 @@ class Shaped_Assets {
             );
         }
 
-        // ─── Book Page Search Form (benefits line) ───
-        if ($this->is_book_page() && file_exists(SHAPED_DIR . 'assets/css/book-search-form.css')) {
+        // ─── Search Form Guests Field + Book Page Benefits ───
+        // Guests field CSS loads on every page with a search form;
+        // the benefits-line styles inside the same file only apply
+        // inside .mphb-book-search-container (book pages only).
+        if ($this->has_search_form() && file_exists(SHAPED_DIR . 'assets/css/book-search-form.css')) {
             wp_enqueue_style(
                 'shaped-book-search-form',
                 SHAPED_URL . 'assets/css/book-search-form.css',
