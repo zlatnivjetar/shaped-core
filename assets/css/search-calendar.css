@@ -258,6 +258,7 @@ a.datepick-cmd {
     font-weight: 600;
     transition: all 200ms ease;
     display: flex;
+    justify-content: center;
     max-height: 44px;
     font-size: 14px;
     line-height: 1.5em !important;
@@ -337,7 +338,7 @@ a.datepick-cmd {
   .mphb-datepicker-minimal .datepick-ctrl a {
     width: 100% !important;
     text-align: center;
-    padding: 10px 32px !important;
+    padding: 12px 32px !important;
   }
 
   .datepick-month.first, .datepick-month.last{
