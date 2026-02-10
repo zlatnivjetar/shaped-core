@@ -183,6 +183,17 @@ class Shaped_Assets {
             );
         }
 
+        // ─── Search Guests Field JS (reposition, submit, sync) ───
+        if ($this->has_search_form() && file_exists(SHAPED_DIR . 'assets/js/search-guests-field.js')) {
+            wp_enqueue_script(
+                'shaped-search-guests-field',
+                SHAPED_URL . 'assets/js/search-guests-field.js',
+                [],
+                SHAPED_VERSION,
+                true
+            );
+        }
+
         // ─── Search Form Guests Field + Book Page Benefits ───
         // Guests field CSS loads on every page with a search form;
         // the benefits-line styles inside the same file only apply
