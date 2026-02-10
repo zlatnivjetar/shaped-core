@@ -250,15 +250,18 @@ a.datepick-cmd {
 }
 
 .mphb-datepicker-minimal .datepick-ctrl a {
-  width: auto !important;
-  padding: 16px 36px !important;
-  border-radius: 8px;
-  letter-spacing: .2px;
-  text-transform: uppercase;
-  font-weight: 600;
-  transition: all 200ms ease;
-  font-size: 14px;
-  line-height: 1.5em !important;
+    width: auto !important;
+    padding: 12px 36px !important;
+    border-radius: 8px;
+    letter-spacing: .2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    transition: all 200ms ease;
+    display: flex;
+    max-height: 44px;
+    font-size: 14px;
+    line-height: 1.5em !important;
+    align-items: center;
 }
 
 .mphb-datepicker-minimal .datepick-cmd-clear {
