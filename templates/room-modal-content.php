@@ -55,49 +55,41 @@ $currency = function_exists('MPHB')
     <?php // ─── Top Section: Gallery + Core Details ─── ?>
     <div class="shaped-room-modal__top">
 
-        <?php // ─── Gallery Slider ─── ?>
-        <?php if ($gallery_count > 0): ?>
-        <div class="shaped-room-modal__gallery"
-             data-total="<?php echo esc_attr($gallery_count); ?>">
-            <div class="shaped-room-modal__gallery-track">
-                <?php foreach ($gallery as $index => $image): ?>
-                <div class="shaped-room-modal__slide <?php echo $index === 0 ? 'is-active' : ''; ?>"
-                     data-index="<?php echo esc_attr($index); ?>">
-                    <img <?php echo $index === 0 ? '' : 'loading="lazy"'; ?>
-                         decoding="async"
-                         src="<?php echo esc_url($image['url']); ?>"
-                         alt="<?php echo esc_attr($image['alt']); ?>"
-                         class="shaped-room-modal__image">
+        <?php // ─── Left Column: Gallery + Highlights ─── ?>
+        <div class="shaped-room-modal__left">
+            <?php // ─── Gallery Slider ─── ?>
+            <?php if ($gallery_count > 0): ?>
+            <div class="shaped-room-modal__gallery"
+                 data-total="<?php echo esc_attr($gallery_count); ?>">
+                <div class="shaped-room-modal__gallery-track">
+                    <?php foreach ($gallery as $index => $image): ?>
+                    <div class="shaped-room-modal__slide <?php echo $index === 0 ? 'is-active' : ''; ?>"
+                         data-index="<?php echo esc_attr($index); ?>">
+                        <img <?php echo $index === 0 ? '' : 'loading="lazy"'; ?>
+                             decoding="async"
+                             src="<?php echo esc_url($image['url']); ?>"
+                             alt="<?php echo esc_attr($image['alt']); ?>"
+                             class="shaped-room-modal__image">
+                    </div>
+                    <?php endforeach; ?>
                 </div>
-                <?php endforeach; ?>
-            </div>
 
-            <?php if ($gallery_count > 1): ?>
-            <button class="shaped-room-modal__nav shaped-room-modal__nav--prev" aria-label="Previous image">
-                <i class="ph ph-caret-left" aria-hidden="true"></i>
-            </button>
-            <button class="shaped-room-modal__nav shaped-room-modal__nav--next" aria-label="Next image">
-                <i class="ph ph-caret-right" aria-hidden="true"></i>
-            </button>
-            <span class="shaped-room-modal__counter">
-                <span class="shaped-room-modal__counter-current">1</span>
-                / <?php echo esc_html($gallery_count); ?>
-            </span>
-            <?php endif; ?>
-        </div>
-        <?php endif; ?>
-
-        <?php // ─── Core Details (beside gallery on desktop) ─── ?>
-        <div class="shaped-room-modal__details">
-            <h2 class="shaped-room-modal__title"><?php echo esc_html($room_title); ?></h2>
-
-            <?php if ($description): ?>
-            <div class="shaped-room-modal__description">
-                <?php echo $description; ?>
+                <?php if ($gallery_count > 1): ?>
+                <span class="shaped-room-modal__nav shaped-room-modal__nav--prev" role="button" tabindex="0" aria-label="Previous image">
+                    <i class="ph ph-caret-left" aria-hidden="true"></i>
+                </span>
+                <span class="shaped-room-modal__nav shaped-room-modal__nav--next" role="button" tabindex="0" aria-label="Next image">
+                    <i class="ph ph-caret-right" aria-hidden="true"></i>
+                </span>
+                <span class="shaped-room-modal__counter">
+                    <span class="shaped-room-modal__counter-current">1</span>
+                    / <?php echo esc_html($gallery_count); ?>
+                </span>
+                <?php endif; ?>
             </div>
             <?php endif; ?>
 
-            <?php // ─── Room Highlights ─── ?>
+            <?php // ─── Room Highlights (under gallery) ─── ?>
             <div class="shaped-room-modal__highlights">
                 <h3 class="shaped-room-modal__section-title">Room highlights</h3>
                 <div class="shaped-room-modal__highlights-grid">
@@ -132,6 +124,17 @@ $currency = function_exists('MPHB')
                     <?php endif; ?>
                 </div>
             </div>
+        </div>
+
+        <?php // ─── Right Column: Details + Amenities ─── ?>
+        <div class="shaped-room-modal__details">
+            <h2 class="shaped-room-modal__title"><?php echo esc_html($room_title); ?></h2>
+
+            <?php if ($description): ?>
+            <div class="shaped-room-modal__description">
+                <?php echo $description; ?>
+            </div>
+            <?php endif; ?>
 
             <?php // ─── Amenities (inside details column) ─── ?>
             <?php if (!empty($all_amenities)): ?>
