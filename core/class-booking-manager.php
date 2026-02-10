@@ -324,6 +324,10 @@ class Shaped_Booking_Manager
             }
         }
 
+        $rate_name = function_exists('shaped_get_booking_rate_name')
+            ? shaped_get_booking_rate_name($booking_id)
+            : '';
+
         $info_only = ($context['is_immediate'] || $booking->getStatus() === 'cancelled');
 
         ob_start();
@@ -340,6 +344,9 @@ class Shaped_Booking_Manager
                         <div><span style="color: var(--color-text-muted);">Check-out:</span> <strong><?php echo $context['check_out']->format('F j, Y'); ?></strong></div>
                         <?php if ($accommodation_name): ?>
                         <div><span style="color: var(--color-text-muted);">Accommodation:</span> <strong><?php echo esc_html($accommodation_name); ?></strong></div>
+                        <?php endif; ?>
+                        <?php if ($rate_name): ?>
+                        <div><span style="color: var(--color-text-muted);">Rate:</span> <strong><?php echo esc_html($rate_name); ?></strong></div>
                         <?php endif; ?>
 
                         <?php if ($context['payment_type'] === 'deposit' && $context['deposit_amount'] > 0): ?>
@@ -641,6 +648,10 @@ class Shaped_Booking_Manager
             }
         }
 
+        $rate_name = function_exists('shaped_get_booking_rate_name')
+            ? shaped_get_booking_rate_name($booking_id)
+            : '';
+
         $token     = md5($booking_id . $customer->getEmail());
         $manage_url= home_url('/manage-booking/?booking_id=' . $booking_id . '&token=' . $token);
 
@@ -664,6 +675,9 @@ class Shaped_Booking_Manager
                         <div><span style="color: var(--color-text-muted);">Check-in:</span> <strong><?php echo $context['check_in']->format('F j, Y'); ?></strong> from 16:00h</div>
                         <div><span style="color: var(--color-text-muted);">Check-out:</span> <strong><?php echo $context['check_out']->format('F j, Y'); ?></strong> until 11:00h</div>
                         <div><span style="color: var(--color-text-muted);">Accommodation:</span> <strong><?php echo esc_html($accommodation_name); ?></strong></div>
+                        <?php if ($rate_name): ?>
+                        <div><span style="color: var(--color-text-muted);">Rate:</span> <strong><?php echo esc_html($rate_name); ?></strong></div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
