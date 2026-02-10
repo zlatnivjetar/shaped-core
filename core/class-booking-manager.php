@@ -657,7 +657,7 @@ class Shaped_Booking_Manager
 
         ob_start();
         ?>
-        <div class="shaped-thank-you" style="max-width: 600px; margin: 0 auto; margin-top: -12rem; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--color-surface-white); border-radius: 12px; padding: 32px; box-shadow: 0 8px 32px rgba(0,0,0,0.13);">
+        <div class="shaped-thank-you" style="max-width: 600px; margin: 0 auto; margin-top: -8rem; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--color-surface-white); border-radius: 12px; padding: 32px; box-shadow: 0 8px 32px rgba(0,0,0,0.13);">
             <!-- Success -->
             <div style="text-align: center; padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--color-border-default);">
                 <div style="color: var(--color-semantic-success); font-size: 3rem; margin-bottom: 16px;">✓</div>
@@ -768,10 +768,10 @@ class Shaped_Booking_Manager
 
             <!-- Next Steps -->
             <div style="text-align: center;">
-                <p style="color: var(--color-text-muted); margin-bottom: 20px;">
+                <p style="color: var(--color-text-muted); margin-bottom: 16px;">
                     We've sent details to <strong><?php echo esc_html($customer->getEmail()); ?></strong>
                 </p>
-                <p style="color: var(--color-text-muted); margin-top: 24px; font-size: 0.875rem;">
+                <p style="color: var(--color-text-muted); margin-top: 16px; font-size: 0.875rem;">
                     Questions? Contact us at <a href="tel:<?php echo esc_attr(preg_replace('/[^0-9+]/', '', shaped_brand('contact.phone', ''))); ?>" style="color: var(--color-text-primary); text-decoration: none;"><?php echo esc_html(shaped_brand('contact.phone', '')); ?></a> or
                     <a href="mailto:<?php echo esc_attr(shaped_brand('contact.email', '')); ?>" style="color: var(--color-text-primary); text-decoration: none;"><?php echo esc_html(shaped_brand('contact.email', '')); ?></a>
                 </p>
