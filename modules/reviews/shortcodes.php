@@ -28,15 +28,21 @@ function get_provider_configs(): array {
 
 /**
  * Get provider logo URLs
+ *
+ * OTA logos live in the plugin. The "direct" logo is client-specific
+ * and lives in mu-plugins/shaped-client-assets/logos/.
  */
 function get_provider_logo_urls(): array {
-    $base = plugin_dir_url(__FILE__) . 'assets/logos/';
+    $plugin_logos = plugin_dir_url(__FILE__) . 'assets/logos/';
+    $client_logos = site_url('/wp-content/mu-plugins/shaped-client-assets/logos/');
+
     return [
-        'booking'     => $base . 'bookinglogo.png',
-        'expedia'     => $base . 'expedialogo.png',
-        'tripadvisor' => $base . 'tripadvisorlogo.png',
-        'google'      => $base . 'googlelogo.png',
-        'airbnb'      => $base . 'airbnblogo.png',
+        'booking'     => $plugin_logos . 'bookinglogo.png',
+        'expedia'     => $plugin_logos . 'expedialogo.png',
+        'tripadvisor' => $plugin_logos . 'tripadvisorlogo.png',
+        'google'      => $plugin_logos . 'googlelogo.png',
+        'airbnb'      => $plugin_logos . 'airbnblogo.png',
+        'direct'      => $client_logos . 'direct-logo.png',
     ];
 }
 
