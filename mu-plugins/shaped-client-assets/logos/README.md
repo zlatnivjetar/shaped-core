@@ -7,6 +7,7 @@ Place property-specific logo files here during deployment.
 | File              | Usage                                          |
 |-------------------|------------------------------------------------|
 | `direct-logo.png` | Provider badge for direct booking reviews      |
+| `email-logo.png`  | Logo in transactional email headers             |
 
 ## Notes
 

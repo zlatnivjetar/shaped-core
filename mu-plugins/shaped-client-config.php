@@ -114,7 +114,7 @@ function shaped_get_client_config() {
         'email' => [
             'fromName'             => 'Preelook Apartments',
             'fromEmail'            => 'client@email.com',
-            'logoUrl'              => 'https://powderblue-falcon-973302.hostingersite.com/wp-content/uploads/2026/01/preelook-goldblack-1.png',
+            'logoUrl'              => site_url('/wp-content/mu-plugins/shaped-client-assets/logos/email-logo.png'),
             'checkInTime'          => 'from 16:00',
             'checkOutTime'         => 'until 11:00',
             'checkInInstructions'  => 'Visit us at the hotel reception upon arrival. We\'ll personally show you to your apartment and ensure you feel right at home.',
