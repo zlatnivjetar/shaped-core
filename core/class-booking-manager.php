@@ -335,7 +335,7 @@ class Shaped_Booking_Manager
         <div class="shaped-manage-booking" style="max-width: 600px; margin: 0 auto; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 8px 32px rgba(0,0,0,0.13);">
             <!-- Booking Details -->
             <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid #f0f0f0;">
-                <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 24px; padding-bottom:16px; border-bottom: 2px solid var(--color-brand-primary);">Booking Details</h2>
+                <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 24px !important; padding-bottom:8px; border-bottom: 2px solid var(--color-brand-primary);">Booking details</h2>
                 <div style="background: #fafafa; border-radius: 8px; padding: 24px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; border: 1px solid #f0f0f0;">
                     <div style="display: grid; gap: 12px; color: var(--color-text-primary);">
                         <div><span style="color: var(--color-text-muted);">Booking ID:</span> <strong>#<?php echo $booking_id; ?></strong></div>
@@ -685,18 +685,18 @@ class Shaped_Booking_Manager
             <!-- Payment -->
             <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--color-border-default);">
                 <div style="background: var(--color-surface-highlight); box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; padding: 24px; border-radius: 8px; border: 1px solid var(--color-border-default);">
-                    <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Payment Information</h2>
+                    <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Payment information</h2>
 
                     <?php if ($context['payment_type'] === 'deposit' && $context['deposit_amount'] > 0): ?>
                         <!-- DEPOSIT PAYMENT -->
-                        <p style="color: var(--color-text-primary); margin-bottom: 12px; line-height: 1.5;">
+                        <p style="color: var(--color-text-primary); margin-bottom: 12px; margin-top: 12px; line-height: 1.5;">
                             <strong style="font-weight:600">Deposit paid:</strong>
                             <span id="shaped-paid-now" style="color: var(--color-text-primary); font-size: 1.25rem; font-weight: 600;">
                                 €<?php echo number_format((float)$context['deposit_amount'], 2); ?>
                             </span>
                         </p>
                         <?php if ($context['balance_due'] > 0): ?>
-                        <p style="color: var(--color-text-primary); margin-bottom: 12px; line-height: 1.5;">
+                        <p style="color: var(--color-text-primary); margin-bottom: 12px; margin-top: 12px; line-height: 1.5;">
                             <strong style="font-weight:600">Balance due on arrival:</strong>
                             <span id="shaped-balance-due" style="font-size: 1.125rem; font-weight: 600;">
                                 €<?php echo number_format((float)$context['balance_due'], 2); ?>
@@ -715,7 +715,7 @@ class Shaped_Booking_Manager
                     <?php else: ?>
                         <!-- FULL PAYMENT (immediate or delayed) -->
                         <?php if (is_numeric($context['amount'])): ?>
-                        <p style="color: var(--color-text-primary); margin-bottom: 12px; line-height: 1.5;">
+                        <p style="color: var(--color-text-primary); margin-bottom: 12px; margin-top: 12px; line-height: 1.5;">
                             <strong style="font-weight:600">Total Amount:</strong>
                             <span id="shaped-booking-total" style="color: var(--color-text-primary); font-size: 1.25rem; font-weight: 600;">
                                 €<?php echo number_format((float)$context['amount'], 2); ?>
@@ -733,7 +733,7 @@ class Shaped_Booking_Manager
                         <?php else:
                             $threshold_days = isset($context['threshold_days']) ? $context['threshold_days'] : 7;
                         ?>
-                            <p style="color: var(--color-text-primary); margin-bottom: 8px; line-height: 1.5;">
+                            <p style="color: var(--color-text-primary); margin-bottom: 0px; margin-top:0; line-height: 1.5;">
                                 Your card has been securely saved and will be charged <strong><?php echo esc_html($threshold_days); ?> days before check-in</strong>
                                 (<?php echo $context['charge_date']->format('F j, Y'); ?>).
                             </p>
@@ -752,8 +752,8 @@ class Shaped_Booking_Manager
             <!-- Getting Here -->
             <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--color-border-default);">
                 <div style="background: var(--color-surface-alt); box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; padding: 24px; border-radius: 8px;">
-                    <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Getting Here</h2>
-                    <p style="color: var(--color-text-muted); margin-bottom: 12px; line-height: 1.5;">
+                    <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Getting here</h2>
+                    <p style="color: var(--color-text-muted); margin-bottom: 12px; margin-top: 12px; line-height: 1.5;">
                         <strong style="color: var(--color-text-primary);">Address:</strong> <?php
                         $address_raw = shaped_brand('contact.address', '');
                         $address_formatted = function_exists('shaped_email_format_address') ? shaped_email_format_address($address_raw) : $address_raw;
