@@ -62,8 +62,8 @@ body.shaped-room-modal-open {
 
 .shaped-room-modal-close {
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 20px;
+    right: 20px;
     z-index: 10;
     background: var(--color-surface-white);
     border: none;
@@ -78,6 +78,12 @@ body.shaped-room-modal-open {
     color: var(--color-text-muted);
     transition: background var(--transition-base), color var(--transition-base), opacity var(--transition-base);
     opacity: 0.85;
+}
+
+.shaped-room-modal-close .ph.ph-x {
+    font-size: 32px;
+    font-weight: 600;
+    color: #0b0b09;
 }
 
 .shaped-room-modal-close:hover {
