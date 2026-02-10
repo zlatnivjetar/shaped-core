@@ -122,6 +122,10 @@
     align-items: center;
 }
 
+.rate-wrap .star.full {
+    display: none;
+}
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 767px) {
     .shaped-review-strip .star,
@@ -154,6 +158,10 @@
     .shaped-review-strips-grid[data-columns="3"] {
         grid-template-columns: repeat(3, auto);
         gap: 12px;
+    }
+
+    .rate-wrap .star.full {
+        display: block !important;
     }
 
     .shaped-review-strips-grid[data-columns="2"] {
