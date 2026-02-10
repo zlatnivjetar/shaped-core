@@ -43,16 +43,17 @@ class Shaped_Book_Search_Form {
     public function init_hooks(): void {
         $is_book_page = $this->is_book_page();
 
+        // Guests field is rendered on every page with a search form.
+        // search-guests-field.js handles repositioning into .search-input-wrapper
+        // and ensuring the value survives MPHB's JS-driven navigation.
+        add_action('mphb_sc_search_form_before_submit_btn', [$this, 'render_guests_field'], 10);
+
         if ($is_book_page) {
-            // Book pages: use output buffering to inject guests field server-side
+            // Book pages: wrap form in container + output-buffer to inject
+            // guests field server-side (no FOUC) and add benefits text.
             add_action('mphb_sc_search_before_form', [$this, 'render_container_open'], 10);
-            add_action('mphb_sc_search_form_before_submit_btn', [$this, 'render_guests_field'], 10);
             add_action('mphb_sc_search_after_form', [$this, 'render_benefits_and_close_container'], 10);
             add_filter('mphb_sc_search_wrapper_class', [$this, 'add_book_page_wrapper_class']);
-        } else {
-            // All other pages: render guests field inline + reposition via JS
-            add_action('mphb_sc_search_form_before_submit_btn', [$this, 'render_guests_field'], 10);
-            add_action('mphb_sc_search_after_form', [$this, 'render_guests_field_reposition_script'], 10);
         }
     }
 
@@ -112,28 +113,6 @@ class Shaped_Book_Search_Form {
                 <?php endforeach; ?>
             </select>
         </p>
-        <?php
-    }
-
-    /**
-     * Inline script to reposition guests field into .search-input-wrapper.
-     *
-     * Used on non-book pages where the output-buffer approach is not active.
-     * Targets forms that have .mphb_sc_search-guests outside of .search-input-wrapper.
-     */
-    public function render_guests_field_reposition_script(): void {
-        ?>
-        <script>
-        (function() {
-            document.querySelectorAll('.mphb_sc_search-form').forEach(function(form) {
-                var guestsField = form.querySelector('.mphb_sc_search-guests');
-                var inputWrapper = form.querySelector('.search-input-wrapper');
-                if (guestsField && inputWrapper && !inputWrapper.contains(guestsField)) {
-                    inputWrapper.appendChild(guestsField);
-                }
-            });
-        })();
-        </script>
         <?php
     }
 
