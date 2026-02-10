@@ -47,6 +47,8 @@
     color: var(--shaped-accent);
 }
 
+
+
 .shaped-review-strip .star.empty,
 .custom-review-strip .star.empty {
     color: var(--color-border-default);
@@ -167,6 +169,12 @@
     .shaped-review-strip .star-rating,
     .custom-review-strip .star-rating {
         gap: 4px;
+    }
+}
+
+@media (max-width: 379px) {
+    .rate-wrap .star.full {
+        display: block !important;
     }
 }
 /*

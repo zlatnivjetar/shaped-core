@@ -15,11 +15,6 @@
     line-height: 1;
 }
 
-.shaped-provider-badge:hover,
-.prs-provider-badge:hover {
-    opacity: 0.8;
-}
-
 /* Provider Logo Image */
 .shaped-provider-logo {
     display: block;
