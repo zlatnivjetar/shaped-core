@@ -27,6 +27,48 @@ function get_provider_configs(): array {
 }
 
 /**
+ * Get provider logo URLs
+ */
+function get_provider_logo_urls(): array {
+    $base = plugin_dir_url(__FILE__) . 'assets/logos/';
+    return [
+        'booking'     => $base . 'bookinglogo.png',
+        'expedia'     => $base . 'expedialogo.png',
+        'tripadvisor' => $base . 'tripadvisorlogo.png',
+        'google'      => $base . 'googlelogo.png',
+        'airbnb'      => $base . 'airbnblogo.png',
+    ];
+}
+
+/**
+ * Render provider badge as logo image
+ */
+function render_provider_badge_html(string $provider_key, string $tag = 'span', array $link_attrs = []): string {
+    $configs = get_provider_configs();
+    $logos = get_provider_logo_urls();
+
+    $config = $configs[$provider_key] ?? ['name' => ucfirst($provider_key)];
+    $name = $config['name'] ?? ucfirst($provider_key);
+
+    if (isset($logos[$provider_key])) {
+        $img = sprintf(
+            '<img src="%s" alt="%s" class="shaped-provider-logo" />',
+            esc_url($logos[$provider_key]),
+            esc_attr($name)
+        );
+    } else {
+        $img = esc_html($name);
+    }
+
+    $attrs = sprintf('class="shaped-provider-badge" data-provider="%s"', esc_attr($provider_key));
+    foreach ($link_attrs as $k => $v) {
+        $attrs .= sprintf(' %s="%s"', esc_attr($k), esc_attr($v));
+    }
+
+    return sprintf('<%s %s>%s</%s>', $tag, $attrs, $img, $tag);
+}
+
+/**
  * Provider links (filterable per property)
  */
 function get_provider_links(): array {
@@ -154,29 +196,18 @@ add_shortcode('shaped_provider_badge', function() {
     $provider = get_post_meta(get_the_ID(), 'provider', true);
 
     if (empty($provider)) {
-        return '<span class="shaped-provider-badge" style="background-color: #666; color: #fff;">Unknown</span>';
+        return '<span class="shaped-provider-badge">Unknown</span>';
     }
 
     $provider_key = normalize_provider($provider);
-    $configs = get_provider_configs();
     $links = get_provider_links();
-
-    $config = $configs[$provider_key] ?? [
-        'name' => ucfirst($provider),
-        'bg'   => '#666',
-        'text' => '#fff'
-    ];
-
     $url = $links[$provider_key] ?? '#';
 
-    return sprintf(
-        '<a href="%s" target="_blank" rel="noopener" class="shaped-provider-badge" 
-            style="background-color: %s; color: %s;">%s</a>',
-        esc_url($url),
-        esc_attr($config['bg']),
-        esc_attr($config['text']),
-        esc_html($config['name'])
-    );
+    return render_provider_badge_html($provider_key, 'a', [
+        'href'   => esc_url($url),
+        'target' => '_blank',
+        'rel'    => 'noopener',
+    ]);
 });
 
 // Legacy alias
@@ -354,14 +385,8 @@ add_shortcode('shaped_review_strip', function($atts) {
     $html = '<div class="shaped-review-strip">';
     $html .= '<div class="review-item">';
 
-    // Provider badge (clickable, opens modal via existing JS)
-    $html .= sprintf(
-        '<span class="prs-provider-badge" data-provider="%s" style="background-color: %s; color: %s; cursor: pointer;">%s</span>',
-        esc_attr($provider_key),
-        esc_attr($config['bg']),
-        esc_attr($config['text']),
-        esc_html($config['name'])
-    );
+    // Provider badge (logo image)
+    $html .= render_provider_badge_html($provider_key);
 
     // Star rating section
     $html .= '<div class="star-rating" data-rating="' . esc_attr($star_rating) . '">';

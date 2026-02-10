@@ -268,10 +268,8 @@ class Frontend {
         $provider = get_post_meta($post_id, 'provider', true);
 
         if (empty($provider)) {
-            return '<span class="shaped-provider-badge" style="background-color: #666; color: #fff;">Unknown</span>';
+            return '<span class="shaped-provider-badge">Unknown</span>';
         }
-
-        $configs = get_provider_configs();
 
         $provider_key = strtolower(str_replace(['-', '_', ' '], '', $provider));
         $provider_map = [
@@ -280,19 +278,7 @@ class Frontend {
         ];
         $provider_key = $provider_map[$provider_key] ?? $provider_key;
 
-        $config = $configs[$provider_key] ?? [
-            'name' => ucfirst($provider),
-            'bg'   => '#666',
-            'text' => '#fff'
-        ];
-
-        return sprintf(
-            '<span class="shaped-provider-badge" data-provider="%s" style="background-color: %s; color: %s;">%s</span>',
-            esc_attr($provider_key),
-            esc_attr($config['bg']),
-            esc_attr($config['text']),
-            esc_html($config['name'])
-        );
+        return render_provider_badge_html($provider_key);
     }
 
     /**
