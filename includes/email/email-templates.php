@@ -109,13 +109,14 @@ function shaped_email_format_address($address) {
    ========================================================================== */
 
 /**
- * Get the rate name/description for a booking
+ * Get the rate name for a booking
  *
- * Retrieves the rate chosen by the guest at checkout from MPHB's
- * reserved room → rate entity chain.
+ * Retrieves the rate title chosen by the guest at checkout from MPHB's
+ * reserved room → rate entity chain. Returns the rate post title
+ * (e.g., "Room only", "Breakfast included"), NOT the description.
  *
  * @param int $booking_id The booking ID
- * @return string Rate description (e.g., "Room only · Free cancellation up to 7 days") or empty string
+ * @return string Rate name (e.g., "Room only" or "Breakfast included") or empty string
  */
 function shaped_get_booking_rate_name($booking_id) {
     try {
@@ -128,19 +129,15 @@ function shaped_get_booking_rate_name($booking_id) {
         $room = reset($reserved_rooms);
         if (!method_exists($room, 'getRateId') || !$room->getRateId()) return '';
 
-        // getRateDescription() returns the mphb_description meta
-        // e.g., "Room only · Free cancellation up to 7 days"
-        if (method_exists($room, 'getRateDescription')) {
-            $description = $room->getRateDescription();
-            if (!empty($description)) return $description;
+        // getRateTitle() returns the rate's WP post title
+        // e.g., "Room only" or "Breakfast included"
+        if (method_exists($room, 'getRateTitle')) {
+            $title = $room->getRateTitle();
+            if (!empty($title)) return $title;
         }
 
-        // Fallback: load rate entity directly
+        // Fallback: get title directly from rate post
         $rate_id = $room->getRateId();
-        $description = get_post_meta($rate_id, 'mphb_description', true);
-        if (!empty($description)) return $description;
-
-        // Last resort: use rate post title
         $title = get_the_title($rate_id);
         return $title ?: '';
 
@@ -1206,6 +1203,10 @@ function shaped_email_render_booking_summary($data) {
     $html .= shaped_email_block_rows_start();
     $html .= shaped_email_block_row('Check-in:', $data['check_in'], ['bold_value' => true]);
     $html .= shaped_email_block_row('Check-out:', $data['check_out'], ['bold_value' => true]);
+
+    if (!empty($data['room_list'])) {
+        $html .= shaped_email_block_row('Accommodation:', $data['room_list'], ['bold_value' => true]);
+    }
 
     if (!empty($data['rate_name'])) {
         $html .= shaped_email_block_row('Rate:', $data['rate_name'], ['bold_value' => true]);

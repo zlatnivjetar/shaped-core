@@ -181,8 +181,13 @@ function shaped_send_reservation_email($booking_id) {
         $check_out = $booking->getCheckOutDate()->format('d.m.Y');
         $charge_date = get_post_meta($booking_id, '_shaped_charge_date', true);
         $pending_amount = get_post_meta($booking_id, '_stripe_pending_amount', true);
-        
+
         $charge_date_formatted = date('F j, Y', strtotime($charge_date));
+
+        // Get room details
+        $room_type_ids = $booking->getReservedRoomTypeIds();
+        $room_names = array_map('get_the_title', $room_type_ids);
+        $room_list = implode(', ', $room_names);
 
         // Get rate name
         $rate_name = function_exists('shaped_get_booking_rate_name')
@@ -201,6 +206,7 @@ function shaped_send_reservation_email($booking_id) {
             'customer_first' => $customer->getFirstName(),
             'check_in' => $check_in,
             'check_out' => $check_out,
+            'room_list' => $room_list,
             'rate_name' => $rate_name,
             'charge_date' => $charge_date_formatted,
             'amount' => number_format($pending_amount, 2),
@@ -247,6 +253,7 @@ function shaped_get_reservation_template($data) {
         'booking_id' => $data['booking_id'],
         'check_in'   => $data['check_in'],
         'check_out'  => $data['check_out'],
+        'room_list'  => isset($data['room_list']) ? $data['room_list'] : '',
         'rate_name'  => isset($data['rate_name']) ? $data['rate_name'] : '',
     ]);
 
