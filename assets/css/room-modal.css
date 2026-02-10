@@ -2,8 +2,8 @@
  * Room Detail Modal Styles
  *
  * Overlay + container for the room detail modal opened from search result cards.
- * Desktop: sticky gallery left, scrollable details right.
- * Mobile: full-screen stacked layout with fixed CTA footer.
+ * Desktop: gallery + highlights left, details + amenities right.
+ * Mobile: full-screen stacked layout with sticky CTA footer.
  *
  * @package Shaped_Core
  */
@@ -113,10 +113,14 @@ body.shaped-room-modal-open {
    GALLERY SLIDER
    ========================================================================== */
 
+/* Left column: gallery + highlights */
+.shaped-room-modal__left {
+    display: flex;
+    flex-direction: column;
+}
+
 .shaped-room-modal__gallery {
-    position: sticky;
-    top: 0;
-    align-self: start;
+    position: relative;
     overflow: hidden;
     background: var(--color-surface-alt);
     aspect-ratio: 4 / 3;
@@ -246,6 +250,8 @@ body.shaped-room-modal-open {
 
 .shaped-room-modal__highlights {
     margin-bottom: 0;
+    padding: 20px 24px;
+    border-top: 1px solid var(--color-border-default);
 }
 
 .shaped-room-modal__highlights-grid {
@@ -371,13 +377,15 @@ body.shaped-room-modal-open {
     }
 
     .shaped-room-modal__gallery {
-        position: relative;
-        align-self: auto;
         aspect-ratio: 16 / 9;
     }
 
     .shaped-room-modal__nav {
         opacity: 1;
+    }
+
+    .shaped-room-modal__highlights {
+        padding: 20px 24px;
     }
 
     .shaped-room-modal__details {
@@ -417,9 +425,13 @@ body.shaped-room-modal-open {
 
     .shaped-room-modal-container {
         border-radius: 0;
-        max-height: 100vh;
         max-width: 100%;
+        /* Fallback for browsers without dvh support */
+        max-height: 100vh;
         min-height: 100vh;
+        /* Dynamic viewport height — adjusts when mobile browser chrome appears/hides */
+        max-height: 100dvh;
+        min-height: 100dvh;
     }
 
     .shaped-room-modal-close {
@@ -453,6 +465,10 @@ body.shaped-room-modal-open {
 
     .shaped-room-modal__description {
         font-size: 0.875rem;
+    }
+
+    .shaped-room-modal__highlights {
+        padding: 16px;
     }
 
     .shaped-room-modal__highlights-grid {

@@ -45,16 +45,23 @@
         overlay.setAttribute('aria-modal', 'true');
         overlay.innerHTML = `
             <div class="shaped-room-modal-container">
-                <button class="shaped-room-modal-close" aria-label="Close room details">
+                <span class="shaped-room-modal-close" role="button" tabindex="0" aria-label="Close room details">
                     <i class="ph ph-x" aria-hidden="true"></i>
-                </button>
+                </span>
                 <div class="shaped-room-modal-body"></div>
             </div>
         `;
         document.body.appendChild(overlay);
 
-        // Close button
-        overlay.querySelector('.shaped-room-modal-close').addEventListener('click', closeModal);
+        // Close button (click + keyboard for non-button element)
+        var closeBtn = overlay.querySelector('.shaped-room-modal-close');
+        closeBtn.addEventListener('click', closeModal);
+        closeBtn.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                closeModal();
+            }
+        });
 
         // Click outside content
         overlay.addEventListener('click', function (e) {
