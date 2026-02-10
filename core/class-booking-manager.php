@@ -670,13 +670,13 @@ class Shaped_Booking_Manager
                 <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--color-brand-primary);">Booking Details</h2>
                 <div style="background: var(--color-surface-alt); border-radius: 8px; padding: 24px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; border: 1px solid var(--color-border-default);">
                     <div style="display: grid; gap: 12px; color: var(--color-text-primary);">
-                        <div><span style="color: var(--color-text-muted);">Booking ID:</span> <strong>#<?php echo $booking_id; ?></strong><span id="shaped-booking-id" style="display:none;"><?php echo esc_html($booking_id); ?></span></div>
-                        <div><span style="color: var(--color-text-muted);">Guest Name:</span> <strong><?php echo esc_html($customer->getFirstName() . ' ' . $customer->getLastName()); ?></strong></div>
-                        <div><span style="color: var(--color-text-muted);">Check-in:</span> <strong><?php echo $context['check_in']->format('F j, Y'); ?></strong> from 16:00h</div>
-                        <div><span style="color: var(--color-text-muted);">Check-out:</span> <strong><?php echo $context['check_out']->format('F j, Y'); ?></strong> until 11:00h</div>
-                        <div><span style="color: var(--color-text-muted);">Accommodation:</span> <strong><?php echo esc_html($accommodation_name); ?></strong></div>
+                        <div><span style="color: var(--color-text-muted);">Booking ID:</span> <strong style="font-weight:600">#<?php echo $booking_id; ?></strong><span id="shaped-booking-id" style="display:none;"><?php echo esc_html($booking_id); ?></span></div>
+                        <div><span style="color: var(--color-text-muted);">Guest Name:</span> <strong style="font-weight:600"><?php echo esc_html($customer->getFirstName() . ' ' . $customer->getLastName()); ?></strong></div>
+                        <div><span style="color: var(--color-text-muted);">Check-in:</span> <strong style="font-weight:600"><?php echo $context['check_in']->format('F j, Y'); ?></strong> from 16:00h</div>
+                        <div><span style="color: var(--color-text-muted);">Check-out:</span> <strong style="font-weight:600"><?php echo $context['check_out']->format('F j, Y'); ?></strong> until 11:00h</div>
+                        <div><span style="color: var(--color-text-muted);">Accommodation:</span> <strong style="font-weight:600"><?php echo esc_html($accommodation_name); ?></strong></div>
                         <?php if ($rate_name): ?>
-                        <div><span style="color: var(--color-text-muted);">Rate:</span> <strong><?php echo esc_html($rate_name); ?></strong></div>
+                        <div><span style="color: var(--color-text-muted);">Rate:</span> <strong style="font-weight:600"><?php echo esc_html($rate_name); ?></strong></div>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -691,7 +691,7 @@ class Shaped_Booking_Manager
                         <!-- DEPOSIT PAYMENT -->
                         <p style="color: var(--color-text-primary); margin-bottom: 12px; margin-top: 12px; line-height: 1.5;">
                             <strong style="font-weight:600">Deposit paid:</strong>
-                            <span id="shaped-paid-now" style="color: var(--color-text-primary); font-size: 1.25rem; font-weight: 600;">
+                            <span id="shaped-paid-now" style="color: var(--color-text-primary); font-size: 1.125rem; font-weight: 600;">
                                 €<?php echo number_format((float)$context['deposit_amount'], 2); ?>
                             </span>
                         </p>
@@ -703,13 +703,13 @@ class Shaped_Booking_Manager
                             </span>
                         </p>
                         <?php endif; ?>
-                        <p style="color: var(--color-text-primary); margin-bottom: 8px; padding-top: 8px; border-top: 1px solid var(--color-border-default); font-size: 1rem; font-weight: 600;">
+                        <p style="color: var(--color-text-primary); margin-bottom: 8px; padding-top: 12px; margin-top:12px; border-top: 1px solid var(--color-border-default); font-size: 1.125rem; font-weight: 600;">
                             Total booking amount: 
                             <strong style="font-weight:600">
                               <span id="shaped-booking-total">€<?php echo number_format((float)($context['deposit_amount'] + $context['balance_due']), 2); ?></span>
                             </strong>
                         </p>
-                        <p style="color: var(--color-text-primary); margin-bottom: 0; line-height: 1.5;">
+                        <p style="color: var(--color-text-primary); margin-bottom: 0; line-height: 1.5; margin-top: 12px;">
                             Thank you for your deposit. The remaining balance is due upon arrival at the property. You'll receive a receipt by email shortly.
                         </p>
                     <?php else: ?>
