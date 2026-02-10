@@ -1,17 +1,16 @@
 <?php
 /**
- * Search Form Guests Field & Book Page Enhancements
+ * Book Page Search Form Enhancements & Checkout Pre-fill
  *
- * Adds a visible Guests dropdown to every MPHB search form rendered via
- * [mphb_availability_search]. On /book and /search-results pages it also
- * wraps the form in a container with inline benefits text.
- *
- * On book pages the guests field is repositioned server-side via output
- * buffering (no FOUC). On all other pages a tiny inline script moves the
- * field into .search-input-wrapper after first paint.
+ * On /book and /search-results pages, wraps the MPHB search form in a
+ * container with inline benefits text ("Best rate direct …").
  *
  * Also hooks into MPHB's checkout to pre-fill the adults dropdown with
  * the guest count carried over from the search form.
+ *
+ * The guests field itself is rendered natively by MPHB's search-form.php
+ * template (modified to always show adults as a visible select labelled
+ * "Guests" inside .search-input-wrapper).
  *
  * @package Shaped_Core
  * @since 2.0.0
@@ -35,26 +34,17 @@ class Shaped_Book_Search_Form {
     }
 
     /**
-     * Register hooks based on page context.
-     *
-     * Guests field: added on every page (global).
-     * Container wrapper + benefits text: only on /book and /search-results.
+     * Register hooks for book/search-results page chrome.
      */
     public function init_hooks(): void {
-        $is_book_page = $this->is_book_page();
-
-        // Guests field is rendered on every page with a search form.
-        // search-guests-field.js handles repositioning into .search-input-wrapper
-        // and ensuring the value survives MPHB's JS-driven navigation.
-        add_action('mphb_sc_search_form_before_submit_btn', [$this, 'render_guests_field'], 10);
-
-        if ($is_book_page) {
-            // Book pages: wrap form in container + output-buffer to inject
-            // guests field server-side (no FOUC) and add benefits text.
-            add_action('mphb_sc_search_before_form', [$this, 'render_container_open'], 10);
-            add_action('mphb_sc_search_after_form', [$this, 'render_benefits_and_close_container'], 10);
-            add_filter('mphb_sc_search_wrapper_class', [$this, 'add_book_page_wrapper_class']);
+        if (!$this->is_book_page()) {
+            return;
         }
+
+        // Wrap form in container + add benefits text
+        add_action('mphb_sc_search_before_form', [$this, 'render_container_open'], 10);
+        add_action('mphb_sc_search_after_form', [$this, 'render_benefits_and_close_container'], 10);
+        add_filter('mphb_sc_search_wrapper_class', [$this, 'add_book_page_wrapper_class']);
     }
 
     /**
@@ -79,9 +69,6 @@ class Shaped_Book_Search_Form {
 
     /**
      * Open the container wrapper before the form and start output buffering.
-     *
-     * Everything between this hook and mphb_sc_search_after_form is captured
-     * so we can relocate the guests field into .search-input-wrapper server-side.
      */
     public function render_container_open(): void {
         echo '<div class="mphb-book-search-container">';
@@ -89,92 +76,10 @@ class Shaped_Book_Search_Form {
     }
 
     /**
-     * Render the guests select field before the submit button.
-     *
-     * On book pages this HTML is captured by the output buffer and later moved
-     * into .search-input-wrapper by render_benefits_and_close_container().
-     * On other pages it renders inline and is repositioned by JS.
-     */
-    public function render_guests_field(): void {
-        $uniqid = 'book-page-' . wp_unique_id();
-        $adults_list = $this->get_adults_list();
-        $current_adults = isset($_GET['mphb_adults']) ? absint($_GET['mphb_adults']) : $this->get_default_adults();
-        ?>
-        <p class="mphb_sc_search-guests">
-            <label for="<?php echo esc_attr('mphb_adults-' . $uniqid); ?>">
-                <?php esc_html_e('Guests', 'motopress-hotel-booking'); ?>
-            </label>
-            <br />
-            <select id="<?php echo esc_attr('mphb_adults-' . $uniqid); ?>" name="mphb_adults">
-                <?php foreach ($adults_list as $value) : ?>
-                    <option value="<?php echo esc_attr($value); ?>" <?php selected($current_adults, $value); ?>>
-                        <?php echo esc_html($value); ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-        </p>
-        <?php
-    }
-
-    /**
-     * Get the list of adults values for the dropdown
-     *
-     * @return array
-     */
-    private function get_adults_list(): array {
-        if (!class_exists('MPHB')) {
-            return range(1, 10);
-        }
-
-        $min_adults = MPHB()->settings()->main()->getMinAdults();
-        $max_adults = MPHB()->settings()->main()->getSearchMaxAdults();
-
-        return range($min_adults, $max_adults);
-    }
-
-    /**
-     * Get the default number of adults
-     *
-     * @return int
-     */
-    private function get_default_adults(): int {
-        if (!class_exists('MPHB')) {
-            return 2;
-        }
-
-        return MPHB()->settings()->main()->getMinAdults();
-    }
-
-    /**
-     * Capture buffered form HTML, move guests field into .search-input-wrapper,
-     * then output the corrected form, benefits line, and close the container.
-     *
-     * .search-input-wrapper contains only <p> elements (no nested divs), so the
-     * first </div> after its opening tag is its closing tag. We insert the guests
-     * <p> right before that closing </div>.
+     * Output the buffered form, add benefits line, and close the container.
      */
     public function render_benefits_and_close_container(): void {
         $form_html = ob_get_clean();
-
-        // Extract the guests field HTML from the buffer
-        if (preg_match('/<p class="mphb_sc_search-guests">.*?<\/p>/s', $form_html, $matches)) {
-            $guests_html = $matches[0];
-
-            // Remove guests field from its original position
-            $form_html = str_replace($guests_html, '', $form_html);
-
-            // Find .search-input-wrapper and inject guests before its closing </div>.
-            // The wrapper only contains <p> children (no nested divs), so the first
-            // </div> after the opening tag is the correct closing tag.
-            $marker = 'class="search-input-wrapper"';
-            $pos = strpos($form_html, $marker);
-            if ($pos !== false) {
-                $close_div = strpos($form_html, '</div>', $pos);
-                if ($close_div !== false) {
-                    $form_html = substr_replace($form_html, $guests_html, $close_div, 0);
-                }
-            }
-        }
 
         echo $form_html;
         ?>
