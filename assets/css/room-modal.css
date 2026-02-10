@@ -2,8 +2,8 @@
  * Room Detail Modal Styles
  *
  * Overlay + container for the room detail modal opened from search result cards.
- * Desktop: gallery left, details right (Hilton-inspired layout).
- * Mobile: full-screen stacked layout.
+ * Desktop: sticky gallery left, scrollable details right.
+ * Mobile: full-screen stacked layout with fixed CTA footer.
  *
  * @package Shaped_Core
  */
@@ -61,28 +61,29 @@ body.shaped-room-modal-open {
    ========================================================================== */
 
 .shaped-room-modal-close {
-    position: sticky;
-    top: 0;
-    float: right;
+    position: absolute;
+    top: 12px;
+    right: 12px;
     z-index: 10;
     background: var(--color-surface-white);
-    border: 1px solid var(--color-border-default);
-    width: 40px;
-    height: 40px;
+    border: none;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 20px;
-    color: var(--color-text-primary);
-    margin: 16px 16px 0 0;
-    transition: background var(--transition-base), color var(--transition-base);
-    box-shadow: var(--shadow-sm);
+    font-size: 16px;
+    color: var(--color-text-muted);
+    transition: background var(--transition-base), color var(--transition-base), opacity var(--transition-base);
+    opacity: 0.85;
 }
 
 .shaped-room-modal-close:hover {
-    background: var(--color-surface-alt);
+    opacity: 1;
+    color: var(--color-text-primary);
+    background: var(--color-surface-white);
 }
 
 .shaped-room-modal-close:focus-visible {
@@ -113,7 +114,9 @@ body.shaped-room-modal-open {
    ========================================================================== */
 
 .shaped-room-modal__gallery {
-    position: relative;
+    position: sticky;
+    top: 0;
+    align-self: start;
     overflow: hidden;
     background: var(--color-surface-alt);
     aspect-ratio: 4 / 3;
@@ -143,29 +146,35 @@ body.shaped-room-modal-open {
     display: block;
 }
 
-/* Nav arrows */
+/* Nav arrows — subtle, hover-reveal on desktop */
 .shaped-room-modal__nav {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
     background: var(--color-surface-white);
     border: none;
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    font-size: 18px;
-    color: var(--color-text-primary);
-    box-shadow: var(--shadow-md);
-    transition: background var(--transition-base), transform var(--transition-base);
+    font-size: 16px;
+    color: var(--color-text-muted);
+    box-shadow: var(--shadow-sm);
+    transition: opacity var(--transition-base), background var(--transition-base), transform var(--transition-base);
     z-index: 2;
+    opacity: 0;
+}
+
+.shaped-room-modal__gallery:hover .shaped-room-modal__nav {
+    opacity: 1;
 }
 
 .shaped-room-modal__nav:hover {
     background: var(--color-surface-alt);
+    color: var(--color-text-primary);
     transform: translateY(-50%) scale(1.05);
 }
 
@@ -177,18 +186,19 @@ body.shaped-room-modal-open {
     right: 12px;
 }
 
-/* Image counter badge */
+/* Image counter badge — quieter */
 .shaped-room-modal__counter {
     position: absolute;
-    bottom: 12px;
-    right: 12px;
-    background: rgba(0, 0, 0, 0.6);
+    bottom: 8px;
+    right: 8px;
+    background: var(--color-overlay-scrim);
     color: var(--color-text-inverse);
-    padding: 4px 10px;
+    padding: 2px 8px;
     border-radius: var(--radius-sm);
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 11px;
+    font-weight: 500;
     z-index: 2;
+    opacity: 0.7;
 }
 
 /* ==========================================================================
@@ -196,9 +206,7 @@ body.shaped-room-modal-open {
    ========================================================================== */
 
 .shaped-room-modal__details {
-    padding: 32px 28px;
-    overflow-y: auto;
-    max-height: 100%;
+    padding: 24px 24px;
 }
 
 .shaped-room-modal__title {
@@ -206,7 +214,7 @@ body.shaped-room-modal-open {
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--color-text-primary);
-    margin: 0 0 16px 0;
+    margin: 0 0 12px 0;
     line-height: 1.3;
 }
 
@@ -214,7 +222,7 @@ body.shaped-room-modal-open {
     color: var(--color-text-muted);
     font-size: 0.9375rem;
     line-height: 1.6;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
 }
 
 .shaped-room-modal__description p:last-child {
@@ -227,8 +235,8 @@ body.shaped-room-modal-open {
     font-size: 1rem;
     font-weight: 700;
     color: var(--color-text-primary);
-    margin: 0 0 12px 0;
-    padding-bottom: 8px;
+    margin: 0 0 8px 0;
+    padding-bottom: 6px;
     border-bottom: 1px solid var(--color-border-default);
 }
 
@@ -237,7 +245,7 @@ body.shaped-room-modal-open {
    ========================================================================== */
 
 .shaped-room-modal__highlights {
-    margin-bottom: 24px;
+    margin-bottom: 0;
 }
 
 .shaped-room-modal__highlights-grid {
@@ -277,18 +285,18 @@ body.shaped-room-modal-open {
 }
 
 /* ==========================================================================
-   FULL AMENITIES GRID
+   AMENITIES GRID (inside details column)
    ========================================================================== */
 
 .shaped-room-modal__amenities {
-    padding: 24px 28px;
+    padding: 20px 0 0 0;
     border-top: 1px solid var(--color-border-default);
 }
 
 .shaped-room-modal__amenities-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px 16px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px 16px;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -330,17 +338,17 @@ body.shaped-room-modal-open {
 
 .shaped-room-modal__footer .mphb-regular-price {
     margin: 0;
-    padding: 20px 28px;
+    padding: 16px 24px;
     border-top: none;
 }
 
 .shaped-room-modal__footer .shaped-rates-indicator {
-    padding: 0 28px 12px;
-    margin-top: -12px;
+    padding: 0 24px 10px;
+    margin-top: -10px;
 }
 
 .shaped-room-modal__cta {
-    padding: 0 28px 28px;
+    padding: 0 24px 20px;
 }
 
 .shaped-room-modal__book-btn {
@@ -364,7 +372,13 @@ body.shaped-room-modal-open {
     }
 
     .shaped-room-modal__gallery {
+        position: relative;
+        align-self: auto;
         aspect-ratio: 16 / 9;
+    }
+
+    .shaped-room-modal__nav {
+        opacity: 1;
     }
 
     .shaped-room-modal__details {
@@ -372,7 +386,7 @@ body.shaped-room-modal-open {
     }
 
     .shaped-room-modal__amenities {
-        padding: 20px 24px;
+        padding: 20px 0 0 0;
     }
 
     .shaped-room-modal__amenities-grid {
@@ -380,15 +394,15 @@ body.shaped-room-modal-open {
     }
 
     .shaped-room-modal__footer .mphb-regular-price {
-        padding: 20px 24px;
+        padding: 16px 24px;
     }
 
     .shaped-room-modal__footer .shaped-rates-indicator {
-        padding: 0 24px 12px;
+        padding: 0 24px 10px;
     }
 
     .shaped-room-modal__cta {
-        padding: 0 24px 24px;
+        padding: 0 24px 20px;
     }
 }
 
@@ -410,10 +424,20 @@ body.shaped-room-modal-open {
     }
 
     .shaped-room-modal-close {
-        margin: 12px 12px 0 0;
-        width: 36px;
-        height: 36px;
-        font-size: 18px;
+        top: 8px;
+        right: 8px;
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+        background: var(--color-overlay-scrim);
+        color: var(--color-text-inverse);
+        opacity: 0.9;
+    }
+
+    .shaped-room-modal-close:hover {
+        background: var(--color-overlay-scrim);
+        color: var(--color-text-inverse);
+        opacity: 1;
     }
 
     .shaped-room-modal__gallery {
@@ -438,7 +462,7 @@ body.shaped-room-modal-open {
     }
 
     .shaped-room-modal__amenities {
-        padding: 16px;
+        padding: 16px 0 0 0;
     }
 
     .shaped-room-modal__amenities-grid {
@@ -446,22 +470,32 @@ body.shaped-room-modal-open {
         gap: 10px;
     }
 
+    .shaped-room-modal__footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 5;
+        background: var(--color-surface-white);
+        box-shadow: var(--shadow-md);
+    }
+
     .shaped-room-modal__footer .mphb-regular-price {
-        padding: 16px;
+        padding: 10px 16px;
     }
 
     .shaped-room-modal__footer .shaped-rates-indicator {
-        padding: 0 16px 8px;
+        padding: 0 16px 6px;
+        margin-top: -6px;
     }
 
     .shaped-room-modal__cta {
-        padding: 0 16px 20px;
+        padding: 0 16px 12px;
     }
 
     .shaped-room-modal__nav {
-        width: 32px;
-        height: 32px;
-        font-size: 16px;
+        opacity: 1;
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
     }
 
     .shaped-room-modal__nav--prev {
