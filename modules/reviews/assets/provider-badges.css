@@ -23,7 +23,7 @@
 /* Provider Logo Image */
 .shaped-provider-logo {
     display: block;
-    height: 24px;
+    height: 24px !important;
     width: auto;
     object-fit: contain;
 }
@@ -31,13 +31,13 @@
 /* Tablet */
 @media (max-width: 1024px) {
     .shaped-provider-logo {
-        height: 20px;
+        height: 20px !important;
     }
 }
 
 /* Mobile */
 @media (max-width: 767px) {
     .shaped-provider-logo {
-        height: 16px;
+        height: 16px !important;
     }
 }
