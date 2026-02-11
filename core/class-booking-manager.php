@@ -335,7 +335,7 @@ class Shaped_Booking_Manager
         <div class="shaped-manage-booking" style="max-width: 600px; margin: 0 auto; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: #ffffff; border-radius: 12px; padding: 32px; box-shadow: 0 8px 32px rgba(0,0,0,0.13);">
             <!-- Booking Details -->
             <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid #f0f0f0;">
-                <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 24px !important; padding-bottom:8px; border-bottom: 2px solid var(--color-brand-primary);">Booking details</h2>
+                <h3 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 24px !important; padding-bottom:8px; border-bottom: 2px solid var(--color-brand-primary);">Booking details</h3>
                 <div style="background: #fafafa; border-radius: 8px; padding: 24px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; border: 1px solid #f0f0f0;">
                     <div style="display: grid; gap: 12px; color: var(--color-text-primary);">
                         <div><span style="color: var(--color-text-muted);">Booking ID:</span> <strong>#<?php echo $booking_id; ?></strong></div>
@@ -475,7 +475,7 @@ class Shaped_Booking_Manager
         <div class="shaped-cancelled" style="width: 600px; margin: 0 auto; padding: 32px; font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;background: #ffffff; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.13); text-align: center;">
             <div id="checkwrap" style="width: 64px; height: 64px; background: var(--color-semantic-success); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: white; font-size: 32px;">✓</div>
 
-            <h2 style="color: var(--color-text-primary); padding-top:8px; font-size: 2rem; font-weight: 700; margin-bottom: 24px; line-height: 1.2;" class="manageheaderbooking">Booking Cancelled</h2>
+            <h2 style="color: var(--color-text-primary); padding-top:8px; font-size: 2rem; font-weight: 700; margin-bottom: 24px; line-height: 1.2;margin-top:0;" class="manageheaderbooking">Booking Cancelled</h2>
 
             <div style="padding-bottom: 16px; margin-bottom: 24px; border-bottom: 2px solid var(--color-brand-primary);">
                 <p style="font-size: 1.125rem; color: var(--color-text-primary); margin-bottom: 0; line-height: 1.5;">
@@ -485,8 +485,8 @@ class Shaped_Booking_Manager
 
             <?php if (!$was_charged): ?>
                 <div style="background: #fffbf0; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
-                    <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">No Charge Applied</h2>
-                    <p style="font-size: 1.125rem; color: var(--color-text-primary); margin: 0;">
+                    <h3 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 16px; margin-top:0;">No Charge Applied</h3>
+                    <p style="font-size: 1.125rem; line-height: 1.5em; color: var(--color-text-primary); margin: 0;">
                         Your card has not been charged. The reservation of
                         <strong style="color: var(--color-text-primary); font-weight: 600;">€<?php echo number_format((float)$pending_amount, 2); ?></strong>
                         has been cancelled.
@@ -667,7 +667,7 @@ class Shaped_Booking_Manager
 
             <!-- Details -->
             <div style="padding-bottom: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--color-border-default);">
-                <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid var(--color-brand-primary);">Booking Details</h2>
+                <h3 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--color-brand-primary);">Booking Details</h3>
                 <div style="background: var(--color-surface-alt); border-radius: 8px; padding: 24px; box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; border: 1px solid var(--color-border-default);">
                     <div style="display: grid; gap: 12px; color: var(--color-text-primary);">
                         <div><span style="color: var(--color-text-muted);">Booking ID:</span> <strong style="font-weight:600">#<?php echo $booking_id; ?></strong><span id="shaped-booking-id" style="display:none;"><?php echo esc_html($booking_id); ?></span></div>
