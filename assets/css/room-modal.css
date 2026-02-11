@@ -2,7 +2,7 @@
  * Room Detail Modal Styles
  *
  * Overlay + container for the room detail modal opened from search result cards.
- * Desktop: gallery + highlights left, details + amenities right.
+ * Desktop: gallery + amenities left (60%), name/description + highlights right (40%).
  * Mobile: full-screen stacked layout with sticky CTA footer.
  *
  * @package Shaped_Core
@@ -111,7 +111,7 @@ body.shaped-room-modal-open {
 
 .shaped-room-modal__top {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 3fr 2fr;
     gap: 0;
 }
 
@@ -119,7 +119,7 @@ body.shaped-room-modal-open {
    GALLERY SLIDER
    ========================================================================== */
 
-/* Left column: gallery + highlights */
+/* Left column: gallery + amenities */
 .shaped-room-modal__left {
     display: flex;
     flex-direction: column;
@@ -256,7 +256,7 @@ body.shaped-room-modal-open {
 
 .shaped-room-modal__highlights {
     margin-bottom: 0;
-    padding: 20px 24px;
+    padding: 20px 0 0 0;
 }
 
 .shaped-room-modal__highlights-grid {
@@ -296,11 +296,11 @@ body.shaped-room-modal-open {
 }
 
 /* ==========================================================================
-   AMENITIES GRID (inside details column)
+   AMENITIES GRID (inside left column)
    ========================================================================== */
 
 .shaped-room-modal__amenities {
-    padding: 20px 0 0 0;
+    padding: 20px 24px;
 }
 
 .shaped-room-modal__amenities-grid {
@@ -342,23 +342,21 @@ body.shaped-room-modal-open {
    ========================================================================== */
 
 .shaped-room-modal__footer {
-    border-top: 1px solid var(--color-border-default);
     padding: 0;
 }
 
 .shaped-room-modal__footer .mphb-regular-price {
     margin: 0;
-    padding: 16px 24px;
-    border-top: none;
+    padding: 1.25rem 1.5rem;
 }
 
 .shaped-room-modal__footer .shaped-rates-indicator {
-    padding: 0 24px 10px;
-    margin-top: -10px;
+    padding: 0 1.5rem 1rem;
+    margin-top: -16px;
 }
 
 .shaped-room-modal__cta {
-    padding: 0 24px 20px;
+    padding: 0 1.5rem 1.5rem;
     background-color: var(--color-surface-highlight);
 }
 
@@ -379,27 +377,37 @@ body.shaped-room-modal-open {
     }
 
     .shaped-room-modal__top {
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .shaped-room-modal__left,
+    .shaped-room-modal__details {
+        display: contents;
     }
 
     .shaped-room-modal__gallery {
         aspect-ratio: 16 / 9;
+        order: 1;
+    }
+
+    .shaped-room-modal__details-header {
+        order: 2;
+        padding: 24px 24px 0;
+    }
+
+    .shaped-room-modal__highlights {
+        order: 3;
+        padding: 20px 24px;
+    }
+
+    .shaped-room-modal__amenities {
+        order: 4;
+        padding: 20px 24px;
     }
 
     .shaped-room-modal__nav {
         opacity: 1;
-    }
-
-    .shaped-room-modal__highlights {
-        padding: 20px 24px;
-    }
-
-    .shaped-room-modal__details {
-        padding: 24px 24px;
-    }
-
-    .shaped-room-modal__amenities {
-        padding: 20px 0 0 0;
     }
 
     .shaped-room-modal__amenities-grid {
@@ -407,15 +415,15 @@ body.shaped-room-modal-open {
     }
 
     .shaped-room-modal__footer .mphb-regular-price {
-        padding: 16px 24px;
+        padding: 1.25rem 1.5rem;
     }
 
     .shaped-room-modal__footer .shaped-rates-indicator {
-        padding: 0 24px 10px;
+        padding: 0 1.5rem 1rem;
     }
 
     .shaped-room-modal__cta {
-        padding: 0 24px 20px;
+        padding: 0 1.5rem 1.5rem;
     }
 }
 
@@ -461,16 +469,16 @@ body.shaped-room-modal-open {
         aspect-ratio: 3 / 2;
     }
 
-    .shaped-room-modal__details {
-        padding: 20px 16px;
-    }
-
     .shaped-room-modal__title {
         font-size: 1.25rem;
     }
 
     .shaped-room-modal__description {
         font-size: 0.875rem;
+    }
+
+    .shaped-room-modal__details-header {
+        padding: 20px 16px 0;
     }
 
     .shaped-room-modal__highlights {
@@ -483,7 +491,7 @@ body.shaped-room-modal-open {
     }
 
     .shaped-room-modal__amenities {
-        padding: 16px 0 0 0;
+        padding: 16px;
     }
 
     .shaped-room-modal__amenities-grid {
@@ -500,16 +508,16 @@ body.shaped-room-modal-open {
     }
 
     .shaped-room-modal__footer .mphb-regular-price {
-        padding: 10px 16px;
+        padding: 1rem;
     }
 
     .shaped-room-modal__footer .shaped-rates-indicator {
-        padding: 0 16px 6px;
-        margin-top: -6px;
+        padding: 0 1rem 1rem;
+        margin-top: -12px;
     }
 
     .shaped-room-modal__cta {
-        padding: 0 16px 12px;
+        padding: 0 1rem 1rem;
     }
 
     .shaped-room-modal__nav {
