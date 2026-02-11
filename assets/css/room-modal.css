@@ -163,8 +163,8 @@ body.shaped-room-modal-open {
     transform: translateY(-50%);
     background: var(--color-surface-white);
     border: none;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -190,10 +190,12 @@ body.shaped-room-modal-open {
 
 .shaped-room-modal__nav--prev {
     left: 12px;
+    font-size: 24px;
 }
 
 .shaped-room-modal__nav--next {
     right: 12px;
+    font-size: 24px;
 }
 
 /* Image counter badge — quieter */
@@ -245,8 +247,8 @@ body.shaped-room-modal-open {
     font-size: 1rem;
     font-weight: 700;
     color: var(--color-text-primary);
-    margin: 0 0 8px 0;
-    padding-bottom: 6px;
+    margin: 0 0 16px 0;
+    padding-bottom: 8px;
     border-bottom: 1px solid var(--color-border-default);
 }
 
@@ -256,7 +258,6 @@ body.shaped-room-modal-open {
 
 .shaped-room-modal__amenities {
     padding: 20px 24px;
-    border-top: 1px solid var(--color-border-default);
 }
 
 .shaped-room-modal__amenities-grid {
