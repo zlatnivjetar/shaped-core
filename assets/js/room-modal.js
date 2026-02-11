@@ -118,6 +118,16 @@
         var content = template.content.cloneNode(true);
         body.appendChild(content);
 
+        // Copy urgency badge from card into modal (badge is JS-injected, not in template)
+        var card = template.closest('.mphb-room-type');
+        if (card) {
+            var cardBadge = card.querySelector('.mphb-urgency-badge');
+            var modalWrapper = body.querySelector('.shaped-room-modal__footer .mphb-price-discount-wrapper');
+            if (cardBadge && modalWrapper && !modalWrapper.querySelector('.mphb-urgency-badge')) {
+                modalWrapper.appendChild(cardBadge.cloneNode(true));
+            }
+        }
+
         // Set ARIA label from room title
         var title = body.querySelector('.shaped-room-modal__title');
         if (title) {
