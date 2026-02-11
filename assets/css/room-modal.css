@@ -2,8 +2,8 @@
  * Room Detail Modal Styles
  *
  * Overlay + container for the room detail modal opened from search result cards.
- * Desktop: gallery + amenities left (60%), name/description + highlights right (40%).
- * Mobile: full-screen stacked layout with sticky CTA footer.
+ * Desktop: gallery left (60%), name/description right (40%).
+ * Amenities full-width below top section. Sticky footer on mobile.
  *
  * @package Shaped_Core
  */
@@ -119,7 +119,7 @@ body.shaped-room-modal-open {
    GALLERY SLIDER
    ========================================================================== */
 
-/* Left column: gallery + amenities */
+/* Left column: gallery */
 .shaped-room-modal__left {
     display: flex;
     flex-direction: column;
@@ -251,61 +251,17 @@ body.shaped-room-modal-open {
 }
 
 /* ==========================================================================
-   ROOM HIGHLIGHTS
-   ========================================================================== */
-
-.shaped-room-modal__highlights {
-    margin-bottom: 0;
-    padding: 20px 0 0 0;
-}
-
-.shaped-room-modal__highlights-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-}
-
-.shaped-room-modal__highlight {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-}
-
-.shaped-room-modal__highlight-icon {
-    color: var(--color-brand-primary-hover);
-    font-size: 1.25rem;
-    flex-shrink: 0;
-    margin-top: 2px;
-}
-
-.shaped-room-modal__highlight div {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.shaped-room-modal__highlight strong {
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-}
-
-.shaped-room-modal__highlight span {
-    font-size: 0.8125rem;
-    color: var(--color-text-muted);
-}
-
-/* ==========================================================================
-   AMENITIES GRID (inside left column)
+   AMENITIES GRID (full-width section between top and footer)
    ========================================================================== */
 
 .shaped-room-modal__amenities {
     padding: 20px 24px;
+    border-top: 1px solid var(--color-border-default);
 }
 
 .shaped-room-modal__amenities-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px 16px;
     list-style: none;
     margin: 0;
@@ -377,33 +333,11 @@ body.shaped-room-modal-open {
     }
 
     .shaped-room-modal__top {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .shaped-room-modal__left,
-    .shaped-room-modal__details {
-        display: contents;
+        grid-template-columns: 1fr;
     }
 
     .shaped-room-modal__gallery {
         aspect-ratio: 16 / 9;
-        order: 1;
-    }
-
-    .shaped-room-modal__details-header {
-        order: 2;
-        padding: 24px 24px 0;
-    }
-
-    .shaped-room-modal__highlights {
-        order: 3;
-        padding: 20px 24px;
-    }
-
-    .shaped-room-modal__amenities {
-        order: 4;
-        padding: 20px 24px;
     }
 
     .shaped-room-modal__nav {
@@ -469,25 +403,16 @@ body.shaped-room-modal-open {
         aspect-ratio: 3 / 2;
     }
 
+    .shaped-room-modal__details {
+        padding: 20px 16px;
+    }
+
     .shaped-room-modal__title {
         font-size: 1.25rem;
     }
 
     .shaped-room-modal__description {
         font-size: 0.875rem;
-    }
-
-    .shaped-room-modal__details-header {
-        padding: 20px 16px 0;
-    }
-
-    .shaped-room-modal__highlights {
-        padding: 16px;
-    }
-
-    .shaped-room-modal__highlights-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
     }
 
     .shaped-room-modal__amenities {
