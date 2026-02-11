@@ -77,7 +77,7 @@ body.shaped-room-modal-open {
     font-size: 16px;
     color: var(--color-text-muted);
     transition: background var(--transition-base), color var(--transition-base), opacity var(--transition-base);
-    opacity: 0.85;
+    opacity: 1;
 }
 
 .shaped-room-modal-close .ph.ph-x {
@@ -395,12 +395,10 @@ span.shaped-room-modal__nav.shaped-room-modal__nav--prev .ph.ph-caret-left {
     .shaped-room-modal-close {
         top: 8px;
         right: 8px;
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
         font-size: 14px;
-        background: var(--color-overlay-scrim);
         color: var(--color-text-inverse);
-        opacity: 0.9;
     }
 
     .shaped-room-modal-close:hover {
