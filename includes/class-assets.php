@@ -269,7 +269,7 @@ class Shaped_Assets {
             .mphb_sc_search-guests select{width:100%;height:48px;padding:10px 14px;border:1px solid var(--color-border-default);border-radius:var(--radius-md);background:var(--color-surface-white);box-sizing:border-box;appearance:none}
             .mphb-book-search-container{display:flex;flex-direction:column;align-items:center;padding:24px;border-radius:var(--radius-lg);width:100%}
             .mphb-book-search-container .mphb_sc_search-form{background:transparent;border:none;padding:0;box-shadow:none;border-radius:0;width:800px;max-width:100%}
-            #search-fixed{opacity:0;pointer-events:none;transform:translateY(100%)}
+            #search-fixed{opacity:0;pointer-events:none;transform:translateY(100%)}#search-fixed.chrome-ios-deferred{display:none!important}
             #search-hero .mphb-search-benefits-inline{display:none}
         </style>
         <?php
