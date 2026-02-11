@@ -111,7 +111,7 @@ body.shaped-room-modal-open {
 
 .shaped-room-modal__top {
     display: grid;
-    grid-template-columns: 3fr 2fr;
+    grid-template-columns: 55% 45%;
     gap: 0;
 }
 
@@ -216,7 +216,7 @@ body.shaped-room-modal-open {
    ========================================================================== */
 
 .shaped-room-modal__details {
-    padding: 24px 24px;
+    padding: 24px 24px 0px 32px;
 }
 
 .shaped-room-modal__title {
