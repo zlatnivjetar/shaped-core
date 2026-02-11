@@ -67,8 +67,8 @@ body.shaped-room-modal-open {
     z-index: 10;
     background: var(--color-surface-white);
     border: none;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -84,6 +84,12 @@ body.shaped-room-modal-open {
     font-size: 32px;
     font-weight: 600;
     color: #0b0b09;
+}
+
+span.shaped-room-modal__nav.shaped-room-modal__nav--next .ph.ph-caret-right,
+span.shaped-room-modal__nav.shaped-room-modal__nav--prev .ph.ph-caret-left {
+    font-size: 24px;
+    font-weight: 600;
 }
 
 .shaped-room-modal-close:hover {
@@ -207,10 +213,9 @@ body.shaped-room-modal-open {
     color: var(--color-text-inverse);
     padding: 2px 8px;
     border-radius: var(--radius-sm);
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 500;
     z-index: 2;
-    opacity: 0.7;
 }
 
 /* ==========================================================================
@@ -223,7 +228,7 @@ body.shaped-room-modal-open {
 
 .shaped-room-modal__title {
     font-family: var(--font-heading);
-    font-size: 1.5rem;
+    font-size: 2rem !important;
     font-weight: 700;
     color: var(--color-text-primary);
     margin: 0 0 12px 0;
@@ -360,6 +365,10 @@ body.shaped-room-modal-open {
     .shaped-room-modal__cta {
         padding: 0 1.5rem 1.5rem;
     }
+
+    .shaped-room-modal-close .ph.ph-x {
+        font-size: 28px;
+    }
 }
 
 /* ==========================================================================
@@ -409,7 +418,7 @@ body.shaped-room-modal-open {
     }
 
     .shaped-room-modal__title {
-        font-size: 1.25rem;
+        font-size: 1.75rem !important;
     }
 
     .shaped-room-modal__description {
