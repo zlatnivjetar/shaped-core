@@ -232,21 +232,6 @@ display: none;
     transform: translateY(0);
 }
 
-/* Chrome iOS: completely remove from render tree until viewport settles */
-#search-fixed.chrome-ios-deferred {
-    display: none !important;
-}
-
-/* Chrome iOS: subtle fade-in after deferred render */
-#search-fixed.chrome-ios-reveal {
-    animation: searchFixedFadeIn 0.4s ease-out forwards;
-}
-
-@keyframes searchFixedFadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-}
-
 /* =================================================================
  * HERO SEARCH FORM - HIDE BENEFITS LINE
  *
