@@ -101,12 +101,12 @@ function shaped_get_client_config() {
                 'md' => 8,
             ],
             'maxWidth' => [
-                'content' => 1280,
+                'content' => 1200,
             ],
             'breakpoint' => [
                 'mobile'  => 480,
                 'tablet'  => 768,
-                'desktop' => 1280,
+                'desktop' => 1200,
             ],
         ],
 
@@ -145,8 +145,8 @@ function shaped_get_client_config() {
         // SSH to run into public_html to sync globals: wp eval "do_action('shaped/elementor/force_sync');"
         'elementor' => [
             'sync_colors'       => false,  // Sync brand colors to Elementor globals (enable for new builds only)
-            'landing_header_id' => 0,      // Elementor template post ID for landing page header
-            'landing_footer_id' => 0,      // Elementor template post ID for landing page footer
+            'landing_header_id' => 21098,      // Elementor template post ID for landing page header
+            'landing_footer_id' => 21691,      // Elementor template post ID for landing page footer
         ],
 
         // --- Integrations ---
