@@ -55,7 +55,7 @@ $currency = function_exists('MPHB')
     <?php // ─── Top Section: Gallery + Core Details ─── ?>
     <div class="shaped-room-modal__top">
 
-        <?php // ─── Left Column: Gallery + Highlights ─── ?>
+        <?php // ─── Left Column: Gallery + Amenities ─── ?>
         <div class="shaped-room-modal__left">
             <?php // ─── Gallery Slider ─── ?>
             <?php if ($gallery_count > 0): ?>
@@ -89,7 +89,49 @@ $currency = function_exists('MPHB')
             </div>
             <?php endif; ?>
 
-            <?php // ─── Room Highlights (under gallery) ─── ?>
+            <?php // ─── Amenities (under gallery) ─── ?>
+            <?php if (!empty($all_amenities)): ?>
+            <div class="shaped-room-modal__amenities">
+                <h3 class="shaped-room-modal__section-title">Amenities</h3>
+                <ul class="shaped-room-modal__amenities-grid">
+                    <?php if (!empty($size)): ?>
+                    <li class="shaped-room-modal__amenity">
+                        <span class="shaped-room-modal__amenity-icon"><i class="ph ph-ruler" aria-hidden="true"></i></span>
+                        <span class="shaped-room-modal__amenity-label"><?php echo esc_html($size); ?>m²</span>
+                    </li>
+                    <?php endif; ?>
+
+                    <?php if (!empty($bed_type)): ?>
+                    <li class="shaped-room-modal__amenity">
+                        <span class="shaped-room-modal__amenity-icon"><i class="ph ph-bed" aria-hidden="true"></i></span>
+                        <span class="shaped-room-modal__amenity-label"><?php echo esc_html($bed_type); ?></span>
+                    </li>
+                    <?php endif; ?>
+
+                    <?php foreach ($all_amenities as $amenity): ?>
+                    <li class="shaped-room-modal__amenity">
+                        <span class="shaped-room-modal__amenity-icon"><?php echo $amenity['html']; ?></span>
+                        <span class="shaped-room-modal__amenity-label"><?php echo esc_html($amenity['label']); ?></span>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+            <?php endif; ?>
+        </div>
+
+        <?php // ─── Right Column: Name/Description + Room Highlights ─── ?>
+        <div class="shaped-room-modal__details">
+            <div class="shaped-room-modal__details-header">
+                <h2 class="shaped-room-modal__title"><?php echo esc_html($room_title); ?></h2>
+
+                <?php if ($description): ?>
+                <div class="shaped-room-modal__description">
+                    <?php echo $description; ?>
+                </div>
+                <?php endif; ?>
+            </div>
+
+            <?php // ─── Room Highlights (under description) ─── ?>
             <div class="shaped-room-modal__highlights">
                 <h3 class="shaped-room-modal__section-title">Room highlights</h3>
                 <div class="shaped-room-modal__highlights-grid">
@@ -124,46 +166,6 @@ $currency = function_exists('MPHB')
                     <?php endif; ?>
                 </div>
             </div>
-        </div>
-
-        <?php // ─── Right Column: Details + Amenities ─── ?>
-        <div class="shaped-room-modal__details">
-            <h2 class="shaped-room-modal__title"><?php echo esc_html($room_title); ?></h2>
-
-            <?php if ($description): ?>
-            <div class="shaped-room-modal__description">
-                <?php echo $description; ?>
-            </div>
-            <?php endif; ?>
-
-            <?php // ─── Amenities (inside details column) ─── ?>
-            <?php if (!empty($all_amenities)): ?>
-            <div class="shaped-room-modal__amenities">
-                <h3 class="shaped-room-modal__section-title">Amenities</h3>
-                <ul class="shaped-room-modal__amenities-grid">
-                    <?php if (!empty($size)): ?>
-                    <li class="shaped-room-modal__amenity">
-                        <span class="shaped-room-modal__amenity-icon"><i class="ph ph-ruler" aria-hidden="true"></i></span>
-                        <span class="shaped-room-modal__amenity-label"><?php echo esc_html($size); ?>m²</span>
-                    </li>
-                    <?php endif; ?>
-
-                    <?php if (!empty($bed_type)): ?>
-                    <li class="shaped-room-modal__amenity">
-                        <span class="shaped-room-modal__amenity-icon"><i class="ph ph-bed" aria-hidden="true"></i></span>
-                        <span class="shaped-room-modal__amenity-label"><?php echo esc_html($bed_type); ?></span>
-                    </li>
-                    <?php endif; ?>
-
-                    <?php foreach ($all_amenities as $amenity): ?>
-                    <li class="shaped-room-modal__amenity">
-                        <span class="shaped-room-modal__amenity-icon"><?php echo $amenity['html']; ?></span>
-                        <span class="shaped-room-modal__amenity-label"><?php echo esc_html($amenity['label']); ?></span>
-                    </li>
-                    <?php endforeach; ?>
-                </ul>
-            </div>
-            <?php endif; ?>
         </div>
     </div>
 
