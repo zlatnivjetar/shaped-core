@@ -257,7 +257,6 @@ body.shaped-room-modal-open {
 .shaped-room-modal__highlights {
     margin-bottom: 0;
     padding: 20px 24px;
-    border-top: 1px solid var(--color-border-default);
 }
 
 .shaped-room-modal__highlights-grid {
@@ -360,6 +359,7 @@ body.shaped-room-modal-open {
 
 .shaped-room-modal__cta {
     padding: 0 24px 20px;
+    background-color: var(--color-surface-highlight);
 }
 
 .shaped-room-modal__book-btn {
