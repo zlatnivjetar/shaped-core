@@ -191,7 +191,15 @@ $published_reviews = $reviews_count->publish ?? 0;
                     $payment_context = null;
 
                     if ($booking) {
-                        $total_price = $booking->getTotalPrice();
+                        // Use stored discounted amount, fall back to runtime calculation, then MPHB base price
+                        $stored_amount = (float) get_post_meta($booking_id, '_shaped_payment_amount', true);
+                        if ($stored_amount > 0) {
+                            $total_price = $stored_amount;
+                        } elseif (class_exists('Shaped_Pricing')) {
+                            $total_price = Shaped_Pricing::calculate_final_amount($booking);
+                        } else {
+                            $total_price = $booking->getTotalPrice();
+                        }
 
                         // Accommodation name
                         $reserved_rooms = $booking->getReservedRooms();
@@ -272,7 +280,7 @@ $published_reviews = $reviews_count->publish ?? 0;
 
 <style>
 .shaped-ops-dashboard {
-    max-width: 1200px;
+    max-width: 100%;
 }
 
 .shaped-stats-grid {
