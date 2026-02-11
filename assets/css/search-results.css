@@ -189,6 +189,7 @@ p.post-thumbnail.mphb-loop-room-thumbnail {
     align-items: center;
     gap: 8px;
     flex-wrap: wrap;
+    line-height: 1.5em;
 }
 
 .mphb-price-original {
