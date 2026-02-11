@@ -414,7 +414,7 @@ span.shaped-room-modal__nav.shaped-room-modal__nav--prev .ph.ph-caret-left {
     }
 
     .shaped-room-modal__details {
-        padding: 20px 16px;
+        padding: 20px 16px 0;
     }
 
     .shaped-room-modal__title {
@@ -426,7 +426,7 @@ span.shaped-room-modal__nav.shaped-room-modal__nav--prev .ph.ph-caret-left {
     }
 
     .shaped-room-modal__amenities {
-        padding: 16px;
+        padding: 16px 16px 20px;
     }
 
     .shaped-room-modal__amenities-grid {
@@ -457,8 +457,8 @@ span.shaped-room-modal__nav.shaped-room-modal__nav--prev .ph.ph-caret-left {
 
     .shaped-room-modal__nav {
         opacity: 1;
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
         font-size: 14px;
     }
 
