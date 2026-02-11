@@ -163,15 +163,16 @@ $published_reviews = $reviews_count->publish ?? 0;
     <?php if ($recent_bookings->have_posts()): ?>
     <div class="shaped-section">
         <h2>Recent Bookings</h2>
+        <?php $payment_mode = class_exists('Shaped_Pricing') ? Shaped_Pricing::get_payment_mode() : 'scheduled'; ?>
         <table class="wp-list-table widefat fixed striped">
             <thead>
                 <tr>
                     <th>Booking</th>
                     <th>Guest</th>
-                    <th>Check-in</th>
-                    <th>Check-out</th>
+                    <th>Dates</th>
+                    <th>Accommodation / Rate</th>
                     <th>Status</th>
-                    <th>Actions</th>
+                    <th>Payment</th>
                 </tr>
             </thead>
             <tbody>
@@ -181,19 +182,82 @@ $published_reviews = $reviews_count->publish ?? 0;
                     $check_in = get_post_meta($booking_id, 'mphb_check_in_date', true);
                     $check_out = get_post_meta($booking_id, 'mphb_check_out_date', true);
                     $status = get_post_status();
+
+                    // Load MPHB booking object for accommodation, rate, and payment data
+                    $booking = MPHB()->getBookingRepository()->findById($booking_id, true);
+                    $accommodation_name = '';
+                    $rate_name = '';
+                    $total_price = 0;
+                    $payment_context = null;
+
+                    if ($booking) {
+                        $total_price = $booking->getTotalPrice();
+
+                        // Accommodation name
+                        $reserved_rooms = $booking->getReservedRooms();
+                        if (!empty($reserved_rooms)) {
+                            $room = reset($reserved_rooms);
+                            $room_type = MPHB()->getRoomTypeRepository()->findById($room->getRoomTypeId());
+                            if ($room_type) {
+                                $accommodation_name = $room_type->getTitle();
+                            }
+                        }
+
+                        // Rate name
+                        if (function_exists('shaped_get_booking_rate_name')) {
+                            $rate_name = shaped_get_booking_rate_name($booking_id);
+                        }
+
+                        // Payment context
+                        if (class_exists('Shaped_Payment_Processor')) {
+                            $payment_context = Shaped_Payment_Processor::get_payment_context($booking);
+                        }
+                    }
                 ?>
                 <tr>
                     <td><strong>#<?php echo esc_html($booking_id); ?></strong></td>
                     <td><?php echo esc_html($guest_name); ?></td>
-                    <td><?php echo $check_in ? esc_html(date_i18n(get_option('date_format'), strtotime($check_in))) : '—'; ?></td>
-                    <td><?php echo $check_out ? esc_html(date_i18n(get_option('date_format'), strtotime($check_out))) : '—'; ?></td>
+                    <td>
+                        <?php if ($check_in && $check_out): ?>
+                            <?php echo esc_html(date_i18n('M j', strtotime($check_in))); ?> – <?php echo esc_html(date_i18n('M j', strtotime($check_out))); ?>
+                        <?php else: ?>
+                            —
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <?php
+                            $accom_display = $accommodation_name ?: '—';
+                            if ($rate_name) {
+                                $accom_display .= ' · ' . $rate_name;
+                            }
+                            echo esc_html($accom_display);
+                        ?>
+                    </td>
                     <td>
                         <span class="booking-status status-<?php echo esc_attr($status); ?>">
                             <?php echo esc_html(ucfirst($status)); ?>
                         </span>
                     </td>
                     <td>
-                        <a href="<?php echo esc_url(get_edit_post_link($booking_id)); ?>" class="button button-small">View</a>
+                        <?php if ($payment_mode === 'deposit' && $payment_context): ?>
+                            <?php
+                                $deposit = $payment_context['deposit_amount'];
+                                $balance = $payment_context['balance_due'];
+                                if (function_exists('shaped_format_room_price')) {
+                                    echo esc_html(shaped_format_room_price($deposit) . ' paid / ' . shaped_format_room_price($balance) . ' due');
+                                } else {
+                                    echo esc_html('€' . number_format($deposit, 2) . ' paid / €' . number_format($balance, 2) . ' due');
+                                }
+                            ?>
+                        <?php elseif ($payment_context): ?>
+                            <?php
+                                $total_display = function_exists('shaped_format_room_price') ? shaped_format_room_price($total_price) : '€' . number_format($total_price, 2);
+                                $charged_display = $payment_context['is_charged'] ? 'Yes' : 'No';
+                                echo esc_html($total_display . ' · ' . $charged_display);
+                            ?>
+                        <?php else: ?>
+                            —
+                        <?php endif; ?>
                     </td>
                 </tr>
                 <?php endwhile; wp_reset_postdata(); ?>
