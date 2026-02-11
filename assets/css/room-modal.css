@@ -447,8 +447,8 @@ span.shaped-room-modal__nav.shaped-room-modal__nav--prev .ph.ph-caret-left {
     }
 
     .shaped-room-modal__footer .shaped-rates-indicator {
-        padding: 0 1rem 1rem;
-        margin-top: -12px;
+        padding: 0 16px 12px;
+        margin-top: -8px;
     }
 
     .shaped-room-modal__cta {
