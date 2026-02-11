@@ -201,6 +201,7 @@ if (!empty($facilities) && !is_wp_error($facilities)) {
             <input type="hidden" name="mphb_check_out_date" value="<?php echo esc_attr($check_out); ?>">
             <input type="hidden" name="mphb_adults" value="<?php echo esc_attr($adults); ?>">
             <input type="hidden" name="mphb_rooms_details[<?php echo esc_attr($room_id); ?>]" value="1">
+            <?php do_action('shaped_checkout_form_fields'); ?>
             <?php wp_nonce_field('mphb-checkout', 'mphb-checkout-nonce', false); ?>
             <button type="submit" class="button mphb-button mphb-book-button">Secure Your Stay</button>
         </form>
