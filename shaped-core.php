@@ -219,6 +219,11 @@ add_action('plugins_loaded', function() {
         require_once SHAPED_DIR . 'modules/elementor-sync/module.php';
     }
 
+    // Landing Flow (header/footer swap for /book landing page)
+    if (file_exists(SHAPED_DIR . 'modules/landing-flow/module.php')) {
+        require_once SHAPED_DIR . 'modules/landing-flow/module.php';
+    }
+
     // Review Email System (automated review request emails)
     if (SHAPED_ENABLE_REVIEW_EMAIL && file_exists(SHAPED_DIR . 'modules/review-email/module.php')) {
         require_once SHAPED_DIR . 'modules/review-email/module.php';
