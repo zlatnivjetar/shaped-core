@@ -395,16 +395,14 @@ span.shaped-room-modal__nav.shaped-room-modal__nav--prev .ph.ph-caret-left {
     .shaped-room-modal-close {
         top: 12px;
         right: 12px;
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
         font-size: 14px;
         color: var(--color-text-inverse);
     }
 
-    .shaped-room-modal-close:hover {
-        background: var(--color-overlay-scrim);
-        color: var(--color-text-inverse);
-        opacity: 1;
+    .shaped-room-modal-close .ph.ph-x {
+      font-size: 32px;
     }
 
     .shaped-room-modal__gallery {
