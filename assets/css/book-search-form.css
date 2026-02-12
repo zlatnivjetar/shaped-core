@@ -138,7 +138,7 @@
 /* =================================================================
  * TABLET RESPONSIVENESS
  * ================================================================= */
-@media (min-width: 1024px) {
+@media (max-width: 1024px) {
     .mphb-search-benefits-inline {
         margin-top: 14px;
     }
@@ -151,7 +151,7 @@
 /* =================================================================
  * MOBILE RESPONSIVENESS
  * ================================================================= */
-@media (min-width: 767px) {
+@media (max-width: 767px) {
     .mphb-book-search-container {
         padding: 28px 24px;
     }
@@ -174,7 +174,7 @@
     }
 }
 
-@media (min-width: 479px) {
+@media (max-width: 479px) {
     .mphb-book-search-container {
         padding: 16px;
         border-radius: var(--radius-lg);
@@ -203,7 +203,7 @@
     }
     
     .mphb_sc_search-form {
-      width: 100%;
+      width: 100% !important;
     }
 
     .mphb-search-benefits-inline {
