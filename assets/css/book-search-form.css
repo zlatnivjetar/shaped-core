@@ -138,7 +138,7 @@
 /* =================================================================
  * TABLET RESPONSIVENESS
  * ================================================================= */
-@media (max-width: 1024px) and (min-width: 769px) {
+@media (min-width: 1024px) {
     .mphb-search-benefits-inline {
         margin-top: 14px;
     }
@@ -151,7 +151,7 @@
 /* =================================================================
  * MOBILE RESPONSIVENESS
  * ================================================================= */
-@media (max-width: 768px) {
+@media (min-width: 767px) {
     .mphb-book-search-container {
         padding: 28px 24px;
     }
@@ -168,9 +168,13 @@
     .mphb-search-benefits-inline .benefit-separator {
         font-size: 11px;
     }
+
+        .mphb_sc_search-form {
+      width: 100%;
+    }
 }
 
-@media (max-width: 480px) {
+@media (min-width: 479px) {
     .mphb-book-search-container {
         padding: 16px;
         border-radius: var(--radius-lg);
