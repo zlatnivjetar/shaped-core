@@ -167,4 +167,13 @@ button.cmplz-show {
     margin: 0 6px 0 0 !important;
     border-radius: 2px !important;
 }
+
+/* =========================================================================
+ * LANGUAGE SWITCHER 2.0
+ * ========================================================================= */
+}
+select.gt_selector.notranslate {
+    font-family: 'DM Sans';
+    font-size: 14px;
+    padding: 4px 8px;
 }
