@@ -184,3 +184,17 @@ select.gt_selector.notranslate {
     border-radius: 4px;
     background: #f8f8f8;
 }
+
+@media (max-width:1024px) {
+select.gt_selector.notranslate {
+    font-family: var(--font-body);
+    font-size: 17px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: #ffffff;
+}
+}
+
+@media (max-width:479px) {
+
+}

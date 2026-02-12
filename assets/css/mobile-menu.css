@@ -3,7 +3,7 @@
     border-color: #F0F0F0 !important;
 }
 .sub-menu > li:first-child {
-    border-top: 2px solid var(--color-border-default) !important;
+    /*border-top: 2px solid var(--color-border-default) !important;*/
 }
 
 @media (max-width:1024px) {
@@ -17,7 +17,7 @@
 .elementor-sub-item {
     font-size: 16px !important;
     padding: 24px !important;
-    background: var(--color-surface-alt);
+    /*background: var(--color-surface-alt);*/
     border: 0 !important;
 }
 }
