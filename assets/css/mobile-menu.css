@@ -2,9 +2,9 @@
     padding: 0 !important;
     border-color: #F0F0F0 !important;
 }
-.sub-menu > li:first-child {
-    /*border-top: 2px solid var(--color-border-default) !important;*/
-}
+/*.sub-menu > li:first-child {
+    border-top: 2px solid var(--color-border-default) !important;
+}*/
 
 @media (max-width:1024px) {
     
