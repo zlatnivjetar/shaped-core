@@ -181,7 +181,7 @@ select.gt_selector.notranslate {
     height: 28px;
     outline: none;
     border: 1.5px solid var(--color-text-muted);
-  
+    color: rgba(255, 255, 255, 0.8);
     font-weight: 500;
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.15);
