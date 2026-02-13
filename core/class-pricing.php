@@ -1127,8 +1127,69 @@ class Shaped_Pricing {
     }
 
     /**
+     * Get discount for a room type across a date range (cross-season aware).
+     *
+     * When a booking spans multiple seasons:
+     * - If ANY night falls within a year-specific override (promo), return that promo's
+     *   discount for all nights (promo extends to full stay).
+     * - Otherwise, return the MINIMUM discount % across all nights (= the discount from
+     *   the season with the highest base price).
+     *
+     * @param string $room_slug  Room type slug
+     * @param string $check_in   Check-in date in Y-m-d format
+     * @param string $check_out  Check-out date in Y-m-d format
+     * @return int Discount percentage (0-100)
+     */
+    public static function get_room_discount_for_range(string $room_slug, string $check_in, string $check_out): int {
+        $slug = sanitize_title($room_slug);
+        $seasons = self::get_discount_seasons();
+
+        // Generate night dates: [check_in, check_in+1, ..., check_out-1]
+        $nights = [];
+        try {
+            $current = new DateTime($check_in);
+            $end = new DateTime($check_out);
+            while ($current < $end) {
+                $nights[] = $current->format('Y-m-d');
+                $current->modify('+1 day');
+            }
+        } catch (Exception $e) {
+            return self::get_room_discount_for_date($slug, $check_in);
+        }
+
+        if (empty($nights)) {
+            return self::get_room_discount_for_date($slug, $check_in);
+        }
+
+        // Priority 1: Check if ANY night falls in a year-specific override (promo)
+        if (!empty($seasons['overrides'])) {
+            foreach ($nights as $night) {
+                foreach ($seasons['overrides'] as $override) {
+                    if (empty($override['start_date']) || empty($override['end_date'])) {
+                        continue;
+                    }
+                    if ($night >= $override['start_date'] && $night <= $override['end_date']) {
+                        return isset($override['discounts'][$slug]) ? intval($override['discounts'][$slug]) : 0;
+                    }
+                }
+            }
+        }
+
+        // Priority 2: Find the MINIMUM discount across all nights (= highest base price season)
+        $min_discount = null;
+        foreach ($nights as $night) {
+            $discount = self::get_room_discount_for_date($slug, $night);
+            if ($min_discount === null || $discount < $min_discount) {
+                $min_discount = $discount;
+            }
+        }
+
+        return $min_discount ?? 0;
+    }
+
+    /**
      * Get payment mode setting
-     * 
+     *
      * @return string 'scheduled' | 'deposit'
      */
     public static function get_payment_mode(): string {
@@ -1245,13 +1306,17 @@ class Shaped_Pricing {
 
             $room_slug = sanitize_title($room_type->getTitle());
 
-            // Use check-in date for date-range-aware discount lookup
+            // Use check-in and check-out dates for range-aware discount lookup
             $check_in_date = null;
+            $check_out_date = null;
             if (method_exists($booking, 'getCheckInDate') && $booking->getCheckInDate()) {
                 $check_in_date = $booking->getCheckInDate()->format('Y-m-d');
             }
+            if (method_exists($booking, 'getCheckOutDate') && $booking->getCheckOutDate()) {
+                $check_out_date = $booking->getCheckOutDate()->format('Y-m-d');
+            }
 
-            $discount_percent = self::get_room_discount_for_date($room_slug, $check_in_date);
+            $discount_percent = self::get_room_discount($room_slug, $check_in_date, $check_out_date);
             $discount_multiplier = (100 - $discount_percent) / 100;
             return round($base_amount * $discount_multiplier, 2);
         }
@@ -1273,13 +1338,17 @@ class Shaped_Pricing {
     }
 
     /**
-     * Get discount for specific room type
+     * Get discount for specific room type (range-aware when checkout date provided)
      *
-     * @param string      $room_slug      Room type slug
-     * @param string|null $check_in_date  Check-in date in Y-m-d format (optional, enables date-range lookup)
+     * @param string      $room_slug       Room type slug
+     * @param string|null $check_in_date   Check-in date in Y-m-d format (optional)
+     * @param string|null $check_out_date  Check-out date in Y-m-d format (optional, enables range-aware lookup)
      * @return int Discount percentage (0-100)
      */
-    public static function get_room_discount(string $room_slug, ?string $check_in_date = null): int {
+    public static function get_room_discount(string $room_slug, ?string $check_in_date = null, ?string $check_out_date = null): int {
+        if (!empty($check_in_date) && !empty($check_out_date)) {
+            return self::get_room_discount_for_range($room_slug, $check_in_date, $check_out_date);
+        }
         return self::get_room_discount_for_date($room_slug, $check_in_date);
     }
 
