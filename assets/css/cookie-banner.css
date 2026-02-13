@@ -180,11 +180,10 @@ select.gt_selector.notranslate {
     padding: 2px 6px;
     height: 28px;
     outline: none;
-    border: 1.5px solid var(--color-text-muted);
-    color: rgba(255, 255, 255, 0.8);
+    border: 1.5px solid var(--color-border-primary);
     font-weight: 500;
     border-radius: 4px;
-    background: rgba(255, 255, 255, 0.15);
+    background: #f8f8f8
 }
 
 @media (max-width:1024px) {
