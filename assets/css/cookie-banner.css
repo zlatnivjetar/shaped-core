@@ -196,10 +196,8 @@ select.gt_selector.notranslate {
 }
 }
 
-@media (max-width:479px) {
 select.gt_selector.notranslate {
     font-size: 15px;
-    padding: 0px 8px;
-    height: 28px;
-}
+    padding: 0px 0px 0px 4px;
+    height: 24px;
 }
