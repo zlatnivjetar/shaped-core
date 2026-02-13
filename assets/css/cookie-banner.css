@@ -192,12 +192,15 @@ select.gt_selector.notranslate {
     padding: 5px 10px;
     height: 36px;
     border-radius: 8px;
-    background: #ffffff;
+    background: #ffffff18;
 }
 }
 
+
+@media (max-width:767px) {
 select.gt_selector.notranslate {
     font-size: 15px;
-    padding: 0px 0px 0px 4px;
+    padding: 0px 4px 0px 4px;
     height: 24px;
+}
 }
