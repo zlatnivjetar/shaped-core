@@ -151,9 +151,10 @@ class Shaped_RoomCloud_Pricing_Provider implements Shaped_Pricing_Provider_Inter
         $nights = $request->get_nights();
         $base_total = $base_price_per_night * $nights;
 
-        // Apply direct booking discount (date-aware)
+        // Apply direct booking discount (range-aware across all nights)
         $check_in_date = $request->checkin->format('Y-m-d');
-        $discount_percent = Shaped_Pricing::get_room_discount($room_slug, $check_in_date);
+        $check_out_date = $request->checkout->format('Y-m-d');
+        $discount_percent = Shaped_Pricing::get_room_discount($room_slug, $check_in_date, $check_out_date);
         $discount_multiplier = (100 - $discount_percent) / 100;
         $final_total = round($base_total * $discount_multiplier, 2);
         $final_per_night = round($final_total / $nights, 2);

@@ -26,21 +26,37 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Resolve the discount percentage for a room slug using 3-tier priority:
+     * Get the check-out date from URL params or form inputs (YYYY-MM-DD format).
+     */
+    function getCheckOutDate() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var raw = urlParams.get('mphb_check_out_date') ||
+                  (document.querySelector('input[name="mphb_check_out_date"]') || {}).value || '';
+
+        if (!raw) {
+            try {
+                var ctx = JSON.parse(localStorage.getItem('preBookingCtx') || '{}');
+                raw = ctx.checkOut || '';
+            } catch (e) { /* ignore */ }
+        }
+
+        return convertDateFormat(raw) || '';
+    }
+
+    /**
+     * Resolve discount for a single date using 3-tier priority:
      * 1. Year-specific overrides (yyyy-mm-dd comparison)
      * 2. Recurring seasons (mm-dd comparison, year-agnostic)
      * 3. Default flat discount
      */
-    function getDiscountForRoom(roomSlug, checkInDate) {
-        var checkin = checkInDate || getCheckInDate();
-
-        if (checkin) {
+    function getDiscountForSingleDate(roomSlug, dateStr) {
+        if (dateStr) {
             // Priority 1: Year-specific overrides
             var overrides = discountSeasons.overrides || [];
             for (var i = 0; i < overrides.length; i++) {
                 var override = overrides[i];
                 if (override.start_date && override.end_date &&
-                    checkin >= override.start_date && checkin <= override.end_date) {
+                    dateStr >= override.start_date && dateStr <= override.end_date) {
                     var discounts = override.discounts || {};
                     return discounts[roomSlug] ? parseInt(discounts[roomSlug], 10) : 0;
                 }
@@ -49,19 +65,17 @@ document.addEventListener('DOMContentLoaded', function() {
             // Priority 2: Recurring seasons (mm-dd comparison)
             var recurring = discountSeasons.recurring || [];
             if (recurring.length > 0) {
-                var checkMd = checkin.substring(5); // "mm-dd"
+                var checkMd = dateStr.substring(5); // "mm-dd"
                 for (var j = 0; j < recurring.length; j++) {
                     var season = recurring[j];
                     if (!season.start_day || !season.end_day) continue;
 
                     if (season.start_day <= season.end_day) {
-                        // Normal range (e.g. Jan-Apr)
                         if (checkMd >= season.start_day && checkMd <= season.end_day) {
                             var d = season.discounts || {};
                             return d[roomSlug] ? parseInt(d[roomSlug], 10) : 0;
                         }
                     } else {
-                        // Wrapping range (e.g. Nov-Feb)
                         if (checkMd >= season.start_day || checkMd <= season.end_day) {
                             var d = season.discounts || {};
                             return d[roomSlug] ? parseInt(d[roomSlug], 10) : 0;
@@ -73,6 +87,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Priority 3: Default flat discount
         return discountConfig[roomSlug] ? parseInt(discountConfig[roomSlug], 10) : 0;
+    }
+
+    /**
+     * Resolve the discount percentage for a room slug across a date range.
+     *
+     * Cross-season logic:
+     * - If ANY night falls in a year-specific override (promo), return that promo's
+     *   discount for all nights.
+     * - Otherwise, return the MINIMUM discount % across all nights (= highest base
+     *   price season).
+     * - If no checkOutDate provided, falls back to single-date logic.
+     */
+    function getDiscountForRoom(roomSlug, checkInDate, checkOutDate) {
+        var checkin = checkInDate || getCheckInDate();
+        var checkout = checkOutDate || getCheckOutDate();
+
+        // No checkout date: fall back to single-date logic
+        if (!checkin || !checkout) {
+            return getDiscountForSingleDate(roomSlug, checkin || '');
+        }
+
+        // Generate night dates: [checkin, checkin+1, ..., checkout-1]
+        var nights = [];
+        var cur = new Date(checkin + 'T00:00:00');
+        var end = new Date(checkout + 'T00:00:00');
+        while (cur < end) {
+            nights.push(cur.toISOString().substring(0, 10));
+            cur.setDate(cur.getDate() + 1);
+        }
+
+        if (nights.length === 0) {
+            return getDiscountForSingleDate(roomSlug, checkin);
+        }
+
+        // Priority 1: Check if ANY night falls in a promo (year-specific override)
+        var overrides = discountSeasons.overrides || [];
+        for (var i = 0; i < overrides.length; i++) {
+            var ov = overrides[i];
+            if (!ov.start_date || !ov.end_date) continue;
+            for (var k = 0; k < nights.length; k++) {
+                if (nights[k] >= ov.start_date && nights[k] <= ov.end_date) {
+                    return ov.discounts && ov.discounts[roomSlug]
+                        ? parseInt(ov.discounts[roomSlug], 10) : 0;
+                }
+            }
+        }
+
+        // Priority 2: Find MINIMUM discount across all nights (= highest base price season)
+        var minDiscount = Infinity;
+        for (var j = 0; j < nights.length; j++) {
+            var disc = getDiscountForSingleDate(roomSlug, nights[j]);
+            if (disc < minDiscount) minDiscount = disc;
+        }
+
+        return minDiscount === Infinity ? 0 : minDiscount;
     }
 
     // Updated urgency thresholds - only 1 and 2
@@ -313,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
         roomTypes.forEach(room => {
             const roomTitle = room.querySelector('.mphb-room-type-title')?.textContent.trim();
             const roomSlug = roomTitle?.toLowerCase().replace(/\s+/g, '-');
-            const discountPercent = getDiscountForRoom(roomSlug, checkIn);
+            const discountPercent = getDiscountForRoom(roomSlug, checkIn, checkOut);
 
             // Find the price element
             const priceEl = room.querySelector('.mphb-price');
@@ -475,7 +544,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const roomTitle = roomTitleElement.textContent.trim();
         const roomSlug = roomTitle.toLowerCase().replace(/\s+/g, '-');
-        const discountPercent = getDiscountForRoom(roomSlug) || 0;
+        const checkIn = getCheckInDate();
+        const checkOut = getCheckOutDate();
+        const discountPercent = getDiscountForRoom(roomSlug, checkIn, checkOut) || 0;
 
         const form = document.querySelector('.mphb_sc_checkout-form');
         if (form && discountPercent) {
@@ -739,7 +810,9 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!roomTitleEl) return;
 
         const roomSlug = roomTitleEl.textContent.trim().toLowerCase().replace(/\s+/g, '-');
-        const discountPercent = getDiscountForRoom(roomSlug) || 0;
+        const checkIn = getCheckInDate();
+        const checkOut = getCheckOutDate();
+        const discountPercent = getDiscountForRoom(roomSlug, checkIn, checkOut) || 0;
         if (!discountPercent || discountPercent <= 0) return;
 
         const priceSpans = rateChooser.querySelectorAll('.mphb-room-rate-variant .mphb-price');
