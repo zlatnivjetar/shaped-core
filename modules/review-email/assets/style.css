@@ -21,7 +21,7 @@
     text-align: center;
     margin-bottom: 32px;
     padding-bottom: 24px;
-    border-bottom: 2px solid var(--shaped-primary, #2563EB);
+    border-bottom: 2px solid var(--shaped-primary, #E2BD27);
 }
 
 .shaped-review-header h1 {
@@ -114,14 +114,14 @@
 }
 
 .rating-btn:hover {
-    border-color: var(--shaped-primary, #2563EB);
+    border-color: var(--shaped-primary, #E2BD27);
     background-color: rgba(37, 99, 235, 0.05);
     transform: translateY(-2px);
 }
 
 .rating-btn.selected {
-    background: var(--shaped-primary, #2563EB);
-    border-color: var(--shaped-primary, #2563EB);
+    background: var(--shaped-primary, #E2BD27);
+    border-color: var(--shaped-primary, #E2BD27);
     color: #ffffff;
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
@@ -201,7 +201,7 @@
 .shaped-name-section input:focus,
 .feedback-details textarea:focus {
     outline: none;
-    border-color: var(--shaped-primary, #2563EB);
+    border-color: var(--shaped-primary, #E2BD27);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
@@ -235,7 +235,7 @@
     letter-spacing: 0.5px;
     border: none;
     border-radius: 8px;
-    background: var(--shaped-primary, #2563EB);
+    background: var(--shaped-primary, #E2BD27);
     color: #ffffff;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -321,13 +321,13 @@
 }
 
 .feedback-checkbox:hover {
-    border-color: var(--shaped-primary, #2563EB);
+    border-color: var(--shaped-primary, #E2BD27);
 }
 
 .feedback-checkbox input {
     width: 18px;
     height: 18px;
-    accent-color: var(--shaped-primary, #2563EB);
+    accent-color: var(--shaped-primary, #E2BD27);
 }
 
 .feedback-checkbox span {
@@ -337,7 +337,7 @@
 }
 
 .feedback-checkbox input:checked + span {
-    color: var(--shaped-primary, #2563EB);
+    color: var(--shaped-primary, #E2BD27);
 }
 
 .feedback-details {

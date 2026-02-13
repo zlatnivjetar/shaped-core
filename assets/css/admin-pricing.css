@@ -52,7 +52,7 @@
 .shaped-admin-section h2 {
     margin-top: 0;
     padding-bottom: 12px;
-    border-bottom: 2px solid var(--color-brand-primary, #2563EB);
+    border-bottom: 2px solid var(--color-brand-primary, #E2BD27);
 }
 
 .shaped-admin-section > .description {
@@ -128,7 +128,7 @@
 /* Primary/brand variant - golden themed */
 .shaped-settings-panel--primary {
     background: var(--color-surface-highlight, #fffbf0);
-    border: 1px solid var(--color-brand-primary, #2563EB);
+    border: 1px solid var(--color-brand-primary, #E2BD27);
 }
 
 .shaped-settings-panel.is-visible {
@@ -267,7 +267,7 @@
 
 /* Promo card — amber/brand left border */
 .shaped-season-card--override {
-    border-left: 4px solid var(--color-brand-primary, #2563EB);
+    border-left: 4px solid var(--color-brand-primary, #E2BD27);
 }
 
 .shaped-remove-range {

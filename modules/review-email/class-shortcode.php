@@ -138,7 +138,7 @@ class Shortcode {
      */
     private function render_form(array $data): string {
         $company_name = shaped_email_config('company_name', 'our property');
-        $primary = function_exists('shaped_brand_color') ? shaped_brand_color('primary') : '#2563EB';
+        $primary = function_exists('shaped_brand_color') ? shaped_brand_color('primary') : '#E2BD27';
         $text_primary = function_exists('shaped_brand_color') ? shaped_brand_color('textPrimary') : '#26272C';
         $text_muted = function_exists('shaped_brand_color') ? shaped_brand_color('textMuted') : '#666666';
         $success = function_exists('shaped_brand_color') ? shaped_brand_color('success') : '#22c55e';

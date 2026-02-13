@@ -840,7 +840,9 @@ input:focus,
 }
 
 .taxes-fees-line .trust-signals svg {
-	color: var(--color-brand-primary, #2563EB);
+	color: var(--color-semantic-success);
+  width: 18px;
+  height: 18px;
 }
 
 .trust-signals {

@@ -19,7 +19,7 @@ if (!defined('ABSPATH')) {
  * @param mixed $default Default value if not found
  * @return mixed
  *
- * @example shaped_brand('colors.brand.primary') // Returns '#2563EB'
+ * @example shaped_brand('colors.brand.primary') // Returns '#E2BD27'
  * @example shaped_brand('colors.semantic.success') // Returns '#4C9155'
  * @example shaped_brand('type.baseSize') // Returns 16
  */
@@ -40,9 +40,9 @@ function shaped_brand($path, $default = null) {
  * Falls back to plugin constants if not found in client config.
  *
  * @param string $key Color key
- * @return string|null Color value (e.g., '#2563EB') or null
+ * @return string|null Color value (e.g., '#E2BD27') or null
  *
- * @example shaped_brand_color('primary') // Returns '#2563EB'
+ * @example shaped_brand_color('primary') // Returns '#E2BD27'
  * @example shaped_brand_color('success') // Returns '#4C9155'
  * @example shaped_brand_color('textMuted') // Returns '#666666'
  */
@@ -82,7 +82,7 @@ function shaped_brand_color($key) {
  *
  * @example
  * $colors = shaped_brand_colors();
- * echo $colors['brand']['primary']; // '#2563EB'
+ * echo $colors['brand']['primary']; // '#E2BD27'
  */
 function shaped_brand_colors() {
     return Shaped_Brand_Config::instance()->get_all_colors();
@@ -121,7 +121,7 @@ function shaped_is_client($client_name) {
  * @param string $fallback Fallback color (hex value)
  * @return string Color value
  *
- * @example shaped_brand_color_or('customColor', '#2563EB')
+ * @example shaped_brand_color_or('customColor', '#E2BD27')
  */
 function shaped_brand_color_or($key, $fallback) {
     $color = shaped_brand_color($key);
@@ -137,7 +137,7 @@ function shaped_brand_color_or($key, $fallback) {
  * @param string $color_key Brand color key
  * @return string CSS style string
  *
- * @example shaped_brand_style('color', 'primary') // Returns 'color: #2563EB;'
+ * @example shaped_brand_style('color', 'primary') // Returns 'color: #E2BD27;'
  * @example shaped_brand_style('background', 'success') // Returns 'background: #4C9155;'
  */
 function shaped_brand_style($property, $color_key) {
@@ -158,7 +158,7 @@ function shaped_brand_style($property, $color_key) {
  *
  * @example
  * wp_localize_script('my-script', 'ShapedBrand', shaped_brand_colors_for_js());
- * // JS: console.log(ShapedBrand.primary) // '#2563EB'
+ * // JS: console.log(ShapedBrand.primary) // '#E2BD27'
  */
 function shaped_brand_colors_for_js() {
     $colors = shaped_brand_colors();
