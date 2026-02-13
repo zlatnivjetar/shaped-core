@@ -9,15 +9,30 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-// Use brand config email as admin email, with fallback to helper function
-if (!defined('SHAPED_ADMIN_EMAIL')) {
+/**
+ * Get the admin email address at call time (not at file-load time).
+ *
+ * Using a function instead of a constant avoids locking in a stale value
+ * when the brand config or WordPress options resolve to a staging domain
+ * during early file inclusion.
+ *
+ * Priority: brand config contact.email → shaped_get_admin_email() → WP admin_email
+ *
+ * @return string Admin email address
+ */
+function shaped_get_admin_to_email(): string {
     $admin_email = shaped_email_config('email', '');
     if (empty($admin_email)) {
         $admin_email = function_exists('shaped_get_admin_email')
             ? shaped_get_admin_email()
             : get_option('admin_email');
     }
-    define('SHAPED_ADMIN_EMAIL', $admin_email);
+    return $admin_email;
+}
+
+// Keep backward compatibility for any external code referencing the constant
+if (!defined('SHAPED_ADMIN_EMAIL')) {
+    define('SHAPED_ADMIN_EMAIL', shaped_get_admin_to_email());
 }
 
 /**
@@ -71,9 +86,9 @@ function shaped_send_admin_confirmation_email( $booking_id ) {
         }
 
         // Email setup
-        $to      = SHAPED_ADMIN_EMAIL;
-        $subject = '✅ Booking Confirmed: #' . $booking_id; 
-        
+        $to      = shaped_get_admin_to_email();
+        $subject = '✅ Booking Confirmed: #' . $booking_id;
+
         $message = shaped_get_admin_confirmation_template( array(
             'booking_id'      => $booking_id,
             'customer_name'   => $customer->getFirstName() . ' ' . $customer->getLastName(),
@@ -85,11 +100,10 @@ function shaped_send_admin_confirmation_email( $booking_id ) {
             'rate_name'       => $rate_name,
             'total_paid'      => $currency . number_format( $total_paid, 2 ),
         ) );
-        
-        // Get sender details from brand config
-        $from_name = shaped_email_config('from_name', get_bloginfo('name'));
-        $site_domain = parse_url(home_url(), PHP_URL_HOST);
-        $from_email = 'bookings@' . $site_domain;
+
+        // Get sender details from brand config (consistent with guest emails)
+        $from_name  = shaped_email_config('from_name', get_bloginfo('name'));
+        $from_email = shaped_email_config('from_email', get_option('admin_email'));
 
         $headers = array(
             'Content-Type: text/html; charset=UTF-8',
@@ -163,9 +177,9 @@ function shaped_send_admin_reservation_email( $booking_id ) {
         $charge_date = get_post_meta( $booking_id, '_shaped_charge_date', true );
         $charge_date_formatted = $charge_date ? date( 'F j, Y', strtotime( $charge_date ) ) : 'N/A';
 
-        $to      = SHAPED_ADMIN_EMAIL;
+        $to      = shaped_get_admin_to_email();
         $subject = '🔔 Booking Reserved (Card Saved): #' . $booking_id;
-        
+
         $message = shaped_get_admin_reservation_template( array(
             'booking_id'      => $booking_id,
             'customer_name'   => $customer->getFirstName() . ' ' . $customer->getLastName(),
@@ -178,10 +192,9 @@ function shaped_send_admin_reservation_email( $booking_id ) {
             'pending_amount'  => $currency . number_format( $pending_amount, 2 ),
             'charge_date'     => $charge_date_formatted,
         ) );
-        
-        $from_name = shaped_email_config('from_name', get_bloginfo('name'));
-        $site_domain = parse_url(home_url(), PHP_URL_HOST);
-        $from_email = 'bookings@' . $site_domain;
+
+        $from_name  = shaped_email_config('from_name', get_bloginfo('name'));
+        $from_email = shaped_email_config('from_email', get_option('admin_email'));
 
         $headers = array(
             'Content-Type: text/html; charset=UTF-8',
@@ -233,9 +246,9 @@ function shaped_send_admin_cancellation_email( $booking_id, $refund_amount, $ref
         // Cast refund_amount to float to be safe
         $refund_amount = (float) $refund_amount;
 
-        $to      = SHAPED_ADMIN_EMAIL;
+        $to      = shaped_get_admin_to_email();
         $subject = '❌ Booking Cancellation: #' . $booking_id;
-        
+
         $message = shaped_get_admin_cancellation_template( array(
             'booking_id'        => $booking_id,
             'customer_name'     => $customer->getFirstName() . ' ' . $customer->getLastName(),
@@ -244,9 +257,8 @@ function shaped_send_admin_cancellation_email( $booking_id, $refund_amount, $ref
             'refund_percentage' => $refund_percentage,
         ) );
 
-        $from_name = shaped_email_config('from_name', get_bloginfo('name'));
-        $site_domain = parse_url(home_url(), PHP_URL_HOST);
-        $from_email = 'bookings@' . $site_domain;
+        $from_name  = shaped_email_config('from_name', get_bloginfo('name'));
+        $from_email = shaped_email_config('from_email', get_option('admin_email'));
 
         $headers = array(
             'Content-Type: text/html; charset=UTF-8',
@@ -405,7 +417,7 @@ function shaped_send_admin_deposit_email( $booking_id ) {
             $balance_due = $total_price - $deposit_amount;
         }
 
-        $to = SHAPED_ADMIN_EMAIL;
+        $to = shaped_get_admin_to_email();
         $subject = '💰 Deposit Received: #' . $booking_id;
 
         $message = shaped_get_admin_deposit_template( array(
@@ -422,9 +434,8 @@ function shaped_send_admin_deposit_email( $booking_id ) {
             'total_amount'    => $currency . number_format( $total_price, 2 ),
         ) );
 
-        $from_name = shaped_email_config('from_name', get_bloginfo('name'));
-        $site_domain = parse_url( home_url(), PHP_URL_HOST );
-        $from_email = 'bookings@' . $site_domain;
+        $from_name  = shaped_email_config('from_name', get_bloginfo('name'));
+        $from_email = shaped_email_config('from_email', get_option('admin_email'));
 
         $headers = array(
             'Content-Type: text/html; charset=UTF-8',
@@ -515,7 +526,7 @@ function shaped_send_admin_payment_failed_email( $booking_id ) {
             $pending_amount = (float) $booking->getTotalPrice();
         }
 
-        $to = SHAPED_ADMIN_EMAIL;
+        $to = shaped_get_admin_to_email();
         $subject = '⚠️ Payment Failed: #' . $booking_id . ' - Action Required';
 
         $message = shaped_get_admin_payment_failed_template( array(
@@ -529,9 +540,8 @@ function shaped_send_admin_payment_failed_email( $booking_id ) {
             'amount_due'      => $currency . number_format( $pending_amount, 2 ),
         ) );
 
-        $from_name = shaped_email_config('from_name', get_bloginfo('name'));
-        $site_domain = parse_url( home_url(), PHP_URL_HOST );
-        $from_email = 'bookings@' . $site_domain;
+        $from_name  = shaped_email_config('from_name', get_bloginfo('name'));
+        $from_email = shaped_email_config('from_email', get_option('admin_email'));
 
         $headers = array(
             'Content-Type: text/html; charset=UTF-8',
