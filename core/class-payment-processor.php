@@ -980,7 +980,18 @@ class Shaped_Payment_Processor
     public function ensure_daily_fallback_schedule(): void
     {
         if (!wp_next_scheduled('shaped_daily_charge_fallback')) {
-            wp_schedule_event(time(), 'daily', 'shaped_daily_charge_fallback');
+            // Anchor to 16:30 Europe/Zagreb (30 min after scheduled charge time)
+            $tz  = new \DateTimeZone('Europe/Zagreb');
+            $now = new \DateTime('now', $tz);
+            $run = clone $now;
+            $run->setTime(16, 30, 0);
+
+            // If 16:30 today already passed, schedule for tomorrow
+            if ($run <= $now) {
+                $run->modify('+1 day');
+            }
+
+            wp_schedule_event($run->getTimestamp(), 'daily', 'shaped_daily_charge_fallback');
         }
     }
 
