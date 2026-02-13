@@ -442,7 +442,7 @@ span.mphb-price-discount {
 
 /* Required Fields */
 abbr[title="Required"] {
-	color: var(--color-brand-primary);
+	color: var(--color-text-primary);
 	text-decoration: none;
 	font-weight: 600;
 	margin-left: 2px;
