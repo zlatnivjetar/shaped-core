@@ -39,6 +39,24 @@ add_action('wp', function () {
 });
 
 /**
+ * Prevent page caching on /book so the cookie always gets set.
+ *
+ * DONOTCACHEPAGE is respected by LiteSpeed, WP Super Cache, W3TC, WP Rocket.
+ * nocache_headers() sends Cache-Control: no-cache for browsers and CDNs.
+ */
+add_action('template_redirect', function () {
+    if (!is_page('book')) {
+        return;
+    }
+
+    if (!defined('DONOTCACHEPAGE')) {
+        define('DONOTCACHEPAGE', true);
+    }
+
+    nocache_headers();
+}, 1);
+
+/**
  * Elementor Pro template override.
  *
  * Primary approach: filter on template_id (Elementor Pro 3.8+).
