@@ -194,6 +194,7 @@ select.gt_selector.notranslate {
     border-radius: 8px;
     border: 1.5px solid var(--color-text-muted);
     background: #ffffff18;
+    color: var(--color-text-inverse);
 }
 }
 
