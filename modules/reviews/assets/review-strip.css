@@ -97,7 +97,7 @@
 /* ===== GRID LAYOUT ===== */
 .shaped-review-strips-grid {
     display: grid;
-    gap: 24px;
+    gap: 80px;
     align-items: center;
     justify-items: center;
 }
@@ -125,6 +125,13 @@
 .rate-wrap .star.full {
     display: none;
 }
+
+@media (max-width: 1024px) {
+  .shaped-review-strips-grid {
+    gap:24px;
+  }
+}
+
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 767px) {
