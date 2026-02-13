@@ -180,7 +180,7 @@ select.gt_selector.notranslate {
     padding: 2px 6px;
     height: 28px;
     outline: none;
-    border: 1.5px solid var(--color-border-primary);
+    border: 1.5px solid var(--color-border-default);
     font-weight: 500;
     border-radius: 4px;
     background: #f8f8f8
