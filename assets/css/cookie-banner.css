@@ -176,13 +176,15 @@ button.cmplz-show {
 
 select.gt_selector.notranslate {
     font-family: var(--font-body);
-    font-size: 14px;
+    font-size: 15px;
     padding: 2px 6px;
+    height: 28px;
     outline: none;
-    border: 1.5px solid var(--color-border-default);
+    border: 1.5px solid var(--color-text-muted);
+  
     font-weight: 500;
     border-radius: 4px;
-    background: #f8f8f8;
+    background: #ffffff18;
 }
 
 @media (max-width:1024px) {
