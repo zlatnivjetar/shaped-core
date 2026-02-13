@@ -184,7 +184,7 @@ select.gt_selector.notranslate {
   
     font-weight: 500;
     border-radius: 4px;
-    background: #ffffff18;
+    background: rgba(255, 255, 255, 0.15);
 }
 
 @media (max-width:1024px) {
