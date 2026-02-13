@@ -190,7 +190,6 @@ select.gt_selector.notranslate {
 select.gt_selector.notranslate {
     font-family: var(--font-body);
     font-size: 17px;
-    padding: 4px 10px;
     height: 32px;
     border-radius: 8px;
 }
