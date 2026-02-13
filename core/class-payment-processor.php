@@ -205,13 +205,17 @@ class Shaped_Payment_Processor
             $room_type  = MPHB()->getRoomTypeRepository()->findById($room->getRoomTypeId());
             if ($room_type) {
                 $room_slug = sanitize_title($room_type->getTitle());
-                // Use date-aware discount lookup based on check-in date
+                // Use range-aware discount lookup based on check-in and check-out dates
                 $check_in_date = null;
+                $check_out_date = null;
                 if (method_exists($booking, 'getCheckInDate') && $booking->getCheckInDate()) {
                     $check_in_date = $booking->getCheckInDate()->format('Y-m-d');
                 }
+                if (method_exists($booking, 'getCheckOutDate') && $booking->getCheckOutDate()) {
+                    $check_out_date = $booking->getCheckOutDate()->format('Y-m-d');
+                }
                 $discount_percent = class_exists('Shaped_Pricing')
-                    ? (float) Shaped_Pricing::get_room_discount($room_slug, $check_in_date)
+                    ? (float) Shaped_Pricing::get_room_discount($room_slug, $check_in_date, $check_out_date)
                     : 0;
                 if ($discount_percent > 0) {
                     $discount_amount  = round($accommodation_total * ($discount_percent / 100));
@@ -980,7 +984,18 @@ class Shaped_Payment_Processor
     public function ensure_daily_fallback_schedule(): void
     {
         if (!wp_next_scheduled('shaped_daily_charge_fallback')) {
-            wp_schedule_event(time(), 'daily', 'shaped_daily_charge_fallback');
+            // Anchor to 16:30 Europe/Zagreb (30 min after scheduled charge time)
+            $tz  = new \DateTimeZone('Europe/Zagreb');
+            $now = new \DateTime('now', $tz);
+            $run = clone $now;
+            $run->setTime(16, 30, 0);
+
+            // If 16:30 today already passed, schedule for tomorrow
+            if ($run <= $now) {
+                $run->modify('+1 day');
+            }
+
+            wp_schedule_event($run->getTimestamp(), 'daily', 'shaped_daily_charge_fallback');
         }
     }
 
