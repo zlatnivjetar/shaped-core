@@ -110,7 +110,7 @@ class Color_Mapper {
                 'id' => '9e7def5',
                 'title' => 'Text White Muted',
                 'path' => 'colors.text.inverseMuted',
-                'fallback' => 'rgba(255, 255, 255, 0.72)',
+                'fallback' => 'var(--color-text-muted)',
             ],
             [
                 'id' => 'f3d7197',

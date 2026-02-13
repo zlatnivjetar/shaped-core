@@ -74,7 +74,7 @@ function shaped_get_client_config() {
                 'primary'      => '#0B0B09',
                 'muted'        => '#51504D',
                 'inverse'      => '#FFFFFF',
-                'inverseMuted' => 'rgba(255, 255, 255, 0.72)',
+                'inverseMuted' => 'var(--color-text-muted)',
                 'onPrimary'    => '#0B0B09',    // Text on brand primary
             ],
         ],
