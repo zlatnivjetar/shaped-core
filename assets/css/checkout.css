@@ -834,6 +834,15 @@ input:focus,
 	margin-left: 8px;
 }
 
+.taxes-fees-line {
+	margin-top: 4px;
+	margin-bottom: 4px;
+}
+
+.taxes-fees-line .trust-signals svg {
+	color: var(--color-brand-primary, #2563EB);
+}
+
 .trust-signals {
 	display: flex;
 	justify-content: center;
