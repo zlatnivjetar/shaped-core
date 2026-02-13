@@ -859,6 +859,33 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function addTaxesFeesLine() {
+        if (document.querySelector('.taxes-fees-line')) return;
+
+        const totalPriceOutput = document.querySelector('.mphb-total-price output');
+        if (!totalPriceOutput) return;
+
+        const taxesDiv = document.createElement('div');
+        taxesDiv.className = 'taxes-fees-line';
+        taxesDiv.innerHTML = '<div class="trust-signals"><div><div><p style="font-size: 14px; font-weight: 400;">' +
+            '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>' +
+            'Taxes and fees included</p></div></div></div>';
+
+        // Insert after the preloader span, before any badges
+        const preloader = totalPriceOutput.querySelector('.mphb-preloader');
+        if (preloader) {
+            preloader.after(taxesDiv);
+        } else {
+            // Insert at beginning of output, after price field
+            const priceField = totalPriceOutput.querySelector('.mphb-total-price-field');
+            if (priceField) {
+                priceField.after(taxesDiv);
+            } else {
+                totalPriceOutput.prepend(taxesDiv);
+            }
+        }
+    }
+
     // =============== UNIFIED CHECKOUT REFRESH ======================
 
     function refreshCheckoutUI() {
@@ -876,7 +903,8 @@ document.addEventListener('DOMContentLoaded', function() {
             renderCheckoutDiscountBadge(discountPercent);
         }
 
-        // 3) Always apply urgency + payment note if relevant
+        // 3) Always apply urgency + payment note + taxes line if relevant
+        addTaxesFeesLine();
         addUrgencyMessage();
         updatePaymentNote();
     }
