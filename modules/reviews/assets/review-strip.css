@@ -137,17 +137,18 @@
 @media (max-width: 767px) {
     .shaped-review-strip .star,
     .custom-review-strip .star {
-        font-size: 12px;
+        font-size: 13px;
     }
 
     .shaped-review-strip .rate-wrap .star,
     .custom-review-strip .rate-wrap .star {
-        font-size: 12px;
+        font-size: 13px;
     }
 
     .shaped-review-strip .rating-text,
     .custom-review-strip .rating-text {
-        font-size: 12px;
+        font-size: 13px;
+        line-height: 20px;
     }
 
     .shaped-review-strip .review-item,
