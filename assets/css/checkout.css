@@ -1192,6 +1192,17 @@ p.mphb-room-rate-variant:last-child {
   .trust-signals {
     font-size: 15px;
   }
+
+  .taxes-fees-line .trust-signals svg {
+  width: 16px;
+  height: 16px;
+}
+
+.taxesfees
+{
+	font-size: 13px !important;
+  margin-bottom: 0 !important;
+}
 }
 
 /* ==========================================================================
