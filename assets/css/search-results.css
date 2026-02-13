@@ -449,7 +449,7 @@ p.post-thumbnail.mphb-loop-room-thumbnail {
     .mphb_sc_search_results-wrapper {
         display: flex;
         flex-direction: column;
-        gap:2rem
+        gap:1.5rem
     }
     
     p.mphb_sc_search_results-info {
