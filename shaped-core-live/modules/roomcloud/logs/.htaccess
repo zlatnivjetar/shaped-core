@@ -1,3 +1,0 @@
-# Deny all web access to log files
-Order deny,allow
-Deny from all
