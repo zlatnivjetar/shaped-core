@@ -1,21 +1,29 @@
 # Live Migration Plan
 
-**Rule #1:** Only files get replaced. The live database is never overwritten — only added to.
+**Strategy:** Disable bookings, build everything in staging, publish staging to live (full overwrite — safe because no new data is created during the maintenance window).
+
+**Estimated maintenance window:** ~2 hours.
 
 ---
 
-## 1. Staging Setup
+## 1. Pre-Migration
 
 - [ ] Trigger Hostinger daily backup, wait for completion
+- [ ] Note down the current booking count in wp-admin for later verification
+- [ ] **Disable bookings on live** — put the site in maintenance mode or disable the booking form so no new bookings/orders/registrations come in during the window
+- [ ] **Pause RoomCloud sync** — prevent availability updates from hitting live during the window
 - [ ] Create Hostinger staging environment (clones live site + database to subdomain)
-- [ ] In staging `wp-config.php`: swap Stripe live keys to your test keys, set `SHAPED_ENABLE_ROOMCLOUD` to `false`
+
+---
+
+## 2. Configure Staging
+
+- [ ] In staging `wp-config.php`: swap Stripe live keys to test keys, set `SHAPED_ENABLE_ROOMCLOUD` to `false`
 - [ ] Disable or redirect email sending on staging (mail trap plugin or change from-address)
 
 ---
 
-## 2. Deploy Stack on Staging
-
-All file replacements — database untouched.
+## 3. Deploy Stack on Staging
 
 - [ ] Replace `plugins/motopress-hotel-booking/` with frozen v5.2.3 from base template
 - [ ] Replace `plugins/shaped-core/` with the new version from this repo
@@ -37,9 +45,9 @@ All file replacements — database untouched.
 
 ---
 
-## 3. Elementor Templates
+## 4. Elementor Templates
 
-Export from base template, import on staging — this only touches page design, not booking data.
+Export from base template, import on staging — this touches page design and database (post content).
 
 - [ ] Save each updated page as Elementor Cloud template on base template site
 - [ ] On staging, open each page in Elementor, import the cloud template, apply it
@@ -54,39 +62,43 @@ Export from base template, import on staging — this only touches page design, 
 
 ---
 
-## 4. Staging Verification
+## 5. Staging Verification
 
 - [ ] Bookings: count matches pre-migration, spot-check 2-3 for intact postmeta
 - [ ] Frontend: browse all pages, test search flow, test checkout (Stripe test mode), verify shortcodes render
 - [ ] Admin: walk through Shaped Core admin pages, check error log
 - [ ] Emails: create a test booking on staging, confirm email is generated (via mail trap)
+- [ ] **Delete test bookings** created during verification — these will go live when you publish
 
 ---
 
-## 5. Go Live
+## 6. Prepare Staging for Publish
 
-- [ ] Trigger another Hostinger backup before touching live
-- [ ] **Do NOT push staging database to live** — only deploy files
+Before publishing staging to live, undo staging-only config:
 
-### File deployment (SFTP/File Manager):
-- [ ] `plugins/shaped-core/` — replace
-- [ ] `plugins/motopress-hotel-booking/` — replace
-- [ ] `mu-plugins/shaped-client-config.php` + `shaped-client-assets/` — deploy
-- [ ] `themes/{child-theme}/` — replace
+- [ ] In staging `wp-config.php`: restore live Stripe keys (remove test keys)
+- [ ] In staging `mu-plugins/shaped-client-config.php`: set `SHAPED_ENABLE_ROOMCLOUD` to `true`
+- [ ] Remove mail trap plugin or restore original email settings
+- [ ] Verify no test/debug artifacts remain
 
-### wp-config.php:
-- [ ] Verify live Stripe keys are active (no test keys)
-- [ ] `SHAPED_ENABLE_ROOMCLOUD` → `true` in mu-plugin
+---
 
-### Post-deploy:
+## 7. Go Live
+
+- [ ] Confirm bookings are still disabled on live (no new data since staging was created)
+- [ ] In Hostinger hPanel: go to WordPress > Staging, click **Publish** (full overwrite — files + database)
+- [ ] Wait for publish to complete
+
+### Post-publish:
 - [ ] Flush permalinks (Settings > Permalinks > Save) to register REST endpoints
-- [ ] Apply Elementor cloud templates on live (same process as staging)
-- [ ] Update header/footer template IDs in `shaped-client-config.php` if they changed
-- [ ] Check `debug.log`, verify bookings are intact
+- [ ] Check `debug.log` for fatal errors
+- [ ] Verify booking count matches pre-migration count
+- [ ] **Re-enable RoomCloud sync** — trigger a full availability re-sync
+- [ ] **Re-enable bookings** — take the site out of maintenance mode
 
 ---
 
-## 6. End-to-End Smoke Test
+## 8. End-to-End Smoke Test
 
 - [ ] Create a booking with your own card, targeting scheduled charge dates (Dual-flow)
 - [ ] Verify: Stripe shows correct payment/setup intent, webhook fires
@@ -97,9 +109,10 @@ Export from base template, import on staging — this only touches page design, 
 
 ---
 
-## 7. Cleanup
+## 9. Cleanup
 
-- [ ] Delete backup plugin folders from server (`shaped-core-old-backup/`, `mphb-backup/`)
+- [ ] Delete the staging environment in Hostinger hPanel
+- [ ] Delete backup plugin folders from server if any (`shaped-core-old-backup/`, `mphb-backup/`)
 - [ ] Remove `shaped-core-live/` from this repo
 - [ ] Verify Hostinger cron is pointing to live domain
 - [ ] Monitor `debug.log` and Stripe webhook delivery for 48 hours
@@ -108,4 +121,8 @@ Export from base template, import on staging — this only touches page design, 
 
 ## Rollback
 
-Restore the Hostinger backup taken at the start of Phase 5. This rolls back all files and database. Stripe state is external and unaffected.
+Hostinger auto-creates a backup before publishing staging. To roll back:
+1. In hPanel: go to Files > Backups
+2. Restore the auto-backup created right before the staging publish
+
+This restores files + database to the exact pre-publish state. Stripe state is external and unaffected.
