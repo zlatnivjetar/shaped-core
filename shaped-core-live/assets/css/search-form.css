@@ -1,0 +1,211 @@
+/*==================================================== SEARCH FORM =================================================== */
+.search-form-wrapper {
+    display: flex;
+    width: 100%;
+    gap: 24px;
+    align-items: flex-end;
+}
+
+.mphb_sc_search-submit-button-wrapper input {
+    height: 52px;
+}
+
+/* Form container - horizontal layout with glass effect */
+.mphb_sc_search-form {
+    display: flex;
+    flex-direction:column;
+    align-items: center;
+    background: var(--color-surface-page, #fbfaf9);
+    border: 1px solid var(--color-border-default, #e0e0e0);
+    padding: 24px;
+        box-shadow: var(--shadow-search-form, 0 6px 24px rgba(20, 19, 16, 0.1), 0px 0px 9px 3px rgba(209, 175, 93, 0.1));
+    border-radius: var(--radius-lg, 12px);
+
+
+    font-family: var(--font-body, 'DM Sans', sans-serif);
+    position: relative;
+}
+
+
+.trust-mobile {
+        display:none;
+    }
+
+/* Completely hide required fields tip */
+.mphb-required-fields-tip {
+    display: none !important;
+}
+
+/* Date field containers */
+.mphb_sc_search-check-in-date,
+.mphb_sc_search-check-out-date {
+    flex: 1;
+    min-width: 160px;
+    margin: 0;
+}
+
+.mphb_sc_search-check-in-date label, .mphb_sc_search-check-out-date label {
+    display: block;
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--color-text-primary, #141310);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    width: fit-content;
+line-height: 1.5em;
+    font-family: var(--font-body, 'DM Sans', -apple-system, system-ui, BlinkMacSystemFont, sans-serif);
+}
+
+/* Completely remove asterisk and disable cursor events */
+.mphb_sc_search-check-in-date abbr,
+.mphb_sc_search-check-out-date abbr,
+abbr[title="required"],
+abbr[title="Formatted as dd/mm/yyyy"] {
+    display: none !important;
+    pointer-events: none !important;
+}
+
+/* Remove line breaks between labels and inputs */
+.mphb_sc_search-check-in-date br,
+.mphb_sc_search-check-out-date br {
+    display: none;
+}
+
+/* Input fields - enhanced for glass effect with border radius */
+.mphb-datepick.mphb_datepicker {
+    width: 100%;
+    height: 52px;
+    padding: 10px 14px;
+    border: 1px solid var(--color-border-default, #e0e0e0);
+    border-radius: var(--radius-md, 8px);
+    font-size: 16px;
+    font-family: var(--font-body, 'DM Sans', sans-serif);
+    color: var(--color-text-primary, #141310);
+    background: var(--color-surface-card, #ffffff);
+    transition: all var(--transition-slow, 0.3s ease);
+    line-height: 1.5;
+    box-shadow: var(--shadow-sm, 0 2px 8px rgba(20, 19, 16, 0.05));
+}
+
+.mphb-datepick.mphb_datepicker:focus {
+    outline: none;
+    border-color: rgba(209, 175, 93, 0.6);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 
+        0 0 0 3px rgba(209, 175, 93, 0.15),
+        0 4px 12px rgba(20, 19, 16, 0.1);
+    transform: translateY(-1px);
+}
+
+.mphb-datepick.mphb_datepicker::placeholder {
+    color: rgba(102, 102, 102, 0.8);
+    font-size: 16px;
+}
+
+/* Submit button wrapper */
+.mphb_sc_search-submit-button-wrapper {
+    margin: 0;
+    flex-shrink: 0;
+}
+
+/* Form positioning */
+.elementor-section .mphb_sc_search-wrapper {
+    margin-top: 40px;
+}
+
+/* Mobile responsiveness - enhanced for glass effect */
+@media (max-width: 1024px) and (min-width: 769px) {
+    /* Tablet: horizontal layout with reduced input widths and centered button */
+    .elementor-section .mphb_sc_search-wrapper {
+        margin-top: 32px;
+    }
+    
+    .mphb_sc_search-submit-button-wrapper {
+        display: flex;
+        justify-content: center; /* Center the button */
+    }
+}
+
+@media (max-width: 768px) {
+    .elementor-section .mphb_sc_search-wrapper {
+        margin-top: 24px;
+    }
+    
+    .mphb_sc_search-form {
+        flex-direction: row; /* Keep horizontal for inputs */
+        flex-wrap: wrap;
+        gap: 12px 16px;
+        padding: 28px 24px;
+        background: rgba(251, 250, 249, 0.2);
+    }
+    
+    .mphb_sc_search-check-in-date,
+    .mphb_sc_search-check-out-date {
+        flex: 1; /* Equal width, side by side */
+        min-width: unset; /* Account for gap */
+    }
+    
+    .mphb_sc_search-submit-button-wrapper {
+        margin-top: 0px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mphb_sc_search-form {
+        padding: 24px;
+        gap: 16px;
+        border-radius: var(--radius-lg, 12px);
+        background: var(--color-surface-page, #fbfaf9);
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-form-wrapper {
+     flex-direction:column;
+}
+
+    .mphb-datepick.mphb_datepicker::placeholder {
+    color: var(--color-text-light, #999999);
+    font-size: 0.875rem;
+}
+    
+    .mphb_sc_search-check-in-date,
+    .mphb_sc_search-check-out-date {
+        width:100%;
+    }
+    
+    .mphb-datepick.mphb_datepicker {
+        padding: 8px 12px;
+        font-size: 1rem; 
+        border-radius: 8px;
+        height:48px;
+    }
+    
+    .mphb_sc_search-submit-button-wrapper input.button,.mphb_sc_search-submit-button-wrapper {
+        width:100%;
+    }
+    
+    .trust-mobile {
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        gap:8px;
+    }
+    span.mphb-search-trust-signal {
+margin-top: 0px;
+font-size: .8125rem;
+}
+
+span.mphb-search-trust-signal.hide-mobile {
+display: none;
+}
+
+.mphb_sc_search-check-in-date label, .mphb_sc_search-check-out-date label {
+    height:auto;
+    margin-bottom:8px;
+}
+}
+
+.datepick-month first  > span {
+    padding: 1px;
+}

@@ -1,0 +1,8 @@
+# Client Documentation
+
+This directory contains property-specific documentation.
+
+When setting up shaped-core for a new property, create a file:
+`clients/[PROPERTY_NAME].md`
+
+See MAINTENANCE.md for the template.

@@ -1,0 +1,205 @@
+/**
+ * Modal Styles
+ * Styles for AJAX-loaded modal windows
+ *
+ * @package Shaped_Core
+ */
+
+/* Modal Overlay */
+.shaped-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--color-overlay-scrim, rgba(0, 0, 0, 0.75));
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.shaped-modal-overlay.is-visible {
+    opacity: 1;
+}
+
+/* Modal Container */
+.shaped-modal-container {
+    background: var(--color-surface-card, #fff);
+    border-radius: var(--radius-md, 8px);
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-xl, 0 10px 40px rgba(0, 0, 0, 0.3));
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.shaped-modal-overlay.is-visible .shaped-modal-container {
+    transform: scale(1);
+}
+
+/* Modal Header */
+.shaped-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 30px;
+    border-bottom: 1px solid var(--color-border-default, #e5e5e5);
+}
+
+.shaped-modal-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--color-text-primary, #333);
+}
+
+.shaped-modal-close {
+    background: none;
+    border: none;
+    font-size: 32px;
+    line-height: 1;
+    color: var(--color-text-muted, #999);
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm, 4px);
+    transition: all 0.2s ease;
+}
+
+.shaped-modal-close:hover {
+    background: var(--color-surface-alt, #f5f5f5);
+    color: var(--color-text-primary, #333);
+}
+
+/* Modal Content */
+.shaped-modal-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 30px;
+    position: relative;
+}
+
+.shaped-modal-body {
+    line-height: 1.6;
+}
+
+.shaped-modal-body h1,
+.shaped-modal-body h2,
+.shaped-modal-body h3 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    color: var(--color-text-primary, #333);
+}
+
+.shaped-modal-body h1:first-child,
+.shaped-modal-body h2:first-child,
+.shaped-modal-body h3:first-child {
+    margin-top: 0;
+}
+
+.shaped-modal-body p {
+    margin-bottom: 1em;
+}
+
+.shaped-modal-body ul,
+.shaped-modal-body ol {
+    margin-bottom: 1em;
+    padding-left: 2em;
+}
+
+.shaped-modal-body a {
+    color: var(--color-brand-primary, #0073aa);
+    text-decoration: underline;
+}
+
+.shaped-modal-body a:hover {
+    color: var(--color-brand-primary-hover, #005177);
+}
+
+/* Loading State */
+.shaped-modal-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+}
+
+.shaped-modal-loading .spinner {
+    margin: 0 0 20px 0;
+}
+
+.shaped-modal-loading p {
+    margin: 0;
+    color: var(--color-text-muted, #666);
+}
+
+#shaped-modal-overlay .shaped-modal-content.is-loaded .shaped-modal-loading {
+    display: none;
+}
+
+#shaped-modal-overlay .shaped-modal-content:not(.is-loaded) .shaped-modal-body {
+    display: none;
+}
+
+/* Modal Links (triggers) */
+a.shaped-modal-link {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+a.shaped-modal-link:hover {
+    text-decoration: none;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .shaped-modal-overlay {
+        padding: 0;
+        align-items: flex-start;
+    }
+
+    .shaped-modal-container {
+        border-radius: 0;
+        max-height: 100vh;
+        max-width: 100%;
+    }
+
+    .shaped-modal-header {
+        padding: 15px 20px;
+    }
+
+    .shaped-modal-title {
+        font-size: 20px;
+    }
+
+    .shaped-modal-content {
+        padding: 20px;
+    }
+}
+
+/* Accessibility */
+.shaped-modal-overlay[aria-hidden="true"] {
+    display: none;
+}
+
+.shaped-modal-close:focus {
+    outline: 2px solid var(--color-brand-primary, #0073aa);
+    outline-offset: 2px;
+}
+
+/* Prevent body scroll when modal is open */
+body.shaped-modal-open {
+    overflow: hidden;
+}
