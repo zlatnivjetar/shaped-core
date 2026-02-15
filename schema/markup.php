@@ -250,7 +250,7 @@ final class Shaped_Schema {
             'checkin_time'     => $schema['checkinTime'] ?? '14:00',
             'checkout_time'    => $schema['checkoutTime'] ?? '10:00',
             'pets_allowed'     => $schema['petsAllowed'] ?? false,
-            'images'           => [], // absolute URLs only
+            'images'           => $this->resolve_images($schema),
             'same_as'          => $schema['sameAs'] ?? [],
             'address' => is_array($address) ? [
                 '@type'           => 'PostalAddress',
@@ -266,6 +266,24 @@ final class Shaped_Schema {
             ] : null,
             'amenities' => $amenities,
         ];
+    }
+
+    private function resolve_images(array $schema): array {
+        // 1. Explicit URLs from brand config
+        if (!empty($schema['images']) && is_array($schema['images'])) {
+            return $schema['images'];
+        }
+
+        // 2. Fall back to WordPress custom logo
+        $logo_id = get_theme_mod('custom_logo');
+        if ($logo_id) {
+            $url = wp_get_attachment_image_url($logo_id, 'full');
+            if ($url) {
+                return [$url];
+            }
+        }
+
+        return [];
     }
 }
 
