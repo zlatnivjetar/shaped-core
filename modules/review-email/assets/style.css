@@ -115,7 +115,7 @@
 
 .rating-btn:hover {
     border-color: var(--shaped-primary, #E2BD27);
-    background-color: rgba(37, 99, 235, 0.05);
+    background-color: color-mix(in srgb, var(--shaped-primary, #E2BD27) 5%, transparent);
     transform: translateY(-2px);
 }
 
@@ -124,7 +124,7 @@
     border-color: var(--shaped-primary, #E2BD27);
     color: #ffffff;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--shaped-primary, #E2BD27) 30%, transparent);
 }
 
 /* Low rating styling */
@@ -141,9 +141,9 @@
 .rating-btn.selected[data-rating="5"],
 .rating-btn.selected[data-rating="6"],
 .rating-btn.selected[data-rating="7"] {
-    background: #f59e0b;
-    border-color: #f59e0b;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+    background: var(--shaped-warning, #f59e0b);
+    border-color: var(--shaped-warning, #f59e0b);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--shaped-warning, #f59e0b) 30%, transparent);
 }
 
 /* High rating styling */
@@ -202,7 +202,7 @@
 .feedback-details textarea:focus {
     outline: none;
     border-color: var(--shaped-primary, #E2BD27);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--shaped-primary, #E2BD27) 10%, transparent);
 }
 
 .shaped-comment-section textarea::placeholder,
@@ -243,7 +243,7 @@
 
 .shaped-submit-btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--shaped-primary, #E2BD27) 40%, transparent);
 }
 
 .shaped-submit-btn:disabled {
