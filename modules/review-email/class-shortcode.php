@@ -463,9 +463,13 @@ class Shortcode {
             wp_send_json_error(['message' => 'Invalid token']);
         }
 
-        // Check if already reviewed
-        if ($this->has_reviewed($booking_id)) {
-            wp_send_json_error(['message' => 'Already reviewed']);
+        // Only block if feedback was already fully submitted (not just started)
+        if (get_post_meta($booking_id, '_shaped_review_submitted', true)) {
+            wp_send_json_success([
+                'action'  => 'feedback_received',
+                'message' => 'Thank you for your feedback. We truly value your input and will use it to improve our service.',
+            ]);
+            return;
         }
 
         // Store the feedback privately (not as a published review)
