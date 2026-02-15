@@ -51,21 +51,21 @@ class Shaped_RC_API
     /**
      * Send reservation to RoomCloud (create or update)
      */
-    public static function send_reservation($booking_id, $status = 'SUBMITTED', $amount = null)
+    public static function send_reservation($booking_id, $status = 'SUBMITTED', $prepaid = 0)
     {
         if (!self::is_configured()) {
             Shaped_RC_Error_Logger::log_critical('RoomCloud not configured', ['booking_id' => $booking_id]);
             return false;
         }
-        
+
         $booking = MPHB()->getBookingRepository()->findById($booking_id);
         if (!$booking) {
             Shaped_RC_Error_Logger::log_error('Booking not found', ['booking_id' => $booking_id]);
             return false;
         }
-        
+
         // Build reservation XML
-        $xml = self::build_reservation_xml($booking, $status, $amount);
+        $xml = self::build_reservation_xml($booking, $status, $prepaid);
         
         // Check if XML building failed
         if ($xml === false) {
@@ -158,32 +158,34 @@ class Shaped_RC_API
     /**
      * Build reservation XML
      */
-    private static function build_reservation_xml($booking, $status, $amount = null)
+    private static function build_reservation_xml($booking, $status, $prepaid = 0)
     {
         self::init();
-        
+
         $booking_id = $booking->getId();
         $customer = $booking->getCustomer();
-        $check_in = $booking->getCheckInDate()->format('Y-m-d');
-        $check_out = $booking->getCheckOutDate()->format('Y-m-d');
-        
+        $check_in_date = $booking->getCheckInDate();
+        $check_out_date = $booking->getCheckOutDate();
+        $check_in = $check_in_date->format('Y-m-d');
+        $check_out = $check_out_date->format('Y-m-d');
+
         // Get room details
         $reserved_rooms = $booking->getReservedRooms();
         if (empty($reserved_rooms)) {
             Shaped_RC_Error_Logger::log_error('No reserved rooms found', ['booking_id' => $booking_id]);
             return false;
         }
-        
+
         $room = reset($reserved_rooms);
         $room_type_id = $room->getRoomTypeId();
-        
+
         // Fix: MotoPress API sometimes returns 0, fallback to direct meta read
         if (!$room_type_id || $room_type_id === 0) {
             $room_type_id = get_post_meta($room->getId(), 'mphb_room_type_id', true);
         }
 
         $room_type = MPHB()->getRoomTypeRepository()->findById($room_type_id);
-        
+
         if (!$room_type) {
             Shaped_RC_Error_Logger::log_error('Room type not found', [
                 'booking_id' => $booking_id,
@@ -191,13 +193,13 @@ class Shaped_RC_API
             ]);
             return false;
         }
-        
+
         $room_slug = sanitize_title($room_type->getTitle());
-        
+
         // Get RoomCloud room ID from mapping
         $room_mapping = get_option('shaped_rc_room_mapping', []);
         $roomcloud_room_id = isset($room_mapping[$room_slug]) ? $room_mapping[$room_slug] : '';
-        
+
         if (empty($roomcloud_room_id)) {
             Shaped_RC_Error_Logger::log_critical('Room mapping not found', [
                 'booking_id' => $booking_id,
@@ -205,18 +207,22 @@ class Shaped_RC_API
             ]);
             return false;
         }
-        
+
         // Get rate ID
         $rate_id = get_option('shaped_rc_rate_id', '');
-        
-        // Get amount - use provided value or fetch from meta
-        if ($amount === null) {
-            $amount = get_post_meta($booking_id, '_shaped_payment_amount', true);
-            if (!$amount) {
-                $amount = Shaped_Pricing::calculate_final_amount($booking);
-            }
+
+        // Always calculate full booking value for price
+        $total_price = Shaped_Pricing::calculate_final_amount($booking);
+        if (!$total_price || $total_price <= 0) {
+            $total_price = (float) $booking->getTotalPrice();
         }
-        
+
+        // Ensure prepaid is numeric and doesn't exceed total
+        $prepaid = floatval($prepaid);
+        if ($prepaid > $total_price) {
+            $prepaid = $total_price;
+        }
+
         // Map status codes
         $status_map = [
             'SUBMITTED' => '2',
@@ -224,11 +230,11 @@ class Shaped_RC_API
             'CANCELLED' => '7',
         ];
         $status_code = isset($status_map[$status]) ? $status_map[$status] : '2';
-        
+
         // Get adults/children count
         $adults = 2; // Default
         $children = 0;
-        
+
         // Try to get from booking
         $price_breakdown = $booking->getPriceBreakdown();
         if (isset($price_breakdown['rooms'][0]['adults'])) {
@@ -237,10 +243,14 @@ class Shaped_RC_API
         if (isset($price_breakdown['rooms'][0]['children'])) {
             $children = $price_breakdown['rooms'][0]['children'];
         }
-        
+
+        // Calculate per-night pricing
+        $nights = $check_in_date->diff($check_out_date)->days;
+        $per_night_price = ($nights > 0) ? round($total_price / $nights, 2) : $total_price;
+
         // Cancellation policy
         $cancellation_policy = 'Free cancellation up to 7 days before check-in. Non-refundable within 7 days of arrival.';
-        
+
         // Build XML
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= '<Request userName="' . esc_attr(self::$username) . '" password="' . esc_attr(self::$password) . '">' . "\n";
@@ -254,33 +264,55 @@ class Shaped_RC_API
         $xml .= 'rooms="1" ';
         $xml .= 'adults="' . $adults . '" ';
         $xml .= 'children="' . $children . '" ';
-        $xml .= 'price="' . number_format($amount, 2, '.', '') . '" ';
+        $xml .= 'price="' . number_format($total_price, 2, '.', '') . '" ';
+        $xml .= 'prepaid="' . number_format($prepaid, 2, '.', '') . '" ';
         $xml .= 'currency="EUR" ';
         $xml .= 'status="' . $status_code . '" ';
         $xml .= 'creation_date="' . get_post_field('post_date', $booking_id) . '" ';
-        
+
         // Use channel_id if configured, otherwise fall back to "Website"
         if (!empty(self::$channel_id)) {
             $xml .= 'channel_id="' . esc_attr(self::$channel_id) . '" ';
         }
         $xml .= 'source_of_business="Website">' . "\n";
-        
-        // Room details
+
+        // Room details (self-closing tag removed — now contains dayPrice children)
         $xml .= '    <room id="' . $roomcloud_room_id . '" ';
         $xml .= 'description="' . esc_attr($room_type->getTitle()) . '" ';
         $xml .= 'checkin="' . $check_in . '" ';
         $xml .= 'checkout="' . $check_out . '" ';
         $xml .= 'rateId="' . $rate_id . '" ';
         $xml .= 'quantity="1" ';
-        $xml .= 'price="' . number_format($amount, 2, '.', '') . '" ';
+        $xml .= 'price="' . number_format($total_price, 2, '.', '') . '" ';
         $xml .= 'adults="' . $adults . '" ';
         $xml .= 'children="' . $children . '" ';
         $xml .= 'status="' . $status_code . '" ';
-        $xml .= 'cancellation_policy="' . esc_attr($cancellation_policy) . '"/>' . "\n";
-        
+        $xml .= 'cancellation_policy="' . esc_attr($cancellation_policy) . '">' . "\n";
+
+        // Per-night price breakdown
+        $current_date = clone $check_in_date;
+        $remaining_total = $total_price;
+        for ($i = 0; $i < $nights; $i++) {
+            // Last night gets the remainder to avoid rounding drift
+            if ($i === $nights - 1) {
+                $day_price = $remaining_total;
+            } else {
+                $day_price = $per_night_price;
+                $remaining_total -= $per_night_price;
+            }
+
+            $xml .= '      <dayPrice day="' . $current_date->format('Y-m-d') . '" ';
+            $xml .= 'roomId="' . $roomcloud_room_id . '" ';
+            $xml .= 'rateId="' . $rate_id . '" ';
+            $xml .= 'price="' . number_format($day_price, 2, '.', '') . '"/>' . "\n";
+
+            $current_date->modify('+1 day');
+        }
+
+        $xml .= '    </room>' . "\n";
         $xml .= '  </reservation>' . "\n";
         $xml .= '</Request>';
-        
+
         return $xml;
     }
     

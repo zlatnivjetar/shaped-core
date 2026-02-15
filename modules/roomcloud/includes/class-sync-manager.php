@@ -70,13 +70,12 @@ class Shaped_RC_Sync_Manager
             return;
         }
         
-        Shaped_RC_Error_Logger::log_info('Sending reservation to RoomCloud (SUBMITTED, no revenue)', [
+        Shaped_RC_Error_Logger::log_info('Sending reservation to RoomCloud (SUBMITTED, no prepayment yet)', [
             'booking_id' => $booking_id,
-            'amount' => 0,
         ]);
-        
-        // Send reservation with SUBMITTED status and €0
-        // RoomCloud will respond with modify containing updated availability
+
+        // Send reservation with SUBMITTED status and €0 prepaid
+        // price = full booking value (calculated internally), prepaid = 0
         $result = Shaped_RC_API::send_reservation($booking_id, 'SUBMITTED', 0);
         
         // Handle rejection (no availability)
@@ -99,15 +98,13 @@ class Shaped_RC_Sync_Manager
             return;
         }
 
-        $amount = get_post_meta($booking_id, '_stripe_pending_amount', true);
-
         Shaped_RC_Error_Logger::log_info('Card authorized - sending CONFIRMED to RoomCloud to block dates', [
             'booking_id' => $booking_id,
-            'pending_amount' => $amount,
         ]);
 
         // Send as CONFIRMED so RoomCloud blocks the dates immediately
-        Shaped_RC_API::send_reservation($booking_id, 'CONFIRMED', $amount ?: 0);
+        // price = full booking value (calculated internally), prepaid = 0 (card authorized but not yet charged)
+        Shaped_RC_API::send_reservation($booking_id, 'CONFIRMED', 0);
     }
 
     /**
@@ -123,18 +120,18 @@ class Shaped_RC_Sync_Manager
             return;
         }
         
-        // Update reservation status to CONFIRMED
-        $amount = get_post_meta($booking_id, '_shaped_payment_amount', true);
-        
+        // Get the amount actually charged (prepaid)
+        $prepaid = (float) get_post_meta($booking_id, '_shaped_payment_amount', true);
+
         Shaped_RC_Error_Logger::log_info('Sending revenue to RoomCloud (CONFIRMED)', [
             'booking_id' => $booking_id,
             'mode' => $mode,
-            'amount' => $amount,
+            'prepaid' => $prepaid,
         ]);
-        
-        // Send confirmed reservation with amount
-        // RoomCloud will respond with modify containing updated availability
-        Shaped_RC_API::send_reservation($booking_id, 'CONFIRMED', $amount);
+
+        // Send confirmed reservation with prepaid amount
+        // price = full booking value (calculated internally), prepaid = amount charged
+        Shaped_RC_API::send_reservation($booking_id, 'CONFIRMED', $prepaid);
     }
     
     /**
@@ -424,12 +421,15 @@ class Shaped_RC_Sync_Manager
             ];
         }
         
-        // Determine status based on payment
+        // Determine status and prepaid based on payment
         $payment_status = get_post_meta($booking_id, '_shaped_payment_status', true);
         $status = ($payment_status === 'completed') ? 'CONFIRMED' : 'SUBMITTED';
-        
-        // Send to RoomCloud
-        $result = Shaped_RC_API::send_reservation($booking_id, $status);
+        $prepaid = ($payment_status === 'completed')
+            ? (float) get_post_meta($booking_id, '_shaped_payment_amount', true)
+            : 0;
+
+        // Send to RoomCloud (price = full value calculated internally, prepaid = amount charged)
+        $result = Shaped_RC_API::send_reservation($booking_id, $status, $prepaid);
         
         if ($result) {
             return [
