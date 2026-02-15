@@ -53,6 +53,14 @@ final class Shaped_Schema {
             '@id'   => $website_id,
             'url'   => trailingslashit(home_url()),
             'name'  => $config['site_name'],
+            'potentialAction' => [
+                '@type'       => 'SearchAction',
+                'target'      => [
+                    '@type'       => 'EntryPoint',
+                    'urlTemplate' => trailingslashit(home_url()) . 'book/?mphb_check_in_date={check_in_date}&mphb_check_out_date={check_out_date}',
+                ],
+                'query-input' => 'required name=check_in_date required name=check_out_date',
+            ],
         ];
 
         /* ─────────────────────────
@@ -80,7 +88,7 @@ final class Shaped_Schema {
                 '@type'  => 'ReserveAction',
                 'target' => [
                     '@type'          => 'EntryPoint',
-                    'urlTemplate'    => apply_filters('shaped_booking_url', trailingslashit(home_url())),
+                    'urlTemplate'    => apply_filters('shaped_booking_url', trailingslashit(home_url()) . 'book/'),
                     'actionPlatform' => [
                         'http://schema.org/DesktopWebPlatform',
                         'http://schema.org/MobilePlatform',
@@ -109,6 +117,24 @@ final class Shaped_Schema {
         if (is_front_page()) {
             $webpage['mainEntity'] = [
                 '@id' => $lodging_id,
+            ];
+        }
+
+        if (is_page('book')) {
+            $webpage['potentialAction'] = [
+                '@type'  => 'ReserveAction',
+                'target' => [
+                    '@type'          => 'EntryPoint',
+                    'urlTemplate'    => $page_url,
+                    'actionPlatform' => [
+                        'http://schema.org/DesktopWebPlatform',
+                        'http://schema.org/MobilePlatform',
+                    ],
+                ],
+                'result' => [
+                    '@type' => 'LodgingReservation',
+                    'name'  => 'Book Now',
+                ],
             ];
         }
 
