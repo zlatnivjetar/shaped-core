@@ -245,7 +245,7 @@ class Shaped_Assets {
         }
 
         // ── Only the token defaults referenced by the critical rules below ──
-        $tokens = ':root{--color-surface-page: ;--color-surface-white:#FFFFFF;--color-border-default:#e4e4e4;--shadow-search-form:0 6px 24px rgba(0,0,0,0.1);--shadow-sm:0 1px 2px rgba(0,0,0,0.05);--radius-md:8px;--radius-lg:12px}';
+        $tokens = ':root{--color-surface-page: ;--color-surface-white:#FFFFFF;--color-border-default:#e4e4e4;--shadow-search-form:0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 8px #e2bd2728;--shadow-sm:0 1px 2px rgba(0,0,0,0.05);--radius-md:8px;--radius-lg:12px}';
 
         // Client-specific overrides (fills --color-surface-page, --font-body, etc.)
         if (class_exists('Shaped_Design_Tokens_Generator')) {

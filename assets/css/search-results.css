@@ -72,13 +72,13 @@
     background: var(--color-surface-white);
     border-radius: var(--radius-lg);
     overflow: hidden;
-    box-shadow: var(--shadow-xl), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    box-shadow: var(--shadow-lg);
     transition: transform var(--transition-base), box-shadow var(--transition-base);
 }
 
 .mphb-room-type:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(20, 19, 16, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 24px rgba(0)
 }
 
 

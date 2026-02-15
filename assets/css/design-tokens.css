@@ -82,7 +82,7 @@
   --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
   --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.16);
   --shadow-card: 0 2px 5px -1px rgba(50, 50, 93, 0.25), 0 1px 3px -1px rgba(0, 0, 0, 0.3);
-  --shadow-search-form: 0 6px 24px rgba(0, 0, 0, 0.1);
+  --shadow-search-form: 0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 8px #e2bd2728;
 
   /* =================================================================
    * CONSTANTS - BORDER RADIUS
