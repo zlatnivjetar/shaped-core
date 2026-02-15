@@ -55,6 +55,7 @@ function shaped_brand_color($key) {
         $constants = [
             // Semantic colors (CONSTANTS - same for all clients)
             'success' => '#4C9155',
+            'warning' => '#f59e0b',
             'error' => '#b83c2e',
 
             // Surface constants (generic white/light gray)

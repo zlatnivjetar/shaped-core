@@ -59,6 +59,7 @@
    * Shared by success/error states AND badges (discount/urgency)
    * ================================================================= */
   --color-semantic-success: #4C9155;
+  --color-semantic-warning: #f59e0b;
   --color-semantic-error: #b83c2e;
   --color-semantic-error-bg: #FCEEEE;
   --color-semantic-error-alt: #FCEEEE;
