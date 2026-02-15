@@ -142,6 +142,7 @@ class Shortcode {
         $text_primary = function_exists('shaped_brand_color') ? shaped_brand_color('textPrimary') : '#26272C';
         $text_muted = function_exists('shaped_brand_color') ? shaped_brand_color('textMuted') : '#666666';
         $success = function_exists('shaped_brand_color') ? shaped_brand_color('success') : '#22c55e';
+        $warning = function_exists('shaped_brand_color') ? shaped_brand_color('warning') : '#f59e0b';
         $error = function_exists('shaped_brand_color') ? shaped_brand_color('error') : '#ef4444';
 
         ob_start();
@@ -307,6 +308,7 @@ class Shortcode {
                 --shaped-text-primary: <?php echo esc_attr($text_primary); ?>;
                 --shaped-text-muted: <?php echo esc_attr($text_muted); ?>;
                 --shaped-success: <?php echo esc_attr($success); ?>;
+                --shaped-warning: <?php echo esc_attr($warning); ?>;
                 --shaped-error: <?php echo esc_attr($error); ?>;
             }
         </style>
@@ -339,16 +341,11 @@ class Shortcode {
      * @return string
      */
     private function render_already_reviewed(): string {
-        $success = function_exists('shaped_brand_color') ? shaped_brand_color('success') : '#22c55e';
-
-        return sprintf(
-            '<div class="shaped-review-container shaped-review-success">
-                <div class="success-icon" style="color: #ffffff;</div>
-                <h2>Review already submitted</h2>
+        return '<div class="shaped-review-container shaped-review-success">
+                <div class="success-icon">&#10003;</div>
+                <h2>Review Already Submitted</h2>
                 <p>You have already submitted a review for this stay. Thank you for your feedback!</p>
-            </div>',
-            esc_attr($success)
-        );
+            </div>';
     }
 
     /**
