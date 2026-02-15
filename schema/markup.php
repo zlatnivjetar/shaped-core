@@ -53,6 +53,14 @@ final class Shaped_Schema {
             '@id'   => $website_id,
             'url'   => trailingslashit(home_url()),
             'name'  => $config['site_name'],
+            'potentialAction' => [
+                '@type'       => 'SearchAction',
+                'target'      => [
+                    '@type'       => 'EntryPoint',
+                    'urlTemplate' => trailingslashit(home_url()) . 'book/?mphb_check_in_date={check_in_date}&mphb_check_out_date={check_out_date}',
+                ],
+                'query-input' => 'required name=check_in_date required name=check_out_date',
+            ],
         ];
 
         /* ─────────────────────────
@@ -80,7 +88,7 @@ final class Shaped_Schema {
                 '@type'  => 'ReserveAction',
                 'target' => [
                     '@type'          => 'EntryPoint',
-                    'urlTemplate'    => apply_filters('shaped_booking_url', trailingslashit(home_url())),
+                    'urlTemplate'    => apply_filters('shaped_booking_url', trailingslashit(home_url()) . 'book/'),
                     'actionPlatform' => [
                         'http://schema.org/DesktopWebPlatform',
                         'http://schema.org/MobilePlatform',
@@ -109,6 +117,24 @@ final class Shaped_Schema {
         if (is_front_page()) {
             $webpage['mainEntity'] = [
                 '@id' => $lodging_id,
+            ];
+        }
+
+        if (is_page('book')) {
+            $webpage['potentialAction'] = [
+                '@type'  => 'ReserveAction',
+                'target' => [
+                    '@type'          => 'EntryPoint',
+                    'urlTemplate'    => $page_url,
+                    'actionPlatform' => [
+                        'http://schema.org/DesktopWebPlatform',
+                        'http://schema.org/MobilePlatform',
+                    ],
+                ],
+                'result' => [
+                    '@type' => 'LodgingReservation',
+                    'name'  => 'Book Now',
+                ],
             ];
         }
 
@@ -224,7 +250,7 @@ final class Shaped_Schema {
             'checkin_time'     => $schema['checkinTime'] ?? '14:00',
             'checkout_time'    => $schema['checkoutTime'] ?? '10:00',
             'pets_allowed'     => $schema['petsAllowed'] ?? false,
-            'images'           => [], // absolute URLs only
+            'images'           => $this->resolve_images($schema),
             'same_as'          => $schema['sameAs'] ?? [],
             'address' => is_array($address) ? [
                 '@type'           => 'PostalAddress',
@@ -240,6 +266,24 @@ final class Shaped_Schema {
             ] : null,
             'amenities' => $amenities,
         ];
+    }
+
+    private function resolve_images(array $schema): array {
+        // 1. Explicit URLs from brand config
+        if (!empty($schema['images']) && is_array($schema['images'])) {
+            return $schema['images'];
+        }
+
+        // 2. Fall back to WordPress custom logo
+        $logo_id = get_theme_mod('custom_logo');
+        if ($logo_id) {
+            $url = wp_get_attachment_image_url($logo_id, 'full');
+            if ($url) {
+                return [$url];
+            }
+        }
+
+        return [];
     }
 }
 
