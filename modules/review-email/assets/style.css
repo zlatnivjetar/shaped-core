@@ -99,17 +99,18 @@
 }
 
 .rating-btn {
-    aspect-ratio: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.125rem;
+    padding: 10px 0;
+    font-size: 0.9375rem;
     font-weight: 700;
     border: 2px solid #e5e5e5;
     border-radius: 8px;
     background: #ffffff;
     color: var(--shaped-text-primary, #26272C);
     cursor: pointer;
+    user-select: none;
     transition: all 0.2s ease;
 }
 
@@ -226,11 +227,15 @@
 }
 
 .shaped-submit-btn {
-    display: inline-block;
-    padding: 16px 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 48px;
+    padding: 0 48px;
     font-family: inherit;
     font-size: 1rem;
     font-weight: 700;
+    line-height: 1em;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border: none;
@@ -464,7 +469,6 @@
 
     .shaped-submit-btn {
         width: 100%;
-        padding: 14px 24px;
     }
 
     .shaped-name-section input {

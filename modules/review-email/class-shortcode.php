@@ -101,11 +101,16 @@ class Shortcode {
         $room_type_ids = $booking->getReservedRoomTypeIds();
         $room_names = array_map('get_the_title', $room_type_ids);
 
-        // Get guest name - with fallback to meta
-        $guest_name = $customer ? $customer->getFirstName() : null;
-        if (!$guest_name) {
-            $guest_name = get_post_meta($booking_id, '_mphb_first_name', true) ?: 'Guest';
+        // Get guest full name - with fallback to meta
+        $first_name = $customer ? $customer->getFirstName() : null;
+        $last_name = $customer ? $customer->getLastName() : null;
+        if (!$first_name) {
+            $first_name = get_post_meta($booking_id, '_mphb_first_name', true) ?: 'Guest';
         }
+        if (!$last_name) {
+            $last_name = get_post_meta($booking_id, '_mphb_last_name', true) ?: '';
+        }
+        $guest_name = trim($first_name . ' ' . $last_name);
 
         // Get dates - fallback to meta if MPHB object doesn't have them
         $check_in_date = $booking->getCheckInDate();
@@ -182,9 +187,9 @@ class Shortcode {
 
                     <div class="shaped-rating-buttons">
                         <?php for ($i = 1; $i <= 10; $i++): ?>
-                            <button type="button" class="rating-btn" data-rating="<?php echo $i; ?>">
+                            <span class="rating-btn" role="button" tabindex="0" data-rating="<?php echo $i; ?>">
                                 <?php echo $i; ?>
-                            </button>
+                            </span>
                         <?php endfor; ?>
                     </div>
                     <input type="hidden" name="rating" id="shaped-rating-input" value="" required>

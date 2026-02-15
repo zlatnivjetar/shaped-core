@@ -56,6 +56,14 @@
             // Enable submit button
             $submitBtn.prop('disabled', false);
         });
+
+        // Keyboard support for span-based rating buttons
+        $buttons.on('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                $(this).trigger('click');
+            }
+        });
     }
 
     /**
