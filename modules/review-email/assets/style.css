@@ -20,7 +20,7 @@
 .shaped-review-header.review-form {
     align-items: center;
     flex-direction: column;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
     padding-bottom: 16px;
     border-bottom: 2px solid var(--shaped-primary, #E2BD27);
     gap: 8px;
@@ -45,7 +45,7 @@
     background: #fafafa;
     border-radius: 8px;
     padding: 20px 24px;
-    margin-bottom: 32px;
+    margin-bottom:24px;
     border: 1px solid #f0f0f0;
 }
 
@@ -75,7 +75,7 @@
 
 /* Rating Section */
 .shaped-rating-section {
-    margin-bottom: 32px;
+    margin-bottom: 24px;
 }
 
 .shaped-rating-section > label {
@@ -172,7 +172,7 @@
 
 /* Comment Section */
 .shaped-comment-section {
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
 .shaped-comment-section label,
@@ -217,10 +217,6 @@
 /* Name Section */
 .shaped-name-section {
     margin-bottom: 32px;
-}
-
-.shaped-name-section input {
-    max-width: 300px;
 }
 
 /* Submit Section */
@@ -295,7 +291,7 @@
 }
 
 .feedback-header h2 {
-    margin: 0 0 8px 0;
+    margin: 0 0 8px 0 !important;
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--shaped-text-primary, #26272C);
@@ -386,10 +382,10 @@
 }
 
 .shaped-thank-you-section p {
-    margin: 0 0 8px 0;
+    margin: 12px 0 8px 0;
     font-size: 1.125rem;
     color: var(--shaped-text-muted, #666666);
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 .shaped-thank-you-section .thank-you-subtext {

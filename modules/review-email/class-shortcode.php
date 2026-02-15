@@ -431,7 +431,7 @@ class Shortcode {
 
             wp_send_json_success([
                 'action'  => 'published',
-                'message' => 'Thank you! Your review has been published.',
+                'message' => 'Your review has been published.',
             ]);
         } else {
             wp_send_json_error(['message' => 'Failed to save review']);
