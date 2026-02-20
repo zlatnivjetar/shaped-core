@@ -746,12 +746,24 @@ class Shaped_Payment_Processor
 
                         // Schedule charge
                         if (!get_post_meta($booking_id, '_shaped_charge_scheduled', true)) {
-                            wp_schedule_single_event($charge_ts, 'shaped_charge_single_booking', [$booking_id, $idempotency_key]);
+                            $result = wp_schedule_single_event($charge_ts, 'shaped_charge_single_booking', [$booking_id, $idempotency_key]);
+
+                            if ($result === false || is_wp_error($result)) {
+                                $err_msg = is_wp_error($result) ? $result->get_error_message() : 'returned false';
+                                error_log(sprintf('[Shaped] WARNING: wp_schedule_single_event failed for booking #%d: %s', $booking_id, $err_msg));
+                            }
+
+                            // Verify event is actually in the cron array
+                            $verify = wp_next_scheduled('shaped_charge_single_booking', [$booking_id, $idempotency_key]);
+                            if (!$verify) {
+                                error_log(sprintf('[Shaped] WARNING: Per-booking cron NOT found after scheduling for booking #%d', $booking_id));
+                            }
+
                             update_post_meta($booking_id, '_shaped_charge_scheduled', true);
 
                             $log_dt = clone $charge_dt;
                             $log_dt->setTimezone(new DateTimeZone('Europe/Zagreb'));
-                            error_log(sprintf('[Shaped] Scheduled charge for booking #%d at %s Zagreb time', $booking_id, $log_dt->format('Y-m-d H:i:s')));
+                            error_log(sprintf('[Shaped] Scheduled charge for booking #%d at %s Zagreb time (ts=%d, verified=%s)', $booking_id, $log_dt->format('Y-m-d H:i:s'), $charge_ts, $verify ? 'yes' : 'NO'));
                         }
                     } catch (\Throwable $e) {
                         error_log('[Shaped] Setup processing error: ' . $e->getMessage());
@@ -983,20 +995,43 @@ class Shaped_Payment_Processor
 
     public function ensure_daily_fallback_schedule(): void
     {
-        if (!wp_next_scheduled('shaped_daily_charge_fallback')) {
-            // Anchor to 16:30 Europe/Zagreb (30 min after scheduled charge time)
-            $tz  = new \DateTimeZone('Europe/Zagreb');
-            $now = new \DateTime('now', $tz);
-            $run = clone $now;
-            $run->setTime(16, 30, 0);
+        $hook          = 'shaped_daily_charge_fallback';
+        $tz            = new \DateTimeZone('Europe/Zagreb');
+        $target_hour   = 16;
+        $target_minute = 30;
 
-            // If 16:30 today already passed, schedule for tomorrow
-            if ($run <= $now) {
-                $run->modify('+1 day');
+        $existing_ts = wp_next_scheduled($hook);
+
+        if ($existing_ts) {
+            // Verify existing schedule fires at the correct Zagreb time-of-day
+            $existing_dt = new \DateTime('@' . $existing_ts);
+            $existing_dt->setTimezone($tz);
+            $existing_h = (int) $existing_dt->format('G');
+            $existing_m = (int) $existing_dt->format('i');
+
+            if ($existing_h === $target_hour && abs($existing_m - $target_minute) <= 5) {
+                return; // Schedule is correct
             }
 
-            wp_schedule_event($run->getTimestamp(), 'daily', 'shaped_daily_charge_fallback');
+            // Schedule drifted or was set at wrong time – clear and reschedule
+            wp_clear_scheduled_hook($hook);
+            error_log(sprintf(
+                '[Shaped] Fallback cron was at %02d:%02d Zagreb, expected %02d:%02d – rescheduling',
+                $existing_h, $existing_m, $target_hour, $target_minute
+            ));
         }
+
+        // Schedule for next occurrence of 16:30 Zagreb
+        $now = new \DateTime('now', $tz);
+        $run = clone $now;
+        $run->setTime($target_hour, $target_minute, 0);
+
+        if ($run <= $now) {
+            $run->modify('+1 day');
+        }
+
+        wp_schedule_event($run->getTimestamp(), 'daily', $hook);
+        error_log(sprintf('[Shaped] Scheduled daily fallback at %s Zagreb time', $run->format('Y-m-d H:i:s')));
     }
 
     public function daily_charge_fallback(): void
