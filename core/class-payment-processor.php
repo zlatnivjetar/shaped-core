@@ -875,6 +875,7 @@ class Shaped_Payment_Processor
         shaped_load_stripe_sdk();
         $stripe = new \Stripe\StripeClient(shaped_get_stripe_secret());
 
+        // ── Stripe charge (the only part that can legitimately fail) ──
         try {
             if (!$payment_method_id) {
                 $customer          = $stripe->customers->retrieve($customer_id);
@@ -906,38 +907,46 @@ class Shaped_Payment_Processor
             update_post_meta($booking_id, '_mphb_paid_amount', $final_amount);
             update_post_meta($booking_id, '_shaped_payment_status', 'completed');
             update_post_meta($booking_id, '_shaped_charge_processed', true);
-
-            do_action('shaped_payment_completed', $booking_id, 'delayed');
-
-            if ($booking->getStatus() !== 'confirmed') {
-                $booking->setStatus('confirmed');
-                MPHB()->getBookingRepository()->save($booking);
-            }
-
-            if (function_exists('shaped_send_confirmation_email')) {
-                shaped_send_confirmation_email($booking_id);
-            }
-            if (function_exists('shaped_send_admin_confirmation_email')) {
-                shaped_send_admin_confirmation_email($booking_id);
-            }
-
-            $this->detach_payment_method($booking_id);
-
-            error_log('[Shaped Charge] Successfully charged booking #' . $booking_id);
         } catch (\Stripe\Exception\CardException $e) {
             error_log('[Shaped Charge] Payment failed: ' . $e->getMessage());
             update_post_meta($booking_id, '_shaped_payment_status', 'charge_failed');
-            // Send failure notifications to guest and admin
             if (function_exists('shaped_send_payment_failed_email')) {
                 shaped_send_payment_failed_email($booking_id);
             }
             if (function_exists('shaped_send_admin_payment_failed_email')) {
                 shaped_send_admin_payment_failed_email($booking_id);
             }
+            return;
         } catch (\Throwable $e) {
             error_log('[Shaped Charge] Error: ' . $e->getMessage());
             update_post_meta($booking_id, '_shaped_payment_status', 'charge_failed');
+            return;
         }
+
+        // ── Post-charge side effects (charge already succeeded, these must not revert status) ──
+        try { do_action('shaped_payment_completed', $booking_id, 'delayed'); }
+        catch (\Throwable $e) { error_log('[Shaped Charge] Post-charge action error: ' . $e->getMessage()); }
+
+        try {
+            if ($booking->getStatus() !== 'confirmed') {
+                $booking->setStatus('confirmed');
+                MPHB()->getBookingRepository()->save($booking);
+            }
+        } catch (\Throwable $e) { error_log('[Shaped Charge] Status update error: ' . $e->getMessage()); }
+
+        try {
+            if (function_exists('shaped_send_confirmation_email')) {
+                shaped_send_confirmation_email($booking_id);
+            }
+            if (function_exists('shaped_send_admin_confirmation_email')) {
+                shaped_send_admin_confirmation_email($booking_id);
+            }
+        } catch (\Throwable $e) { error_log('[Shaped Charge] Confirmation email error: ' . $e->getMessage()); }
+
+        try { $this->detach_payment_method($booking_id); }
+        catch (\Throwable $e) { error_log('[Shaped Charge] PM detach error: ' . $e->getMessage()); }
+
+        error_log('[Shaped Charge] Successfully charged booking #' . $booking_id);
     }
 
     /* ============================================================
@@ -1071,7 +1080,11 @@ class Shaped_Payment_Processor
                 $idempotency_key = get_post_meta($booking_id, '_shaped_idempotency_key', true)
                     ?: 'fallback_' . $booking_id . '_' . $charge_at;
                 error_log('[Shaped Fallback] Processing missed charge for booking #' . $booking_id);
-                $this->charge_single_booking($booking_id, $idempotency_key);
+                try {
+                    $this->charge_single_booking($booking_id, $idempotency_key);
+                } catch (\Throwable $e) {
+                    error_log('[Shaped Fallback] Unhandled error for booking #' . $booking_id . ': ' . $e->getMessage());
+                }
             }
         }
     }
