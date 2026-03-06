@@ -5,12 +5,30 @@
  * is loaded with ?lang=de in the URL. This supports visitors from German-speaking
  * markets (DE, AT, CH) who arrive via German Google Ads.
  *
- * Requires the Google Translate widget (doGTranslate) to be present on the page.
+ * Google Translate loads asynchronously, so doGTranslate may not be available
+ * at DOMContentLoaded. We poll for it with a short interval and a timeout cap.
  */
 
-document.addEventListener('DOMContentLoaded', function () {
+(function () {
 	var params = new URLSearchParams(window.location.search);
-	if (params.get('lang') === 'de' && typeof doGTranslate === 'function') {
-		doGTranslate('en|de');
+	if (params.get('lang') !== 'de') {
+		return;
 	}
-});
+
+	var attempts = 0;
+	var maxAttempts = 40; // 40 × 250 ms = 10 s timeout
+
+	var interval = setInterval(function () {
+		attempts++;
+
+		if (typeof doGTranslate === 'function') {
+			clearInterval(interval);
+			doGTranslate('en|de');
+			return;
+		}
+
+		if (attempts >= maxAttempts) {
+			clearInterval(interval);
+		}
+	}, 250);
+})();
