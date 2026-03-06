@@ -1,12 +1,12 @@
 /**
  * German Landing Page Auto-Translate
  *
- * Automatically switches the Google Translate widget to German when the page
- * is loaded with ?lang=de in the URL. This supports visitors from German-speaking
- * markets (DE, AT, CH) who arrive via German Google Ads.
+ * Automatically switches GTranslate to German when the page is loaded with
+ * ?lang=de in the URL. Supports visitors arriving via German Google Ads.
  *
- * Google Translate loads asynchronously, so doGTranslate may not be available
- * at DOMContentLoaded. We poll for it with a short interval and a timeout cap.
+ * Strategy: set the `googtrans` cookie that GTranslate reads at page load,
+ * then reload once. On the reloaded page the cookie is already set so we
+ * skip the reload — no async timing issues and works in incognito.
  */
 
 (function () {
@@ -15,20 +15,20 @@
 		return;
 	}
 
-	var attempts = 0;
-	var maxAttempts = 40; // 40 × 250 ms = 10 s timeout
+	// Read existing googtrans cookie value
+	var existing = document.cookie.split('; ').reduce(function (acc, pair) {
+		var parts = pair.split('=');
+		return parts[0] === 'googtrans' ? decodeURIComponent(parts[1]) : acc;
+	}, '');
 
-	var interval = setInterval(function () {
-		attempts++;
+	// Cookie is already set to German — GTranslate handles it from here
+	if (existing === '/en/de') {
+		return;
+	}
 
-		if (typeof doGTranslate === 'function') {
-			clearInterval(interval);
-			doGTranslate('en|de');
-			return;
-		}
-
-		if (attempts >= maxAttempts) {
-			clearInterval(interval);
-		}
-	}, 250);
+	// Set cookie for both the current hostname and the root domain,
+	// then reload so GTranslate picks it up at page initialisation.
+	document.cookie = 'googtrans=/en/de; path=/';
+	document.cookie = 'googtrans=/en/de; path=/; domain=' + window.location.hostname;
+	window.location.reload();
 })();
