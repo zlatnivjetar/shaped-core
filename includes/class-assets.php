@@ -117,6 +117,17 @@ class Shaped_Assets {
             );
         }
 
+        // Auto-switch to German for visitors arriving via ?lang=de (German Ads)
+        if (file_exists(SHAPED_DIR . 'assets/js/german-landing.js')) {
+            wp_enqueue_script(
+                'shaped-german-landing',
+                SHAPED_URL . 'assets/js/german-landing.js',
+                [],
+                SHAPED_VERSION,
+                true
+            );
+        }
+
         // Leave page confirmation modal (for external links)
         if (file_exists(SHAPED_DIR . 'assets/js/leave-page-modal-popup.js')) {
             wp_enqueue_script(
