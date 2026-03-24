@@ -20,10 +20,6 @@ class Shaped_RC_Validation_Service
         $mode = Shaped_RC_Availability_Manager::get_availability_mode();
         $room_mapping = Shaped_RC_Availability_Manager::get_room_mapping();
         $checks = [];
-        $room_coverage = [];
-        $horizon_days = self::get_effective_horizon_days($days);
-        $today = new DateTime('today', wp_timezone());
-        $horizon_end = (clone $today)->modify('+' . $horizon_days . ' days');
         $room_types = get_posts([
             'post_type' => 'mphb_room_type',
             'post_status' => 'publish',
@@ -45,12 +41,22 @@ class Shaped_RC_Validation_Service
 
         self::add_check(
             $checks,
-            !empty($snapshot['hotel_id']) && !empty($snapshot['rate_id']) && !empty($snapshot['channel_id']) ? 'pass' : 'fail',
+            !empty($snapshot['hotel_id']) && !empty($snapshot['rate_id']) ? 'pass' : 'fail',
             'identifiers',
             'RoomCloud property identifiers',
-            !empty($snapshot['hotel_id']) && !empty($snapshot['rate_id']) && !empty($snapshot['channel_id'])
-                ? 'Hotel ID, rate ID, and channel ID are configured.'
-                : 'Hotel ID, rate ID, or SHAPED_RC_CHANNEL_ID is missing.'
+            !empty($snapshot['hotel_id']) && !empty($snapshot['rate_id'])
+                ? 'Hotel ID and rate ID are configured.'
+                : 'Hotel ID or rate ID is missing.'
+        );
+
+        self::add_check(
+            $checks,
+            !empty($snapshot['channel_id']) ? 'pass' : 'warn',
+            'channel_id',
+            'Outbound channel tagging',
+            !empty($snapshot['channel_id'])
+                ? 'SHAPED_RC_CHANNEL_ID is configured for outbound source tagging.'
+                : 'SHAPED_RC_CHANNEL_ID is not configured. Outbound reservations will still sync, but RoomCloud source tagging may be less precise.'
         );
 
         self::add_check(
@@ -149,97 +155,14 @@ class Shaped_RC_Validation_Service
             );
         }
 
-        foreach ($room_types as $room_type_post) {
-            if (!($room_type_post instanceof WP_Post)) {
-                continue;
-            }
-
-            $room_type_id = (int) $room_type_post->ID;
-            $roomcloud_id = Shaped_RC_Availability_Manager::get_roomcloud_id_for_room_type($room_type_id);
-            $coverage_status = 'pass';
-            $message = 'Coverage complete through the validation horizon.';
-            $first_missing_date = null;
-
-            if (!$roomcloud_id) {
-                $coverage_status = $mode === 'roomcloud_strict' ? 'fail' : 'warn';
-                $message = 'Room type is not mapped to RoomCloud.';
-            } else {
-                $stay = Shaped_RC_Availability_Manager::inspect_roomcloud_stay($roomcloud_id, $today, $horizon_end);
-
-                if (!$stay['has_complete_data']) {
-                    $first_missing_date = !empty($stay['missing_dates']) ? $stay['missing_dates'][0] : null;
-                    $coverage_status = $mode === 'roomcloud_strict' ? 'fail' : 'warn';
-                    $message = $first_missing_date
-                        ? sprintf('First missing inventory date: %s.', $first_missing_date)
-                        : 'Inventory coverage is incomplete.';
-                }
-            }
-
-            $room_coverage[] = [
-                'slug' => $room_type_post->post_name,
-                'label' => $room_type_post->post_title,
-                'room_type_id' => $room_type_id,
-                'roomcloud_id' => $roomcloud_id,
-                'status' => $coverage_status,
-                'first_missing_date' => $first_missing_date,
-                'message' => $message,
-            ];
-        }
-
-        if (!empty($room_coverage)) {
-            $coverage_failures = array_filter($room_coverage, function ($row) {
-                return $row['status'] === 'fail';
-            });
-            $coverage_warnings = array_filter($room_coverage, function ($row) {
-                return $row['status'] === 'warn';
-            });
-
-            $coverage_status = !empty($coverage_failures)
-                ? 'fail'
-                : (!empty($coverage_warnings) ? 'warn' : 'pass');
-
-            self::add_check(
-                $checks,
-                $coverage_status,
-                'inventory_coverage',
-                'Inventory coverage through booking horizon',
-                $coverage_status === 'pass'
-                    ? sprintf('All mapped room types have RoomCloud coverage for the next %d day(s).', $horizon_days)
-                    : sprintf('Review room-level coverage for the next %d day(s).', $horizon_days)
-            );
-        }
-
         $status = self::calculate_overall_status($checks);
 
         return [
             'status' => $status,
             'mode' => $mode,
-            'horizon_days' => $horizon_days,
             'last_inventory_update' => $last_inventory_update,
             'checks' => $checks,
-            'room_coverage' => $room_coverage,
         ];
-    }
-
-    public static function get_effective_horizon_days(?int $days = null): int
-    {
-        if ($days !== null && $days > 0) {
-            return $days;
-        }
-
-        if (function_exists('mphb_availability_facade')) {
-            $max_advance = (int) mphb_availability_facade()->getMaxAdvanceReservationDaysCount(
-                0,
-                new DateTime('today', wp_timezone()),
-                false
-            );
-
-            if ($max_advance > 0) {
-                return $max_advance;
-            }
-        }
-
-        return 365;
     }
 
     /**

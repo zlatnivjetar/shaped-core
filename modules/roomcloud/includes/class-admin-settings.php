@@ -353,13 +353,11 @@ define('SHAPED_RC_PASSWORD', 'your-password');</pre>
         $status = $validation['status'] ?? 'warn';
         $status_class = 'rc-check-' . $status;
         $status_label = strtoupper($status);
-        $horizon_days = isset($validation['horizon_days']) ? (int) $validation['horizon_days'] : 0;
         $mode = $validation['mode'] ?? 'motopress';
         $last_inventory_update = $validation['last_inventory_update'] ?? null;
 
         echo '<p><strong>Status:</strong> <span class="' . esc_attr($status_class) . '">' . esc_html($status_label) . '</span></p>';
         echo '<p><strong>Availability mode:</strong> ' . esc_html($mode) . '</p>';
-        echo '<p><strong>Validation horizon:</strong> ' . esc_html($horizon_days) . ' day(s)</p>';
         echo '<p><strong>Last inventory update:</strong> ' . esc_html($last_inventory_update ?: 'Not recorded yet') . '</p>';
 
         if (!empty($validation['checks'])) {
@@ -371,23 +369,6 @@ define('SHAPED_RC_PASSWORD', 'your-password');</pre>
                 echo '</li>';
             }
             echo '</ul>';
-        }
-
-        if (!empty($validation['room_coverage'])) {
-            echo '<h3>Room Coverage</h3>';
-            echo '<table class="widefat striped rc-validation-coverage">';
-            echo '<thead><tr><th>Room Type</th><th>RoomCloud ID</th><th>Status</th><th>Details</th></tr></thead><tbody>';
-
-            foreach ($validation['room_coverage'] as $coverage) {
-                echo '<tr>';
-                echo '<td><strong>' . esc_html($coverage['label']) . '</strong><br><code>' . esc_html($coverage['slug']) . '</code></td>';
-                echo '<td>' . esc_html($coverage['roomcloud_id'] ?: 'Not mapped') . '</td>';
-                echo '<td><span class="' . esc_attr('rc-check-' . $coverage['status']) . '">' . esc_html(strtoupper($coverage['status'])) . '</span></td>';
-                echo '<td>' . esc_html($coverage['message']) . '</td>';
-                echo '</tr>';
-            }
-
-            echo '</tbody></table>';
         }
 
         echo '<p class="description">WP-CLI equivalent: <code>wp roomcloud validate</code></p>';

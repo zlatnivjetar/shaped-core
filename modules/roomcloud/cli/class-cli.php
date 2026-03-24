@@ -312,16 +312,14 @@ class Shaped_RC_CLI {
     /**
      * Validate RoomCloud availability readiness.
      *
-     * @synopsis [--days=<n>]
+     * @synopsis
      */
     public function validate($args, $assoc_args) {
-        $days = isset($assoc_args['days']) ? max(1, absint($assoc_args['days'])) : null;
-        $validation = Shaped_RC_Validation_Service::validate($days);
+        $validation = Shaped_RC_Validation_Service::validate();
 
         WP_CLI::line('RoomCloud Validation:');
         WP_CLI::line('  Overall status: ' . strtoupper($validation['status']));
         WP_CLI::line('  Availability mode: ' . ($validation['mode'] ?? 'motopress'));
-        WP_CLI::line('  Horizon days: ' . ($validation['horizon_days'] ?? 0));
         WP_CLI::line('  Last inventory update: ' . (($validation['last_inventory_update'] ?? '') ?: '(not recorded)'));
         WP_CLI::line('');
 
@@ -337,27 +335,6 @@ class Shaped_RC_CLI {
                 WP_CLI::warning($line);
             } else {
                 WP_CLI::line($line);
-            }
-        }
-
-        if (!empty($validation['room_coverage'])) {
-            WP_CLI::line('');
-            WP_CLI::line('Room coverage:');
-
-            foreach ($validation['room_coverage'] as $coverage) {
-                $room_line = sprintf(
-                    '[%s] %s (%s): %s',
-                    strtoupper($coverage['status']),
-                    $coverage['label'],
-                    $coverage['roomcloud_id'] ?: 'not mapped',
-                    $coverage['message']
-                );
-
-                if ($coverage['status'] === 'fail') {
-                    WP_CLI::warning($room_line);
-                } else {
-                    WP_CLI::line($room_line);
-                }
             }
         }
 
@@ -393,9 +370,6 @@ class Shaped_RC_CLI {
         }
         if (empty($snapshot['rate_id'])) {
             $issues[] = 'Missing shaped_rc_rate_id';
-        }
-        if (empty($snapshot['channel_id'])) {
-            $issues[] = 'Missing SHAPED_RC_CHANNEL_ID';
         }
         if (empty($snapshot['room_mapping']) || !is_array($snapshot['room_mapping'])) {
             $issues[] = 'No RoomCloud room mapping configured';
