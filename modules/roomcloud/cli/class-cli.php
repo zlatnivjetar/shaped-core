@@ -177,34 +177,183 @@ class Shaped_RC_CLI {
      * @synopsis
      */
     public function config() {
-        // Credentials and Channel ID from wp-config.php
-        $service_url = defined('SHAPED_RC_SERVICE_URL') ? SHAPED_RC_SERVICE_URL : '';
-        $username = defined('SHAPED_RC_USERNAME') ? SHAPED_RC_USERNAME : '';
-        $password = defined('SHAPED_RC_PASSWORD') ? SHAPED_RC_PASSWORD : '';
-        $channel_id = defined('SHAPED_RC_CHANNEL_ID') ? SHAPED_RC_CHANNEL_ID : '';
-
-        // IDs from database
-        $hotel_id = get_option('shaped_rc_hotel_id', '');
-        $rate_id = get_option('shaped_rc_rate_id', '');
+        $snapshot = Shaped_RC_API::get_configuration_snapshot();
+        $service_url = $snapshot['service_url'];
+        $username = $snapshot['username'];
+        $password_configured = !empty($snapshot['password_configured']);
+        $channel_id = $snapshot['channel_id'];
+        $hotel_id = $snapshot['hotel_id'];
+        $rate_id = $snapshot['rate_id'];
+        $room_mapping = is_array($snapshot['room_mapping']) ? $snapshot['room_mapping'] : [];
+        $issues = $this->get_config_issues($snapshot);
+        $missing_room_mappings = $this->get_missing_room_mappings($room_mapping);
 
         WP_CLI::line('RoomCloud Configuration:');
         WP_CLI::line('');
         WP_CLI::line('Credentials (from wp-config.php):');
         WP_CLI::line('  Service URL: ' . ($service_url ?: '(not set in wp-config.php)'));
         WP_CLI::line('  Username: ' . ($username ?: '(not set in wp-config.php)'));
-        WP_CLI::line('  Password: ' . ($password ? str_repeat('*', min(strlen($password), 12)) : '(not set in wp-config.php)'));
+        WP_CLI::line('  Password: ' . ($password_configured ? '************' : '(not set in wp-config.php)'));
         WP_CLI::line('  Channel ID: ' . ($channel_id ?: '(not set in wp-config.php)'));
         WP_CLI::line('');
         WP_CLI::line('Configuration IDs (from database):');
         WP_CLI::line('  Hotel ID: ' . ($hotel_id ?: '(not set)'));
         WP_CLI::line('  Rate ID: ' . ($rate_id ?: '(not set)'));
+        WP_CLI::line('  Room mappings: ' . count($room_mapping));
         WP_CLI::line('');
 
-        if (Shaped_RC_API::is_configured()) {
-            WP_CLI::success('RoomCloud is configured');
-        } else {
-            WP_CLI::warning('RoomCloud is not fully configured - check wp-config.php constants');
+        if (!empty($missing_room_mappings)) {
+            WP_CLI::warning('Missing room mappings for: ' . implode(', ', $missing_room_mappings));
         }
+
+        if (empty($issues) && Shaped_RC_API::is_configured()) {
+            WP_CLI::success('RoomCloud is fully configured');
+            return;
+        }
+
+        foreach ($issues as $issue) {
+            WP_CLI::warning($issue);
+        }
+    }
+
+    /**
+     * Repair direct website bookings already synced or queued for RoomCloud.
+     *
+     * @synopsis [--booking=<id>] [--dry-run]
+     */
+    public function repair_direct_bookings($args, $assoc_args) {
+        $booking_id = isset($assoc_args['booking']) ? absint($assoc_args['booking']) : null;
+        $dry_run = isset($assoc_args['dry-run']);
+        $snapshot = Shaped_RC_API::get_configuration_snapshot();
+        $issues = $this->get_config_issues($snapshot);
+
+        if (!Shaped_RC_API::is_configured()) {
+            WP_CLI::error('RoomCloud credentials are not configured.');
+        }
+
+        if (!empty($issues)) {
+            foreach ($issues as $issue) {
+                WP_CLI::warning($issue);
+            }
+        }
+
+        $candidates = Shaped_RC_Sync_Manager::get_repair_candidates($booking_id);
+
+        if (empty($candidates)) {
+            WP_CLI::success($booking_id
+                ? "No repair action needed for booking #{$booking_id}"
+                : 'No direct bookings need repair');
+            return;
+        }
+
+        WP_CLI::line(sprintf(
+            '%s %d booking(s) for RoomCloud repair.',
+            $dry_run ? 'Dry run for' : 'Processing',
+            count($candidates)
+        ));
+
+        $counts = [
+            'synced' => 0,
+            'dry_run' => 0,
+            'skip' => 0,
+            'failed' => 0,
+        ];
+
+        foreach ($candidates as $candidate_id) {
+            $result = Shaped_RC_Sync_Manager::repair_direct_booking((int) $candidate_id, [
+                'dry_run' => $dry_run,
+            ]);
+
+            $state = isset($result['state']) && is_array($result['state']) ? $result['state'] : [];
+            $status = isset($state['status']) ? $state['status'] : 'NONE';
+            $prepaid = isset($state['prepaid']) ? number_format((float) $state['prepaid'], 2, '.', '') : '0.00';
+
+            if (($result['action'] ?? '') === 'synced') {
+                $counts['synced']++;
+                WP_CLI::success("#{$candidate_id}: synced {$status} (prepaid {$prepaid})");
+                continue;
+            }
+
+            if (($result['action'] ?? '') === 'dry_run') {
+                $counts['dry_run']++;
+                WP_CLI::line("#{$candidate_id}: would sync {$status} (prepaid {$prepaid})");
+                continue;
+            }
+
+            if (($result['action'] ?? '') === 'skip') {
+                $counts['skip']++;
+                WP_CLI::line("#{$candidate_id}: skipped ({$result['reason']})");
+                continue;
+            }
+
+            $counts['failed']++;
+            WP_CLI::warning("#{$candidate_id}: failed ({$result['reason']})");
+        }
+
+        WP_CLI::line('');
+        WP_CLI::line('Repair summary:');
+        WP_CLI::line('  Synced: ' . $counts['synced']);
+        WP_CLI::line('  Dry run: ' . $counts['dry_run']);
+        WP_CLI::line('  Skipped: ' . $counts['skip']);
+        WP_CLI::line('  Failed: ' . $counts['failed']);
+
+        if ($counts['failed'] > 0) {
+            WP_CLI::warning('Some repairs failed. Check RoomCloud logs and configuration.');
+            return;
+        }
+
+        WP_CLI::success($dry_run ? 'Dry run completed.' : 'Repair completed.');
+    }
+
+    /**
+     * Identify configuration issues that can break RoomCloud sync.
+     */
+    private function get_config_issues(array $snapshot): array {
+        $issues = [];
+
+        if (empty($snapshot['service_url'])) {
+            $issues[] = 'Missing SHAPED_RC_SERVICE_URL';
+        }
+        if (empty($snapshot['username'])) {
+            $issues[] = 'Missing SHAPED_RC_USERNAME';
+        }
+        if (empty($snapshot['password_configured'])) {
+            $issues[] = 'Missing SHAPED_RC_PASSWORD';
+        }
+        if (empty($snapshot['hotel_id'])) {
+            $issues[] = 'Missing shaped_rc_hotel_id';
+        }
+        if (empty($snapshot['rate_id'])) {
+            $issues[] = 'Missing shaped_rc_rate_id';
+        }
+        if (empty($snapshot['channel_id'])) {
+            $issues[] = 'Missing SHAPED_RC_CHANNEL_ID';
+        }
+        if (empty($snapshot['room_mapping']) || !is_array($snapshot['room_mapping'])) {
+            $issues[] = 'No RoomCloud room mapping configured';
+        }
+
+        return $issues;
+    }
+
+    /**
+     * Identify unmapped MotoPress room types.
+     */
+    private function get_missing_room_mappings(array $room_mapping): array {
+        if (!class_exists('Shaped_Pricing')) {
+            return [];
+        }
+
+        $room_types = Shaped_Pricing::fetch_room_types();
+        $missing = [];
+
+        foreach ($room_types as $slug => $label) {
+            if (empty($room_mapping[$slug])) {
+                $missing[] = $slug;
+            }
+        }
+
+        return $missing;
     }
 }
 

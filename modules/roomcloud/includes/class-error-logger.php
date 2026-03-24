@@ -60,6 +60,14 @@ class Shaped_RC_Error_Logger
         self::write_to_file('INFO', $message, $context);
         error_log('[RoomCloud INFO] ' . $message);
     }
+
+    /**
+     * Legacy compatibility shim for older call sites.
+     */
+    public static function add_to_digest($message, $context = [])
+    {
+        self::log_warning($message, $context);
+    }
     
     /**
      * Write to log file
@@ -122,6 +130,7 @@ class Shaped_RC_Error_Logger
             $wpdb->update(
                 $table,
                 [
+                    'payload' => maybe_serialize($payload),
                     'attempts' => $wpdb->get_var($wpdb->prepare(
                         "SELECT attempts FROM $table WHERE id = %d",
                         $existing
@@ -147,6 +156,44 @@ class Shaped_RC_Error_Logger
         self::log_warning("Queued retry for booking #{$booking_id}, operation: {$operation}", [
             'error' => $error,
         ]);
+    }
+
+    /**
+     * Check whether a booking has a pending retry for an operation.
+     */
+    public static function has_pending_retry($booking_id, $operation)
+    {
+        global $wpdb;
+        $table = $wpdb->prefix . 'roomcloud_sync_queue';
+
+        $count = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $table WHERE booking_id = %d AND operation = %s AND attempts < 5",
+            $booking_id,
+            $operation
+        ));
+
+        return intval($count) > 0;
+    }
+
+    /**
+     * Clear queued retries for a booking/operation pair.
+     */
+    public static function clear_retries($booking_id, $operation)
+    {
+        global $wpdb;
+        $table = $wpdb->prefix . 'roomcloud_sync_queue';
+
+        $wpdb->delete(
+            $table,
+            [
+                'booking_id' => $booking_id,
+                'operation' => $operation,
+            ],
+            [
+                '%d',
+                '%s',
+            ]
+        );
     }
     
     /**

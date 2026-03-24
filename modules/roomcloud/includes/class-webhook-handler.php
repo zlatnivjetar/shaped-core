@@ -107,6 +107,7 @@ class Shaped_RC_Webhook_Handler
         // VALIDATE CREDENTIALS FROM XML
         $username = (string) $xml['userName'];
         $password = (string) $xml['password'];
+        $echo_token = (string) $xml['echoToken'];
 
         // Read credentials from wp-config.php constants
         $expected_username = defined('SHAPED_RC_USERNAME') ? SHAPED_RC_USERNAME : '';
@@ -126,31 +127,31 @@ class Shaped_RC_Webhook_Handler
         
         // Handle configuration messages - output XML directly
         if (isset($xml->getHotels)) {
-            $this->handle_get_hotels();
+            $this->handle_get_hotels($echo_token);
             return; // Never reached due to exit in handler
         }
         
         if (isset($xml->getRates)) {
             $hotel_id = (string) $xml->getRates['hotelId'];
-            $this->handle_get_rates($hotel_id);
+            $this->handle_get_rates($hotel_id, $echo_token);
             return; // Never reached due to exit in handler
         }
         
         if (isset($xml->getRooms)) {
             $hotel_id = (string) $xml->getRooms['hotelId'];
-            $this->handle_get_rooms($hotel_id);
+            $this->handle_get_rooms($hotel_id, $echo_token);
             return; // Never reached due to exit in handler
         }
         
         // Handle modify request (availability/rate updates from RoomCloud)
         if (isset($xml->modify)) {
-            $this->handle_modify($xml->modify);
+            $this->handle_modify($xml->modify, $echo_token);
             return; // Never reached due to exit in handler
         }
         
         // Handle reservations list request (pull mode)
         if (isset($xml->reservations)) {
-            $this->handle_get_reservations($xml->reservations);
+            $this->handle_get_reservations($xml->reservations, $echo_token);
             return; // Never reached due to exit in handler
         }
         
@@ -185,12 +186,12 @@ class Shaped_RC_Webhook_Handler
     /**
      * Handle getHotels request
      */
-    private function handle_get_hotels()
+    private function handle_get_hotels($echo_token = '')
     {
         $hotel_id = get_option('shaped_rc_hotel_id', '');
         
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<Response>' . "\n";
+        $xml .= $this->build_response_open_tag($echo_token) . "\n";
         $xml .= '  <hotel id="' . esc_attr($hotel_id) . '" description="' . esc_attr(shaped_brand('company.name', 'Hotel')) . '" />' . "\n";
         $xml .= '</Response>';
         
@@ -204,12 +205,12 @@ class Shaped_RC_Webhook_Handler
     /**
      * Handle getRates request
      */
-    private function handle_get_rates($hotel_id)
+    private function handle_get_rates($hotel_id, $echo_token = '')
     {
         $rate_id = get_option('shaped_rc_rate_id', '');
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<Response>' . "\n";
+        $xml .= $this->build_response_open_tag($echo_token) . "\n";
         $xml .= '  <rate rateId="' . esc_attr($rate_id) . '" description="Standard Rate - Room only" />' . "\n";
         $xml .= '</Response>';
 
@@ -224,13 +225,13 @@ class Shaped_RC_Webhook_Handler
     /**
      * Handle getRooms request
      */
-    private function handle_get_rooms($hotel_id)
+    private function handle_get_rooms($hotel_id, $echo_token = '')
     {
         $rate_id = get_option('shaped_rc_rate_id', '');
         $room_mapping = get_option('shaped_rc_room_mapping', []);
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<Response>' . "\n";
+        $xml .= $this->build_response_open_tag($echo_token) . "\n";
 
         foreach ($room_mapping as $slug => $roomcloud_id) {
             // Get room description from MotoPress post title, or generate from slug
@@ -261,7 +262,7 @@ class Shaped_RC_Webhook_Handler
      * Handle modify request (availability/rate updates from RoomCloud)
      * RoomCloud is source of truth - process and store updates
      */
-    private function handle_modify($modify)
+    private function handle_modify($modify, $echo_token = '')
     {
         $hotel_id = (string) $modify['hotelId'];
         $start_date = (string) $modify['startDate'];
@@ -295,7 +296,7 @@ class Shaped_RC_Webhook_Handler
 
         // Return success
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<Response>' . "\n";
+        $xml .= $this->build_response_open_tag($echo_token) . "\n";
         $xml .= '  <ok/>' . "\n";
         $xml .= '</Response>';
 
@@ -306,7 +307,7 @@ class Shaped_RC_Webhook_Handler
      * Handle getReservations request (pull mode)
      * Returns list of recent reservations from website
      */
-    private function handle_get_reservations($reservations)
+    private function handle_get_reservations($reservations, $echo_token = '')
     {
         $hotel_id = (string) $reservations['hotelId'];
         $start_date = (string) $reservations['startDate'];
@@ -320,7 +321,7 @@ class Shaped_RC_Webhook_Handler
 
         // Return empty list - we push reservations, don't support pull mode
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
-        $xml .= '<Response>' . "\n";
+        $xml .= $this->build_response_open_tag($echo_token) . "\n";
         $xml .= '  <!-- No reservations - using push mode only -->' . "\n";
         $xml .= '</Response>';
 
@@ -727,5 +728,21 @@ class Shaped_RC_Webhook_Handler
 
         // Terminate immediately to prevent any further output
         exit;
+    }
+
+    /**
+     * Build a Response opening tag and echo back RoomCloud's echoToken when present.
+     */
+    private function build_response_open_tag($echo_token = '')
+    {
+        $tag = '<Response';
+
+        if ($echo_token !== '') {
+            $tag .= ' echoToken="' . esc_attr($echo_token) . '"';
+        }
+
+        $tag .= '>';
+
+        return $tag;
     }
 }
