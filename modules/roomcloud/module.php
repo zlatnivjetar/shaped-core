@@ -2,7 +2,7 @@
 /**
  * RoomCloud Integration Module
  * Bidirectional sync between MotoPress Hotel Booking and RoomCloud Channel Manager
- * Version: 1.1.0
+ * Version: 1.2.0
  */
 
 if (!defined('ABSPATH')) {
@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Module constants
-define('SHAPED_RC_VERSION', '1.1.0');
+define('SHAPED_RC_VERSION', '1.2.0');
 define('SHAPED_RC_DIR', SHAPED_DIR . 'modules/roomcloud/');
 define('SHAPED_RC_URL', SHAPED_URL . 'modules/roomcloud/');
 define('SHAPED_RC_LOGS_DIR', SHAPED_RC_DIR . 'logs/');
@@ -51,6 +51,7 @@ if (!get_option('shaped_rc_logs_cleaned_v1', false)) {
 // Load core classes
 require_once SHAPED_RC_DIR . 'includes/class-error-logger.php';
 require_once SHAPED_RC_DIR . 'includes/class-availability-manager.php';
+require_once SHAPED_RC_DIR . 'includes/class-validation-service.php';
 require_once SHAPED_RC_DIR . 'includes/class-api.php';
 require_once SHAPED_RC_DIR . 'includes/class-sync-manager.php';
 require_once SHAPED_RC_DIR . 'includes/class-webhook-handler.php';

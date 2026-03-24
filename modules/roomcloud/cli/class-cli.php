@@ -182,6 +182,8 @@ class Shaped_RC_CLI {
         $username = $snapshot['username'];
         $password_configured = !empty($snapshot['password_configured']);
         $channel_id = $snapshot['channel_id'];
+        $availability_mode = $snapshot['availability_mode'] ?? 'motopress';
+        $last_inventory_update = $snapshot['last_inventory_update'] ?? '';
         $hotel_id = $snapshot['hotel_id'];
         $rate_id = $snapshot['rate_id'];
         $room_mapping = is_array($snapshot['room_mapping']) ? $snapshot['room_mapping'] : [];
@@ -199,7 +201,9 @@ class Shaped_RC_CLI {
         WP_CLI::line('Configuration IDs (from database):');
         WP_CLI::line('  Hotel ID: ' . ($hotel_id ?: '(not set)'));
         WP_CLI::line('  Rate ID: ' . ($rate_id ?: '(not set)'));
+        WP_CLI::line('  Availability mode: ' . $availability_mode);
         WP_CLI::line('  Room mappings: ' . count($room_mapping));
+        WP_CLI::line('  Last inventory update: ' . ($last_inventory_update ?: '(not recorded)'));
         WP_CLI::line('');
 
         if (!empty($missing_room_mappings)) {
@@ -306,6 +310,70 @@ class Shaped_RC_CLI {
     }
 
     /**
+     * Validate RoomCloud availability readiness.
+     *
+     * @synopsis [--days=<n>]
+     */
+    public function validate($args, $assoc_args) {
+        $days = isset($assoc_args['days']) ? max(1, absint($assoc_args['days'])) : null;
+        $validation = Shaped_RC_Validation_Service::validate($days);
+
+        WP_CLI::line('RoomCloud Validation:');
+        WP_CLI::line('  Overall status: ' . strtoupper($validation['status']));
+        WP_CLI::line('  Availability mode: ' . ($validation['mode'] ?? 'motopress'));
+        WP_CLI::line('  Horizon days: ' . ($validation['horizon_days'] ?? 0));
+        WP_CLI::line('  Last inventory update: ' . (($validation['last_inventory_update'] ?? '') ?: '(not recorded)'));
+        WP_CLI::line('');
+
+        foreach ($validation['checks'] as $check) {
+            $line = sprintf(
+                '[%s] %s: %s',
+                strtoupper($check['status']),
+                $check['label'],
+                $check['message']
+            );
+
+            if ($check['status'] === 'fail') {
+                WP_CLI::warning($line);
+            } else {
+                WP_CLI::line($line);
+            }
+        }
+
+        if (!empty($validation['room_coverage'])) {
+            WP_CLI::line('');
+            WP_CLI::line('Room coverage:');
+
+            foreach ($validation['room_coverage'] as $coverage) {
+                $room_line = sprintf(
+                    '[%s] %s (%s): %s',
+                    strtoupper($coverage['status']),
+                    $coverage['label'],
+                    $coverage['roomcloud_id'] ?: 'not mapped',
+                    $coverage['message']
+                );
+
+                if ($coverage['status'] === 'fail') {
+                    WP_CLI::warning($room_line);
+                } else {
+                    WP_CLI::line($room_line);
+                }
+            }
+        }
+
+        if (($validation['status'] ?? '') === 'fail') {
+            WP_CLI::error('RoomCloud validation failed.');
+        }
+
+        if (($validation['status'] ?? '') === 'warn') {
+            WP_CLI::warning('RoomCloud validation completed with warnings.');
+            return;
+        }
+
+        WP_CLI::success('RoomCloud validation passed.');
+    }
+
+    /**
      * Identify configuration issues that can break RoomCloud sync.
      */
     private function get_config_issues(array $snapshot): array {
@@ -340,16 +408,26 @@ class Shaped_RC_CLI {
      * Identify unmapped MotoPress room types.
      */
     private function get_missing_room_mappings(array $room_mapping): array {
-        if (!class_exists('Shaped_Pricing')) {
+        if (!class_exists('Shaped_RC_Availability_Manager')) {
             return [];
         }
 
-        $room_types = Shaped_Pricing::fetch_room_types();
+        $room_types = get_posts([
+            'post_type' => 'mphb_room_type',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            'orderby' => 'title',
+            'order' => 'ASC',
+        ]);
         $missing = [];
 
-        foreach ($room_types as $slug => $label) {
-            if (empty($room_mapping[$slug])) {
-                $missing[] = $slug;
+        foreach ($room_types as $room_type_post) {
+            if (!($room_type_post instanceof WP_Post)) {
+                continue;
+            }
+
+            if (!Shaped_RC_Availability_Manager::is_room_type_mapped((int) $room_type_post->ID)) {
+                $missing[] = $room_type_post->post_name;
             }
         }
 

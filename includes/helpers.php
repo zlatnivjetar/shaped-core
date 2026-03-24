@@ -74,6 +74,22 @@ function shaped_is_roomcloud_active(): bool {
 }
 
 /**
+ * Get the configured RoomCloud availability authority mode.
+ */
+function shaped_get_roomcloud_availability_mode(): string {
+    $mode = get_option('shaped_rc_availability_mode', 'motopress');
+
+    return $mode === 'roomcloud_strict' ? 'roomcloud_strict' : 'motopress';
+}
+
+/**
+ * Check whether RoomCloud is the strict availability authority.
+ */
+function shaped_is_roomcloud_strict_mode(): bool {
+    return shaped_is_roomcloud_active() && shaped_get_roomcloud_availability_mode() === 'roomcloud_strict';
+}
+
+/**
  * Check if Reviews module is active
  */
 function shaped_is_reviews_active(): bool {

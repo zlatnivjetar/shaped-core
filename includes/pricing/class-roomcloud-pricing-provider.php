@@ -55,19 +55,41 @@ class Shaped_RoomCloud_Pricing_Provider implements Shaped_Pricing_Provider_Inter
             );
         }
 
-        // Get available rooms from RoomCloud
-        $checkin_str = $request->checkin->format('Y-m-d');
-        $checkout_str = $request->checkout->format('Y-m-d');
-
-        $available_rooms = Shaped_RC_Availability_Manager::get_available_rooms(
-            $checkin_str,
-            $checkout_str
+        $available_rooms = $this->resolve_available_rooms(
+            clone $request->checkin,
+            clone $request->checkout
         );
 
         // If specific room requested, check if it's available
         if ($request->room_type_slug !== null) {
-            if (!isset($available_rooms[$request->room_type_slug]) ||
-                $available_rooms[$request->room_type_slug] < 1) {
+            $requested_available_units = $available_rooms[$request->room_type_slug] ?? null;
+
+            if ($requested_available_units === null && class_exists('Shaped_RC_Availability_Manager')) {
+                $room_post = Shaped_RC_Availability_Manager::find_room_type_post($request->room_type_slug);
+
+                if ($room_post instanceof WP_Post) {
+                    $decision = Shaped_RC_Availability_Manager::evaluate_room_type_availability(
+                        (int) $room_post->ID,
+                        clone $request->checkin,
+                        clone $request->checkout,
+                        1
+                    );
+
+                    if (($decision['source'] ?? '') === 'roomcloud') {
+                        $requested_available_units = !empty($decision['is_sellable'])
+                            ? max(0, (int) ($decision['available_units'] ?? 0))
+                            : 0;
+                    } else {
+                        $requested_available_units = Shaped_RC_Availability_Manager::get_motopress_available_room_count(
+                            (int) $room_post->ID,
+                            clone $request->checkin,
+                            clone $request->checkout
+                        );
+                    }
+                }
+            }
+
+            if ($requested_available_units === null || $requested_available_units < 1) {
                 throw new Exception(
                     sprintf('Room type "%s" is not available for the selected dates', $request->room_type_slug)
                 );
@@ -134,7 +156,9 @@ class Shaped_RoomCloud_Pricing_Provider implements Shaped_Pricing_Provider_Inter
     private function build_rate_for_room(string $room_slug, Shaped_Price_Request $request): array
     {
         // Get room post
-        $room_post = get_page_by_path($room_slug, OBJECT, 'mphb_room_type');
+        $room_post = class_exists('Shaped_RC_Availability_Manager')
+            ? Shaped_RC_Availability_Manager::find_room_type_post($room_slug)
+            : get_page_by_path($room_slug, OBJECT, 'mphb_room_type');
 
         if (!$room_post) {
             throw new Exception("Room type not found: {$room_slug}");
@@ -215,6 +239,58 @@ class Shaped_RoomCloud_Pricing_Provider implements Shaped_Pricing_Provider_Inter
         // Last resort: post meta
         $base = get_post_meta($room_type_id, '_mphb_base_price', true);
         return $base ? (float) $base : 0.0;
+    }
+
+    /**
+     * Resolve sellable room types for the pricing request.
+     *
+     * @return array<string, int>
+     */
+    private function resolve_available_rooms(DateTime $checkin, DateTime $checkout): array
+    {
+        $room_posts = get_posts([
+            'post_type' => 'mphb_room_type',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            'orderby' => 'title',
+            'order' => 'ASC',
+        ]);
+        $available_rooms = [];
+
+        foreach ($room_posts as $room_post) {
+            if (!($room_post instanceof WP_Post)) {
+                continue;
+            }
+
+            $room_slug = sanitize_title($room_post->post_title);
+
+            if (!class_exists('Shaped_RC_Availability_Manager')) {
+                $available_rooms[$room_slug] = 0;
+                continue;
+            }
+
+            $decision = Shaped_RC_Availability_Manager::evaluate_room_type_availability(
+                (int) $room_post->ID,
+                $checkin,
+                $checkout,
+                1
+            );
+
+            if (($decision['source'] ?? '') === 'roomcloud') {
+                $available_rooms[$room_slug] = !empty($decision['is_sellable'])
+                    ? max(0, (int) ($decision['available_units'] ?? 0))
+                    : 0;
+                continue;
+            }
+
+            $available_rooms[$room_slug] = Shaped_RC_Availability_Manager::get_motopress_available_room_count(
+                (int) $room_post->ID,
+                $checkin,
+                $checkout
+            );
+        }
+
+        return $available_rooms;
     }
 
     /**

@@ -52,26 +52,22 @@ $has_dates = !empty($check_in) && !empty($check_out);
 // ─── Availability Count (for urgency badges + zero-room gating) ───
 // Priority: RoomCloud (if active) → MPHB fallback
 $available_count = 0;
-$rc_handled = false;
 
 if (!empty($check_in) && !empty($check_out)) {
     $check_in_dt  = new \DateTime($check_in);
     $check_out_dt = new \DateTime($check_out);
 
-    // PRIORITY 1: RoomCloud availability (source of truth when active)
     if (shaped_is_roomcloud_active() && class_exists('Shaped_RC_Availability_Manager')) {
-        $rc_id = Shaped_RC_Availability_Manager::get_roomcloud_id_for_room_type($room_id);
-        if ($rc_id !== null) {
-            $rc_count = Shaped_RC_Availability_Manager::get_min_availability_for_stay($rc_id, $check_in_dt, $check_out_dt);
-            if ($rc_count !== null) {
-                $available_count = max(0, $rc_count);
-                $rc_handled = true;
-            }
-        }
-    }
+        $decision = Shaped_RC_Availability_Manager::evaluate_room_type_availability($room_id, $check_in_dt, $check_out_dt, 1);
 
-    // PRIORITY 2: MPHB fallback (when RoomCloud has no data for this room)
-    if (!$rc_handled) {
+        if (($decision['source'] ?? '') === 'roomcloud') {
+            $available_count = !empty($decision['is_sellable'])
+                ? max(0, (int) ($decision['available_units'] ?? 0))
+                : 0;
+        } else {
+            $available_count = Shaped_RC_Availability_Manager::get_motopress_available_room_count($room_id, $check_in_dt, $check_out_dt);
+        }
+    } else {
         $available = MPHB()->getRoomRepository()->getAvailableRooms($check_in_dt, $check_out_dt, $room_id);
         $available_count = isset($available[$room_id]) ? count($available[$room_id]) : 0;
 
@@ -86,7 +82,7 @@ if (!empty($check_in) && !empty($check_out)) {
     }
 
     // Skip rendering if zero rooms available
-    if ($available_count === 0) {
+    if ($available_count <= 0) {
         return;
     }
 }

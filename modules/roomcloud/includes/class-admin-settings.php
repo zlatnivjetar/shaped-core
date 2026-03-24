@@ -57,16 +57,18 @@ class Shaped_RC_Admin_Settings
         // Configuration IDs (credentials and channel_id are now in wp-config.php)
         register_setting('shaped_rc_settings', 'shaped_rc_hotel_id');
         register_setting('shaped_rc_settings', 'shaped_rc_rate_id');
+        register_setting('shaped_rc_settings', 'shaped_rc_availability_mode', [
+            'type' => 'string',
+            'default' => 'motopress',
+            'sanitize_callback' => function ($value) {
+                return $value === 'roomcloud_strict' ? 'roomcloud_strict' : 'motopress';
+            },
+        ]);
 
         // Room mapping (auto-populated, but editable)
         register_setting('shaped_rc_settings', 'shaped_rc_room_mapping', [
             'type' => 'array',
-            'default' => [
-                'deluxe-studio-apartment' => '42683',
-                'studio-apartment' => '42685',
-                'superior-studio-apartment' => '42686',
-                'deluxe-double-room' => '42684',
-            ],
+            'default' => [],
         ]);
     }
     
@@ -82,7 +84,9 @@ class Shaped_RC_Admin_Settings
         // Get current settings (credentials and channel_id are in wp-config.php)
         $hotel_id = get_option('shaped_rc_hotel_id', '');
         $rate_id = get_option('shaped_rc_rate_id', '');
-        $room_mapping = get_option('shaped_rc_room_mapping', []);
+        $availability_mode = shaped_get_roomcloud_availability_mode();
+        $room_mapping = Shaped_RC_Availability_Manager::get_room_mapping();
+        $validation = Shaped_RC_Validation_Service::validate();
 
         // Check if credentials are configured in wp-config.php
         $credentials_configured = defined('SHAPED_RC_SERVICE_URL') &&
@@ -176,6 +180,22 @@ define('SHAPED_RC_PASSWORD', 'your-password');</pre>
                                 <p class="description">The RoomCloud rate plan ID to use for all bookings.</p>
                             </td>
                         </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="shaped_rc_availability_mode">Availability Authority</label>
+                            </th>
+                            <td>
+                                <select id="shaped_rc_availability_mode"
+                                        name="shaped_rc_availability_mode">
+                                    <option value="motopress" <?php selected($availability_mode, 'motopress'); ?>>MotoPress</option>
+                                    <option value="roomcloud_strict" <?php selected($availability_mode, 'roomcloud_strict'); ?>>RoomCloud Strict</option>
+                                </select>
+                                <p class="description">
+                                    <strong>MotoPress</strong> keeps availability decisions in MotoPress.
+                                    <strong>RoomCloud Strict</strong> blocks mapped rooms unless RoomCloud has complete stay coverage and enough units.
+                                </p>
+                            </td>
+                        </tr>
                     </table>
                 </div>
                 
@@ -212,6 +232,12 @@ define('SHAPED_RC_PASSWORD', 'your-password');</pre>
                 
                 <?php submit_button('Save Settings'); ?>
             </form>
+
+            <!-- Validation -->
+            <div class="card" style="max-width: 100%; margin-top: 20px;">
+                <h2>Pre-Launch Validation</h2>
+                <?php $this->render_validation_results($validation); ?>
+            </div>
             
             <!-- Current Inventory -->
             <div class="card" style="max-width: 100%; margin-top: 20px;">
@@ -249,6 +275,11 @@ define('SHAPED_RC_PASSWORD', 'your-password');</pre>
             .inventory-quantity.zero { color: #dc3232; }
             .inventory-quantity.low { color: #f0b849; }
             .inventory-quantity.good { color: #46b450; }
+            .rc-check-pass { color: #0a7f38; }
+            .rc-check-warn { color: #b26a00; }
+            .rc-check-fail { color: #b32d2e; }
+            .rc-validation-list li { margin-bottom: 8px; }
+            .rc-validation-coverage td { vertical-align: top; }
         </style>
         
         <script>
@@ -315,6 +346,54 @@ define('SHAPED_RC_PASSWORD', 'your-password');</pre>
     }
     
     /**
+     * Render validation output.
+     */
+    private function render_validation_results(array $validation)
+    {
+        $status = $validation['status'] ?? 'warn';
+        $status_class = 'rc-check-' . $status;
+        $status_label = strtoupper($status);
+        $horizon_days = isset($validation['horizon_days']) ? (int) $validation['horizon_days'] : 0;
+        $mode = $validation['mode'] ?? 'motopress';
+        $last_inventory_update = $validation['last_inventory_update'] ?? null;
+
+        echo '<p><strong>Status:</strong> <span class="' . esc_attr($status_class) . '">' . esc_html($status_label) . '</span></p>';
+        echo '<p><strong>Availability mode:</strong> ' . esc_html($mode) . '</p>';
+        echo '<p><strong>Validation horizon:</strong> ' . esc_html($horizon_days) . ' day(s)</p>';
+        echo '<p><strong>Last inventory update:</strong> ' . esc_html($last_inventory_update ?: 'Not recorded yet') . '</p>';
+
+        if (!empty($validation['checks'])) {
+            echo '<ul class="rc-validation-list">';
+            foreach ($validation['checks'] as $check) {
+                echo '<li>';
+                echo '<strong class="' . esc_attr('rc-check-' . $check['status']) . '">' . esc_html(strtoupper($check['status'])) . '</strong> ';
+                echo esc_html($check['label']) . ': ' . esc_html($check['message']);
+                echo '</li>';
+            }
+            echo '</ul>';
+        }
+
+        if (!empty($validation['room_coverage'])) {
+            echo '<h3>Room Coverage</h3>';
+            echo '<table class="widefat striped rc-validation-coverage">';
+            echo '<thead><tr><th>Room Type</th><th>RoomCloud ID</th><th>Status</th><th>Details</th></tr></thead><tbody>';
+
+            foreach ($validation['room_coverage'] as $coverage) {
+                echo '<tr>';
+                echo '<td><strong>' . esc_html($coverage['label']) . '</strong><br><code>' . esc_html($coverage['slug']) . '</code></td>';
+                echo '<td>' . esc_html($coverage['roomcloud_id'] ?: 'Not mapped') . '</td>';
+                echo '<td><span class="' . esc_attr('rc-check-' . $coverage['status']) . '">' . esc_html(strtoupper($coverage['status'])) . '</span></td>';
+                echo '<td>' . esc_html($coverage['message']) . '</td>';
+                echo '</tr>';
+            }
+
+            echo '</tbody></table>';
+        }
+
+        echo '<p class="description">WP-CLI equivalent: <code>wp roomcloud validate</code></p>';
+    }
+
+    /**
      * Render inventory display
      */
     private function render_inventory_display()
@@ -329,7 +408,9 @@ define('SHAPED_RC_PASSWORD', 'your-password');</pre>
         echo '<div class="inventory-grid">';
         
         foreach ($summary as $slug => $data) {
-            $room_post = get_page_by_path($slug, OBJECT, 'mphb_room_type');
+            $room_post = class_exists('Shaped_RC_Availability_Manager')
+                ? Shaped_RC_Availability_Manager::find_room_type_post($slug)
+                : get_page_by_path($slug, OBJECT, 'mphb_room_type');
             $room_name = $room_post ? $room_post->post_title : ucwords(str_replace('-', ' ', $slug));
             
             echo '<div class="inventory-room">';

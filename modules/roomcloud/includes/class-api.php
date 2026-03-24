@@ -60,7 +60,9 @@ class Shaped_RC_API
             'hotel_id' => (string) get_option('shaped_rc_hotel_id', ''),
             'rate_id' => (string) get_option('shaped_rc_rate_id', ''),
             'channel_id' => self::$channel_id,
-            'room_mapping' => get_option('shaped_rc_room_mapping', []),
+            'room_mapping' => Shaped_RC_Availability_Manager::get_room_mapping(),
+            'availability_mode' => Shaped_RC_Availability_Manager::get_availability_mode(),
+            'last_inventory_update' => Shaped_RC_Availability_Manager::get_last_inventory_update(),
         ];
     }
 
@@ -245,15 +247,12 @@ class Shaped_RC_API
         }
 
         $room_title = $room_type->getTitle();
-        $room_slug = sanitize_title($room_title);
-
-        $room_mapping = get_option('shaped_rc_room_mapping', []);
-        $roomcloud_room_id = isset($room_mapping[$room_slug]) ? $room_mapping[$room_slug] : '';
+        $roomcloud_room_id = Shaped_RC_Availability_Manager::get_roomcloud_id_for_room_type($room_type_id);
 
         if (empty($roomcloud_room_id)) {
             Shaped_RC_Error_Logger::log_critical('Room mapping not found', [
                 'booking_id' => $booking_id,
-                'room_slug' => $room_slug,
+                'room_type_id' => $room_type_id,
             ]);
             return false;
         }

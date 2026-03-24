@@ -23,9 +23,12 @@ delete_option('shaped_discount_seasons');
 // RoomCloud module options (credentials and channel_id are in wp-config.php, not database)
 delete_option('shaped_rc_hotel_id');
 delete_option('shaped_rc_rate_id');
+delete_option('shaped_rc_availability_mode');
 delete_option('shaped_rc_room_mapping');
 delete_option('shaped_rc_error_log');
 delete_option('shaped_rc_retry_queue');
+delete_option('shaped_rc_inventory');
+delete_option('shaped_rc_inventory_meta');
 
 /* =========================================================================
  * CLEANUP SCHEDULED EVENTS

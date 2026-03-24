@@ -36,11 +36,28 @@ class Shaped_RC_Webhook_Handler
      */
     private static function get_room_mapping_reverse()
     {
-        // Get forward mapping from database (MotoPress slug => RoomCloud ID)
-        $room_mapping = get_option('shaped_rc_room_mapping', []);
+        $reverse = [];
+        $room_posts = get_posts([
+            'post_type' => 'mphb_room_type',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+        ]);
 
-        // Flip it to create reverse mapping (RoomCloud ID => MotoPress slug)
-        return array_flip($room_mapping);
+        foreach ($room_posts as $room_post) {
+            if (!($room_post instanceof WP_Post)) {
+                continue;
+            }
+
+            $roomcloud_id = Shaped_RC_Availability_Manager::get_roomcloud_id_for_room_type((int) $room_post->ID);
+
+            if (!$roomcloud_id) {
+                continue;
+            }
+
+            $reverse[(string) $roomcloud_id] = $room_post->post_name;
+        }
+
+        return $reverse;
     }
     
     /**
@@ -228,15 +245,31 @@ class Shaped_RC_Webhook_Handler
     private function handle_get_rooms($hotel_id, $echo_token = '')
     {
         $rate_id = get_option('shaped_rc_rate_id', '');
-        $room_mapping = get_option('shaped_rc_room_mapping', []);
+        $room_posts = get_posts([
+            'post_type' => 'mphb_room_type',
+            'post_status' => 'publish',
+            'posts_per_page' => -1,
+            'orderby' => 'title',
+            'order' => 'ASC',
+        ]);
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
         $xml .= $this->build_response_open_tag($echo_token) . "\n";
 
-        foreach ($room_mapping as $slug => $roomcloud_id) {
-            // Get room description from MotoPress post title, or generate from slug
-            $room_post = get_page_by_path($slug, OBJECT, 'mphb_room_type');
-            $description = $room_post ? get_the_title($room_post) : ucwords(str_replace('-', ' ', $slug));
+        $room_count = 0;
+
+        foreach ($room_posts as $room_post) {
+            if (!($room_post instanceof WP_Post)) {
+                continue;
+            }
+
+            $roomcloud_id = Shaped_RC_Availability_Manager::get_roomcloud_id_for_room_type((int) $room_post->ID);
+
+            if (!$roomcloud_id) {
+                continue;
+            }
+
+            $description = get_the_title($room_post);
             
             // Base occupancy: 2 adults for all rooms
             // Additional beds: 0 (we handle pricing via base price)
@@ -246,13 +279,14 @@ class Shaped_RC_Webhook_Handler
             $xml .= 'description="' . esc_attr($description) . '">' . "\n";
             $xml .= '    <rate rateId="' . esc_attr($rate_id) . '" />' . "\n";
             $xml .= '  </room>' . "\n";
+            $room_count++;
         }
         
         $xml .= '</Response>';
         
         Shaped_RC_Error_Logger::log_info('Responded to getRooms', [
             'hotel_id' => $hotel_id,
-            'room_count' => count($room_mapping),
+            'room_count' => $room_count,
         ]);
 
         $this->output_xml_response($xml);
