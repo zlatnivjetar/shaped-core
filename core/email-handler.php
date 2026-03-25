@@ -365,12 +365,14 @@ function shaped_get_cancellation_template($data) {
  * Send payment failed email to guest (delayed charge failed)
  * Sent when scheduled charge attempt fails
  *
- * @param int $booking_id The booking ID
+ * @param int    $booking_id   The booking ID
+ * @param string $update_token Raw recovery token for update-card link
+ * @param string $deadline_at  UTC timestamp for auto-cancellation deadline
  * @return bool True if sent successfully
  */
-function shaped_send_payment_failed_email($booking_id) {
+function shaped_send_payment_failed_email($booking_id, $update_token, $deadline_at) {
     try {
-        error_log('[Shaped Email] Starting payment failed notification for booking #' . $booking_id);
+        error_log('[Shaped Email] Starting payment recovery notification for booking #' . $booking_id);
 
         $booking = MPHB()->getBookingRepository()->findById($booking_id, true);
         if (!$booking) return false;
@@ -378,22 +380,24 @@ function shaped_send_payment_failed_email($booking_id) {
         $customer = $booking->getCustomer();
         if (!$customer || !$customer->getEmail()) return false;
 
-        // Get email config
         $from_name = shaped_email_config('from_name', get_bloginfo('name'));
         $from_email = shaped_email_config('from_email', get_option('admin_email'));
-
-        $check_in = $booking->getCheckInDate()->format('d.m.Y');
         $currency = MPHB()->settings()->currency()->getCurrencySymbol();
-        $pending_amount = get_post_meta($booking_id, '_stripe_pending_amount', true);
+        $pending_amount = (float) get_post_meta($booking_id, '_stripe_pending_amount', true);
+        if ($pending_amount <= 0) {
+            $pending_amount = (float) $booking->getTotalPrice();
+        }
 
         $to = $customer->getEmail();
-        $subject = 'Payment Failed - Action Required #' . $booking_id . ' - ' . $from_name;
+        $subject = 'Update Your Card Within 48 Hours #' . $booking_id . ' - ' . $from_name;
 
         $message = shaped_get_payment_failed_template([
-            'booking_id' => $booking_id,
-            'customer_first' => $customer->getFirstName(),
-            'check_in' => $check_in,
-            'amount_due' => $currency . number_format($pending_amount, 2),
+            'booking_id'      => $booking_id,
+            'customer_first'  => $customer->getFirstName(),
+            'check_in'        => $booking->getCheckInDate()->format('d.m.Y'),
+            'amount_due'      => $currency . number_format($pending_amount, 2),
+            'deadline'        => wp_date('F j, Y \a\t H:i', strtotime($deadline_at), wp_timezone()),
+            'update_card_url' => shaped_email_get_card_update_url($booking_id, $update_token),
         ]);
 
         $headers = [
@@ -405,13 +409,14 @@ function shaped_send_payment_failed_email($booking_id) {
         $sent = wp_mail($to, $subject, $message, $headers);
 
         if ($sent) {
-            error_log('[Shaped Email] Payment failed notification sent to ' . $to);
+            update_post_meta($booking_id, '_shaped_payment_failed_notice_sent', current_time('mysql'));
+            error_log('[Shaped Email] Payment recovery notification sent to ' . $to);
         }
 
         return $sent;
 
     } catch (Exception $e) {
-        error_log('[Shaped Email] ERROR in payment failed notification: ' . $e->getMessage());
+        error_log('[Shaped Email] ERROR in payment recovery notification: ' . $e->getMessage());
         return false;
     }
 }
@@ -425,8 +430,6 @@ function shaped_send_payment_failed_email($booking_id) {
 function shaped_get_payment_failed_template($data) {
     $content = '';
     $company_name = shaped_email_config('company_name', 'our property');
-    $phone = shaped_email_config('phone', '');
-    $contact_email = shaped_email_config('email', '');
     $signature = shaped_email_config('signature', 'The Team');
 
     // Greeting
@@ -434,7 +437,7 @@ function shaped_get_payment_failed_template($data) {
 
     // Alert intro
     $content .= shaped_email_block_intro(
-        'We attempted to charge your payment for booking <strong>#' . esc_html($data['booking_id']) . '</strong> but the payment was unsuccessful.'
+        'We could not complete the scheduled payment for booking <strong>#' . esc_html($data['booking_id']) . '</strong>. Save a new card within 48 hours to keep this booking active.'
     );
 
     // Payment details card
@@ -444,6 +447,7 @@ function shaped_get_payment_failed_template($data) {
     $content .= shaped_email_block_row('Booking ID:', '#' . $data['booking_id'], ['bold_value' => true]);
     $content .= shaped_email_block_row('Amount Due:', $data['amount_due'], ['bold_value' => true]);
     $content .= shaped_email_block_row('Check-in:', $data['check_in'], ['bold_value' => true]);
+    $content .= shaped_email_block_row('Update by:', $data['deadline'], ['bold_value' => true]);
     $content .= shaped_email_block_rows_end();
     $content .= shaped_email_block_card_end();
 
@@ -452,29 +456,113 @@ function shaped_get_payment_failed_template($data) {
     $text_muted = shaped_email_color('textMuted', '#666666');
     $content .= '<div class="email-alert-danger" style="background: #FFF5F5; border-left: 4px solid #b83c2e; border-radius: 8px; padding: 20px; margin: 0 0 24px 0;">';
     $content .= '<p class="email-text-primary" style="margin: 0 0 12px 0; font-size: 16px; color: ' . $text_primary . '; font-weight: 700;">⚠️ Action Required</p>';
-    $content .= '<p class="email-text-muted" style="margin: 0 0 12px 0; font-size: 14px; color: ' . $text_muted . '; line-height: 1.6;">Your booking is at risk of cancellation. Please contact us immediately to resolve this payment issue.</p>';
-    $content .= '<p class="email-text-muted" style="margin: 0; font-size: 14px; color: ' . $text_muted . '; line-height: 1.6;"><strong>Common reasons:</strong> Insufficient funds, expired card, card limit exceeded, or bank declined the transaction.</p>';
+    $content .= '<p class="email-text-muted" style="margin: 0 0 12px 0; font-size: 14px; color: ' . $text_muted . '; line-height: 1.6;">Use the secure button below to save a new card. We will not retry the payment automatically.</p>';
+    $content .= '<p class="email-text-muted" style="margin: 0; font-size: 14px; color: ' . $text_muted . '; line-height: 1.6;">If the card is not updated by <strong>' . esc_html($data['deadline']) . '</strong>, the booking will be cancelled automatically and the room will be released.</p>';
     $content .= '</div>';
 
-    // Contact section
-    $content .= shaped_email_render_contact([
-        'title' => 'Contact Us Urgently',
-        'intro' => "We're here to help resolve this quickly:",
-        'phone' => $phone,
-        'email' => $contact_email,
-    ]);
+    // Recovery action
+    $content .= shaped_email_block_button(
+        'Update Card',
+        $data['update_card_url'],
+        'Saving a new card keeps the booking active. No automatic charge will be attempted after the update.'
+    );
 
     // Closing
     $content .= shaped_email_block_closing(
-        'Please reach out as soon as possible to keep your booking.',
+        'Once your card is updated, the booking remains active while we review the payment manually.',
         $signature,
         'neutral'
     );
 
     return shaped_render_email([
-        'title'       => 'Payment Failed - ' . $company_name,
-        'header'      => 'Payment Failed',
-        'subtitle'    => 'Action required',
+        'title'       => 'Update Your Card - ' . $company_name,
+        'header'      => 'Update Your Card',
+        'subtitle'    => 'Required within 48 hours',
+        'content'     => $content,
+        'footer_text' => '',
+    ]);
+}
+
+function shaped_send_payment_update_expired_email($booking_id) {
+    try {
+        error_log('[Shaped Email] Starting payment update expiry cancellation email for booking #' . $booking_id);
+
+        $booking = MPHB()->getBookingRepository()->findById($booking_id, true);
+        if (!$booking) return false;
+
+        $customer = $booking->getCustomer();
+        if (!$customer || !$customer->getEmail()) return false;
+
+        $from_name = shaped_email_config('from_name', get_bloginfo('name'));
+        $from_email = shaped_email_config('from_email', get_option('admin_email'));
+        $currency = MPHB()->settings()->currency()->getCurrencySymbol();
+        $pending_amount = (float) get_post_meta($booking_id, '_stripe_pending_amount', true);
+        if ($pending_amount <= 0) {
+            $pending_amount = (float) $booking->getTotalPrice();
+        }
+
+        $to = $customer->getEmail();
+        $subject = 'Booking Cancelled #' . $booking_id . ' - ' . $from_name;
+
+        $message = shaped_get_payment_update_expired_template([
+            'booking_id'     => $booking_id,
+            'customer_first' => $customer->getFirstName(),
+            'check_in'       => $booking->getCheckInDate()->format('d.m.Y'),
+            'amount_due'     => $currency . number_format($pending_amount, 2),
+        ]);
+
+        $headers = [
+            'Content-Type: text/html; charset=UTF-8',
+            'From: ' . $from_name . ' <' . $from_email . '>',
+            'Reply-To: ' . $from_email,
+        ];
+
+        $sent = wp_mail($to, $subject, $message, $headers);
+
+        if ($sent) {
+            update_post_meta($booking_id, '_shaped_payment_update_expired_sent', current_time('mysql'));
+            error_log('[Shaped Email] Payment update expiry email sent to ' . $to);
+        }
+
+        return $sent;
+    } catch (Exception $e) {
+        error_log('[Shaped Email] ERROR in payment update expiry email: ' . $e->getMessage());
+        return false;
+    }
+}
+
+function shaped_get_payment_update_expired_template($data) {
+    $content = '';
+    $company_name = shaped_email_config('company_name', 'our property');
+    $signature = shaped_email_config('signature', 'The Team');
+
+    $content .= shaped_email_block_greeting($data['customer_first']);
+    $content .= shaped_email_block_intro(
+        'Your booking <strong>#' . esc_html($data['booking_id']) . '</strong> has been cancelled because the card update was not completed within 48 hours of the failed payment attempt.'
+    );
+
+    $content .= shaped_email_block_card_start('default');
+    $content .= shaped_email_block_section_title('Cancellation Details');
+    $content .= shaped_email_block_rows_start();
+    $content .= shaped_email_block_row('Booking ID:', '#' . $data['booking_id'], ['bold_value' => true]);
+    $content .= shaped_email_block_row('Scheduled amount:', $data['amount_due'], ['bold_value' => true]);
+    $content .= shaped_email_block_row('Check-in:', $data['check_in'], ['bold_value' => true]);
+    $content .= shaped_email_block_rows_end();
+    $content .= shaped_email_block_card_end();
+
+    $text_muted = shaped_email_color('textMuted', '#666666');
+    $content .= '<p class="email-text-muted" style="margin: 0 0 24px 0; font-size: 14px; color: ' . $text_muted . '; line-height: 1.6;">No payment was collected before the update window expired. The room has now been released.</p>';
+
+    $content .= shaped_email_block_closing(
+        'If you would still like to stay with us, please place a new booking when you are ready.',
+        $signature,
+        'neutral'
+    );
+
+    return shaped_render_email([
+        'title'       => 'Booking Cancelled - ' . $company_name,
+        'header'      => 'Booking Cancelled',
+        'subtitle'    => 'Card update window expired',
         'content'     => $content,
         'footer_text' => '',
     ]);

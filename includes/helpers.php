@@ -108,6 +108,32 @@ function shaped_log(string $message, string $level = 'info'): void {
     error_log($prefix . ' ' . $message);
 }
 
+/**
+ * Build the lightweight guest access token used by manage-booking links.
+ */
+function shaped_get_booking_access_token(int $booking_id, string $customer_email): string {
+    return md5($booking_id . $customer_email);
+}
+
+/**
+ * Validate a guest access token for a booking.
+ */
+function shaped_is_valid_booking_access_token(int $booking_id, string $customer_email, string $token): bool {
+    return hash_equals(shaped_get_booking_access_token($booking_id, $customer_email), $token);
+}
+
+/**
+ * Build the manage-booking URL with optional extra query arguments.
+ */
+function shaped_get_manage_booking_url(int $booking_id, string $customer_email, array $args = []): string {
+    $query_args = array_merge([
+        'booking_id' => $booking_id,
+        'token'      => shaped_get_booking_access_token($booking_id, $customer_email),
+    ], $args);
+
+    return add_query_arg($query_args, home_url('/manage-booking/'));
+}
+
 /* =========================================================================
  * STRIPE CREDENTIAL HELPERS
  * ========================================================================= */

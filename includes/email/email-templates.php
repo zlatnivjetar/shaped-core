@@ -1256,6 +1256,16 @@ function shaped_email_render_cancellation_card($is_refundable = false) {
  * @return string Manage booking URL
  */
 function shaped_email_get_manage_url($booking_id, $customer_email) {
-    $token = md5($booking_id . $customer_email);
-    return home_url('/manage-booking/?booking_id=' . $booking_id . '&token=' . $token);
+    return shaped_get_manage_booking_url((int) $booking_id, (string) $customer_email);
+}
+
+/**
+ * Generate a recovery link for updating a saved card after a failed scheduled charge.
+ */
+function shaped_email_get_card_update_url($booking_id, $update_token) {
+    return add_query_arg([
+        'update_card'  => 1,
+        'booking_id'   => (int) $booking_id,
+        'update_token' => (string) $update_token,
+    ], home_url('/manage-booking/'));
 }

@@ -29,8 +29,7 @@ if (!function_exists('shaped_get_payment_context')) {
 if (!function_exists('shaped_detach_payment_method')) {
     function shaped_detach_payment_method($booking_id) {
         if (class_exists('Shaped_Payment_Processor')) {
-            $processor = new Shaped_Payment_Processor();
-            return $processor->detach_payment_method((int) $booking_id);
+            return Shaped_Payment_Processor::detach_saved_payment_method((int) $booking_id);
         }
         return false;
     }

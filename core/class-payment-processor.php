@@ -24,6 +24,7 @@ class Shaped_Payment_Processor
         add_action('mphb_sc_checkout_form', [$this, 'render_checkout_payment_notice'], 55, 3);
 
         // Checkout Redirect & Session Creation
+        add_action('template_redirect', [$this, 'handle_card_update_redirect'], 5);
         add_action('template_redirect', [$this, 'intercept_checkout_redirect']);
 
         // Webhook Route Registration
@@ -40,6 +41,11 @@ class Shaped_Payment_Processor
         // Daily Fallback Scheduler (for scheduled mode)
         add_action('init', [$this, 'ensure_daily_fallback_schedule']);
         add_action('shaped_daily_charge_fallback', [$this, 'daily_charge_fallback']);
+
+        // Failed charge recovery and expiry
+        add_action('init', [$this, 'schedule_card_update_expiry_sweep']);
+        add_action('shaped_expire_card_update_bookings', [$this, 'expire_overdue_card_updates']);
+        add_action('init', [$this, 'maybe_expire_overdue_card_updates'], 25);
     }
 
     /* ============================================================
@@ -75,6 +81,45 @@ class Shaped_Payment_Processor
         $key = get_post_meta($booking_id, '_shaped_idempotency_key', true);
         if ($key) {
             wp_clear_scheduled_hook('shaped_charge_single_booking', [$booking_id, $key]);
+        }
+    }
+
+    public static function clear_scheduled_charge_state(int $booking_id): void
+    {
+        delete_post_meta($booking_id, '_shaped_charge_scheduled');
+        delete_post_meta($booking_id, '_shaped_idempotency_key');
+    }
+
+    public static function clear_card_update_recovery(int $booking_id): void
+    {
+        delete_post_meta($booking_id, '_shaped_card_update_required_at');
+        delete_post_meta($booking_id, '_shaped_card_update_deadline_at');
+        delete_post_meta($booking_id, '_shaped_card_update_token_hash');
+        delete_post_meta($booking_id, '_shaped_card_update_session_id');
+        delete_post_meta($booking_id, '_shaped_card_update_session_expires_at');
+    }
+
+    public static function detach_saved_payment_method(int $booking_id): bool
+    {
+        $customer_id       = get_post_meta($booking_id, '_stripe_customer_id', true);
+        $payment_method_id = get_post_meta($booking_id, '_stripe_payment_method_id', true);
+
+        if (!$customer_id || !$payment_method_id) {
+            error_log('[Shaped] Cannot detach - missing customer or PM for booking #' . $booking_id);
+            return false;
+        }
+
+        try {
+            shaped_load_stripe_sdk();
+            $stripe = new \Stripe\StripeClient(shaped_get_stripe_secret());
+            $stripe->paymentMethods->detach($payment_method_id);
+            delete_post_meta($booking_id, '_stripe_payment_method_id');
+            error_log('[Shaped] Payment method detached for booking #' . $booking_id);
+            return true;
+        } catch (\Throwable $e) {
+            error_log('[Shaped] Detach failed: ' . $e->getMessage());
+            delete_post_meta($booking_id, '_stripe_payment_method_id');
+            return false;
         }
     }
 
@@ -128,6 +173,16 @@ class Shaped_Payment_Processor
         $stored_amount   = (float) get_post_meta($booking_id, '_shaped_payment_amount', true);
         $deposit_amount  = (float) get_post_meta($booking_id, '_shaped_deposit_amount', true);
         $balance_due     = (float) get_post_meta($booking_id, '_shaped_balance_due', true);
+        $card_update_deadline_raw = (string) get_post_meta($booking_id, '_shaped_card_update_deadline_at', true);
+        $card_update_deadline = null;
+        if ($card_update_deadline_raw !== '') {
+            try {
+                $card_update_deadline = new DateTime($card_update_deadline_raw, new DateTimeZone('UTC'));
+                $card_update_deadline->setTimezone(wp_timezone());
+            } catch (\Throwable $e) {
+                $card_update_deadline = null;
+            }
+        }
 
         if ($paid_amount > 0) {
             $amount = $paid_amount;
@@ -146,6 +201,10 @@ class Shaped_Payment_Processor
             $actual_charge_status = 'deposit_paid';
         } elseif ($payment_status === 'authorized') {
             $actual_charge_status = 'authorized';
+        } elseif ($payment_status === 'card_update_required') {
+            $actual_charge_status = 'card_update_required';
+        } elseif ($payment_status === 'manual_review') {
+            $actual_charge_status = 'manual_review';
         } elseif ($payment_status === 'charge_failed') {
             $actual_charge_status = 'failed';
         }
@@ -167,7 +226,126 @@ class Shaped_Payment_Processor
             'deposit_amount'    => $deposit_amount,
             'balance_due'       => $balance_due,
             'threshold_days'    => $threshold_days,
+            'card_update_deadline' => $card_update_deadline,
         ];
+    }
+
+    private static function hash_card_update_token(string $token): string
+    {
+        return hash('sha256', $token);
+    }
+
+    private static function create_card_update_token(): string
+    {
+        try {
+            return bin2hex(random_bytes(24));
+        } catch (\Throwable $e) {
+            return wp_generate_password(48, false, false);
+        }
+    }
+
+    private static function validate_card_update_token(int $booking_id, string $token): bool
+    {
+        $stored_hash = (string) get_post_meta($booking_id, '_shaped_card_update_token_hash', true);
+
+        return $stored_hash !== '' && hash_equals($stored_hash, self::hash_card_update_token($token));
+    }
+
+    private static function get_card_update_deadline_timestamp(int $booking_id): int
+    {
+        $deadline = (string) get_post_meta($booking_id, '_shaped_card_update_deadline_at', true);
+
+        return $deadline !== '' ? (int) strtotime($deadline) : 0;
+    }
+
+    private static function is_card_update_overdue(int $booking_id): bool
+    {
+        $deadline_ts = self::get_card_update_deadline_timestamp($booking_id);
+
+        return $deadline_ts > 0 && $deadline_ts <= current_time('timestamp', true);
+    }
+
+    private static function get_manage_booking_url_for_booking($booking, array $args = []): string
+    {
+        return shaped_get_manage_booking_url(
+            $booking->getId(),
+            $booking->getCustomer()->getEmail(),
+            $args
+        );
+    }
+
+    private function get_card_update_cancel_url($booking, string $update_token): string
+    {
+        return self::get_manage_booking_url_for_booking($booking, [
+            'card_update_result' => 'cancelled',
+            'update_token'       => $update_token,
+        ]);
+    }
+
+    private function attach_setup_payment_method_to_customer(\Stripe\StripeClient $stripe, string $setup_intent_id, string $customer_id): ?string
+    {
+        $setup_intent = $stripe->setupIntents->retrieve($setup_intent_id);
+        $payment_method_id = is_string($setup_intent->payment_method) ? $setup_intent->payment_method : '';
+
+        if ($payment_method_id === '') {
+            return null;
+        }
+
+        $pm = $stripe->paymentMethods->retrieve($payment_method_id);
+        if (empty($pm->customer)) {
+            $stripe->paymentMethods->attach($payment_method_id, ['customer' => $customer_id]);
+        }
+
+        $stripe->customers->update($customer_id, [
+            'invoice_settings' => ['default_payment_method' => $payment_method_id],
+        ]);
+
+        return $payment_method_id;
+    }
+
+    private function handle_scheduled_charge_card_failure(int $booking_id, string $error_message = ''): void
+    {
+        $booking = MPHB()->getBookingRepository()->findById($booking_id, true);
+        if (!$booking) {
+            return;
+        }
+
+        $current_status = (string) get_post_meta($booking_id, '_shaped_payment_status', true);
+        if (in_array($current_status, ['completed', 'cancelled', 'manual_review'], true)) {
+            return;
+        }
+
+        if ($current_status === 'card_update_required' && get_post_meta($booking_id, '_shaped_card_update_deadline_at', true)) {
+            return;
+        }
+
+        $now_ts = current_time('timestamp', true);
+        $failed_at = gmdate('Y-m-d H:i:s', $now_ts);
+        $deadline_at = gmdate('Y-m-d H:i:s', $now_ts + (48 * HOUR_IN_SECONDS));
+        $update_token = self::create_card_update_token();
+
+        self::clear_scheduled_charge($booking_id);
+        self::clear_scheduled_charge_state($booking_id);
+        self::clear_card_update_recovery($booking_id);
+
+        update_post_meta($booking_id, '_shaped_payment_status', 'card_update_required');
+        update_post_meta($booking_id, '_shaped_card_update_required_at', $failed_at);
+        update_post_meta($booking_id, '_shaped_card_update_deadline_at', $deadline_at);
+        update_post_meta($booking_id, '_shaped_card_update_token_hash', self::hash_card_update_token($update_token));
+        delete_post_meta($booking_id, '_shaped_card_updated_at');
+
+        if (function_exists('shaped_send_payment_failed_email')) {
+            shaped_send_payment_failed_email($booking_id, $update_token, $deadline_at);
+        }
+        if (function_exists('shaped_send_admin_payment_failed_email')) {
+            shaped_send_admin_payment_failed_email($booking_id, $deadline_at);
+        }
+
+        error_log(sprintf(
+            '[Shaped Charge] Booking #%d requires card update after failed charge%s',
+            $booking_id,
+            $error_message !== '' ? ': ' . $error_message : ''
+        ));
     }
 
     /* ============================================================
@@ -282,6 +460,180 @@ class Shaped_Payment_Processor
     /* ============================================================
      * Checkout Redirect & Session Creation
      * ========================================================== */
+
+    public function handle_card_update_redirect(): void
+    {
+        if (!isset($_GET['update_card'], $_GET['booking_id'], $_GET['update_token']) || $_GET['update_card'] != '1') {
+            return;
+        }
+
+        $booking_id = absint($_GET['booking_id']);
+        $update_token = sanitize_text_field((string) $_GET['update_token']);
+
+        if (!$booking_id || $update_token === '') {
+            wp_die('This card update link is invalid.');
+        }
+
+        $booking = MPHB()->getBookingRepository()->findById($booking_id, true);
+        if (!$booking) {
+            wp_die('This card update link is invalid.');
+        }
+
+        $payment_status = (string) get_post_meta($booking_id, '_shaped_payment_status', true);
+
+        if ($booking->getStatus() === 'cancelled') {
+            wp_safe_redirect(self::get_manage_booking_url_for_booking($booking, [
+                'action' => 'cancelled',
+            ]));
+            exit;
+        }
+
+        if ($payment_status !== 'card_update_required') {
+            if ($payment_status === 'manual_review') {
+                wp_safe_redirect(self::get_manage_booking_url_for_booking($booking, [
+                    'card_update_result' => 'success',
+                ]));
+                exit;
+            }
+
+            wp_die('This card update link is no longer active.');
+        }
+
+        if (self::is_card_update_overdue($booking_id)) {
+            Shaped_Booking_Manager::cancel_booking($booking_id, [
+                'reason'     => 'payment_update_expired',
+                'email_type' => 'payment_update_expired',
+            ]);
+            wp_safe_redirect(self::get_manage_booking_url_for_booking($booking, [
+                'action' => 'cancelled',
+            ]));
+            exit;
+        }
+
+        if (!self::validate_card_update_token($booking_id, $update_token)) {
+            wp_die('This card update link is no longer valid.');
+        }
+
+        $customer_id = (string) get_post_meta($booking_id, '_stripe_customer_id', true);
+        if ($customer_id === '') {
+            wp_die('We could not start the card update flow for this booking.');
+        }
+
+        shaped_load_stripe_sdk();
+        $stripe = new \Stripe\StripeClient(shaped_get_stripe_secret());
+
+        $existing_session_id = (string) get_post_meta($booking_id, '_shaped_card_update_session_id', true);
+        if ($existing_session_id !== '') {
+            try {
+                $session = $stripe->checkout->sessions->retrieve($existing_session_id);
+                if ($session && $session->status === 'open') {
+                    wp_safe_redirect($session->url);
+                    exit;
+                }
+            } catch (\Throwable $e) {
+                error_log('[Shaped Card Update] Existing session lookup failed: ' . $e->getMessage());
+            }
+
+            delete_post_meta($booking_id, '_shaped_card_update_session_id');
+            delete_post_meta($booking_id, '_shaped_card_update_session_expires_at');
+        }
+
+        $pending_amount = (float) get_post_meta($booking_id, '_stripe_pending_amount', true);
+        $amount_label = html_entity_decode(MPHB()->settings()->currency()->getCurrencySymbol(), ENT_QUOTES, 'UTF-8') . number_format($pending_amount, 2);
+
+        try {
+            $session = $stripe->checkout->sessions->create([
+                'mode'                 => 'setup',
+                'customer'             => $customer_id,
+                'payment_method_types' => ['card'],
+                'payment_method_options' => [
+                    'card' => ['request_three_d_secure' => 'any'],
+                ],
+                'custom_text' => [
+                    'submit' => ['message' => 'Save a new card to keep booking #' . $booking_id . ' active. No payment will be collected automatically.'],
+                ],
+                'metadata' => [
+                    'flow'         => 'card_update',
+                    'booking_id'   => $booking_id,
+                    'payment_mode' => 'delayed',
+                ],
+                'success_url' => self::get_manage_booking_url_for_booking($booking, [
+                    'card_update_result' => 'success',
+                ]),
+                'cancel_url' => $this->get_card_update_cancel_url($booking, $update_token),
+            ]);
+
+            update_post_meta($booking_id, '_shaped_card_update_session_id', $session->id);
+            if (!empty($session->expires_at)) {
+                update_post_meta($booking_id, '_shaped_card_update_session_expires_at', gmdate('Y-m-d H:i:s', (int) $session->expires_at));
+            }
+
+            error_log(sprintf('[Shaped Card Update] Redirecting booking #%d to Stripe card update session for %s', $booking_id, $amount_label));
+            wp_safe_redirect($session->url);
+            exit;
+        } catch (\Throwable $e) {
+            error_log('[Shaped Card Update] Session error: ' . $e->getMessage());
+            wp_die('We could not start the card update flow right now. Please try again later.');
+        }
+    }
+
+    public function schedule_card_update_expiry_sweep(): void
+    {
+        if (!wp_next_scheduled('shaped_expire_card_update_bookings')) {
+            wp_schedule_event(time(), 'every_minute', 'shaped_expire_card_update_bookings');
+        }
+    }
+
+    public function maybe_expire_overdue_card_updates(): void
+    {
+        if (wp_doing_cron()) {
+            return;
+        }
+
+        static $processed = false;
+        if ($processed) {
+            return;
+        }
+
+        $processed = true;
+        $this->expire_overdue_card_updates();
+    }
+
+    public function expire_overdue_card_updates(): void
+    {
+        $now = current_time('mysql', true);
+        $bookings = get_posts([
+            'post_type'      => 'mphb_booking',
+            'post_status'    => ['confirmed', 'pending-payment'],
+            'posts_per_page' => 50,
+            'meta_query'     => [
+                'relation' => 'AND',
+                [
+                    'key'   => '_shaped_payment_status',
+                    'value' => 'card_update_required',
+                ],
+                [
+                    'key'     => '_shaped_card_update_deadline_at',
+                    'value'   => $now,
+                    'compare' => '<=',
+                    'type'    => 'DATETIME',
+                ],
+            ],
+        ]);
+
+        foreach ($bookings as $booking_post) {
+            $booking_id = (int) $booking_post->ID;
+            if (!self::is_card_update_overdue($booking_id)) {
+                continue;
+            }
+
+            error_log('[Shaped Card Update] Auto-cancelling overdue booking #' . $booking_id);
+            Shaped_Booking_Manager::cancel_booking($booking_id, [
+                'reason'     => 'payment_update_expired',
+                'email_type' => 'payment_update_expired',
+            ]);
+        }
+    }
 
     public function intercept_checkout_redirect(): void
     {
@@ -588,11 +940,102 @@ class Shaped_Payment_Processor
                 return new WP_REST_Response(['received' => true, 'skipped' => 'duplicate_session'], 200);
             }
 
+            $flow         = isset($session->metadata->flow) ? (string) $session->metadata->flow : '';
             $booking_id   = isset($session->metadata->booking_id) ? absint($session->metadata->booking_id) : 0;
-            $payment_id   = isset($session->metadata->payment_id) ? absint($session->metadata->payment_id) : 0;
             $payment_mode = isset($session->metadata->payment_mode) ? (string) $session->metadata->payment_mode : '';
             $payment_type = isset($session->metadata->payment_type) ? (string) $session->metadata->payment_type : 'full';
 
+            if ($flow === 'card_update') {
+                if (!$booking_id) {
+                    self::mark_session_processed($session_id);
+                    self::mark_event_processed($event_id);
+                    return new WP_REST_Response(['received' => true, 'note' => 'no_booking_id'], 200);
+                }
+
+                try {
+                    $booking = MPHB()->getBookingRepository()->findById($booking_id, true);
+                    if (!$booking) {
+                        self::mark_session_processed($session_id);
+                        self::mark_event_processed($event_id);
+                        return new WP_REST_Response(['received' => true, 'note' => 'booking_missing'], 200);
+                    }
+
+                    $current_status = (string) get_post_meta($booking_id, '_shaped_payment_status', true);
+                    if ($booking->getStatus() === 'cancelled' || in_array($current_status, ['cancelled', 'completed'], true)) {
+                        self::mark_session_processed($session_id);
+                        self::mark_event_processed($event_id);
+                        return new WP_REST_Response(['received' => true, 'note' => 'booking_closed'], 200);
+                    }
+
+                    if ($current_status !== 'card_update_required' || self::is_card_update_overdue($booking_id)) {
+                        if (self::is_card_update_overdue($booking_id)) {
+                            Shaped_Booking_Manager::cancel_booking($booking_id, [
+                                'reason'     => 'payment_update_expired',
+                                'email_type' => 'payment_update_expired',
+                            ]);
+                        }
+
+                        self::mark_session_processed($session_id);
+                        self::mark_event_processed($event_id);
+                        return new WP_REST_Response(['received' => true, 'note' => 'card_update_not_required'], 200);
+                    }
+
+                    $customer_id = (string) ($session->customer ?: get_post_meta($booking_id, '_stripe_customer_id', true));
+                    if ($customer_id === '' || empty($session->setup_intent)) {
+                        throw new \RuntimeException('Missing customer or setup_intent on card update session.');
+                    }
+
+                    $stripe = new \Stripe\StripeClient(shaped_get_stripe_secret());
+                    $previous_payment_method_id = (string) get_post_meta($booking_id, '_stripe_payment_method_id', true);
+                    $payment_method_id = $this->attach_setup_payment_method_to_customer(
+                        $stripe,
+                        (string) $session->setup_intent,
+                        $customer_id
+                    );
+
+                    if ($payment_method_id === null) {
+                        throw new \RuntimeException('Card update session did not return a payment method.');
+                    }
+
+                    if ($previous_payment_method_id !== '' && $previous_payment_method_id !== $payment_method_id) {
+                        try {
+                            $stripe->paymentMethods->detach($previous_payment_method_id);
+                        } catch (\Throwable $e) {
+                            error_log('[Shaped Card Update] Previous payment method detach failed: ' . $e->getMessage());
+                        }
+                    }
+
+                    self::clear_card_update_recovery($booking_id);
+                    update_post_meta($booking_id, '_stripe_customer_id', $customer_id);
+                    update_post_meta($booking_id, '_stripe_payment_method_id', $payment_method_id);
+                    update_post_meta($booking_id, '_stripe_setup_intent_id', $session->setup_intent);
+                    update_post_meta($booking_id, '_shaped_payment_status', 'manual_review');
+                    update_post_meta($booking_id, '_shaped_card_updated_at', current_time('mysql'));
+                    delete_post_meta($booking_id, '_shaped_cancellation_reason');
+
+                    if ($booking->getStatus() !== 'confirmed') {
+                        try {
+                            $booking->setStatus('confirmed');
+                            MPHB()->getBookingRepository()->save($booking);
+                        } catch (\Throwable $e) {
+                            error_log('[Shaped Card Update] Booking confirm failed: ' . $e->getMessage());
+                        }
+                    }
+
+                    if (function_exists('shaped_send_admin_card_updated_email')) {
+                        shaped_send_admin_card_updated_email($booking_id);
+                    }
+
+                    self::mark_session_processed($session_id);
+                    self::mark_event_processed($event_id);
+                    return new WP_REST_Response(['received' => true], 200);
+                } catch (\Throwable $e) {
+                    error_log('[Shaped Card Update] Webhook processing error: ' . $e->getMessage());
+                    return new WP_REST_Response(['error' => 'card_update_processing_error'], 500);
+                }
+            }
+
+            $payment_id = isset($session->metadata->payment_id) ? absint($session->metadata->payment_id) : 0;
             if (!$booking_id || !$payment_id) {
                 error_log('[Shaped Webhook] Missing booking_id or payment_id.');
                 return new WP_REST_Response(['error' => 'Missing metadata'], 400);
@@ -824,6 +1267,33 @@ class Shaped_Payment_Processor
             }
         }
 
+        if ($event->type === 'payment_intent.payment_failed') {
+            if (self::event_already_processed($event_id)) {
+                return new WP_REST_Response(['received' => true, 'skipped' => 'duplicate_event'], 200);
+            }
+
+            try {
+                $pi = $event->data->object;
+                $booking_id = isset($pi->metadata->booking_id) ? absint($pi->metadata->booking_id) : 0;
+                $payment_mode = isset($pi->metadata->payment_mode) ? (string) $pi->metadata->payment_mode : '';
+
+                if ($booking_id && $payment_mode === 'delayed') {
+                    $current_status = (string) get_post_meta($booking_id, '_shaped_payment_status', true);
+                    if ($current_status === 'authorized') {
+                        $message = '';
+                        if (!empty($pi->last_payment_error) && !empty($pi->last_payment_error->message)) {
+                            $message = (string) $pi->last_payment_error->message;
+                        }
+                        $this->handle_scheduled_charge_card_failure($booking_id, $message);
+                    }
+                }
+
+                self::mark_event_processed($event_id);
+            } catch (\Throwable $e) {
+                error_log('[Shaped Webhook] PI failed processing error: ' . $e->getMessage());
+            }
+        }
+
         self::mark_event_processed($event_id);
         return new WP_REST_Response(['received' => true], 200);
     }
@@ -909,13 +1379,7 @@ class Shaped_Payment_Processor
             update_post_meta($booking_id, '_shaped_charge_processed', true);
         } catch (\Stripe\Exception\CardException $e) {
             error_log('[Shaped Charge] Payment failed: ' . $e->getMessage());
-            update_post_meta($booking_id, '_shaped_payment_status', 'charge_failed');
-            if (function_exists('shaped_send_payment_failed_email')) {
-                shaped_send_payment_failed_email($booking_id);
-            }
-            if (function_exists('shaped_send_admin_payment_failed_email')) {
-                shaped_send_admin_payment_failed_email($booking_id);
-            }
+            $this->handle_scheduled_charge_card_failure($booking_id, $e->getMessage());
             return;
         } catch (\Throwable $e) {
             error_log('[Shaped Charge] Error: ' . $e->getMessage());
@@ -955,26 +1419,7 @@ class Shaped_Payment_Processor
 
     public function detach_payment_method(int $booking_id): bool
     {
-        $customer_id       = get_post_meta($booking_id, '_stripe_customer_id', true);
-        $payment_method_id = get_post_meta($booking_id, '_stripe_payment_method_id', true);
-
-        if (!$customer_id || !$payment_method_id) {
-            error_log('[Shaped] Cannot detach - missing customer or PM for booking #' . $booking_id);
-            return false;
-        }
-
-        try {
-            shaped_load_stripe_sdk();
-            $stripe = new \Stripe\StripeClient(shaped_get_stripe_secret());
-            $stripe->paymentMethods->detach($payment_method_id);
-            delete_post_meta($booking_id, '_stripe_payment_method_id');
-            error_log('[Shaped] Payment method detached for booking #' . $booking_id);
-            return true;
-        } catch (\Throwable $e) {
-            error_log('[Shaped] Detach failed: ' . $e->getMessage());
-            delete_post_meta($booking_id, '_stripe_payment_method_id');
-            return false;
-        }
+        return self::detach_saved_payment_method($booking_id);
     }
 
     /* ============================================================
@@ -995,6 +1440,8 @@ class Shaped_Payment_Processor
     {
         if (in_array($new_status, ['cancelled', 'abandoned', 'trash'], true)) {
             self::clear_scheduled_charge($booking->getId());
+            self::clear_scheduled_charge_state($booking->getId());
+            self::clear_card_update_recovery($booking->getId());
         }
     }
 

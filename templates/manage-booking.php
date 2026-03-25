@@ -31,8 +31,7 @@ if (!$booking) {
 }
 
 // Verify token
-$expected_token = md5($booking_id . $booking->getCustomer()->getEmail());
-if ($token !== $expected_token) {
+if (!function_exists('shaped_is_valid_booking_access_token') || !shaped_is_valid_booking_access_token((int) $booking_id, (string) $booking->getCustomer()->getEmail(), (string) $token)) {
     wp_die('Invalid access token');
 }
 

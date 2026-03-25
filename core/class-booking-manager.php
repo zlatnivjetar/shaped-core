@@ -218,8 +218,7 @@ class Shaped_Booking_Manager
             wp_die('Invalid booking');
         }
 
-        $expected_token = md5($booking_id . $booking->getCustomer()->getEmail());
-        if ($token !== $expected_token) {
+        if (!shaped_is_valid_booking_access_token($booking_id, $booking->getCustomer()->getEmail(), $token)) {
             wp_die('Invalid token');
         }
 
@@ -259,8 +258,7 @@ class Shaped_Booking_Manager
             return '<p style="font-size: 1.5rem; font-weight:700; padding: 24px; border-bottom: 2px solid var(--color-brand-primary); padding-bottom: 8px;">Booking not found.</p>';
         }
 
-        $expected_token = md5($booking_id . $booking->getCustomer()->getEmail());
-        if ($token !== $expected_token) {
+        if (!shaped_is_valid_booking_access_token($booking_id, $booking->getCustomer()->getEmail(), $token)) {
             return '<p>Invalid access token.</p>';
         }
 
@@ -281,11 +279,9 @@ class Shaped_Booking_Manager
 
         // Handle cancellation submission (Step 4)
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'cancel') {
-            $booking_url = add_query_arg([
-                'booking_id' => $booking_id,
-                'token'      => $token,
-                'action'     => 'cancelled',
-            ], home_url('/manage-booking/'));
+            $booking_url = shaped_get_manage_booking_url($booking_id, $booking->getCustomer()->getEmail(), [
+                'action' => 'cancelled',
+            ]);
 
             wp_redirect($booking_url);
             exit;
@@ -329,6 +325,29 @@ class Shaped_Booking_Manager
             : '';
 
         $info_only = ($context['is_immediate'] || $booking->getStatus() === 'cancelled');
+        $payment_status = (string) $context['payment_status'];
+        $card_update_result = isset($_GET['card_update_result']) ? sanitize_text_field($_GET['card_update_result']) : '';
+        $update_token = isset($_GET['update_token']) ? sanitize_text_field($_GET['update_token']) : '';
+        $card_update_url = ($update_token !== '' && function_exists('shaped_email_get_card_update_url'))
+            ? shaped_email_get_card_update_url($booking_id, $update_token)
+            : '';
+        $card_update_deadline_raw = (string) get_post_meta($booking_id, '_shaped_card_update_deadline_at', true);
+        $card_update_deadline = $card_update_deadline_raw !== ''
+            ? wp_date('F j, Y \a\t H:i', strtotime($card_update_deadline_raw), wp_timezone())
+            : '';
+        $card_update_banner = '';
+        $cancel_intro = 'You can cancel your booking free of charge since payment has not been processed yet.';
+
+        if ($payment_status === 'card_update_required') {
+            $deadline_sentence = $card_update_deadline !== ''
+                ? 'Please update your card before ' . $card_update_deadline . '.'
+                : 'Please update your card as soon as possible.';
+            $card_update_banner = $deadline_sentence . ' We will cancel the booking automatically if the card is not updated in time.';
+            $cancel_intro = 'Payment has not been collected. You can still cancel this booking free of charge.';
+        } elseif ($payment_status === 'manual_review') {
+            $card_update_banner = 'Your new card was saved successfully. The booking is active and awaiting manual payment review by our team.';
+            $cancel_intro = 'Your card was updated, but payment has not been collected yet. You can still cancel this booking free of charge.';
+        }
 
         ob_start();
         ?>
@@ -371,14 +390,18 @@ class Shaped_Booking_Manager
                                 <strong style="color: var(--color-semantic-success);">Paid in Full</strong>
                             <?php elseif ($context['payment_status'] === 'deposit_paid'): ?>
                                 <strong style="color: var(--color-semantic-success);">Deposit Paid</strong> <span style="color: var(--color-text-muted);">(Balance due on arrival)</span>
-                            <?php elseif ($context['payment_status'] === 'failed'): ?>
+                            <?php elseif ($payment_status === 'failed'): ?>
                                 <strong style="color: var(--color-semantic-error);">Payment Failed</strong>
-                            <?php elseif ($context['payment_status'] === 'authorized'): ?>
+                            <?php elseif ($payment_status === 'authorized'): ?>
                                 <?php if ($context['days_until_charge'] > 0): ?>
                                     <strong style="color: var(--color-text-primary);">Will be charged on <?php echo $context['charge_date']->format('F j'); ?></strong>
                                 <?php else: ?>
                                     <strong style="color: var(--color-semantic-success);">Processing</strong>
                                 <?php endif; ?>
+                            <?php elseif ($payment_status === 'card_update_required'): ?>
+                                <strong style="color: var(--color-semantic-error);">Payment method update required</strong>
+                            <?php elseif ($payment_status === 'manual_review'): ?>
+                                <strong style="color: #1c6b76;">Card updated, pending review</strong>
                             <?php else: ?>
                                 <strong style="color: #999;">Pending</strong>
                             <?php endif; ?>
@@ -387,12 +410,46 @@ class Shaped_Booking_Manager
                 </div>
             </div>
 
+            <?php if ($card_update_result === 'success'): ?>
+                <div style="background: #f3fbf7; border: 1px solid #b6dfc2; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                    <h2 style="color: var(--color-text-primary); font-size: 1.35rem; font-weight: 600; margin: 0 0 12px 0;">Card Updated</h2>
+                    <p style="color: var(--color-text-primary); margin: 0; line-height: 1.5;">
+                        Your new card has been saved successfully. The booking remains active while our team reviews the payment manually.
+                    </p>
+                </div>
+            <?php elseif ($card_update_result === 'cancelled' && $payment_status === 'card_update_required'): ?>
+                <div style="background: #fffaf0; border: 1px solid #efd9a7; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+                    <h2 style="color: var(--color-text-primary); font-size: 1.35rem; font-weight: 600; margin: 0 0 12px 0;">Card Update Incomplete</h2>
+                    <p style="color: var(--color-text-primary); margin: 0; line-height: 1.5;">
+                        Your card was not updated yet. You can continue using the button below before the deadline expires.
+                    </p>
+                </div>
+            <?php endif; ?>
+
+            <?php if ($payment_status === 'card_update_required' || $payment_status === 'manual_review'): ?>
+                <div style="margin-bottom: 24px;">
+                    <div style="box-shadow: rgba(50, 50, 93, 0.18) 0px 2px 5px -1px, rgba(0, 0, 0, 0.18) 0px 1px 3px -1px; background: <?php echo $payment_status === 'card_update_required' ? '#fff7f5' : '#f3fbf7'; ?>; border: 1px solid <?php echo $payment_status === 'card_update_required' ? '#efc0b8' : '#b6dfc2'; ?>; padding: 24px; border-radius: 8px;">
+                        <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">
+                            <?php echo $payment_status === 'card_update_required' ? 'Update Your Card' : 'Payment Review Status'; ?>
+                        </h2>
+                        <p style="color: var(--color-text-muted); margin-bottom: <?php echo ($payment_status === 'card_update_required' && $card_update_url !== '') ? '20px' : '0'; ?>; line-height: 1.5;">
+                            <?php echo esc_html($card_update_banner); ?>
+                        </p>
+                        <?php if ($payment_status === 'card_update_required' && $card_update_url !== ''): ?>
+                            <a href="<?php echo esc_url($card_update_url); ?>" style="display: inline-block; background: var(--color-text-primary); color: var(--color-text-inverse); padding: 14px 24px; border-radius: 8px; font-size: 1rem; font-weight: 600; text-decoration: none;">
+                                Update Card
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             <?php if (!$info_only): ?>
                 <div>
                     <div style="box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px; background: #fcf4f3; border: 1px solid #f0f0f0; padding: 24px; border-radius: 8px;">
                         <h2 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 16px;">Cancel Your Booking</h2>
                         <p style="color: var(--color-text-muted); margin-bottom: 20px; line-height: 1.5;">
-                            You can cancel your booking free of charge since payment has not been processed yet.
+                            <?php echo esc_html($cancel_intro); ?>
                         </p>
                         <form method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
                             <button type="submit" name="action" value="cancel"
@@ -469,6 +526,8 @@ class Shaped_Booking_Manager
 
         $pending_amount = get_post_meta($booking_id, '_stripe_pending_amount', true);
         $was_charged    = get_post_meta($booking_id, '_stripe_payment_charged', true);
+        $cancellation_reason = (string) get_post_meta($booking_id, '_shaped_cancellation_reason', true);
+        $is_payment_update_expired = ($cancellation_reason === 'payment_update_expired');
 
         ob_start();
         ?>
@@ -479,7 +538,11 @@ class Shaped_Booking_Manager
 
             <div style="padding-bottom: 16px; margin-bottom: 24px; border-bottom: 2px solid var(--color-brand-primary);">
                 <p style="font-size: 1.125rem; color: var(--color-text-primary); margin-bottom: 0; line-height: 1.5;">
-                    Your booking <strong>#<?php echo $booking_id; ?></strong> has been successfully cancelled.
+                    <?php if ($is_payment_update_expired): ?>
+                        Your booking <strong>#<?php echo $booking_id; ?></strong> has been cancelled because the payment method was not updated within 48 hours.
+                    <?php else: ?>
+                        Your booking <strong>#<?php echo $booking_id; ?></strong> has been successfully cancelled.
+                    <?php endif; ?>
                 </p>
             </div>
 
@@ -487,7 +550,11 @@ class Shaped_Booking_Manager
                 <div style="background: #fffbf0; border-radius: 8px; padding: 24px; margin-bottom: 24px;">
                     <h3 style="color: var(--color-text-primary); font-size: 1.5rem; font-weight: 600; margin-bottom: 16px; margin-top:0;">No Charge Applied</h3>
                     <p style="font-size: 1.125rem; line-height: 1.5em; color: var(--color-text-primary); margin: 0;">
+                        <?php if ($is_payment_update_expired): ?>
+                        No charge was applied before the payment-update window expired. The reservation of
+                        <?php else: ?>
                         Your card has not been charged. The reservation of
+                        <?php endif; ?>
                         <strong style="color: var(--color-text-primary); font-weight: 600;">€<?php echo number_format((float)$pending_amount, 2); ?></strong>
                         has been cancelled.
                     </p>
@@ -541,66 +608,86 @@ class Shaped_Booking_Manager
         return ob_get_clean();
     }
 
-    private function process_cancellation(int $booking_id): void
+    public static function cancel_booking(int $booking_id, array $args = []): bool
     {
-        $booking = MPHB()->getBookingRepository()->findById($booking_id);
-        if (!$booking || $booking->getStatus() === 'cancelled') {
-            return;
+        $args = wp_parse_args($args, [
+            'reason'      => 'guest_cancelled',
+            'email_type'  => 'standard',
+            'send_emails' => true,
+        ]);
+
+        $booking = MPHB()->getBookingRepository()->findById($booking_id, true);
+        if (!$booking) {
+            return false;
         }
 
-        $was_charged     = get_post_meta($booking_id, '_stripe_payment_charged', true);
-        $payment_status  = get_post_meta($booking_id, '_shaped_payment_status', true);
-
-        // If authorized but not charged, prevent future charge
-        if ($payment_status === 'authorized' && !$was_charged) {
-            // Detach payment method and clear schedule
-            if (class_exists('Shaped_Payment_Processor')) {
-                $processor = new Shaped_Payment_Processor();
-                $processor->detach_payment_method($booking_id);
+        if ($booking->getStatus() === 'cancelled') {
+            if ($args['reason'] !== '') {
+                update_post_meta($booking_id, '_shaped_cancellation_reason', $args['reason']);
             }
-
-            $charge_at = get_post_meta($booking_id, '_shaped_charge_at', true);
-            if ($charge_at) {
-                $idempotency_key = get_post_meta($booking_id, '_shaped_idempotency_key', true);
-                wp_clear_scheduled_hook('shaped_charge_single_booking', [$booking_id, $idempotency_key]);
-
-                update_post_meta($booking_id, '_shaped_payment_status', 'cancelled');
-                delete_post_meta($booking_id, '_shaped_charge_scheduled');
-            }
+            return true;
         }
 
-        // Release room reservations
+        $was_charged = (bool) get_post_meta($booking_id, '_stripe_payment_charged', true);
+
+        if (class_exists('Shaped_Payment_Processor')) {
+            Shaped_Payment_Processor::clear_scheduled_charge($booking_id);
+            Shaped_Payment_Processor::clear_scheduled_charge_state($booking_id);
+            Shaped_Payment_Processor::clear_card_update_recovery($booking_id);
+            Shaped_Payment_Processor::detach_saved_payment_method($booking_id);
+        }
+
+        update_post_meta($booking_id, '_shaped_payment_status', 'cancelled');
+        update_post_meta($booking_id, '_shaped_cancellation_reason', $args['reason']);
+
         $reserved_rooms = $booking->getReservedRooms();
         foreach ($reserved_rooms as $room) {
             wp_delete_post($room->getId(), true);
         }
 
-        // Mark as cancelled
         wp_update_post([
             'ID'          => $booking_id,
             'post_status' => 'cancelled',
         ]);
-        
+
         do_action('shaped_booking_cancelled', $booking_id);
 
-        // Clear booking cache
+        delete_transient('shaped_pending_' . $booking_id);
         delete_transient('mphb_booking_' . $booking_id);
 
-        // Trigger MPHB hooks
         do_action('mphb_booking_status_changed', $booking, 'cancelled');
 
-        // Emails
-        $pending_amount = (float) get_post_meta($booking_id, '_stripe_pending_amount', true);
-        $refund_amount  = $was_charged ? 0 : $pending_amount;
+        if ($args['send_emails']) {
+            $pending_amount = (float) get_post_meta($booking_id, '_stripe_pending_amount', true);
+            $refund_amount  = $was_charged ? 0 : $pending_amount;
 
-        if (function_exists('shaped_send_cancellation_email')) {
-            shaped_send_cancellation_email($booking_id, $refund_amount, 0);
-        }
-        if (function_exists('shaped_send_admin_cancellation_email')) {
-            shaped_send_admin_cancellation_email($booking_id, $refund_amount, 0);
+            if ($args['email_type'] === 'payment_update_expired') {
+                if (function_exists('shaped_send_payment_update_expired_email')) {
+                    shaped_send_payment_update_expired_email($booking_id);
+                }
+                if (function_exists('shaped_send_admin_payment_update_expired_email')) {
+                    shaped_send_admin_payment_update_expired_email($booking_id);
+                }
+            } else {
+                if (function_exists('shaped_send_cancellation_email')) {
+                    shaped_send_cancellation_email($booking_id, $refund_amount > 0);
+                }
+                if (function_exists('shaped_send_admin_cancellation_email')) {
+                    shaped_send_admin_cancellation_email($booking_id, $refund_amount, 0);
+                }
+            }
         }
 
         error_log('[Shaped] Booking #' . $booking_id . ' cancelled, payment method detached (if any), rooms released');
+        return true;
+    }
+
+    private function process_cancellation(int $booking_id): void
+    {
+        self::cancel_booking($booking_id, [
+            'reason'     => 'guest_cancelled',
+            'email_type' => 'standard',
+        ]);
     }
 
     /* ============================================================

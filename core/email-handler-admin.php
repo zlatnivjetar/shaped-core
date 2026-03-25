@@ -493,10 +493,11 @@ function shaped_get_admin_deposit_template( $data ) {
 /**
  * Send admin notification when a scheduled payment fails
  *
- * @param int $booking_id The booking ID
+ * @param int    $booking_id   The booking ID
+ * @param string $deadline_at  UTC timestamp for auto-cancellation deadline
  * @return bool True if sent successfully
  */
-function shaped_send_admin_payment_failed_email( $booking_id ) {
+function shaped_send_admin_payment_failed_email( $booking_id, $deadline_at ) {
     try {
         error_log( '[Shaped Admin Email] Starting admin payment failed notification for booking #' . $booking_id );
 
@@ -529,6 +530,8 @@ function shaped_send_admin_payment_failed_email( $booking_id ) {
         $to = shaped_get_admin_to_email();
         $subject = '⚠️ Payment Failed: #' . $booking_id . ' - Action Required';
 
+        $subject = 'Payment Failed: #' . $booking_id . ' - Card update required';
+
         $message = shaped_get_admin_payment_failed_template( array(
             'booking_id'      => $booking_id,
             'customer_name'   => $customer->getFirstName() . ' ' . $customer->getLastName(),
@@ -538,6 +541,7 @@ function shaped_send_admin_payment_failed_email( $booking_id ) {
             'check_out'       => $check_out,
             'room_list'       => $room_list,
             'amount_due'      => $currency . number_format( $pending_amount, 2 ),
+            'deadline'        => wp_date( 'F j, Y \a\t H:i', strtotime( $deadline_at ), wp_timezone() ),
         ) );
 
         $from_name  = shaped_email_config('from_name', get_bloginfo('name'));
@@ -574,10 +578,179 @@ function shaped_get_admin_payment_failed_template( $data ) {
         </div>
         <div style="padding: 20px;">
             <p style="background: #FFF5F5; padding: 15px; border-radius: 5px; border-left: 4px solid #c00; margin: 0 0 20px 0;">
-                <strong>Action Required:</strong> The scheduled payment for this booking has failed. Please contact the customer immediately.
+                <strong>Action Required:</strong> The scheduled payment failed. The guest has been sent a secure card-update link and the booking will auto-cancel if they do not update the card in time.
             </p>
             <h3 style="margin-top: 0;">Payment Details:</h3>
             <p><strong>Amount Due:</strong> <strong style="color: #c00;"><?php echo esc_html( $data['amount_due'] ); ?></strong></p>
+            <p><strong>Auto-cancel at:</strong> <?php echo esc_html( $data['deadline'] ); ?></p>
+            <p><strong>Retry policy:</strong> No automatic payment retry will be attempted after the guest updates the card.</p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Booking Details:</h3>
+            <p><strong>Accommodation:</strong> <?php echo esc_html( $data['room_list'] ); ?></p>
+            <p><strong>Check-in:</strong> <?php echo esc_html( $data['check_in'] ); ?></p>
+            <p><strong>Check-out:</strong> <?php echo esc_html( $data['check_out'] ); ?></p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Customer Details:</h3>
+            <p><strong>Name:</strong> <?php echo esc_html( $data['customer_name'] ); ?></p>
+            <p><strong>Email:</strong> <a href="mailto:<?php echo esc_attr( $data['customer_email'] ); ?>"><?php echo esc_html( $data['customer_email'] ); ?></a></p>
+            <p><strong>Phone:</strong> <?php echo esc_html( $data['customer_phone'] ); ?></p>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+function shaped_send_admin_card_updated_email( $booking_id ) {
+    try {
+        error_log( '[Shaped Admin Email] Starting admin card updated notification for booking #' . $booking_id );
+
+        $booking = MPHB()->getBookingRepository()->findById( $booking_id, true );
+        if ( ! $booking ) {
+            return false;
+        }
+
+        $customer = $booking->getCustomer();
+        if ( ! $customer ) {
+            return false;
+        }
+
+        $currency = MPHB()->settings()->currency()->getCurrencySymbol();
+        $room_type_ids = $booking->getReservedRoomTypeIds();
+        $room_names = array_map( 'get_the_title', $room_type_ids );
+        $room_list = implode( ', ', $room_names );
+        $pending_amount = (float) get_post_meta( $booking_id, '_stripe_pending_amount', true );
+        if ( $pending_amount <= 0 ) {
+            $pending_amount = (float) $booking->getTotalPrice();
+        }
+
+        $to = shaped_get_admin_to_email();
+        $subject = 'Card Updated: #' . $booking_id . ' - Manual review required';
+
+        $message = shaped_get_admin_card_updated_template( array(
+            'booking_id'      => $booking_id,
+            'customer_name'   => $customer->getFirstName() . ' ' . $customer->getLastName(),
+            'customer_email'  => $customer->getEmail(),
+            'customer_phone'  => $customer->getPhone(),
+            'check_in'        => $booking->getCheckInDate()->format( 'F j, Y' ),
+            'check_out'       => $booking->getCheckOutDate()->format( 'F j, Y' ),
+            'room_list'       => $room_list,
+            'amount_due'      => $currency . number_format( $pending_amount, 2 ),
+            'card_updated_at' => wp_date( 'F j, Y \\a\\t H:i', current_time( 'timestamp' ), wp_timezone() ),
+        ) );
+
+        $from_name  = shaped_email_config('from_name', get_bloginfo('name'));
+        $from_email = shaped_email_config('from_email', get_option('admin_email'));
+
+        $headers = array(
+            'Content-Type: text/html; charset=UTF-8',
+            'From: ' . $from_name . ' Bookings <' . $from_email . '>',
+            'Reply-To: ' . $customer->getEmail()
+        );
+
+        return wp_mail( $to, $subject, $message, $headers );
+    } catch ( Exception $e ) {
+        error_log( '[Shaped Admin Email] ERROR in card updated notification: ' . $e->getMessage() );
+        return false;
+    }
+}
+
+function shaped_get_admin_card_updated_template( $data ) {
+    ob_start();
+    ?>
+    <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333; max-width: 600px; border: 1px solid #ddd; border-radius: 5px; margin: 20px auto;">
+        <div style="background-color: #1c6b76; color: white; padding: 15px; border-radius: 5px 5px 0 0;">
+            <h2 style="margin: 0;">Card Updated: #<?php echo esc_html( $data['booking_id'] ); ?></h2>
+        </div>
+        <div style="padding: 20px;">
+            <p style="background: #f3fbf7; padding: 15px; border-radius: 5px; border-left: 4px solid #1c6b76; margin: 0 0 20px 0;">
+                <strong>Manual Review Required:</strong> The guest saved a new card. No automatic payment retry will be attempted.
+            </p>
+            <h3 style="margin-top: 0;">Payment Details:</h3>
+            <p><strong>Amount Due:</strong> <strong style="color: #1c6b76;"><?php echo esc_html( $data['amount_due'] ); ?></strong></p>
+            <p><strong>Card Updated At:</strong> <?php echo esc_html( $data['card_updated_at'] ); ?></p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Booking Details:</h3>
+            <p><strong>Accommodation:</strong> <?php echo esc_html( $data['room_list'] ); ?></p>
+            <p><strong>Check-in:</strong> <?php echo esc_html( $data['check_in'] ); ?></p>
+            <p><strong>Check-out:</strong> <?php echo esc_html( $data['check_out'] ); ?></p>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Customer Details:</h3>
+            <p><strong>Name:</strong> <?php echo esc_html( $data['customer_name'] ); ?></p>
+            <p><strong>Email:</strong> <a href="mailto:<?php echo esc_attr( $data['customer_email'] ); ?>"><?php echo esc_html( $data['customer_email'] ); ?></a></p>
+            <p><strong>Phone:</strong> <?php echo esc_html( $data['customer_phone'] ); ?></p>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+function shaped_send_admin_payment_update_expired_email( $booking_id ) {
+    try {
+        error_log( '[Shaped Admin Email] Starting payment update expiry admin notification for booking #' . $booking_id );
+
+        $booking = MPHB()->getBookingRepository()->findById( $booking_id, true );
+        if ( ! $booking ) {
+            return false;
+        }
+
+        $customer = $booking->getCustomer();
+        if ( ! $customer ) {
+            return false;
+        }
+
+        $currency = MPHB()->settings()->currency()->getCurrencySymbol();
+        $room_type_ids = $booking->getReservedRoomTypeIds();
+        $room_names = array_map( 'get_the_title', $room_type_ids );
+        $room_list = implode( ', ', $room_names );
+        $pending_amount = (float) get_post_meta( $booking_id, '_stripe_pending_amount', true );
+        if ( $pending_amount <= 0 ) {
+            $pending_amount = (float) $booking->getTotalPrice();
+        }
+
+        $to = shaped_get_admin_to_email();
+        $subject = 'Booking Auto-Cancelled: #' . $booking_id . ' - Card update expired';
+
+        $message = shaped_get_admin_payment_update_expired_template( array(
+            'booking_id'      => $booking_id,
+            'customer_name'   => $customer->getFirstName() . ' ' . $customer->getLastName(),
+            'customer_email'  => $customer->getEmail(),
+            'customer_phone'  => $customer->getPhone(),
+            'check_in'        => $booking->getCheckInDate()->format( 'F j, Y' ),
+            'check_out'       => $booking->getCheckOutDate()->format( 'F j, Y' ),
+            'room_list'       => $room_list,
+            'amount_due'      => $currency . number_format( $pending_amount, 2 ),
+        ) );
+
+        $from_name  = shaped_email_config('from_name', get_bloginfo('name'));
+        $from_email = shaped_email_config('from_email', get_option('admin_email'));
+
+        $headers = array(
+            'Content-Type: text/html; charset=UTF-8',
+            'From: ' . $from_name . ' Bookings <' . $from_email . '>',
+            'Reply-To: ' . $customer->getEmail()
+        );
+
+        return wp_mail( $to, $subject, $message, $headers );
+    } catch ( Exception $e ) {
+        error_log( '[Shaped Admin Email] ERROR in payment update expiry notification: ' . $e->getMessage() );
+        return false;
+    }
+}
+
+function shaped_get_admin_payment_update_expired_template( $data ) {
+    ob_start();
+    ?>
+    <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333; max-width: 600px; border: 1px solid #ddd; border-radius: 5px; margin: 20px auto;">
+        <div style="background-color: #5b1f1f; color: white; padding: 15px; border-radius: 5px 5px 0 0;">
+            <h2 style="margin: 0;">Booking Auto-Cancelled: #<?php echo esc_html( $data['booking_id'] ); ?></h2>
+        </div>
+        <div style="padding: 20px;">
+            <p style="background: #FFF5F5; padding: 15px; border-radius: 5px; border-left: 4px solid #5b1f1f; margin: 0 0 20px 0;">
+                <strong>Cancelled:</strong> The guest did not update the card within 48 hours, so the booking was cancelled and the room-release flow was triggered.
+            </p>
+            <h3 style="margin-top: 0;">Payment Details:</h3>
+            <p><strong>Scheduled amount:</strong> <strong style="color: #5b1f1f;"><?php echo esc_html( $data['amount_due'] ); ?></strong></p>
+            <p><strong>Retry policy:</strong> No payment retry was attempted.</p>
             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
             <h3 style="margin-top: 0;">Booking Details:</h3>
             <p><strong>Accommodation:</strong> <?php echo esc_html( $data['room_list'] ); ?></p>
