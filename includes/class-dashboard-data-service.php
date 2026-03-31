@@ -624,6 +624,7 @@ class Shaped_Dashboard_Data_Service
      */
     private static function build_room_payload(int $booking_id, $booking): array
     {
+        $booking_stay = self::get_booking_stay_dates($booking_id, $booking);
         $reserved_room_posts = get_posts([
             'post_type'      => 'mphb_reserved_room',
             'post_parent'    => $booking_id,
@@ -639,12 +640,22 @@ class Shaped_Dashboard_Data_Service
         foreach ($reserved_room_posts as $reserved_room_post) {
             $reserved_room_id = (int) $reserved_room_post->ID;
             $reserved_room = isset($room_objects[$reserved_room_id]) ? $room_objects[$reserved_room_id] : null;
-            $reserved_rooms[] = self::build_reserved_room_payload($reserved_room_id, $reserved_room);
+            $reserved_rooms[] = self::build_reserved_room_payload(
+                $reserved_room_id,
+                $reserved_room,
+                $booking_stay['check_in'],
+                $booking_stay['check_out']
+            );
         }
 
         if (empty($reserved_rooms)) {
             foreach ($room_objects as $reserved_room_id => $reserved_room) {
-                $reserved_rooms[] = self::build_reserved_room_payload((int) $reserved_room_id, $reserved_room);
+                $reserved_rooms[] = self::build_reserved_room_payload(
+                    (int) $reserved_room_id,
+                    $reserved_room,
+                    $booking_stay['check_in'],
+                    $booking_stay['check_out']
+                );
             }
         }
 
@@ -689,7 +700,12 @@ class Shaped_Dashboard_Data_Service
     /**
      * Convert a reserved room child post into detail payload.
      */
-    private static function build_reserved_room_payload(int $reserved_room_id, $reserved_room = null): array
+    private static function build_reserved_room_payload(
+        int $reserved_room_id,
+        $reserved_room = null,
+        ?string $fallback_check_in = null,
+        ?string $fallback_check_out = null
+    ): array
     {
         $room_type_id = (int) get_post_meta($reserved_room_id, 'mphb_room_type_id', true);
         if (!$room_type_id) {
@@ -721,6 +737,14 @@ class Shaped_Dashboard_Data_Service
             $check_out = $date instanceof DateTimeInterface ? $date->format('Y-m-d') : $check_out;
         }
 
+        if (!$check_in) {
+            $check_in = $fallback_check_in;
+        }
+
+        if (!$check_out) {
+            $check_out = $fallback_check_out;
+        }
+
         $rate_id = 0;
         $rate_name = null;
         if ($reserved_room && method_exists($reserved_room, 'getRateId')) {
@@ -743,6 +767,35 @@ class Shaped_Dashboard_Data_Service
             'rate_name'      => $rate_name,
             'check_in'       => $check_in,
             'check_out'      => $check_out,
+        ];
+    }
+
+    /**
+     * Resolve booking-level stay dates for reserved-room fallbacks.
+     */
+    private static function get_booking_stay_dates(int $booking_id, $booking): array
+    {
+        $check_in = self::nullable_string(get_post_meta($booking_id, '_mphb_check_in_date', true));
+        if (!$check_in) {
+            $check_in = self::nullable_string(get_post_meta($booking_id, 'mphb_check_in_date', true));
+        }
+        if (!$check_in && $booking && method_exists($booking, 'getCheckInDate')) {
+            $date = $booking->getCheckInDate();
+            $check_in = $date instanceof DateTimeInterface ? $date->format('Y-m-d') : $check_in;
+        }
+
+        $check_out = self::nullable_string(get_post_meta($booking_id, '_mphb_check_out_date', true));
+        if (!$check_out) {
+            $check_out = self::nullable_string(get_post_meta($booking_id, 'mphb_check_out_date', true));
+        }
+        if (!$check_out && $booking && method_exists($booking, 'getCheckOutDate')) {
+            $date = $booking->getCheckOutDate();
+            $check_out = $date instanceof DateTimeInterface ? $date->format('Y-m-d') : $check_out;
+        }
+
+        return [
+            'check_in'  => $check_in,
+            'check_out' => $check_out,
         ];
     }
 
