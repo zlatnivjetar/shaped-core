@@ -69,8 +69,21 @@ function shaped_get_all_health_checks(): array {
         'details'      => !empty($configured_modals)
             ? count($configured_modals) . ' modal pages configured'
             : 'No modal pages assigned',
-        'action_url'   => admin_url('admin.php?page=shaped-settings'),
+        'action_url'   => admin_url('admin.php?page=shaped-system-settings'),
         'action_label' => 'Configure',
+    ];
+
+    // Dashboard API key
+    $dashboard_api_key_configured = class_exists('Shaped_Dashboard_Api')
+        && Shaped_Dashboard_Api::has_configured_api_key();
+    $checks[] = [
+        'label'        => 'Dashboard API Key',
+        'status'       => $dashboard_api_key_configured,
+        'details'      => $dashboard_api_key_configured
+            ? 'Configured in wp-config.php'
+            : 'Not configured in wp-config.php',
+        'action_url'   => admin_url('admin.php?page=shaped-system-settings'),
+        'action_label' => 'Open Settings',
     ];
 
     return $checks;

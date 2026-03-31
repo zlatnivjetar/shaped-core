@@ -30,6 +30,7 @@ class Shaped_Admin {
 
         // AJAX handler for feature flags
         add_action('wp_ajax_shaped_save_feature_flags', [__CLASS__, 'ajax_save_feature_flags']);
+        add_action('wp_ajax_shaped_generate_dashboard_api_key', [__CLASS__, 'ajax_generate_dashboard_api_key']);
     }
 
     /**
@@ -85,11 +86,14 @@ class Shaped_Admin {
 
         $modal_pages = get_option(self::OPT_MODAL_PAGES, []);
         $modal_types = self::get_modal_types();
+        $dashboard_api_key_configured = class_exists('Shaped_Dashboard_Api')
+            && Shaped_Dashboard_Api::has_configured_api_key();
+        $dashboard_api_key_nonce = wp_create_nonce('shaped_dashboard_api_key');
 
         ?>
         <div class="wrap">
             <h1>Shaped Core Settings</h1>
-            <p class="description">Configure modal pages for your booking system.</p>
+            <p class="description">Configure modal pages and dashboard API access for your booking system.</p>
 
             <form method="post" action="options.php">
                 <?php settings_fields('shaped_settings_group'); ?>
@@ -128,6 +132,43 @@ class Shaped_Admin {
             </form>
 
             <div class="shaped-info-box">
+                <h3>Dashboard API Key</h3>
+                <p>
+                    Generate a key for the external Shaped Dashboard. The generated value is not stored in WordPress,
+                    so copy it immediately and place it in <code>wp-config.php</code>.
+                </p>
+                <p>
+                    <strong>Status:</strong>
+                    <?php echo $dashboard_api_key_configured ? 'Configured in wp-config.php' : 'Not configured in wp-config.php'; ?>
+                </p>
+                <p>
+                    <button
+                        type="button"
+                        class="button button-primary"
+                        id="shaped-generate-dashboard-api-key"
+                        data-nonce="<?php echo esc_attr($dashboard_api_key_nonce); ?>"
+                    >
+                        Generate Dashboard API Key
+                    </button>
+                </p>
+                <div id="shaped-dashboard-api-key-result" class="shaped-dashboard-api-result" hidden>
+                    <p class="description" style="margin-top: 0;">
+                        Copy this value now. It will only be shown for this browser session.
+                    </p>
+                    <input
+                        type="text"
+                        id="shaped-dashboard-api-key-value"
+                        class="regular-text code"
+                        readonly
+                        value=""
+                        style="width: 100%; max-width: 520px;"
+                    >
+                    <p class="description" style="margin-top: 12px;">Add this line to <code>wp-config.php</code>:</p>
+                    <pre id="shaped-dashboard-api-key-config-line"></pre>
+                </div>
+            </div>
+
+            <div class="shaped-info-box">
                 <h3>How to Use Modal Links</h3>
                 <p>
                     Use the shortcode to create links that open these pages in a modal:
@@ -159,8 +200,51 @@ class Shaped_Admin {
                     padding: 10px;
                     border-radius: 3px;
                     margin: 5px 0;
+                    white-space: pre-wrap;
+                    word-break: break-all;
+                }
+                .shaped-dashboard-api-result {
+                    margin-top: 16px;
+                    padding: 16px;
+                    background: #fff;
+                    border: 1px solid #c3c4c7;
+                    border-radius: 4px;
                 }
             </style>
+
+            <script>
+                jQuery(function($) {
+                    $('#shaped-generate-dashboard-api-key').on('click', function() {
+                        var $button = $(this);
+                        var $result = $('#shaped-dashboard-api-key-result');
+                        var $value = $('#shaped-dashboard-api-key-value');
+                        var $configLine = $('#shaped-dashboard-api-key-config-line');
+
+                        $button.prop('disabled', true).text('Generating...');
+
+                        $.post(ajaxurl, {
+                            action: 'shaped_generate_dashboard_api_key',
+                            nonce: $button.data('nonce')
+                        }).done(function(response) {
+                            if (!response || !response.success) {
+                                var errorMessage = response && response.data && response.data.message
+                                    ? response.data.message
+                                    : 'Could not generate a dashboard API key.';
+                                window.alert(errorMessage);
+                                return;
+                            }
+
+                            $value.val(response.data.api_key).trigger('focus').trigger('select');
+                            $configLine.text(response.data.wp_config_line);
+                            $result.prop('hidden', false);
+                        }).fail(function() {
+                            window.alert('Could not generate a dashboard API key.');
+                        }).always(function() {
+                            $button.prop('disabled', false).text('Generate Dashboard API Key');
+                        });
+                    });
+                });
+            </script>
         </div>
         <?php
     }
@@ -271,6 +355,31 @@ class Shaped_Admin {
             'message'   => 'Feature flags saved successfully. Please refresh the page for changes to take effect.',
             'roomcloud' => $roomcloud,
             'reviews'   => $reviews,
+        ]);
+    }
+
+    /**
+     * AJAX handler for generating a dashboard API key.
+     */
+    public static function ajax_generate_dashboard_api_key(): void {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => 'Insufficient permissions'], 403);
+        }
+
+        $nonce = isset($_POST['nonce']) ? sanitize_text_field(wp_unslash($_POST['nonce'])) : '';
+        if (!$nonce || !wp_verify_nonce($nonce, 'shaped_dashboard_api_key')) {
+            wp_send_json_error(['message' => 'Invalid nonce'], 403);
+        }
+
+        if (!class_exists('Shaped_Dashboard_Api')) {
+            wp_send_json_error(['message' => 'Dashboard API bootstrap is unavailable'], 500);
+        }
+
+        $api_key = Shaped_Dashboard_Api::generate_api_key();
+
+        wp_send_json_success([
+            'api_key'        => $api_key,
+            'wp_config_line' => "define( 'SHAPED_DASHBOARD_API_KEY', '" . $api_key . "' );",
         ]);
     }
 }

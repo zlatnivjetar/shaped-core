@@ -143,6 +143,15 @@ class Shaped_Menu_Controller {
 
             add_submenu_page(
                 'shaped-system',
+                'Settings',
+                'Settings',
+                'manage_options',
+                'shaped-system-settings',
+                [__CLASS__, 'redirect_to_settings']
+            );
+
+            add_submenu_page(
+                'shaped-system',
                 'Shortcodes',
                 'Shortcodes',
                 'manage_options',
@@ -263,6 +272,7 @@ class Shaped_Menu_Controller {
 
         // Shaped System parent highlighting
         $system_pages = [
+            'shaped-settings',
             'shaped-roomcloud',
         ];
 
@@ -289,6 +299,10 @@ class Shaped_Menu_Controller {
         // Shaped System submenu highlighting - return the registered submenu slug
         if ($page === 'shaped-roomcloud') {
             return 'shaped-system-roomcloud';
+        }
+
+        if ($page === 'shaped-settings') {
+            return 'shaped-system-settings';
         }
 
         return $submenu_file;
@@ -383,6 +397,11 @@ class Shaped_Menu_Controller {
 
     public static function redirect_to_roomcloud(): void {
         wp_safe_redirect(admin_url('admin.php?page=shaped-roomcloud'));
+        exit;
+    }
+
+    public static function redirect_to_settings(): void {
+        wp_safe_redirect(admin_url('admin.php?page=shaped-settings'));
         exit;
     }
 
