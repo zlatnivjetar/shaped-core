@@ -24,6 +24,7 @@ class Shaped_Dashboard_Api
     public static function init(): void
     {
         add_action('rest_api_init', [__CLASS__, 'register_routes']);
+        add_filter('rest_post_dispatch', [__CLASS__, 'add_no_cache_headers'], 10, 3);
     }
 
     /**
@@ -106,6 +107,33 @@ class Shaped_Dashboard_Api
         return defined('SHAPED_DASHBOARD_API_KEY')
             && is_string(SHAPED_DASHBOARD_API_KEY)
             && SHAPED_DASHBOARD_API_KEY !== '';
+    }
+
+    /**
+     * Prevent caching for dashboard API responses.
+     *
+     * Dashboard endpoints are authenticated via a request header, so shared caches
+     * must never reuse an authorized response for a different request.
+     *
+     * @param WP_HTTP_Response $response Response object.
+     * @param WP_REST_Server   $server   Server instance.
+     * @param WP_REST_Request  $request  Request object.
+     * @return WP_HTTP_Response
+     */
+    public static function add_no_cache_headers($response, $server, $request)
+    {
+        $route = $request->get_route();
+        if (strpos($route, '/shaped/v1/dashboard/') !== 0) {
+            return $response;
+        }
+
+        $response->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, private');
+        $response->header('Pragma', 'no-cache');
+        $response->header('Expires', '0');
+        $response->header('Vary', 'Origin, X-Shaped-API-Key');
+        $response->header('X-Robots-Tag', 'noindex');
+
+        return $response;
     }
 }
 
