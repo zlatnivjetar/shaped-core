@@ -23,8 +23,35 @@ class Shaped_Dashboard_Api
      */
     public static function init(): void
     {
+        add_action('init', [__CLASS__, 'disable_page_cache_for_request'], 0);
         add_action('rest_api_init', [__CLASS__, 'register_routes']);
         add_filter('rest_post_dispatch', [__CLASS__, 'add_no_cache_headers'], 10, 3);
+    }
+
+    /**
+     * Mark dashboard API requests as non-cacheable as early as possible.
+     */
+    public static function disable_page_cache_for_request(): void
+    {
+        if (!self::is_dashboard_request()) {
+            return;
+        }
+
+        if (!defined('DONOTCACHEPAGE')) {
+            define('DONOTCACHEPAGE', true);
+        }
+
+        if (!defined('DONOTCACHEDB')) {
+            define('DONOTCACHEDB', true);
+        }
+
+        if (!defined('DONOTCACHEOBJECT')) {
+            define('DONOTCACHEOBJECT', true);
+        }
+
+        if (function_exists('do_action')) {
+            do_action('litespeed_control_set_nocache', 'Shaped dashboard API uses header authentication.');
+        }
     }
 
     /**
@@ -134,6 +161,21 @@ class Shaped_Dashboard_Api
         $response->header('X-Robots-Tag', 'noindex');
 
         return $response;
+    }
+
+    /**
+     * Whether the current HTTP request targets the dashboard API namespace.
+     */
+    private static function is_dashboard_request(): bool
+    {
+        if (empty($_SERVER['REQUEST_URI'])) {
+            return false;
+        }
+
+        $request_uri = wp_unslash($_SERVER['REQUEST_URI']);
+
+        return strpos($request_uri, '/wp-json/shaped/v1/dashboard/') !== false
+            || strpos($request_uri, 'rest_route=/shaped/v1/dashboard/') !== false;
     }
 }
 
