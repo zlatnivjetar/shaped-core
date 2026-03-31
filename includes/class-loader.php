@@ -28,6 +28,7 @@ class Shaped_Loader {
         'Shaped_Amenity_Mapper'            => 'includes/class-amenity-mapper.php',
         'Shaped_Brand_Config'              => 'includes/class-brand-config.php',
         'Shaped_Dashboard_Api'             => 'includes/class-dashboard-api.php',
+        'Shaped_Dashboard_Data_Service'    => 'includes/class-dashboard-data-service.php',
         'Shaped_Font_Loader'               => 'includes/class-font-loader.php',
         'Shaped_Design_Tokens_Generator'   => 'includes/class-design-tokens-generator.php',
         'Shaped_Book_Search_Form'          => 'includes/class-book-search-form.php',

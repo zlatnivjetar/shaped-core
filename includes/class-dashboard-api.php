@@ -93,6 +93,24 @@ class Shaped_Dashboard_Api
             'callback'            => [__CLASS__, 'get_health'],
             'permission_callback' => 'shaped_dashboard_auth',
         ]);
+
+        register_rest_route(self::NAMESPACE, '/dashboard/revenue', [
+            'methods'             => 'GET',
+            'callback'            => [__CLASS__, 'get_revenue'],
+            'permission_callback' => 'shaped_dashboard_auth',
+        ]);
+
+        register_rest_route(self::NAMESPACE, '/dashboard/bookings', [
+            'methods'             => 'GET',
+            'callback'            => [__CLASS__, 'get_bookings'],
+            'permission_callback' => 'shaped_dashboard_auth',
+        ]);
+
+        register_rest_route(self::NAMESPACE, '/dashboard/bookings/(?P<id>\d+)', [
+            'methods'             => 'GET',
+            'callback'            => [__CLASS__, 'get_booking_detail'],
+            'permission_callback' => 'shaped_dashboard_auth',
+        ]);
     }
 
     /**
@@ -108,6 +126,36 @@ class Shaped_Dashboard_Api
             'site_name'      => get_bloginfo('name'),
             'timestamp'      => gmdate('c'),
         ], 200);
+    }
+
+    /**
+     * Dashboard revenue endpoint.
+     */
+    public static function get_revenue(): WP_REST_Response
+    {
+        return Shaped_Dashboard_Data_Service::get_revenue_response();
+    }
+
+    /**
+     * Dashboard bookings list endpoint.
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function get_bookings(WP_REST_Request $request)
+    {
+        return Shaped_Dashboard_Data_Service::get_bookings_response($request);
+    }
+
+    /**
+     * Dashboard booking detail endpoint.
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function get_booking_detail(WP_REST_Request $request)
+    {
+        return Shaped_Dashboard_Data_Service::get_booking_detail_response($request);
     }
 
     /**
