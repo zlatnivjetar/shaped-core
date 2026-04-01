@@ -247,15 +247,40 @@ class Shaped_Dashboard_Data_Service
                 INNER JOIN {$wpdb->postmeta} AS pending_amount
                     ON p.ID = pending_amount.post_id
                     AND pending_amount.meta_key = '_stripe_pending_amount'
-                INNER JOIN {$wpdb->postmeta} AS scheduled
+                LEFT JOIN {$wpdb->postmeta} AS scheduled
                     ON p.ID = scheduled.post_id
                     AND scheduled.meta_key = '_shaped_charge_scheduled'
-                    AND scheduled.meta_value IN ('1', 'true')
+                LEFT JOIN {$wpdb->postmeta} AS payment_status
+                    ON p.ID = payment_status.post_id
+                    AND payment_status.meta_key = '_shaped_payment_status'
+                LEFT JOIN {$wpdb->postmeta} AS payment_mode
+                    ON p.ID = payment_mode.post_id
+                    AND payment_mode.meta_key = '_shaped_payment_mode'
+                LEFT JOIN {$wpdb->postmeta} AS charge_at
+                    ON p.ID = charge_at.post_id
+                    AND charge_at.meta_key = '_shaped_charge_at'
+                LEFT JOIN {$wpdb->postmeta} AS charge_date
+                    ON p.ID = charge_date.post_id
+                    AND charge_date.meta_key = '_shaped_charge_date'
                 LEFT JOIN {$wpdb->postmeta} AS charged
                     ON p.ID = charged.post_id
                     AND charged.meta_key = '_stripe_payment_charged'
                 WHERE p.post_type = 'mphb_booking'
                     AND p.post_status IN ({$status_placeholders})
+                    AND (
+                        scheduled.meta_value IN ('1', 'true', 'yes')
+                        OR (
+                            CAST(pending_amount.meta_value AS DECIMAL(10,2)) > 0
+                            AND (
+                                payment_status.meta_value = 'authorized'
+                                OR payment_mode.meta_value = 'delayed'
+                            )
+                            AND (
+                                (charge_at.meta_value IS NOT NULL AND charge_at.meta_value <> '')
+                                OR (charge_date.meta_value IS NOT NULL AND charge_date.meta_value <> '')
+                            )
+                        )
+                    )
                     AND (
                         charged.meta_value IS NULL
                         OR charged.meta_value = ''
@@ -1084,7 +1109,7 @@ class Shaped_Dashboard_Data_Service
      */
     private static function build_payment_payload(array $summary, ?array $payment_context = null): array
     {
-        $charge_scheduled = self::meta_is_truthy($summary['charge_scheduled']);
+        $charge_scheduled = self::has_scheduled_charge($summary, $payment_context);
         $stripe_charged = self::meta_is_truthy($summary['stripe_charged']);
         $charge_processed = self::meta_is_truthy($summary['charge_processed']);
         $payment_type = self::resolve_payment_type($summary, $payment_context);
@@ -1127,6 +1152,42 @@ class Shaped_Dashboard_Data_Service
                 ? (string) $payment_context['property_mode']
                 : null,
         ];
+    }
+
+    /**
+     * Determine whether a booking should be treated as having a scheduled charge.
+     */
+    private static function has_scheduled_charge(array $summary, ?array $payment_context = null): bool
+    {
+        if (self::meta_is_truthy($summary['charge_scheduled'])) {
+            return true;
+        }
+
+        $pending_amount = self::round_amount($summary['stripe_pending_amount']);
+        if ($pending_amount <= 0) {
+            return false;
+        }
+
+        $payment_status = self::nullable_string($summary['payment_status_raw']);
+        $payment_mode = self::nullable_string($summary['payment_mode_raw']);
+        $charge_at = self::nullable_string($summary['charge_at']);
+        $charge_date = self::nullable_string($summary['charge_date']);
+        $has_charge_window = $charge_at !== null || $charge_date !== null;
+
+        if (
+            $payment_context
+            && !empty($payment_context['mode'])
+            && (string) $payment_context['mode'] === 'delayed'
+            && array_key_exists('is_immediate', $payment_context)
+            && $payment_context['is_immediate'] === false
+        ) {
+            return true;
+        }
+
+        return (
+            ($payment_status === 'authorized' || $payment_mode === 'delayed')
+            && $has_charge_window
+        );
     }
 
     /**

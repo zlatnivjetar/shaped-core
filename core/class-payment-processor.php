@@ -1187,8 +1187,12 @@ class Shaped_Payment_Processor
                         try { if (function_exists('shaped_send_reservation_email')) shaped_send_reservation_email($booking_id); } catch (\Throwable $e) {}
                         try { if (function_exists('shaped_send_admin_reservation_email')) shaped_send_admin_reservation_email($booking_id); } catch (\Throwable $e) {}
 
+                        // Persist the scheduled-charge flag independently from cron deduplication.
+                        update_post_meta($booking_id, '_shaped_charge_scheduled', true);
+
                         // Schedule charge
-                        if (!get_post_meta($booking_id, '_shaped_charge_scheduled', true)) {
+                        $verify = wp_next_scheduled('shaped_charge_single_booking', [$booking_id, $idempotency_key]);
+                        if (!$verify) {
                             $result = wp_schedule_single_event($charge_ts, 'shaped_charge_single_booking', [$booking_id, $idempotency_key]);
 
                             if ($result === false || is_wp_error($result)) {
@@ -1201,8 +1205,6 @@ class Shaped_Payment_Processor
                             if (!$verify) {
                                 error_log(sprintf('[Shaped] WARNING: Per-booking cron NOT found after scheduling for booking #%d', $booking_id));
                             }
-
-                            update_post_meta($booking_id, '_shaped_charge_scheduled', true);
 
                             $log_dt = clone $charge_dt;
                             $log_dt->setTimezone(new DateTimeZone('Europe/Zagreb'));
