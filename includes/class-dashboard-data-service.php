@@ -2,7 +2,7 @@
 /**
  * Dashboard data service.
  *
- * Revenue and booking serializers for the external dashboard app.
+ * Revenue, booking, and review serializers for the external dashboard app.
  *
  * @package Shaped_Core
  */
@@ -144,6 +144,71 @@ class Shaped_Dashboard_Data_Service
             'stripe'             => self::build_stripe_payload($summary, $payment),
             'timeline'           => self::build_timeline_payload($summary, $payment),
             'generated_at'       => gmdate('c'),
+        ], 200);
+    }
+
+    /**
+     * Reviews list response.
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function get_reviews_response(WP_REST_Request $request)
+    {
+        $args = self::get_reviews_query_args($request);
+        if (is_wp_error($args)) {
+            return $args;
+        }
+
+        $items = self::get_review_items();
+        $summary = self::build_reviews_summary($items);
+
+        $filtered_items = array_values(array_filter($items, static function (array $item) use ($args): bool {
+            if (!empty($args['providers']) && !in_array($item['provider'], $args['providers'], true)) {
+                return false;
+            }
+
+            if ($args['min_rating'] !== null) {
+                return $item['rating'] !== null && $item['rating'] >= $args['min_rating'];
+            }
+
+            return true;
+        }));
+
+        usort($filtered_items, static function (array $left, array $right) use ($args): int {
+            return self::compare_review_items($left, $right, $args['sort'], $args['order']);
+        });
+
+        $total_items = count($filtered_items);
+        $total_pages = $total_items > 0
+            ? (int) ceil($total_items / $args['per_page'])
+            : 0;
+        $offset = ($args['page'] - 1) * $args['per_page'];
+        $paged_items = array_slice($filtered_items, $offset, $args['per_page']);
+
+        return new WP_REST_Response([
+            'items'        => $paged_items,
+            'pagination'   => [
+                'page'        => $args['page'],
+                'per_page'    => $args['per_page'],
+                'total_items' => $total_items,
+                'total_pages' => $total_pages,
+            ],
+            'filters'      => [
+                'provider'   => $args['providers'],
+                'min_rating' => $args['min_rating'],
+            ],
+            'sort'         => [
+                'field' => $args['sort'],
+                'order' => strtolower($args['order']),
+            ],
+            'summary'      => [
+                'average_rating'  => $summary['average_rating'],
+                'total_reviews'   => $summary['total_reviews'],
+                'filtered_reviews'=> $total_items,
+                'provider_counts' => $summary['provider_counts'],
+            ],
+            'generated_at' => gmdate('c'),
         ], 200);
     }
 
@@ -346,6 +411,113 @@ class Shaped_Dashboard_Data_Service
     }
 
     /**
+     * Parse and validate reviews list request args.
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return array|WP_Error
+     */
+    private static function get_reviews_query_args(WP_REST_Request $request)
+    {
+        $page = (int) $request->get_param('page');
+        $page = $page > 0 ? $page : 1;
+
+        $per_page = (int) $request->get_param('per_page');
+        $per_page = $per_page > 0 ? $per_page : self::DEFAULT_PER_PAGE;
+        $per_page = min($per_page, self::MAX_PER_PAGE);
+
+        $sort = strtolower((string) $request->get_param('sort'));
+        if ($sort === '' || $sort === 'review_date') {
+            $sort = 'date';
+        }
+
+        if (!in_array($sort, ['date', 'rating', 'provider'], true)) {
+            return new WP_Error(
+                'invalid_sort',
+                'Unsupported sort field.',
+                ['status' => 400]
+            );
+        }
+
+        $order = strtoupper((string) $request->get_param('order'));
+        if ($order === '') {
+            $order = 'DESC';
+        }
+
+        if (!in_array($order, ['ASC', 'DESC'], true)) {
+            return new WP_Error(
+                'invalid_order',
+                'Unsupported sort order.',
+                ['status' => 400]
+            );
+        }
+
+        $providers = self::parse_csv_parameter(
+            (string) $request->get_param('provider'),
+            self::get_allowed_review_providers(),
+            'provider',
+            self::get_review_provider_aliases()
+        );
+        if (is_wp_error($providers)) {
+            return $providers;
+        }
+
+        $min_rating = self::parse_rating_parameter(
+            (string) $request->get_param('min_rating'),
+            'min_rating'
+        );
+        if (is_wp_error($min_rating)) {
+            return $min_rating;
+        }
+
+        return [
+            'page'       => $page,
+            'per_page'   => $per_page,
+            'sort'       => $sort,
+            'order'      => $order,
+            'providers'  => $providers,
+            'min_rating' => $min_rating,
+        ];
+    }
+
+    /**
+     * Query all published reviews and map them to the dashboard contract.
+     */
+    private static function get_review_items(): array
+    {
+        global $wpdb;
+
+        $sql = "
+            SELECT
+                p.ID,
+                p.post_content AS review_text,
+                p.post_date,
+                p.post_date_gmt,
+                COALESCE(MAX(CASE WHEN pm.meta_key = 'provider' THEN pm.meta_value END), '') AS provider_raw,
+                COALESCE(MAX(CASE WHEN pm.meta_key = 'review_rating' THEN pm.meta_value END), '') AS rating_raw,
+                COALESCE(MAX(CASE WHEN pm.meta_key = 'author_name' THEN pm.meta_value END), '') AS author_name,
+                COALESCE(MAX(CASE WHEN pm.meta_key = 'review_date' THEN pm.meta_value END), '') AS review_date_raw,
+                COALESCE(MAX(CASE WHEN pm.meta_key = 'review_text_original' THEN pm.meta_value END), '') AS original_text,
+                COALESCE(MAX(CASE WHEN pm.meta_key = 'source_language' THEN pm.meta_value END), '') AS source_language,
+                COALESCE(MAX(CASE WHEN pm.meta_key = 'is_featured' THEN pm.meta_value END), '') AS is_featured,
+                COALESCE(MAX(CASE WHEN pm.meta_key = 'priority' THEN pm.meta_value END), '0') AS priority,
+                COALESCE(MAX(CASE WHEN pm.meta_key = 'external_key' THEN pm.meta_value END), '') AS external_key
+            FROM {$wpdb->posts} AS p
+            LEFT JOIN {$wpdb->postmeta} AS pm
+                ON p.ID = pm.post_id
+            WHERE p.post_type = 'shaped_review'
+                AND p.post_status = 'publish'
+            GROUP BY p.ID
+        ";
+
+        $rows = $wpdb->get_results($sql, ARRAY_A);
+        if (!is_array($rows)) {
+            return [];
+        }
+
+        return array_map([__CLASS__, 'build_review_list_item'], $rows);
+    }
+
+    /**
      * Base bookings aggregation query.
      */
     private static function get_bookings_base_sql(): string
@@ -541,6 +713,114 @@ class Shaped_Dashboard_Data_Service
                 (string) $row['booked_at_gmt']
             ),
         ];
+    }
+
+    /**
+     * Build a dashboard review list item.
+     */
+    private static function build_review_list_item(array $row): array
+    {
+        $provider_raw = self::nullable_string($row['provider_raw']);
+        $provider = self::normalize_review_provider((string) $row['provider_raw']);
+        $rating_raw = self::normalize_review_rating_raw($row['rating_raw']);
+        $rating_scale = self::get_review_rating_scale($provider, $rating_raw);
+        $rating = self::normalize_review_rating($rating_raw, $rating_scale);
+        $created_at = self::format_post_datetime(
+            (string) $row['post_date'],
+            (string) $row['post_date_gmt']
+        );
+
+        return [
+            'id'            => (int) $row['ID'],
+            'provider'      => $provider,
+            'provider_raw'  => $provider_raw,
+            'rating'        => $rating,
+            'rating_raw'    => $rating_raw,
+            'rating_scale'  => $rating_scale,
+            'author_name'   => self::normalize_review_author((string) $row['author_name']),
+            'review_date'   => self::normalize_review_date(
+                (string) $row['review_date_raw'],
+                (string) $row['post_date'],
+                (string) $row['post_date_gmt']
+            ),
+            'created_at'    => $created_at,
+            'review_text'   => self::normalize_review_text((string) $row['review_text']),
+            'original_text' => self::normalize_review_text((string) $row['original_text']),
+            'source_language' => self::normalize_language_code((string) $row['source_language']),
+            'is_featured'   => self::meta_is_truthy($row['is_featured']),
+            'priority'      => (int) $row['priority'],
+            'external_key'  => self::nullable_string($row['external_key']),
+        ];
+    }
+
+    /**
+     * Build summary metadata for the reviews contract.
+     */
+    private static function build_reviews_summary(array $items): array
+    {
+        $provider_counts = [];
+        $rating_total = 0.0;
+        $rating_count = 0;
+
+        foreach ($items as $item) {
+            $provider = (string) $item['provider'];
+            if (!isset($provider_counts[$provider])) {
+                $provider_counts[$provider] = 0;
+            }
+            $provider_counts[$provider]++;
+
+            if ($item['rating'] !== null) {
+                $rating_total += (float) $item['rating'];
+                $rating_count++;
+            }
+        }
+
+        arsort($provider_counts);
+        $provider_count_items = [];
+        foreach ($provider_counts as $provider => $count) {
+            $provider_count_items[] = [
+                'provider' => $provider,
+                'count'    => $count,
+            ];
+        }
+
+        return [
+            'average_rating' => $rating_count > 0 ? round($rating_total / $rating_count, 1) : null,
+            'total_reviews'  => count($items),
+            'provider_counts'=> $provider_count_items,
+        ];
+    }
+
+    /**
+     * Sort review items according to request args.
+     */
+    private static function compare_review_items(array $left, array $right, string $sort, string $order): int
+    {
+        $direction = $order === 'ASC' ? 1 : -1;
+
+        switch ($sort) {
+            case 'rating':
+                $comparison = self::compare_nullable_scalars($left['rating'], $right['rating']);
+                break;
+
+            case 'provider':
+                $comparison = strcmp((string) $left['provider'], (string) $right['provider']);
+                if ($comparison === 0) {
+                    $comparison = self::compare_review_timestamps($left, $right);
+                }
+                break;
+
+            case 'date':
+            default:
+                $comparison = self::compare_review_timestamps($left, $right);
+                break;
+        }
+
+        if ($comparison === 0) {
+            $comparison = ((int) $left['id']) <=> ((int) $right['id']);
+        }
+
+        return $comparison * $direction;
     }
 
     /**
@@ -1214,6 +1494,280 @@ class Shaped_Dashboard_Data_Service
         }
 
         return $value;
+    }
+
+    /**
+     * Parse minimum-rating filter params.
+     *
+     * @return float|WP_Error|null
+     */
+    private static function parse_rating_parameter(string $value, string $parameter_name)
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+
+        if (!is_numeric($value)) {
+            return new WP_Error(
+                'invalid_parameter',
+                sprintf('Invalid %s value. Expected a number between 0 and 5.', $parameter_name),
+                ['status' => 400]
+            );
+        }
+
+        $rating = round((float) $value, 1);
+        if ($rating < 0 || $rating > 5) {
+            return new WP_Error(
+                'invalid_parameter',
+                sprintf('Invalid %s value. Expected a number between 0 and 5.', $parameter_name),
+                ['status' => 400]
+            );
+        }
+
+        return $rating;
+    }
+
+    /**
+     * Supported review providers for dashboard filters.
+     */
+    private static function get_allowed_review_providers(): array
+    {
+        return [
+            'airbnb',
+            'booking',
+            'direct',
+            'expedia',
+            'google',
+            'tripadvisor',
+        ];
+    }
+
+    /**
+     * Accepted aliases for review provider filters.
+     */
+    private static function get_review_provider_aliases(): array
+    {
+        return [
+            'air-bnb'        => 'airbnb',
+            'booking.com'    => 'booking',
+            'booking-com'    => 'booking',
+            'bookingcom'     => 'booking',
+            'trip-advisor'   => 'tripadvisor',
+            'trip advisor'   => 'tripadvisor',
+            'trip_advisor'   => 'tripadvisor',
+        ];
+    }
+
+    /**
+     * Normalize a stored review provider to a stable dashboard key.
+     */
+    private static function normalize_review_provider(string $provider): string
+    {
+        $provider = strtolower(trim($provider));
+        if ($provider === '') {
+            return 'unknown';
+        }
+
+        $provider = str_replace(['_', ' '], '-', $provider);
+
+        if (strpos($provider, 'booking') !== false) {
+            return 'booking';
+        }
+
+        if (strpos($provider, 'tripadvisor') !== false || strpos($provider, 'trip-advisor') !== false) {
+            return 'tripadvisor';
+        }
+
+        if (strpos($provider, 'airbnb') !== false || strpos($provider, 'air-bnb') !== false) {
+            return 'airbnb';
+        }
+
+        if (strpos($provider, 'google') !== false) {
+            return 'google';
+        }
+
+        if (strpos($provider, 'expedia') !== false) {
+            return 'expedia';
+        }
+
+        if (strpos($provider, 'direct') !== false) {
+            return 'direct';
+        }
+
+        $provider = preg_replace('/[^a-z0-9-]+/', '', $provider);
+
+        return $provider !== '' ? $provider : 'unknown';
+    }
+
+    /**
+     * Normalize review author names with a safe fallback.
+     */
+    private static function normalize_review_author(string $author_name): string
+    {
+        $author_name = trim(wp_strip_all_tags($author_name));
+
+        return $author_name !== '' ? $author_name : 'Guest';
+    }
+
+    /**
+     * Normalize review text content to plain text.
+     */
+    private static function normalize_review_text(string $value): ?string
+    {
+        $value = trim(wp_strip_all_tags($value));
+
+        return $value !== '' ? html_entity_decode($value, ENT_QUOTES, 'UTF-8') : null;
+    }
+
+    /**
+     * Normalize source-language codes for API output.
+     */
+    private static function normalize_language_code(string $value): ?string
+    {
+        $value = strtolower(trim($value));
+
+        return $value !== '' ? $value : null;
+    }
+
+    /**
+     * Normalize stored rating values to floats.
+     */
+    private static function normalize_review_rating_raw($value): ?float
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim((string) $value);
+        if ($value === '') {
+            return null;
+        }
+
+        $value = str_replace(',', '.', $value);
+        if (!is_numeric($value)) {
+            return null;
+        }
+
+        return round((float) $value, 1);
+    }
+
+    /**
+     * Detect the original rating scale for a provider.
+     */
+    private static function get_review_rating_scale(string $provider, ?float $rating_raw): int
+    {
+        if (in_array($provider, ['google', 'tripadvisor', 'airbnb'], true)) {
+            return 5;
+        }
+
+        if (in_array($provider, ['expedia', 'direct'], true)) {
+            return 10;
+        }
+
+        if ($provider === 'booking') {
+            return $rating_raw !== null && $rating_raw > 5 ? 10 : 5;
+        }
+
+        return $rating_raw !== null && $rating_raw > 5 ? 10 : 5;
+    }
+
+    /**
+     * Normalize review ratings onto a /5 scale.
+     */
+    private static function normalize_review_rating(?float $rating_raw, int $rating_scale): ?float
+    {
+        if ($rating_raw === null || $rating_raw <= 0) {
+            return null;
+        }
+
+        if ($rating_scale <= 0) {
+            return round($rating_raw, 1);
+        }
+
+        return round(($rating_raw / $rating_scale) * 5, 1);
+    }
+
+    /**
+     * Normalize review dates to YYYY-MM-DD.
+     */
+    private static function normalize_review_date(
+        string $review_date,
+        string $post_date = '',
+        string $post_date_gmt = ''
+    ): ?string {
+        $review_date = trim($review_date);
+        if ($review_date !== '') {
+            try {
+                if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $review_date)) {
+                    $date = new DateTimeImmutable($review_date, wp_timezone());
+                } else {
+                    $date = new DateTimeImmutable($review_date, wp_timezone());
+                }
+
+                return $date->format('Y-m-d');
+            } catch (Throwable $throwable) {
+                // Fall back to the post date below.
+            }
+        }
+
+        $created_at = self::format_post_datetime($post_date, $post_date_gmt);
+        if (!$created_at) {
+            return null;
+        }
+
+        try {
+            $date = new DateTimeImmutable($created_at);
+            return $date->setTimezone(wp_timezone())->format('Y-m-d');
+        } catch (Throwable $throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * Compare review dates, newest/oldest first depending on caller direction.
+     */
+    private static function compare_review_timestamps(array $left, array $right): int
+    {
+        $left_timestamp = self::get_review_sort_timestamp($left);
+        $right_timestamp = self::get_review_sort_timestamp($right);
+
+        return self::compare_nullable_scalars($left_timestamp, $right_timestamp);
+    }
+
+    /**
+     * Convert a review item into a comparable timestamp.
+     */
+    private static function get_review_sort_timestamp(array $item): ?int
+    {
+        $value = $item['review_date'] ?? $item['created_at'] ?? null;
+        if (!$value) {
+            return null;
+        }
+
+        $timestamp = strtotime((string) $value);
+
+        return $timestamp !== false ? $timestamp : null;
+    }
+
+    /**
+     * Compare scalars with null values sorted last.
+     */
+    private static function compare_nullable_scalars($left, $right): int
+    {
+        if ($left === $right) {
+            return 0;
+        }
+
+        if ($left === null) {
+            return 1;
+        }
+
+        if ($right === null) {
+            return -1;
+        }
+
+        return $left <=> $right;
     }
 
     /**

@@ -111,6 +111,12 @@ class Shaped_Dashboard_Api
             'callback'            => [__CLASS__, 'get_booking_detail'],
             'permission_callback' => 'shaped_dashboard_auth',
         ]);
+
+        register_rest_route(self::NAMESPACE, '/dashboard/reviews', [
+            'methods'             => 'GET',
+            'callback'            => [__CLASS__, 'get_reviews'],
+            'permission_callback' => 'shaped_dashboard_auth',
+        ]);
     }
 
     /**
@@ -156,6 +162,17 @@ class Shaped_Dashboard_Api
     public static function get_booking_detail(WP_REST_Request $request)
     {
         return Shaped_Dashboard_Data_Service::get_booking_detail_response($request);
+    }
+
+    /**
+     * Dashboard reviews list endpoint.
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function get_reviews(WP_REST_Request $request)
+    {
+        return Shaped_Dashboard_Data_Service::get_reviews_response($request);
     }
 
     /**
