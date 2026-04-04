@@ -46,6 +46,33 @@ class Shaped_Dashboard_Data_Service
     }
 
     /**
+     * Pending revenue trend response.
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function get_pending_revenue_trend_response(WP_REST_Request $request)
+    {
+        $args = self::get_pending_revenue_trend_query_args($request);
+        if (is_wp_error($args)) {
+            return $args;
+        }
+
+        $items = self::query_pending_revenue_trend($args);
+
+        return new WP_REST_Response([
+            'currency'     => self::get_currency_code(),
+            'date_basis'   => 'charge_date',
+            'filters'      => [
+                'charge_from' => $args['charge_from'],
+                'charge_to'   => $args['charge_to'],
+            ],
+            'items'        => $items,
+            'generated_at' => gmdate('c'),
+        ], 200);
+    }
+
+    /**
      * Bookings list response.
      *
      * @param WP_REST_Request $request Request object.
@@ -265,13 +292,16 @@ class Shaped_Dashboard_Data_Service
                 LEFT JOIN {$wpdb->postmeta} AS charged
                     ON p.ID = charged.post_id
                     AND charged.meta_key = '_stripe_payment_charged'
+                LEFT JOIN {$wpdb->postmeta} AS charge_processed
+                    ON p.ID = charge_processed.post_id
+                    AND charge_processed.meta_key = '_shaped_charge_processed'
                 WHERE p.post_type = 'mphb_booking'
                     AND p.post_status IN ({$status_placeholders})
+                    AND CAST(pending_amount.meta_value AS DECIMAL(10,2)) > 0
                     AND (
                         scheduled.meta_value IN ('1', 'true', 'yes')
                         OR (
-                            CAST(pending_amount.meta_value AS DECIMAL(10,2)) > 0
-                            AND (
+                            (
                                 payment_status.meta_value = 'authorized'
                                 OR payment_mode.meta_value = 'delayed'
                             )
@@ -284,7 +314,12 @@ class Shaped_Dashboard_Data_Service
                     AND (
                         charged.meta_value IS NULL
                         OR charged.meta_value = ''
-                        OR charged.meta_value IN ('0', 'false')
+                        OR charged.meta_value IN ('0', 'false', 'no')
+                    )
+                    AND (
+                        charge_processed.meta_value IS NULL
+                        OR charge_processed.meta_value = ''
+                        OR charge_processed.meta_value IN ('0', 'false', 'no')
                     )
             ";
         }
@@ -300,6 +335,140 @@ class Shaped_Dashboard_Data_Service
         }
 
         return self::round_amount($wpdb->get_var(self::prepare_query($sql, $params)));
+    }
+
+    /**
+     * Parse and validate pending-revenue trend request args.
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return array|WP_Error
+     */
+    private static function get_pending_revenue_trend_query_args(WP_REST_Request $request)
+    {
+        $charge_from = self::parse_date_parameter(
+            (string) $request->get_param('charge_from'),
+            'charge_from'
+        );
+        if (is_wp_error($charge_from)) {
+            return $charge_from;
+        }
+
+        $charge_to = self::parse_date_parameter(
+            (string) $request->get_param('charge_to'),
+            'charge_to'
+        );
+        if (is_wp_error($charge_to)) {
+            return $charge_to;
+        }
+
+        if ($charge_from === null || $charge_to === null) {
+            return new WP_Error(
+                'invalid_parameter',
+                'Both charge_from and charge_to are required. Expected YYYY-MM-DD.',
+                ['status' => 400]
+            );
+        }
+
+        if ($charge_from > $charge_to) {
+            [$charge_from, $charge_to] = [$charge_to, $charge_from];
+        }
+
+        return [
+            'charge_from' => $charge_from,
+            'charge_to'   => $charge_to,
+        ];
+    }
+
+    /**
+     * Query grouped pending revenue by charge date.
+     */
+    private static function query_pending_revenue_trend(array $args): array
+    {
+        global $wpdb;
+
+        $confirmed_statuses = ['confirmed', 'publish', 'Confirmed'];
+        $status_placeholders = implode(', ', array_fill(0, count($confirmed_statuses), '%s'));
+        $params = array_merge($confirmed_statuses, [
+            $args['charge_from'],
+            $args['charge_to'],
+        ]);
+
+        $sql = "
+            SELECT
+                charge_date.meta_value AS charge_date,
+                COUNT(*) AS bookings,
+                COALESCE(SUM(CAST(pending_amount.meta_value AS DECIMAL(10,2))), 0) AS pending_amount
+            FROM {$wpdb->posts} AS p
+            INNER JOIN {$wpdb->postmeta} AS pending_amount
+                ON p.ID = pending_amount.post_id
+                AND pending_amount.meta_key = '_stripe_pending_amount'
+            LEFT JOIN {$wpdb->postmeta} AS scheduled
+                ON p.ID = scheduled.post_id
+                AND scheduled.meta_key = '_shaped_charge_scheduled'
+            LEFT JOIN {$wpdb->postmeta} AS payment_status
+                ON p.ID = payment_status.post_id
+                AND payment_status.meta_key = '_shaped_payment_status'
+            LEFT JOIN {$wpdb->postmeta} AS payment_mode
+                ON p.ID = payment_mode.post_id
+                AND payment_mode.meta_key = '_shaped_payment_mode'
+            LEFT JOIN {$wpdb->postmeta} AS charge_at
+                ON p.ID = charge_at.post_id
+                AND charge_at.meta_key = '_shaped_charge_at'
+            LEFT JOIN {$wpdb->postmeta} AS charge_date
+                ON p.ID = charge_date.post_id
+                AND charge_date.meta_key = '_shaped_charge_date'
+            LEFT JOIN {$wpdb->postmeta} AS charged
+                ON p.ID = charged.post_id
+                AND charged.meta_key = '_stripe_payment_charged'
+            LEFT JOIN {$wpdb->postmeta} AS charge_processed
+                ON p.ID = charge_processed.post_id
+                AND charge_processed.meta_key = '_shaped_charge_processed'
+            WHERE p.post_type = 'mphb_booking'
+                AND p.post_status IN ({$status_placeholders})
+                AND charge_date.meta_value IS NOT NULL
+                AND charge_date.meta_value <> ''
+                AND DATE(charge_date.meta_value) >= %s
+                AND DATE(charge_date.meta_value) <= %s
+                AND CAST(pending_amount.meta_value AS DECIMAL(10,2)) > 0
+                AND (
+                    scheduled.meta_value IN ('1', 'true', 'yes')
+                    OR (
+                        (
+                            payment_status.meta_value = 'authorized'
+                            OR payment_mode.meta_value = 'delayed'
+                        )
+                        AND (
+                            (charge_at.meta_value IS NOT NULL AND charge_at.meta_value <> '')
+                            OR (charge_date.meta_value IS NOT NULL AND charge_date.meta_value <> '')
+                        )
+                    )
+                )
+                AND (
+                    charged.meta_value IS NULL
+                    OR charged.meta_value = ''
+                    OR charged.meta_value IN ('0', 'false', 'no')
+                )
+                AND (
+                    charge_processed.meta_value IS NULL
+                    OR charge_processed.meta_value = ''
+                    OR charge_processed.meta_value IN ('0', 'false', 'no')
+                )
+            GROUP BY charge_date.meta_value
+            ORDER BY charge_date.meta_value ASC
+        ";
+
+        $rows = $wpdb->get_results(self::prepare_query($sql, $params), ARRAY_A);
+        if (!is_array($rows)) {
+            return [];
+        }
+
+        return array_map(static function (array $row): array {
+            return [
+                'date'           => (string) $row['charge_date'],
+                'bookings'       => (int) $row['bookings'],
+                'pending_amount' => self::round_amount($row['pending_amount']),
+            ];
+        }, $rows);
     }
 
     /**
