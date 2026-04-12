@@ -108,6 +108,7 @@ class Shaped_Dashboard_Data_Service
                 'check_out_to'   => $args['check_out_to'],
                 'booked_from'    => $args['booked_from'],
                 'booked_to'      => $args['booked_to'],
+                'search'         => $args['search'],
             ],
             'sort'         => [
                 'field' => $args['sort'],
@@ -187,34 +188,19 @@ class Shaped_Dashboard_Data_Service
             return $args;
         }
 
-        $items = self::get_review_items();
-        $summary = self::build_reviews_summary($items);
+        // Summary runs over all reviews (unfiltered) and is cached separately.
+        $summary = self::query_reviews_summary();
 
-        $filtered_items = array_values(array_filter($items, static function (array $item) use ($args): bool {
-            if (!empty($args['providers']) && !in_array($item['provider'], $args['providers'], true)) {
-                return false;
-            }
-
-            if ($args['min_rating'] !== null) {
-                return $item['rating'] !== null && $item['rating'] >= $args['min_rating'];
-            }
-
-            return true;
-        }));
-
-        usort($filtered_items, static function (array $left, array $right) use ($args): int {
-            return self::compare_review_items($left, $right, $args['sort'], $args['order']);
-        });
-
-        $total_items = count($filtered_items);
+        // Filtered, sorted, and paginated in SQL — no full PHP load.
+        $result      = self::query_reviews_filtered($args);
+        $total_items = $result['total'];
         $total_pages = $total_items > 0
             ? (int) ceil($total_items / $args['per_page'])
             : 0;
-        $offset = ($args['page'] - 1) * $args['per_page'];
-        $paged_items = array_slice($filtered_items, $offset, $args['per_page']);
+        $items = array_map([__CLASS__, 'build_review_list_item'], $result['rows']);
 
         return new WP_REST_Response([
-            'items'        => $paged_items,
+            'items'        => $items,
             'pagination'   => [
                 'page'        => $args['page'],
                 'per_page'    => $args['per_page'],
@@ -222,21 +208,218 @@ class Shaped_Dashboard_Data_Service
                 'total_pages' => $total_pages,
             ],
             'filters'      => [
-                'provider'   => $args['providers'],
-                'min_rating' => $args['min_rating'],
+                'provider'         => $args['providers'],
+                'min_rating'       => $args['min_rating'],
+                'review_date_from' => $args['review_date_from'],
+                'review_date_to'   => $args['review_date_to'],
             ],
             'sort'         => [
                 'field' => $args['sort'],
                 'order' => strtolower($args['order']),
             ],
             'summary'      => [
-                'average_rating'  => $summary['average_rating'],
-                'total_reviews'   => $summary['total_reviews'],
-                'filtered_reviews'=> $total_items,
-                'provider_counts' => $summary['provider_counts'],
+                'average_rating'   => $summary['average_rating'],
+                'total_reviews'    => $summary['total_reviews'],
+                'filtered_reviews' => $total_items,
+                'provider_counts'  => $summary['provider_counts'],
             ],
             'generated_at' => gmdate('c'),
         ], 200);
+    }
+
+    /**
+     * Consolidated overview endpoint response.
+     *
+     * Returns a single payload containing everything the main dashboard view needs:
+     * revenue cards, recent bookings, recent reviews, and queue-count previews.
+     * This removes the need for the dashboard to fan out into multiple calls on load.
+     *
+     * Accepted params: none required.  All data uses sensible defaults.
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response
+     */
+    public static function get_overview_response(WP_REST_Request $request): WP_REST_Response
+    {
+        $month_bounds = self::get_current_month_bounds();
+
+        $revenue = [
+            'collected' => [
+                'month'    => self::get_revenue_total('collected', $month_bounds['start'], $month_bounds['end']),
+                'all_time' => self::get_revenue_total('collected'),
+            ],
+            'pending'   => [
+                'month'    => self::get_revenue_total('pending', $month_bounds['start'], $month_bounds['end']),
+                'all_time' => self::get_revenue_total('pending'),
+            ],
+        ];
+
+        $recent_bookings_result = self::query_bookings([
+            'page'             => 1,
+            'per_page'         => 5,
+            'sort'             => 'date',
+            'order'            => 'DESC',
+            'statuses'         => [],
+            'payment_statuses' => [],
+            'check_in_from'    => null,
+            'check_in_to'      => null,
+            'check_out_from'   => null,
+            'check_out_to'     => null,
+            'booked_from'      => null,
+            'booked_to'        => null,
+            'search'           => null,
+            'id'               => 0,
+        ]);
+
+        $reviews_summary      = self::query_reviews_summary();
+        $recent_reviews_result = self::query_reviews_filtered([
+            'page'             => 1,
+            'per_page'         => 5,
+            'sort'             => 'date',
+            'order'            => 'DESC',
+            'providers'        => [],
+            'min_rating'       => null,
+            'review_date_from' => null,
+            'review_date_to'   => null,
+        ]);
+
+        return new WP_REST_Response([
+            'currency'          => self::get_currency_code(),
+            'revenue'           => $revenue,
+            'recent_bookings'   => [
+                'total' => $recent_bookings_result['total_items'],
+                'items' => array_map([__CLASS__, 'build_booking_list_item'], $recent_bookings_result['rows']),
+            ],
+            'recent_reviews'    => [
+                'total'          => $reviews_summary['total_reviews'],
+                'average_rating' => $reviews_summary['average_rating'],
+                'items'          => array_map([__CLASS__, 'build_review_list_item'], $recent_reviews_result['rows']),
+            ],
+            'pending_charges'   => self::get_pending_charges_summary(),
+            'upcoming_arrivals' => self::get_upcoming_arrivals_summary(),
+            'health'            => [
+                'status'         => 'ok',
+                'plugin_version' => defined('SHAPED_VERSION') ? SHAPED_VERSION : null,
+                'site_name'      => get_bloginfo('name'),
+            ],
+            'generated_at'      => gmdate('c'),
+        ], 200);
+    }
+
+    /**
+     * Count and total confirmed bookings with an unprocessed pending charge due today or later.
+     */
+    private static function get_pending_charges_summary(): array
+    {
+        $cache_key = 'shaped_overview_pending_charges_v1';
+        $cached    = wp_cache_get($cache_key, 'shaped_dashboard');
+        if (false !== $cached && is_array($cached)) {
+            return $cached;
+        }
+
+        global $wpdb;
+
+        $confirmed_statuses  = ['confirmed', 'publish', 'Confirmed'];
+        $status_placeholders = implode(', ', array_fill(0, count($confirmed_statuses), '%s'));
+        $today               = current_time('Y-m-d');
+        $params              = array_merge($confirmed_statuses, [$today]);
+
+        $sql = "
+            SELECT
+                COUNT(*) AS count,
+                COALESCE(SUM(CAST(pending_amount.meta_value AS DECIMAL(10,2))), 0) AS total_amount
+            FROM {$wpdb->posts} AS p
+            INNER JOIN {$wpdb->postmeta} AS pending_amount
+                ON p.ID = pending_amount.post_id
+                AND pending_amount.meta_key = '_stripe_pending_amount'
+            LEFT JOIN {$wpdb->postmeta} AS scheduled
+                ON p.ID = scheduled.post_id
+                AND scheduled.meta_key = '_shaped_charge_scheduled'
+            LEFT JOIN {$wpdb->postmeta} AS payment_status
+                ON p.ID = payment_status.post_id
+                AND payment_status.meta_key = '_shaped_payment_status'
+            LEFT JOIN {$wpdb->postmeta} AS payment_mode
+                ON p.ID = payment_mode.post_id
+                AND payment_mode.meta_key = '_shaped_payment_mode'
+            LEFT JOIN {$wpdb->postmeta} AS charge_at
+                ON p.ID = charge_at.post_id
+                AND charge_at.meta_key = '_shaped_charge_at'
+            LEFT JOIN {$wpdb->postmeta} AS charge_date
+                ON p.ID = charge_date.post_id
+                AND charge_date.meta_key = '_shaped_charge_date'
+            LEFT JOIN {$wpdb->postmeta} AS charged
+                ON p.ID = charged.post_id
+                AND charged.meta_key = '_stripe_payment_charged'
+            LEFT JOIN {$wpdb->postmeta} AS charge_processed
+                ON p.ID = charge_processed.post_id
+                AND charge_processed.meta_key = '_shaped_charge_processed'
+            WHERE p.post_type = 'mphb_booking'
+                AND p.post_status IN ({$status_placeholders})
+                AND CAST(pending_amount.meta_value AS DECIMAL(10,2)) > 0
+                AND DATE(charge_date.meta_value) >= %s
+                AND (
+                    scheduled.meta_value IN ('1', 'true', 'yes')
+                    OR (
+                        (payment_status.meta_value = 'authorized' OR payment_mode.meta_value = 'delayed')
+                        AND (
+                            (charge_at.meta_value IS NOT NULL AND charge_at.meta_value <> '')
+                            OR (charge_date.meta_value IS NOT NULL AND charge_date.meta_value <> '')
+                        )
+                    )
+                )
+                AND (charged.meta_value IS NULL OR charged.meta_value = '' OR charged.meta_value IN ('0', 'false', 'no'))
+                AND (charge_processed.meta_value IS NULL OR charge_processed.meta_value = '' OR charge_processed.meta_value IN ('0', 'false', 'no'))
+        ";
+
+        $row = $wpdb->get_row(self::prepare_query($sql, $params), ARRAY_A);
+
+        $result = [
+            'count'        => (int) ($row['count'] ?? 0),
+            'total_amount' => self::round_amount($row['total_amount'] ?? 0),
+        ];
+
+        wp_cache_set($cache_key, $result, 'shaped_dashboard', 15);
+
+        return $result;
+    }
+
+    /**
+     * Count confirmed bookings with a check-in date within the next 7 days (inclusive of today).
+     */
+    private static function get_upcoming_arrivals_summary(): array
+    {
+        $cache_key = 'shaped_overview_upcoming_arrivals_v1';
+        $cached    = wp_cache_get($cache_key, 'shaped_dashboard');
+        if (false !== $cached && is_array($cached)) {
+            return $cached;
+        }
+
+        global $wpdb;
+
+        $confirmed_statuses  = ['confirmed', 'publish', 'Confirmed'];
+        $status_placeholders = implode(', ', array_fill(0, count($confirmed_statuses), '%s'));
+        $today               = current_time('Y-m-d');
+        $seven_days_out      = gmdate('Y-m-d', strtotime($today . ' +7 days'));
+        $params              = array_merge($confirmed_statuses, [$today, $seven_days_out]);
+
+        $sql = "
+            SELECT COUNT(DISTINCT p.ID) AS count
+            FROM {$wpdb->posts} AS p
+            INNER JOIN {$wpdb->postmeta} AS check_in
+                ON p.ID = check_in.post_id
+                AND check_in.meta_key = '_mphb_check_in_date'
+            WHERE p.post_type = 'mphb_booking'
+                AND p.post_status IN ({$status_placeholders})
+                AND check_in.meta_value >= %s
+                AND check_in.meta_value <= %s
+        ";
+
+        $count  = (int) $wpdb->get_var(self::prepare_query($sql, $params));
+        $result = ['count' => $count];
+
+        wp_cache_set($cache_key, $result, 'shaped_dashboard', 30);
+
+        return $result;
     }
 
     /**
@@ -247,6 +430,12 @@ class Shaped_Dashboard_Data_Service
         ?string $booked_from = null,
         ?string $booked_to = null
     ): float {
+        $cache_key = 'shaped_rev_' . $type . '_' . ($booked_from ?: 'x') . '_' . ($booked_to ?: 'x');
+        $cached    = wp_cache_get($cache_key, 'shaped_dashboard');
+        if (false !== $cached) {
+            return (float) $cached;
+        }
+
         global $wpdb;
 
         $confirmed_statuses = ['confirmed', 'publish', 'Confirmed'];
@@ -334,7 +523,10 @@ class Shaped_Dashboard_Data_Service
             $params[] = $booked_to;
         }
 
-        return self::round_amount($wpdb->get_var(self::prepare_query($sql, $params)));
+        $result = self::round_amount($wpdb->get_var(self::prepare_query($sql, $params)));
+        wp_cache_set($cache_key, $result, 'shaped_dashboard', 60);
+
+        return $result;
     }
 
     /**
@@ -548,6 +740,9 @@ class Shaped_Dashboard_Data_Service
             $date_params[$date_key] = $parsed;
         }
 
+        $raw_search = trim((string) $request->get_param('search'));
+        $search = $raw_search !== '' ? mb_substr($raw_search, 0, 100) : null;
+
         return array_merge([
             'page'             => $page,
             'per_page'         => $per_page,
@@ -556,6 +751,7 @@ class Shaped_Dashboard_Data_Service
             'statuses'         => $statuses,
             'payment_statuses' => $payment_statuses,
             'id'               => 0,
+            'search'           => $search,
         ], $date_params);
     }
 
@@ -566,7 +762,7 @@ class Shaped_Dashboard_Data_Service
     {
         global $wpdb;
 
-        $base_sql = self::get_bookings_base_sql();
+        $base_sql = self::get_bookings_base_sql($args);
         [$from_where_sql, $params] = self::get_bookings_filter_sql($base_sql, $args);
 
         $count_sql = "SELECT COUNT(*) {$from_where_sql}";
@@ -596,7 +792,8 @@ class Shaped_Dashboard_Data_Service
     {
         global $wpdb;
 
-        $base_sql = self::get_bookings_base_sql();
+        // Empty args → base SQL covers all dashboard statuses (no date narrowing).
+        $base_sql = self::get_bookings_base_sql([]);
         [$from_where_sql, $params] = self::get_bookings_filter_sql($base_sql, ['id' => $booking_id]);
         $sql = "SELECT * {$from_where_sql} LIMIT 1";
         $row = $wpdb->get_row(self::prepare_query($sql, $params), ARRAY_A);
@@ -663,41 +860,110 @@ class Shaped_Dashboard_Data_Service
             return $min_rating;
         }
 
+        $review_date_from = self::parse_date_parameter(
+            (string) $request->get_param('review_date_from'),
+            'review_date_from'
+        );
+        if (is_wp_error($review_date_from)) {
+            return $review_date_from;
+        }
+
+        $review_date_to = self::parse_date_parameter(
+            (string) $request->get_param('review_date_to'),
+            'review_date_to'
+        );
+        if (is_wp_error($review_date_to)) {
+            return $review_date_to;
+        }
+
         return [
-            'page'       => $page,
-            'per_page'   => $per_page,
-            'sort'       => $sort,
-            'order'      => $order,
-            'providers'  => $providers,
-            'min_rating' => $min_rating,
+            'page'             => $page,
+            'per_page'         => $per_page,
+            'sort'             => $sort,
+            'order'            => $order,
+            'providers'        => $providers,
+            'min_rating'       => $min_rating,
+            'review_date_from' => $review_date_from,
+            'review_date_to'   => $review_date_to,
         ];
     }
 
     /**
-     * Query all published reviews and map them to the dashboard contract.
+     * SQL expression for the normalized (0–5) rating of a review row.
+     *
+     * $provider_expr and $rating_expr are SQL expressions (column names or aggregate
+     * expressions) that yield the raw provider string and the raw numeric rating.
      */
-    private static function get_review_items(): array
+    private static function get_normalized_rating_sql(string $provider_expr, string $rating_expr): string
     {
+        return "
+            CASE
+                WHEN CAST({$rating_expr} AS DECIMAL(5,2)) <= 0 THEN NULL
+                WHEN LOWER({$provider_expr}) LIKE '%google%'
+                  OR LOWER({$provider_expr}) LIKE '%tripadvisor%'
+                  OR LOWER({$provider_expr}) LIKE '%trip-advisor%'
+                  OR LOWER({$provider_expr}) LIKE '%airbnb%'
+                  OR LOWER({$provider_expr}) LIKE '%air-bnb%'
+                    THEN ROUND(CAST({$rating_expr} AS DECIMAL(5,2)), 2)
+                WHEN LOWER({$provider_expr}) LIKE '%expedia%'
+                  OR LOWER({$provider_expr}) LIKE '%direct%'
+                    THEN ROUND(CAST({$rating_expr} AS DECIMAL(5,2)) / 2, 2)
+                ELSE
+                    CASE WHEN CAST({$rating_expr} AS DECIMAL(5,2)) > 5
+                        THEN ROUND(CAST({$rating_expr} AS DECIMAL(5,2)) / 2, 2)
+                        ELSE ROUND(CAST({$rating_expr} AS DECIMAL(5,2)), 2)
+                    END
+            END
+        ";
+    }
+
+    /**
+     * SQL fragment that maps a normalized provider string to a WHERE/HAVING condition.
+     * The provider value must come from the validated allowed-providers list.
+     */
+    private static function get_provider_sql_condition(string $column, string $provider): string
+    {
+        switch ($provider) {
+            case 'airbnb':
+                return "(LOWER({$column}) LIKE '%airbnb%' OR LOWER({$column}) LIKE '%air-bnb%')";
+            case 'booking':
+                return "LOWER({$column}) LIKE '%booking%'";
+            case 'tripadvisor':
+                return "(LOWER({$column}) LIKE '%tripadvisor%' OR LOWER({$column}) LIKE '%trip-advisor%')";
+            case 'google':
+                return "LOWER({$column}) LIKE '%google%'";
+            case 'expedia':
+                return "LOWER({$column}) LIKE '%expedia%'";
+            case 'direct':
+                return "LOWER({$column}) LIKE '%direct%'";
+            default:
+                // Provider is from our validated allowed list — safe to embed directly.
+                return sprintf("LOWER({$column}) = '%s'", esc_sql(strtolower($provider)));
+        }
+    }
+
+    /**
+     * Lightweight aggregate query for reviews summary stats (unfiltered, cached).
+     *
+     * Only fetches the two fields needed to compute average rating and provider counts,
+     * avoiding the full column set on every request.
+     */
+    private static function query_reviews_summary(): array
+    {
+        $cache_key = 'shaped_reviews_summary_v1';
+        $cached    = wp_cache_get($cache_key, 'shaped_dashboard');
+        if (false !== $cached && is_array($cached)) {
+            return $cached;
+        }
+
         global $wpdb;
 
         $sql = "
             SELECT
-                p.ID,
-                p.post_content AS review_text,
-                p.post_date,
-                p.post_date_gmt,
                 COALESCE(MAX(CASE WHEN pm.meta_key = 'provider' THEN pm.meta_value END), '') AS provider_raw,
-                COALESCE(MAX(CASE WHEN pm.meta_key = 'review_rating' THEN pm.meta_value END), '') AS rating_raw,
-                COALESCE(MAX(CASE WHEN pm.meta_key = 'author_name' THEN pm.meta_value END), '') AS author_name,
-                COALESCE(MAX(CASE WHEN pm.meta_key = 'review_date' THEN pm.meta_value END), '') AS review_date_raw,
-                COALESCE(MAX(CASE WHEN pm.meta_key = 'review_text_original' THEN pm.meta_value END), '') AS original_text,
-                COALESCE(MAX(CASE WHEN pm.meta_key = 'source_language' THEN pm.meta_value END), '') AS source_language,
-                COALESCE(MAX(CASE WHEN pm.meta_key = 'is_featured' THEN pm.meta_value END), '') AS is_featured,
-                COALESCE(MAX(CASE WHEN pm.meta_key = 'priority' THEN pm.meta_value END), '0') AS priority,
-                COALESCE(MAX(CASE WHEN pm.meta_key = 'external_key' THEN pm.meta_value END), '') AS external_key
+                CAST(COALESCE(MAX(CASE WHEN pm.meta_key = 'review_rating' THEN pm.meta_value END), '0') AS DECIMAL(5,2)) AS rating_raw
             FROM {$wpdb->posts} AS p
-            LEFT JOIN {$wpdb->postmeta} AS pm
-                ON p.ID = pm.post_id
+            LEFT JOIN {$wpdb->postmeta} AS pm ON p.ID = pm.post_id
             WHERE p.post_type = 'shaped_review'
                 AND p.post_status = 'publish'
             GROUP BY p.ID
@@ -705,21 +971,203 @@ class Shaped_Dashboard_Data_Service
 
         $rows = $wpdb->get_results($sql, ARRAY_A);
         if (!is_array($rows)) {
-            return [];
+            $rows = [];
         }
 
-        return array_map([__CLASS__, 'build_review_list_item'], $rows);
+        $provider_counts = [];
+        $rating_total    = 0.0;
+        $rating_count    = 0;
+
+        foreach ($rows as $row) {
+            $provider = self::normalize_review_provider((string) $row['provider_raw']);
+            $provider_counts[$provider] = ($provider_counts[$provider] ?? 0) + 1;
+
+            $rating_raw = (float) $row['rating_raw'];
+            if ($rating_raw > 0) {
+                $scale      = self::get_review_rating_scale($provider, $rating_raw);
+                $normalized = self::normalize_review_rating($rating_raw, $scale);
+                if ($normalized !== null) {
+                    $rating_total += $normalized;
+                    $rating_count++;
+                }
+            }
+        }
+
+        arsort($provider_counts);
+        $provider_count_items = [];
+        foreach ($provider_counts as $provider => $count) {
+            $provider_count_items[] = ['provider' => $provider, 'count' => $count];
+        }
+
+        $summary = [
+            'average_rating'  => $rating_count > 0 ? round($rating_total / $rating_count, 1) : null,
+            'total_reviews'   => count($rows),
+            'provider_counts' => $provider_count_items,
+        ];
+
+        wp_cache_set($cache_key, $summary, 'shaped_dashboard', 60);
+
+        return $summary;
+    }
+
+    /**
+     * Run a filtered, sorted, and paginated reviews query entirely in SQL.
+     *
+     * Returns ['rows' => array, 'total' => int] where total is the filtered row count
+     * before pagination (used for page-count calculation).
+     */
+    private static function query_reviews_filtered(array $args): array
+    {
+        global $wpdb;
+
+        $provider_agg = "COALESCE(MAX(CASE WHEN pm.meta_key = 'provider' THEN pm.meta_value END), '')";
+        $rating_agg   = "CAST(COALESCE(MAX(CASE WHEN pm.meta_key = 'review_rating' THEN pm.meta_value END), '0') AS DECIMAL(5,2))";
+
+        $normalized_rating_sql = self::get_normalized_rating_sql($provider_agg, $rating_agg);
+
+        $inner_sql = "
+            SELECT
+                p.ID,
+                p.post_content AS review_text,
+                p.post_date,
+                p.post_date_gmt,
+                {$provider_agg} AS provider_raw,
+                {$rating_agg} AS rating_raw,
+                COALESCE(MAX(CASE WHEN pm.meta_key = 'author_name' THEN pm.meta_value END), '') AS author_name,
+                COALESCE(MAX(CASE WHEN pm.meta_key = 'review_date' THEN pm.meta_value END), '') AS review_date_raw,
+                COALESCE(MAX(CASE WHEN pm.meta_key = 'review_text_original' THEN pm.meta_value END), '') AS original_text,
+                COALESCE(MAX(CASE WHEN pm.meta_key = 'source_language' THEN pm.meta_value END), '') AS source_language,
+                COALESCE(MAX(CASE WHEN pm.meta_key = 'is_featured' THEN pm.meta_value END), '') AS is_featured,
+                COALESCE(MAX(CASE WHEN pm.meta_key = 'priority' THEN pm.meta_value END), '0') AS priority,
+                COALESCE(MAX(CASE WHEN pm.meta_key = 'external_key' THEN pm.meta_value END), '') AS external_key,
+                COALESCE(
+                    NULLIF(COALESCE(MAX(CASE WHEN pm.meta_key = 'review_date' THEN pm.meta_value END), ''), ''),
+                    DATE(p.post_date)
+                ) AS effective_review_date,
+                ({$normalized_rating_sql}) AS normalized_rating
+            FROM {$wpdb->posts} AS p
+            LEFT JOIN {$wpdb->postmeta} AS pm ON p.ID = pm.post_id
+            WHERE p.post_type = 'shaped_review'
+                AND p.post_status = 'publish'
+            GROUP BY p.ID
+        ";
+
+        [$where_sql, $params] = self::get_reviews_filter_sql($args);
+        $order_sql = self::get_reviews_order_sql($args['sort'], $args['order']);
+
+        $count_sql = "SELECT COUNT(*) FROM ({$inner_sql}) AS r {$where_sql}";
+        $total     = (int) $wpdb->get_var(self::prepare_query($count_sql, $params));
+
+        $offset   = ($args['page'] - 1) * $args['per_page'];
+        $rows_sql = self::prepare_query(
+            sprintf(
+                'SELECT r.* FROM (%s) AS r %s %s LIMIT %d OFFSET %d',
+                $inner_sql,
+                $where_sql,
+                $order_sql,
+                (int) $args['per_page'],
+                (int) $offset
+            ),
+            $params
+        );
+
+        $rows = $wpdb->get_results($rows_sql, ARRAY_A);
+
+        return [
+            'rows'  => is_array($rows) ? $rows : [],
+            'total' => $total,
+        ];
+    }
+
+    /**
+     * Build WHERE clause and params for the reviews outer (filtered) query.
+     */
+    private static function get_reviews_filter_sql(array $args): array
+    {
+        $where  = 'WHERE 1=1';
+        $params = [];
+
+        if (!empty($args['providers'])) {
+            $conditions = [];
+            foreach ($args['providers'] as $provider) {
+                $conditions[] = self::get_provider_sql_condition('r.provider_raw', $provider);
+            }
+            $where .= ' AND (' . implode(' OR ', $conditions) . ')';
+        }
+
+        if ($args['min_rating'] !== null) {
+            $where   .= ' AND r.normalized_rating >= %f';
+            $params[] = (float) $args['min_rating'];
+        }
+
+        if (!empty($args['review_date_from'])) {
+            $where   .= ' AND r.effective_review_date >= %s';
+            $params[] = $args['review_date_from'];
+        }
+
+        if (!empty($args['review_date_to'])) {
+            $where   .= ' AND r.effective_review_date <= %s';
+            $params[] = $args['review_date_to'];
+        }
+
+        return [$where, $params];
+    }
+
+    /**
+     * Build ORDER BY clause for the reviews outer query.
+     * Nulls are always sorted last regardless of direction.
+     */
+    private static function get_reviews_order_sql(string $sort, string $order): string
+    {
+        switch ($sort) {
+            case 'rating':
+                // (r.normalized_rating IS NULL) = 0 for real values → non-nulls first.
+                return "ORDER BY (r.normalized_rating IS NULL) ASC, r.normalized_rating {$order}, r.effective_review_date DESC, r.ID DESC";
+
+            case 'provider':
+                return "ORDER BY r.provider_raw {$order}, r.effective_review_date DESC, r.ID DESC";
+
+            case 'date':
+            default:
+                return "ORDER BY r.effective_review_date {$order}, r.ID DESC";
+        }
     }
 
     /**
      * Base bookings aggregation query.
+     *
+     * Accepts optional $args to push status and booked-date filters into the GROUP BY
+     * aggregation itself, reducing the number of rows processed before outer filters run.
+     *
+     * @param array $args  Subset of bookings query args; uses 'statuses', 'booked_from',
+     *                     'booked_to'.  Pass [] for the detail endpoint (all statuses, no
+     *                     date narrowing).
      */
-    private static function get_bookings_base_sql(): string
+    private static function get_bookings_base_sql(array $args = []): string
     {
         global $wpdb;
 
-        $dashboard_statuses = self::get_dashboard_booking_statuses();
-        $status_placeholders = implode(', ', array_fill(0, count($dashboard_statuses), '%s'));
+        // Use caller-requested statuses when provided; fall back to all dashboard statuses.
+        $statuses = !empty($args['statuses'])
+            ? self::expand_booking_status_filters($args['statuses'])
+            : self::get_dashboard_booking_statuses();
+
+        $status_placeholders = implode(', ', array_fill(0, count($statuses), '%s'));
+        $params = $statuses;
+
+        $base_where = "WHERE p.post_type = 'mphb_booking'
+                AND p.post_status IN ({$status_placeholders})";
+
+        // Push booked_at range directly into the aggregation WHERE — it targets a real
+        // column (post_date) so it can cut the GROUP BY work before any JOINs aggregate.
+        if (!empty($args['booked_from'])) {
+            $base_where .= ' AND DATE(p.post_date) >= %s';
+            $params[] = $args['booked_from'];
+        }
+        if (!empty($args['booked_to'])) {
+            $base_where .= ' AND DATE(p.post_date) <= %s';
+            $params[] = $args['booked_to'];
+        }
 
         $sql = "
             SELECT
@@ -790,32 +1238,30 @@ class Shaped_Dashboard_Data_Service
             FROM {$wpdb->posts} AS p
             LEFT JOIN {$wpdb->postmeta} AS pm
                 ON p.ID = pm.post_id
-            WHERE p.post_type = 'mphb_booking'
-                AND p.post_status IN ({$status_placeholders})
+            {$base_where}
             GROUP BY p.ID
         ";
 
-        return self::prepare_query($sql, $dashboard_statuses);
+        return self::prepare_query($sql, $params);
     }
 
     /**
      * Build filtered bookings query fragment and params.
+     *
+     * Handles filters that must operate on aggregated/computed columns (payment_status,
+     * check_in, check_out, id, search).  Status and booked_at filters are pushed into
+     * get_bookings_base_sql() instead so they reduce the GROUP BY work upstream.
      */
     private static function get_bookings_filter_sql(string $base_sql, array $args): array
     {
+        global $wpdb;
+
         $from_where_sql = "FROM ({$base_sql}) AS bookings WHERE 1=1";
         $params = [];
 
         if (!empty($args['id'])) {
             $from_where_sql .= ' AND bookings.ID = %d';
             $params[] = (int) $args['id'];
-        }
-
-        if (!empty($args['statuses'])) {
-            $raw_statuses = self::expand_booking_status_filters($args['statuses']);
-            $placeholders = implode(', ', array_fill(0, count($raw_statuses), '%s'));
-            $from_where_sql .= " AND bookings.booking_status_raw IN ({$placeholders})";
-            $params = array_merge($params, $raw_statuses);
         }
 
         if (!empty($args['payment_statuses'])) {
@@ -829,13 +1275,29 @@ class Shaped_Dashboard_Data_Service
             'check_in_to'    => ['bookings.check_in', '<='],
             'check_out_from' => ['bookings.check_out', '>='],
             'check_out_to'   => ['bookings.check_out', '<='],
-            'booked_from'    => ['DATE(bookings.booked_at)', '>='],
-            'booked_to'      => ['DATE(bookings.booked_at)', '<='],
         ] as $arg_key => $config) {
             if (!empty($args[$arg_key])) {
                 $from_where_sql .= sprintf(' AND %s %s %%s', $config[0], $config[1]);
                 $params[] = $args[$arg_key];
             }
+        }
+
+        if (!empty($args['search'])) {
+            $like = '%' . $wpdb->esc_like($args['search']) . '%';
+            $from_where_sql .= " AND (
+                bookings.guest_first_name LIKE %s
+                OR bookings.guest_last_name LIKE %s
+                OR bookings.guest_email LIKE %s
+                OR CONCAT(
+                    COALESCE(bookings.guest_first_name, ''),
+                    ' ',
+                    COALESCE(bookings.guest_last_name, '')
+                ) LIKE %s
+            )";
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
+            $params[] = $like;
         }
 
         return [$from_where_sql, $params];
@@ -947,75 +1409,6 @@ class Shaped_Dashboard_Data_Service
         ];
     }
 
-    /**
-     * Build summary metadata for the reviews contract.
-     */
-    private static function build_reviews_summary(array $items): array
-    {
-        $provider_counts = [];
-        $rating_total = 0.0;
-        $rating_count = 0;
-
-        foreach ($items as $item) {
-            $provider = (string) $item['provider'];
-            if (!isset($provider_counts[$provider])) {
-                $provider_counts[$provider] = 0;
-            }
-            $provider_counts[$provider]++;
-
-            if ($item['rating'] !== null) {
-                $rating_total += (float) $item['rating'];
-                $rating_count++;
-            }
-        }
-
-        arsort($provider_counts);
-        $provider_count_items = [];
-        foreach ($provider_counts as $provider => $count) {
-            $provider_count_items[] = [
-                'provider' => $provider,
-                'count'    => $count,
-            ];
-        }
-
-        return [
-            'average_rating' => $rating_count > 0 ? round($rating_total / $rating_count, 1) : null,
-            'total_reviews'  => count($items),
-            'provider_counts'=> $provider_count_items,
-        ];
-    }
-
-    /**
-     * Sort review items according to request args.
-     */
-    private static function compare_review_items(array $left, array $right, string $sort, string $order): int
-    {
-        $direction = $order === 'ASC' ? 1 : -1;
-
-        switch ($sort) {
-            case 'rating':
-                $comparison = self::compare_nullable_scalars($left['rating'], $right['rating']);
-                break;
-
-            case 'provider':
-                $comparison = strcmp((string) $left['provider'], (string) $right['provider']);
-                if ($comparison === 0) {
-                    $comparison = self::compare_review_timestamps($left, $right);
-                }
-                break;
-
-            case 'date':
-            default:
-                $comparison = self::compare_review_timestamps($left, $right);
-                break;
-        }
-
-        if ($comparison === 0) {
-            $comparison = ((int) $left['id']) <=> ((int) $right['id']);
-        }
-
-        return $comparison * $direction;
-    }
 
     /**
      * Build the guest section of booking detail.
@@ -1952,32 +2345,6 @@ class Shaped_Dashboard_Data_Service
         } catch (Throwable $throwable) {
             return null;
         }
-    }
-
-    /**
-     * Compare review dates, newest/oldest first depending on caller direction.
-     */
-    private static function compare_review_timestamps(array $left, array $right): int
-    {
-        $left_timestamp = self::get_review_sort_timestamp($left);
-        $right_timestamp = self::get_review_sort_timestamp($right);
-
-        return self::compare_nullable_scalars($left_timestamp, $right_timestamp);
-    }
-
-    /**
-     * Convert a review item into a comparable timestamp.
-     */
-    private static function get_review_sort_timestamp(array $item): ?int
-    {
-        $value = $item['review_date'] ?? $item['created_at'] ?? null;
-        if (!$value) {
-            return null;
-        }
-
-        $timestamp = strtotime((string) $value);
-
-        return $timestamp !== false ? $timestamp : null;
     }
 
     /**

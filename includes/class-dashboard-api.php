@@ -41,13 +41,10 @@ class Shaped_Dashboard_Api
             define('DONOTCACHEPAGE', true);
         }
 
-        if (!defined('DONOTCACHEDB')) {
-            define('DONOTCACHEDB', true);
-        }
-
-        if (!defined('DONOTCACHEOBJECT')) {
-            define('DONOTCACHEOBJECT', true);
-        }
+        // DONOTCACHEDB and DONOTCACHEOBJECT are intentionally not set here.
+        // HTTP responses remain private/no-store (enforced by add_no_cache_headers),
+        // but WordPress object cache and DB query cache are safe for authenticated
+        // dashboard queries when cache keys incorporate endpoint context and filters.
 
         if (function_exists('do_action')) {
             do_action('litespeed_control_set_nocache', 'Shaped dashboard API uses header authentication.');
@@ -91,6 +88,12 @@ class Shaped_Dashboard_Api
         register_rest_route(self::NAMESPACE, '/dashboard/health', [
             'methods'             => 'GET',
             'callback'            => [__CLASS__, 'get_health'],
+            'permission_callback' => 'shaped_dashboard_auth',
+        ]);
+
+        register_rest_route(self::NAMESPACE, '/dashboard/overview', [
+            'methods'             => 'GET',
+            'callback'            => [__CLASS__, 'get_overview'],
             'permission_callback' => 'shaped_dashboard_auth',
         ]);
 
@@ -138,6 +141,17 @@ class Shaped_Dashboard_Api
             'site_name'      => get_bloginfo('name'),
             'timestamp'      => gmdate('c'),
         ], 200);
+    }
+
+    /**
+     * Dashboard overview endpoint — consolidated summary for the main dashboard view.
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response
+     */
+    public static function get_overview(WP_REST_Request $request): WP_REST_Response
+    {
+        return Shaped_Dashboard_Data_Service::get_overview_response($request);
     }
 
     /**
