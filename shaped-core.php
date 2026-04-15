@@ -86,6 +86,7 @@ if (!defined('SHAPED_PLUGIN_URL')) {
 require_once SHAPED_DIR . 'includes/class-loader.php';
 Shaped_Loader::register();
 Shaped_Dashboard_Api::init();
+Shaped_Dashboard_Pricing_Api::init();
 
 /* =========================================================================
  * STRIPE SDK LOADER
