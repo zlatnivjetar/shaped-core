@@ -1032,8 +1032,19 @@ class Shaped_Pricing {
      * Get discounts configuration
      */
     public static function get_discounts(): array {
-        $saved = get_option(self::OPT_DISCOUNTS);
-        return wp_parse_args(is_array($saved) ? $saved : [], self::discount_defaults());
+        $saved      = get_option(self::OPT_DISCOUNTS);
+        $room_types = self::fetch_room_types();
+
+        if (empty($room_types)) {
+            // MPHB not yet available — fall back to hardcoded defaults.
+            return wp_parse_args(is_array($saved) ? $saved : [], self::discount_defaults());
+        }
+
+        // Build zero-percent defaults for every current room type, merge in saved
+        // values, then strip any slugs that no longer exist as room types.
+        $defaults = array_fill_keys(array_keys($room_types), 0);
+        $merged   = wp_parse_args(is_array($saved) ? $saved : [], $defaults);
+        return array_intersect_key($merged, $room_types);
     }
 
     /**
