@@ -11,6 +11,7 @@
  *   GET /dashboard/base-pricing - full base-pricing snapshot
  *   POST /dashboard/base-pricing/rates - create a supported rate
  *   PUT /dashboard/base-pricing/rates/{rate_id} - update a supported rate
+ *   DELETE /dashboard/base-pricing/rates/{rate_id} - delete a supported rate
  *   POST /dashboard/base-pricing/rates/{rate_id}/duplicate - duplicate a supported rate
  *
  * @package Shaped_Core
@@ -52,6 +53,12 @@ class Shaped_Dashboard_Base_Pricing_Api
         register_rest_route(self::NAMESPACE, '/dashboard/base-pricing/rates/(?P<rate_id>\d+)', [
             'methods'             => 'PUT',
             'callback'            => [__CLASS__, 'update_rate'],
+            'permission_callback' => 'shaped_dashboard_auth',
+        ]);
+
+        register_rest_route(self::NAMESPACE, '/dashboard/base-pricing/rates/(?P<rate_id>\d+)', [
+            'methods'             => 'DELETE',
+            'callback'            => [__CLASS__, 'delete_rate'],
             'permission_callback' => 'shaped_dashboard_auth',
         ]);
 
@@ -157,6 +164,53 @@ class Shaped_Dashboard_Base_Pricing_Api
     }
 
     /**
+     * DELETE /dashboard/base-pricing/rates/{rate_id}
+     *
+     * Delete an existing supported rate.
+     *
+     * @param WP_REST_Request $request
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function delete_rate(WP_REST_Request $request)
+    {
+        if (!function_exists('mphb_prices_facade')) {
+            return new WP_Error(
+                'motopress_unavailable',
+                'MotoPress Hotel Booking plugin is required.',
+                ['status' => 503]
+            );
+        }
+
+        $rate = self::get_rate_by_id((int) $request['rate_id']);
+        if (is_wp_error($rate)) {
+            return $rate;
+        }
+
+        $unsupported_reason = self::get_rate_unsupported_reason($rate);
+        if ($unsupported_reason !== null) {
+            return new WP_Error(
+                'unsupported_rate',
+                $unsupported_reason,
+                ['status' => 409]
+            );
+        }
+
+        $deleted = wp_delete_post((int) $rate->getId(), true);
+        if (!$deleted) {
+            return new WP_Error(
+                'rate_not_deleted',
+                'The rate could not be deleted.',
+                ['status' => 500]
+            );
+        }
+
+        return new WP_REST_Response([
+            'deleted_rate_id' => (int) $request['rate_id'],
+            'updated_at'      => gmdate('c'),
+        ], 200);
+    }
+
+    /**
      * POST /dashboard/base-pricing/rates/{rate_id}/duplicate
      *
      * Duplicate a supported rate without using the unsafe MotoPress repository
@@ -203,7 +257,7 @@ class Shaped_Dashboard_Base_Pricing_Api
             'id'            => null,
             'is_active'     => array_key_exists('is_active', $body)
                 ? rest_sanitize_boolean($body['is_active'])
-                : (bool) $source->isActive(),
+                : false,
             'room_type_id'  => (int) $source->getRoomTypeId(),
             'season_prices' => self::get_supported_rate_input($source),
             'title'         => $title,
@@ -363,7 +417,7 @@ class Shaped_Dashboard_Base_Pricing_Api
             'id'            => $existing_rate ? (int) $existing_rate->getId() : null,
             'is_active'     => array_key_exists('is_active', $body)
                 ? rest_sanitize_boolean($body['is_active'])
-                : ($existing_rate ? (bool) $existing_rate->isActive() : true),
+                : false,
             'room_type_id'  => $room_type_id,
             'season_prices' => $body['season_prices'],
             'title'         => $title,
@@ -580,7 +634,7 @@ class Shaped_Dashboard_Base_Pricing_Api
         }
 
         return new \MPHB\Entities\Rate([
-            'active'        => (bool) ($input['is_active'] ?? true),
+            'active'        => (bool) ($input['is_active'] ?? false),
             'description'   => (string) ($input['description'] ?? ''),
             'id'            => $input['id'] ?? null,
             'room_type_id'  => (int) ($input['room_type_id'] ?? 0),
@@ -675,6 +729,21 @@ class Shaped_Dashboard_Base_Pricing_Api
                 'priority'          => $priority,
                 'season_id'         => $season_id,
             ];
+        }
+
+        $seen_season_ids = [];
+        foreach ($normalized as $sp) {
+            if (in_array($sp['season_id'], $seen_season_ids, true)) {
+                return new WP_Error(
+                    'bad_request',
+                    sprintf(
+                        'season_prices contains a duplicate season_id (%d). Each season can only appear once per rate.',
+                        $sp['season_id']
+                    ),
+                    ['status' => 400]
+                );
+            }
+            $seen_season_ids[] = $sp['season_id'];
         }
 
         usort($normalized, static function ($left, $right) {
