@@ -518,11 +518,11 @@ class Shaped_Dashboard_Base_Pricing_Api
                 return 'This rate uses multiple base prices for a season row.';
             }
 
-            if (!self::is_single_flat_price_list($pricing['extra_adult_prices'] ?? [], true)) {
+            if (!self::is_single_flat_optional_price_list($pricing['extra_adult_prices'] ?? [])) {
                 return 'This rate uses multi-period extra adult pricing.';
             }
 
-            if (!self::is_single_flat_price_list($pricing['extra_child_prices'] ?? [], true)) {
+            if (!self::is_single_flat_optional_price_list($pricing['extra_child_prices'] ?? [])) {
                 return 'This rate uses multi-period extra child pricing.';
             }
 
@@ -813,6 +813,41 @@ class Shaped_Dashboard_Base_Pricing_Api
             if ((string) $first !== '1') {
                 return false;
             }
+        }
+
+        if (count($values) === 1) {
+            return true;
+        }
+
+        foreach (array_slice($values, 1) as $value) {
+            if ($value !== '' && $value !== null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Check that an optional extra-guest price list can be represented as a
+     * single flat scalar value. MotoPress commonly normalizes unset extra guest
+     * pricing to [''], which should round-trip as zero instead of forcing the
+     * entire rate read-only.
+     *
+     * @param mixed $values
+     * @return bool
+     */
+    private static function is_single_flat_optional_price_list($values): bool
+    {
+        if (!is_array($values) || $values === []) {
+            return false;
+        }
+
+        $values = array_values($values);
+        $first = $values[0] ?? null;
+
+        if ($first !== '' && $first !== null && !is_numeric($first)) {
+            return false;
         }
 
         if (count($values) === 1) {
