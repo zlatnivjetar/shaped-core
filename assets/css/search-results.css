@@ -23,6 +23,10 @@
     color: var(--color-brand-primary);
 }
 
+.mphb-search-benefits-inline {
+    display: none;
+}
+
 /* Base Container */
 .mphb_sc_search_results-wrapper {
     font-family: var(--font-body);
