@@ -24,7 +24,7 @@
 }
 
 .mphb-search-benefits-inline {
-    display: none;
+    display: none !important;
 }
 
 /* Base Container */
