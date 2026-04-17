@@ -17,6 +17,9 @@ class Shaped_RC_Availability_Manager
 
     private static $logged_block_decisions = [];
 
+    /** @var array<string, array<string, mixed>> Per-request cache keyed by "roomcloud_id:from:to". */
+    private static $stay_cache = [];
+
     public static function init()
     {
         if (self::$instance === null) {
@@ -270,6 +273,12 @@ class Shaped_RC_Availability_Manager
      */
     public static function inspect_roomcloud_stay(string $roomcloud_id, DateTime $from_date, DateTime $to_date): array
     {
+        $cache_key = $roomcloud_id . ':' . $from_date->format('Y-m-d') . ':' . $to_date->format('Y-m-d');
+
+        if (array_key_exists($cache_key, self::$stay_cache)) {
+            return self::$stay_cache[$cache_key];
+        }
+
         $inventory = self::get_inventory();
         $room_inventory = isset($inventory[$roomcloud_id]) && is_array($inventory[$roomcloud_id])
             ? $inventory[$roomcloud_id]
@@ -296,13 +305,17 @@ class Shaped_RC_Availability_Manager
             $current->modify('+1 day');
         }
 
-        return [
+        $result = [
             'has_any_data' => $has_any_data,
             'has_complete_data' => empty($missing_dates),
             'available_units' => $min_units,
             'missing_dates' => $missing_dates,
             'total_nights' => $total_nights,
         ];
+
+        self::$stay_cache[$cache_key] = $result;
+
+        return $result;
     }
 
     /**
@@ -814,19 +827,34 @@ class Shaped_RC_Availability_Manager
             return $available_rooms_count;
         }
 
-        $check_in = $context['check_in_date'] ?? null;
-        $check_out = $context['check_out_date'] ?? null;
-
-        $from = self::normalize_date($check_in);
-        $to = self::normalize_date($check_out);
+        $from = self::normalize_date($context['check_in_date'] ?? null);
+        $to = self::normalize_date($context['check_out_date'] ?? null);
 
         if (!$from || !$to || $from >= $to) {
             return $available_rooms_count;
         }
 
+        // Resolve all RoomCloud IDs up front so the mapping option is read once.
+        $rc_id_by_room_type = [];
+        foreach (array_keys($available_rooms_count) as $room_type_id) {
+            $rc_id_by_room_type[(int) $room_type_id] = self::get_roomcloud_id_for_room_type((int) $room_type_id);
+        }
+
+        // Pre-warm the stay cache for every unique RoomCloud ID.
+        // Each unique ID is inspected exactly once; subsequent evaluate_room_type_availability
+        // calls below (and any later template calls) return immediately from $stay_cache.
+        $seen_rc_ids = [];
+        foreach ($rc_id_by_room_type as $rc_id) {
+            if ($rc_id !== null && !isset($seen_rc_ids[$rc_id])) {
+                $seen_rc_ids[$rc_id] = true;
+                self::inspect_roomcloud_stay($rc_id, $from, $to);
+            }
+        }
+
         $filtered = [];
 
         foreach ($available_rooms_count as $room_type_id => $count) {
+            // inspect_roomcloud_stay inside evaluate_room_type_availability is now a cache hit.
             $decision = self::evaluate_room_type_availability((int) $room_type_id, $from, $to, 1);
 
             if (!$decision['is_sellable']) {
