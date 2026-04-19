@@ -98,6 +98,48 @@ class Shaped_RC_Availability_Manager {
     public static function get_last_inventory_update(): ?string {
         return '2026-04-01 08:00:00';
     }
+
+    public static function get_inventory_coverage(array $window_dates = []): array {
+        global $_test_room_specs, $_test_inventory;
+
+        $coverage = [];
+        sort($window_dates);
+
+        foreach ($_test_room_specs as $s) {
+            $room_inventory = isset($_test_inventory[$s['rc_id']]) && is_array($_test_inventory[$s['rc_id']])
+                ? $_test_inventory[$s['rc_id']]
+                : [];
+
+            $stored_dates = array_keys($room_inventory);
+            sort($stored_dates);
+
+            $coverage[$s['slug']] = [
+                'room_type_id' => $s['id'],
+                'roomcloud_id' => $s['rc_id'],
+                'mapped' => $s['rc_id'] !== null,
+                'first_stored_date' => $stored_dates[0] ?? null,
+                'last_stored_date' => !empty($stored_dates) ? $stored_dates[count($stored_dates) - 1] : null,
+                'stored_dates_count' => count($stored_dates),
+                'window_start_date' => $window_dates[0] ?? null,
+                'window_end_date' => !empty($window_dates) ? $window_dates[count($window_dates) - 1] : null,
+                'window_dates_count' => count($window_dates),
+                'window_covered_dates_count' => 0,
+                'window_missing_dates_count' => 0,
+                'window_has_gaps' => false,
+            ];
+
+            foreach ($window_dates as $date_str) {
+                if (array_key_exists($date_str, $room_inventory)) {
+                    $coverage[$s['slug']]['window_covered_dates_count']++;
+                } else {
+                    $coverage[$s['slug']]['window_missing_dates_count']++;
+                    $coverage[$s['slug']]['window_has_gaps'] = true;
+                }
+            }
+        }
+
+        return $coverage;
+    }
 }
 
 // ── Load the real service ──────────────────────────────────────────────────
@@ -196,6 +238,15 @@ eq("available_units preserved → 0",             $by_date[$d(2)]['available_uni
 
 // has_no_data must be false — complete_inv covers the range and next-7 window
 eq('has_no_data = false', $r['summary']['has_no_data'], false);
+eq('coverage window starts at month start', $r['coverage']['visible_window']['start_date'], (new DateTime($month . '-01', $tz))->format('Y-m-d'));
+eq('coverage window ends at month + 2 end', $r['coverage']['visible_window']['end_date'], (new DateTime($month . '-01', $tz))->modify('+2 months')->modify('last day of this month')->format('Y-m-d'));
+$visible_start = new DateTime($month . '-01', $tz);
+$visible_end = (clone $visible_start)->modify('+2 months')->modify('last day of this month');
+eq('coverage total dates = visible matrix length', $r['coverage']['visible_window']['total_dates'], $visible_start->diff($visible_end)->days + 1);
+eq('room coverage first stored date = today', $r['room_types'][0]['coverage']['first_stored_date'], $d(0));
+eq('room coverage last stored date = today+9', $r['room_types'][0]['coverage']['last_stored_date'], $d(9));
+eq('room coverage stored dates count = 10', $r['room_types'][0]['coverage']['stored_dates_count'], 10);
+eq('room coverage has gaps in visible window = true', $r['room_types'][0]['coverage']['window_has_gaps'], true);
 
 // KPI 1: occupancy in range
 // total = 2 units × 7 days = 14 unit-nights
@@ -224,6 +275,12 @@ $dates   = array_column($r['room_types'][0]['dates'], 'date');
 $sorted  = $dates;
 sort($sorted);
 eq('month dates are ascending', $dates, $sorted);
+eq('visible matrix starts at month start', $dates[0], (new DateTime($month . '-01', $tz))->format('Y-m-d'));
+eq(
+    'visible matrix ends at month + 2 end',
+    $dates[count($dates) - 1],
+    (new DateTime($month . '-01', $tz))->modify('+2 months')->modify('last day of this month')->format('Y-m-d')
+);
 
 // ── Case 2: no_data cell state + KPI fallback ─────────────────────────────
 
@@ -239,6 +296,7 @@ eq("state no_data (missing date {$d(3)})",     $by2[$d(3)]['state'],            
 eq("available_units = null for no_data cell",  $by2[$d(3)]['available_units'],  null);
 
 eq('has_no_data = true',                       $r2['summary']['has_no_data'],                   true);
+eq('coverage window has gaps = true for partial data', $r2['room_types'][0]['coverage']['window_has_gaps'], true);
 eq('occupancy_percent_in_range = null',        $r2['summary']['occupancy_percent_in_range'],    null);
 eq('open_inventory_next_7_days = null',        $r2['summary']['open_inventory_next_7_days'],    null);
 eq('weakest_room_type = null',                 $r2['summary']['weakest_room_type'],             null);
@@ -269,6 +327,7 @@ eq('second room = Zeta Room',  $r3['room_types'][1]['name'], 'Zeta Room');
 $zeta_by_date = array_column($r3['room_types'][1]['dates'], null, 'date');
 eq("unmapped room → no_data (date {$d(0)})",   $zeta_by_date[$d(0)]['state'],           'no_data');
 eq("unmapped room → roomcloud_id null",         $r3['room_types'][1]['roomcloud_id'],    null);
+eq('unmapped room coverage = null',             $r3['room_types'][1]['coverage'],        null);
 
 // Presence of unmapped room causes has_no_data = true
 eq('has_no_data = true when any room unmapped', $r3['summary']['has_no_data'], true);

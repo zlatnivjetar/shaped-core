@@ -39,6 +39,12 @@ for ($i = 0; $i < $days; $i++) {
     $date->modify("+{$i} days");
     $dates[] = $date;
 }
+$date_strings = array_map(static fn(DateTime $date): string => $date->format('Y-m-d'), $dates);
+$coverage = [];
+
+if ($roomcloud_active && class_exists('Shaped_RC_Availability_Manager')) {
+    $coverage = Shaped_RC_Availability_Manager::get_inventory_coverage($date_strings);
+}
 ?>
 
 <div class="wrap shaped-ops-availability">
@@ -108,6 +114,18 @@ for ($i = 0; $i < $days; $i++) {
                                     </a>
                                 <?php else: ?>
                                     <?php echo esc_html($room_names[$slug]); ?>
+                                <?php endif; ?>
+                                <?php if (isset($coverage[$slug])): ?>
+                                    <?php $coverage_row = $coverage[$slug]; ?>
+                                    <div style="margin-top: 6px; font-size: 12px; line-height: 1.4; color: #646970;">
+                                        <?php echo esc_html(sprintf(
+                                            'Stored %d dates. First %s. Last %s. Visible gaps %s.',
+                                            (int) $coverage_row['stored_dates_count'],
+                                            $coverage_row['first_stored_date'] ?: 'n/a',
+                                            $coverage_row['last_stored_date'] ?: 'n/a',
+                                            !empty($coverage_row['window_has_gaps']) ? 'yes' : 'no'
+                                        )); ?>
+                                    </div>
                                 <?php endif; ?>
                             </td>
                             <?php foreach ($dates as $date):

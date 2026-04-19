@@ -33,6 +33,9 @@ class Shaped_Dashboard_Availability_Service {
         }
         $month_end = clone $month_start;
         $month_end->modify('last day of this month');
+        $visible_end = clone $month_start;
+        $visible_end->modify('+2 months');
+        $visible_end->modify('last day of this month');
 
         $range_from = DateTime::createFromFormat('Y-m-d', $date_from, $tz);
         $range_to   = DateTime::createFromFormat('Y-m-d', $date_to, $tz);
@@ -48,13 +51,20 @@ class Shaped_Dashboard_Availability_Service {
             ? Shaped_RC_Availability_Manager::get_inventory()
             : [];
 
-        $month_dates = self::date_range($month_start, $month_end);
+        $visible_dates = self::date_range($month_start, $visible_end);
         $range_dates = self::date_range($range_from, $range_to);
         $today       = new DateTime('today', $tz);
         $next7_end   = (clone $today)->modify('+6 days');
         $next7_dates = self::date_range($today, $next7_end);
 
         $room_infos = self::resolve_room_types();
+        $coverage_by_slug = class_exists('Shaped_RC_Availability_Manager')
+            ? Shaped_RC_Availability_Manager::get_inventory_coverage($visible_dates)
+            : [];
+        $mapped_coverage_by_slug = array_filter(
+            $coverage_by_slug,
+            static fn(array $row): bool => !empty($row['mapped'])
+        );
 
         $room_types_payload = [];
         $range_grid         = [];
@@ -62,7 +72,7 @@ class Shaped_Dashboard_Availability_Service {
 
         foreach ($room_infos as $rt) {
             $month_cells = [];
-            foreach ($month_dates as $date_str) {
+            foreach ($visible_dates as $date_str) {
                 $month_cells[] = self::build_cell($inventory, $rt['roomcloud_id'], $date_str);
             }
 
@@ -83,6 +93,9 @@ class Shaped_Dashboard_Availability_Service {
                 'roomcloud_id'    => $rt['roomcloud_id'],
                 'total_inventory' => $rt['total_inventory'],
                 'dates'           => $month_cells,
+                'coverage'        => !empty($coverage_by_slug[$rt['slug']]['mapped'] ?? false)
+                    ? $coverage_by_slug[$rt['slug']]
+                    : null,
             ];
         }
 
@@ -113,6 +126,14 @@ class Shaped_Dashboard_Availability_Service {
                 'generated_at'   => $generated_at,
                 'last_synced_at' => $last_synced_at,
                 'data_version'   => $data_version,
+            ],
+            'coverage' => [
+                'visible_window' => [
+                    'start_date' => $visible_dates[0] ?? null,
+                    'end_date'    => $visible_dates !== [] ? $visible_dates[count($visible_dates) - 1] : null,
+                    'total_dates' => count($visible_dates),
+                ],
+                'room_types' => $mapped_coverage_by_slug,
             ],
             'summary'    => self::compute_summary($room_infos, $range_grid, $next7_grid, $range_dates, $next7_dates),
             'room_types' => $room_types_payload,

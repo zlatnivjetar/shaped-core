@@ -715,6 +715,79 @@ class Shaped_RC_Availability_Manager
         return $summary;
     }
 
+    /**
+     * Build a per-room-type coverage report for the locally stored inventory.
+     *
+     * @param string[] $window_dates
+     * @return array<string, array<string, mixed>>
+     */
+    public static function get_inventory_coverage(array $window_dates = []): array
+    {
+        $inventory = self::get_inventory();
+        $coverage = [];
+        $window_dates = array_values(array_filter(array_map('strval', $window_dates)));
+        sort($window_dates);
+
+        $room_types = get_posts([
+            'post_type'      => 'mphb_room_type',
+            'post_status'    => 'publish',
+            'posts_per_page' => -1,
+            'orderby'        => 'title',
+            'order'          => 'ASC',
+        ]);
+
+        foreach ($room_types as $room_type_post) {
+            if (!($room_type_post instanceof WP_Post)) {
+                continue;
+            }
+
+            $room_type_id = (int) $room_type_post->ID;
+            $roomcloud_id = self::get_roomcloud_id_for_room_type($room_type_id);
+            $room_inventory = ($roomcloud_id !== null && isset($inventory[$roomcloud_id]) && is_array($inventory[$roomcloud_id]))
+                ? $inventory[$roomcloud_id]
+                : [];
+
+            $stored_dates = array_keys($room_inventory);
+            sort($stored_dates);
+
+            $stored_dates_count = count($stored_dates);
+            $first_stored_date = $stored_dates_count > 0 ? $stored_dates[0] : null;
+            $last_stored_date = $stored_dates_count > 0 ? $stored_dates[$stored_dates_count - 1] : null;
+
+            $window_covered_dates_count = 0;
+            $window_missing_dates_count = 0;
+            $window_has_gaps = false;
+
+            if (!empty($window_dates)) {
+                foreach ($window_dates as $date_str) {
+                    if (array_key_exists($date_str, $room_inventory)) {
+                        $window_covered_dates_count++;
+                    } else {
+                        $window_missing_dates_count++;
+                        $window_has_gaps = true;
+                    }
+                }
+            }
+
+            $coverage[$room_type_post->post_name] = [
+                'room_type_id' => $room_type_id,
+                'roomcloud_id' => $roomcloud_id,
+                'mapped' => $roomcloud_id !== null,
+                'first_stored_date' => $first_stored_date,
+                'last_stored_date' => $last_stored_date,
+                'stored_dates_count' => $stored_dates_count,
+                'window_start_date' => !empty($window_dates) ? $window_dates[0] : null,
+                'window_end_date' => !empty($window_dates) ? $window_dates[count($window_dates) - 1] : null,
+                'window_dates_count' => count($window_dates),
+                'window_covered_dates_count' => $window_covered_dates_count,
+                'window_missing_dates_count' => $window_missing_dates_count,
+                'window_has_gaps' => $window_has_gaps,
+            ];
+        }
+
+        return $coverage;
+    }
+
     public function enable_not_stay_in_rules(bool $has_rules): bool
     {
         return self::is_strict_mode() ? true : $has_rules;
