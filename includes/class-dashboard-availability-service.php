@@ -135,6 +135,8 @@ class Shaped_Dashboard_Availability_Service {
             'order'          => 'ASC',
         ]);
 
+        usort($posts, fn($a, $b) => strcmp($a->post_title, $b->post_title));
+
         $infos = [];
         foreach ($posts as $post) {
             if (!($post instanceof WP_Post)) {
