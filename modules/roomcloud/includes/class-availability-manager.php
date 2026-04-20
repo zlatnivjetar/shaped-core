@@ -14,6 +14,8 @@ class Shaped_RC_Availability_Manager
 
     const INVENTORY_OPTION = 'shaped_rc_inventory';
     const INVENTORY_META_OPTION = 'shaped_rc_inventory_meta';
+    const STALENESS_THRESHOLD_HOURS = 24;
+    const CRON_HOOK = 'shaped_rc_staleness_check';
 
     private static $logged_block_decisions = [];
 
@@ -44,6 +46,31 @@ class Shaped_RC_Availability_Manager
         add_filter('mphb_has_not_stay_in_rules', [$this, 'enable_not_stay_in_rules']);
         add_filter('mphb_sc_search_results_available_rooms_count', [$this, 'filter_search_results_available_rooms_count'], 10, 2);
         add_filter('mphb_sc_checkout_step_checkout_pre_validate_selected_rooms', [$this, 'validate_selected_rooms_for_strict_mode'], 10, 2);
+    }
+
+    public static function is_stale(): bool
+    {
+        $last = self::get_last_inventory_update();
+        if (!$last) {
+            return true;
+        }
+        return (time() - strtotime($last)) > self::STALENESS_THRESHOLD_HOURS * HOUR_IN_SECONDS;
+    }
+
+    public static function schedule_staleness_cron(): void
+    {
+        if (!wp_next_scheduled(self::CRON_HOOK)) {
+            wp_schedule_event(time() + HOUR_IN_SECONDS, 'daily', self::CRON_HOOK);
+        }
+    }
+
+    public static function run_staleness_check(): void
+    {
+        if (self::is_stale()) {
+            Shaped_RC_Error_Logger::log_critical('RoomCloud inventory is stale', [
+                'last_update' => self::get_last_inventory_update(),
+            ]);
+        }
     }
 
     public static function get_availability_mode(): string

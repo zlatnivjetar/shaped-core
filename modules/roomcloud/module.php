@@ -82,6 +82,8 @@ add_action('plugins_loaded', function() {
     // Initialize components
     Shaped_RC_Error_Logger::init();
     Shaped_RC_Availability_Manager::init();
+    add_action('init', ['Shaped_RC_Availability_Manager', 'schedule_staleness_cron']);
+    add_action(Shaped_RC_Availability_Manager::CRON_HOOK, ['Shaped_RC_Availability_Manager', 'run_staleness_check']);
     Shaped_RC_API::init();
     Shaped_RC_Sync_Manager::init();
     Shaped_RC_Webhook_Handler::init();

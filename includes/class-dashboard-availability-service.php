@@ -126,6 +126,9 @@ class Shaped_Dashboard_Availability_Service {
                 'generated_at'   => $generated_at,
                 'last_synced_at' => $last_synced_at,
                 'data_version'   => $data_version,
+                'is_stale'       => class_exists('Shaped_RC_Availability_Manager')
+                    ? Shaped_RC_Availability_Manager::is_stale()
+                    : true,
             ],
             'coverage' => [
                 'visible_window' => [

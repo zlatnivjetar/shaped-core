@@ -99,6 +99,10 @@ class Shaped_RC_Availability_Manager {
         return '2026-04-01 08:00:00';
     }
 
+    public static function is_stale(): bool {
+        return false;
+    }
+
     public static function get_inventory_coverage(array $window_dates = []): array {
         global $_test_room_specs, $_test_inventory;
 
@@ -226,6 +230,8 @@ $_test_inventory = $complete_inv;
 $r = Shaped_Dashboard_Availability_Service::get_availability($month, $d(0), $d(6));
 
 ok('no WP_Error', !is_wp_error($r));
+ok('meta.is_stale key exists', array_key_exists('is_stale', $r['meta']));
+eq('meta.is_stale = false (stub)', $r['meta']['is_stale'], false);
 
 $by_date = array_column($r['room_types'][0]['dates'], null, 'date');
 
