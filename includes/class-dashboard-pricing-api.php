@@ -59,6 +59,18 @@ class Shaped_Dashboard_Pricing_Api {
             'callback'            => [__CLASS__, 'update_payment'],
             'permission_callback' => 'shaped_dashboard_auth',
         ]);
+
+        register_rest_route(self::NAMESPACE, '/dashboard/engine-discount-overrides', [
+            'methods'             => 'GET',
+            'callback'            => [__CLASS__, 'get_engine_discount_overrides'],
+            'permission_callback' => 'shaped_dashboard_auth',
+        ]);
+
+        register_rest_route(self::NAMESPACE, '/dashboard/engine-discount-overrides', [
+            'methods'             => 'PUT',
+            'callback'            => [__CLASS__, 'update_engine_discount_overrides'],
+            'permission_callback' => 'shaped_dashboard_auth',
+        ]);
     }
 
     // =========================================================================
@@ -204,6 +216,54 @@ class Shaped_Dashboard_Pricing_Api {
                 'scheduled_charge_threshold' => $threshold,
             ],
             'updated_at' => gmdate('c'),
+        ], 200);
+    }
+
+    /**
+     * GET /dashboard/engine-discount-overrides
+     *
+     * @return WP_REST_Response
+     */
+    public static function get_engine_discount_overrides(): WP_REST_Response {
+        return new WP_REST_Response([
+            'engine_discount_overrides' => Shaped_Pricing::get_engine_discount_overrides(),
+            'generated_at'              => gmdate('c'),
+        ], 200);
+    }
+
+    /**
+     * PUT /dashboard/engine-discount-overrides
+     *
+     * Replaces the full dashboard-authored engine override map.
+     *
+     * @param WP_REST_Request $request
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function update_engine_discount_overrides(WP_REST_Request $request) {
+        $body = $request->get_json_params();
+
+        if (!is_array($body)) {
+            return new WP_Error(
+                'bad_request',
+                'Invalid JSON body; expected an engine discount override object.',
+                ['status' => 400]
+            );
+        }
+
+        if (!isset($body['overrides']) || !is_array($body['overrides'])) {
+            return new WP_Error(
+                'bad_request',
+                'Missing or invalid "overrides" key; expected an object of room-type slugs to date maps.',
+                ['status' => 400]
+            );
+        }
+
+        $sanitized = Shaped_Pricing::sanitize_engine_discount_overrides($body);
+        update_option(Shaped_Pricing::OPT_ENGINE_DISCOUNT_OVERRIDES, $sanitized);
+
+        return new WP_REST_Response([
+            'engine_discount_overrides' => $sanitized,
+            'updated_at'                => gmdate('c'),
         ], 200);
     }
 
