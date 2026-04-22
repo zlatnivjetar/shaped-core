@@ -1535,9 +1535,26 @@ class Shaped_Dashboard_Data_Service
             $primary_room_type_name = self::nullable_string($reserved_rooms[0]['room_type_name']);
         }
 
+        $adults_total = 0;
+        $children_total = 0;
+        $has_occupancy = false;
+        foreach ($reserved_rooms as $reserved_room) {
+            if ($reserved_room['adults'] !== null) {
+                $adults_total += $reserved_room['adults'];
+                $has_occupancy = true;
+            }
+            if ($reserved_room['children'] !== null) {
+                $children_total += $reserved_room['children'];
+                $has_occupancy = true;
+            }
+        }
+
         return [
             'primary_room_type_name' => $primary_room_type_name,
             'rate_name'              => $rate_name,
+            'adults'                 => $has_occupancy ? $adults_total : null,
+            'children'               => $has_occupancy ? $children_total : null,
+            'guest_count'            => $has_occupancy ? $adults_total + $children_total : null,
             'reserved_rooms'         => $reserved_rooms,
         ];
     }
@@ -1624,6 +1641,26 @@ class Shaped_Dashboard_Data_Service
             $rate_name = self::nullable_string(get_the_title($rate_id));
         }
 
+        $adults = null;
+        if ($reserved_room && method_exists($reserved_room, 'getAdults')) {
+            $adults = self::nullable_occupancy_count($reserved_room->getAdults());
+        }
+        if ($adults === null) {
+            $adults = self::nullable_occupancy_count(get_post_meta($reserved_room_id, '_mphb_adults', true));
+        }
+
+        $children = null;
+        if ($reserved_room && method_exists($reserved_room, 'getChildren')) {
+            $children = self::nullable_occupancy_count($reserved_room->getChildren());
+        }
+        if ($children === null) {
+            $children = self::nullable_occupancy_count(get_post_meta($reserved_room_id, '_mphb_children', true));
+        }
+
+        $guest_count = $adults !== null || $children !== null
+            ? ($adults ?? 0) + ($children ?? 0)
+            : null;
+
         return [
             'id'             => $reserved_room_id,
             'room_type_id'   => $room_type_id > 0 ? $room_type_id : null,
@@ -1634,7 +1671,35 @@ class Shaped_Dashboard_Data_Service
             'rate_name'      => $rate_name,
             'check_in'       => $check_in,
             'check_out'      => $check_out,
+            'adults'         => $adults,
+            'children'       => $children,
+            'guest_count'    => $guest_count,
         ];
+    }
+
+    /**
+     * Normalize reserved-room occupancy counts.
+     */
+    private static function nullable_occupancy_count($value): ?int
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_string($value)) {
+            $value = trim($value);
+            if ($value === '') {
+                return null;
+            }
+        }
+
+        if (!is_numeric($value)) {
+            return null;
+        }
+
+        $count = (int) $value;
+
+        return $count >= 0 ? $count : null;
     }
 
     /**

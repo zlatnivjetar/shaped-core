@@ -21,6 +21,7 @@ class Shaped_Pricing {
     const OPT_DISCOUNTS                     = 'shaped_discounts';
     const OPT_DISCOUNT_RANGES               = 'shaped_discount_ranges';               // legacy, migrated to seasons
     const OPT_DISCOUNT_SEASONS              = 'shaped_discount_seasons';              // recurring + year-specific overrides
+    const OPT_ENGINE_DISCOUNT_OVERRIDES     = 'shaped_engine_discount_overrides';     // dashboard-authored per-date overrides
     const OPT_PAYMENT_MODE                  = 'shaped_payment_mode';                  // 'scheduled' | 'deposit'
     const OPT_DEPOSIT_PERCENT               = 'shaped_deposit_percent';               // int 1-100
     const OPT_SCHEDULED_CHARGE_THRESHOLD    = 'shaped_scheduled_charge_threshold';    // int 0-60 days
@@ -1068,6 +1069,100 @@ class Shaped_Pricing {
     }
 
     /**
+     * Sanitize dashboard-authored engine discount overrides.
+     *
+     * Storage shape:
+     * [
+     *   'version' => 1,
+     *   'generated_at' => '2026-04-20T12:00:00Z',
+     *   'run_id' => 'uuid',
+     *   'overrides' => [
+     *     'room-slug' => [
+     *       '2026-04-22' => 12,
+     *     ],
+     *   ],
+     * ]
+     *
+     * @param mixed $input Raw option/API payload.
+     * @return array Sanitized engine override payload.
+     */
+    public static function sanitize_engine_discount_overrides($input): array {
+        if (!is_array($input)) {
+            $input = [];
+        }
+
+        $raw_overrides = isset($input['overrides']) && is_array($input['overrides'])
+            ? $input['overrides']
+            : [];
+
+        $overrides = [];
+        foreach ($raw_overrides as $room_slug => $date_map) {
+            if (!is_array($date_map)) {
+                continue;
+            }
+
+            $slug = sanitize_title((string) $room_slug);
+            if ($slug === '') {
+                continue;
+            }
+
+            foreach ($date_map as $date => $discount) {
+                $date = (string) $date;
+                if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                    continue;
+                }
+
+                $overrides[$slug][$date] = max(0, min(100, intval($discount)));
+            }
+
+            if (isset($overrides[$slug])) {
+                ksort($overrides[$slug]);
+            }
+        }
+
+        ksort($overrides);
+
+        return [
+            'version'      => 1,
+            'generated_at' => isset($input['generated_at']) && is_string($input['generated_at'])
+                ? sanitize_text_field($input['generated_at'])
+                : null,
+            'run_id'       => isset($input['run_id']) && is_string($input['run_id'])
+                ? sanitize_text_field($input['run_id'])
+                : null,
+            'overrides'    => $overrides,
+        ];
+    }
+
+    /**
+     * Get dashboard-authored engine discount overrides.
+     */
+    public static function get_engine_discount_overrides(): array {
+        $saved = get_option(self::OPT_ENGINE_DISCOUNT_OVERRIDES, []);
+        return self::sanitize_engine_discount_overrides($saved);
+    }
+
+    /**
+     * Get an engine-authored date override for a room/date, if one exists.
+     *
+     * @return int|null Discount percentage when the engine wrote this date, null otherwise.
+     */
+    public static function get_engine_discount_for_date(string $room_slug, string $check_in_date): ?int {
+        $slug = sanitize_title($room_slug);
+        $engine_overrides = self::get_engine_discount_overrides();
+
+        if (!isset($engine_overrides['overrides'][$slug])) {
+            return null;
+        }
+
+        if (!array_key_exists($check_in_date, $engine_overrides['overrides'][$slug])) {
+            return null;
+        }
+
+        return intval($engine_overrides['overrides'][$slug][$check_in_date]);
+    }
+
+    /**
      * Get discount date ranges configuration (legacy wrapper)
      *
      * @return array Array of date-range discount configs
@@ -1079,10 +1174,11 @@ class Shaped_Pricing {
     }
 
     /**
-     * Get discount for a specific room type using 3-tier priority:
+     * Get discount for a specific room type using 4-tier priority:
      * 1. Year-specific overrides (yyyy-mm-dd comparison)
-     * 2. Recurring seasons (mm-dd comparison, year-agnostic)
-     * 3. Default flat discount
+     * 2. Dashboard engine date overrides
+     * 3. Recurring seasons (mm-dd comparison, year-agnostic)
+     * 4. Default flat discount
      *
      * @param string      $room_slug      Room type slug
      * @param string|null $check_in_date  Check-in date in Y-m-d format (optional)
@@ -1111,7 +1207,13 @@ class Shaped_Pricing {
             }
         }
 
-        // Priority 2: Recurring seasons (mm-dd comparison, year-agnostic)
+        // Priority 2: Dashboard engine date overrides
+        $engine_discount = self::get_engine_discount_for_date($slug, $check_in_date);
+        if ($engine_discount !== null) {
+            return $engine_discount;
+        }
+
+        // Priority 3: Recurring seasons (mm-dd comparison, year-agnostic)
         if (!empty($seasons['recurring'])) {
             $check_md = substr($check_in_date, 5); // "mm-dd"
             foreach ($seasons['recurring'] as $season) {
@@ -1132,7 +1234,7 @@ class Shaped_Pricing {
             }
         }
 
-        // Priority 3: Default flat discount
+        // Priority 4: Default flat discount
         $discounts = self::get_discounts();
         return isset($discounts[$slug]) ? intval($discounts[$slug]) : 0;
     }
@@ -1143,8 +1245,8 @@ class Shaped_Pricing {
      * When a booking spans multiple seasons:
      * - If ANY night falls within a year-specific override (promo), return that promo's
      *   discount for all nights (promo extends to full stay).
-     * - Otherwise, return the MINIMUM discount % across all nights (= the discount from
-     *   the season with the highest base price).
+     * - Otherwise, evaluate date-level precedence for every night and return the
+     *   minimum discount across all nights.
      *
      * @param string $room_slug  Room type slug
      * @param string $check_in   Check-in date in Y-m-d format
@@ -1186,7 +1288,7 @@ class Shaped_Pricing {
             }
         }
 
-        // Priority 2: Find the MINIMUM discount across all nights (= highest base price season)
+        // Priority 2: Find the MINIMUM date-level discount across all nights.
         $min_discount = null;
         foreach ($nights as $night) {
             $discount = self::get_room_discount_for_date($slug, $night);
