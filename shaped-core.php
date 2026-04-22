@@ -89,6 +89,7 @@ Shaped_Dashboard_Api::init();
 Shaped_Dashboard_Availability_Api::init();
 Shaped_Dashboard_Base_Pricing_Api::init();
 Shaped_Dashboard_Pricing_Api::init();
+Shaped_Dashboard_Seasons_Api::init();
 
 /* =========================================================================
  * STRIPE SDK LOADER

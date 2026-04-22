@@ -32,6 +32,7 @@ class Shaped_Loader {
         'Shaped_Dashboard_Availability_Service' => 'includes/class-dashboard-availability-service.php',
         'Shaped_Dashboard_Base_Pricing_Api'     => 'includes/class-dashboard-base-pricing-api.php',
         'Shaped_Dashboard_Pricing_Api'          => 'includes/class-dashboard-pricing-api.php',
+        'Shaped_Dashboard_Seasons_Api'          => 'includes/class-dashboard-seasons-api.php',
         'Shaped_Dashboard_Data_Service'         => 'includes/class-dashboard-data-service.php',
         'Shaped_Font_Loader'               => 'includes/class-font-loader.php',
         'Shaped_Design_Tokens_Generator'   => 'includes/class-design-tokens-generator.php',
