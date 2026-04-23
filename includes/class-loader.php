@@ -33,6 +33,7 @@ class Shaped_Loader {
         'Shaped_Dashboard_Base_Pricing_Api'     => 'includes/class-dashboard-base-pricing-api.php',
         'Shaped_Dashboard_Pricing_Api'          => 'includes/class-dashboard-pricing-api.php',
         'Shaped_Dashboard_Seasons_Api'          => 'includes/class-dashboard-seasons-api.php',
+        'Shaped_Min_Stay_Rules'                 => 'includes/class-min-stay-rules.php',
         'Shaped_Dashboard_Data_Service'         => 'includes/class-dashboard-data-service.php',
         'Shaped_Font_Loader'               => 'includes/class-font-loader.php',
         'Shaped_Design_Tokens_Generator'   => 'includes/class-design-tokens-generator.php',

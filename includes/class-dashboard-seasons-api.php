@@ -9,6 +9,7 @@
  * POST   /dashboard/seasons
  * PUT    /dashboard/seasons/{id}
  * DELETE /dashboard/seasons/{id}
+ * PUT    /dashboard/seasons/{id}/minimum-stay
  *
  * @package Shaped_Core
  */
@@ -36,6 +37,18 @@ class Shaped_Dashboard_Seasons_Api {
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ __CLASS__, 'create_season' ],
 				'permission_callback' => 'shaped_dashboard_auth',
+			],
+		] );
+
+		// More-specific route registered first to avoid shadowing.
+		register_rest_route( self::NAMESPACE, '/dashboard/seasons/(?P<id>\d+)/minimum-stay', [
+			[
+				'methods'             => WP_REST_Server::EDITABLE,
+				'callback'            => [ __CLASS__, 'update_season_minimum_stay' ],
+				'permission_callback' => 'shaped_dashboard_auth',
+				'args'                => [
+					'id' => [ 'required' => true, 'type' => 'integer', 'minimum' => 1 ],
+				],
 			],
 		] );
 
@@ -80,10 +93,11 @@ class Shaped_Dashboard_Seasons_Api {
 			$seasons = [];
 		}
 
-		$usage_map = self::build_season_rate_usage_map();
+		$usage_map    = self::build_season_rate_usage_map();
+		$min_stay_map = Shaped_Min_Stay_Rules::build_map();
 
 		$payload = array_values( array_map(
-			static fn( $season ) => self::build_season_payload( $season, $usage_map ),
+			static fn( $season ) => self::build_season_payload( $season, $usage_map, $min_stay_map ),
 			$seasons
 		) );
 
@@ -116,8 +130,10 @@ class Shaped_Dashboard_Seasons_Api {
 			return new WP_Error( 'save_failed', 'Failed to create the season.', [ 'status' => 500 ] );
 		}
 
+		Shaped_Min_Stay_Rules::upsert( $id, $fields['minimum_stay_nights'] );
+
 		return new WP_REST_Response( [
-			'season'     => self::build_season_payload( $entity, [] ),
+			'season'     => self::build_season_payload( $entity, [], [], $fields['minimum_stay_nights'] ),
 			'updated_at' => gmdate( 'c' ),
 		], 201 );
 	}
@@ -157,8 +173,10 @@ class Shaped_Dashboard_Seasons_Api {
 			return new WP_Error( 'save_failed', 'Failed to save the season.', [ 'status' => 500 ] );
 		}
 
+		Shaped_Min_Stay_Rules::upsert( $season_id, $fields['minimum_stay_nights'] );
+
 		return new WP_REST_Response( [
-			'season'     => self::build_season_payload( $entity, [] ),
+			'season'     => self::build_season_payload( $entity, [], [], $fields['minimum_stay_nights'] ),
 			'updated_at' => gmdate( 'c' ),
 		], 200 );
 	}
@@ -189,9 +207,53 @@ class Shaped_Dashboard_Seasons_Api {
 			return new WP_Error( 'delete_failed', 'Failed to trash the season.', [ 'status' => 500 ] );
 		}
 
+		Shaped_Min_Stay_Rules::remove( $season_id );
+
 		return new WP_REST_Response( [
 			'deleted_season_id' => $season_id,
 			'deleted_at'        => gmdate( 'c' ),
+		], 200 );
+	}
+
+	/**
+	 * PUT /dashboard/seasons/{id}/minimum-stay
+	 *
+	 * Inline update for the minimum-stay value without touching other season fields.
+	 * Accepts: { minimum_stay_nights: 1..28 }
+	 *
+	 * @param WP_REST_Request $request
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public static function update_season_minimum_stay( WP_REST_Request $request ) {
+		if ( ! function_exists( 'MPHB' ) ) {
+			return new WP_Error( 'motopress_unavailable', 'MotoPress Hotel Booking plugin is required.', [ 'status' => 503 ] );
+		}
+
+		$season_id = (int) $request->get_param( 'id' );
+		$existing  = MPHB()->getSeasonRepository()->findById( $season_id );
+
+		if ( ! $existing ) {
+			return new WP_Error( 'not_found', "Season {$season_id} not found.", [ 'status' => 404 ] );
+		}
+
+		$body = $request->get_json_params();
+
+		if ( ! is_array( $body ) || ! array_key_exists( 'minimum_stay_nights', $body ) ) {
+			return new WP_Error( 'bad_request', 'Expected JSON body with minimum_stay_nights.', [ 'status' => 400 ] );
+		}
+
+		$nights = $body['minimum_stay_nights'];
+
+		if ( ! Shaped_Min_Stay_Rules::validate( $nights ) ) {
+			return new WP_Error( 'invalid_data', 'minimum_stay_nights must be an integer between 1 and 28.', [ 'status' => 400 ] );
+		}
+
+		Shaped_Min_Stay_Rules::upsert( $season_id, $nights );
+
+		return new WP_REST_Response( [
+			'season_id'           => $season_id,
+			'minimum_stay_nights' => $nights,
+			'updated_at'          => gmdate( 'c' ),
 		], 200 );
 	}
 
@@ -203,7 +265,7 @@ class Shaped_Dashboard_Seasons_Api {
 	 * Parse and validate the writable season fields from the request body.
 	 *
 	 * @param WP_REST_Request $request
-	 * @return array|WP_Error  Keys: title, start_date, end_date, days, repeat_period.
+	 * @return array|WP_Error  Keys: title, start_date, end_date, days, repeat_period, minimum_stay_nights.
 	 */
 	private static function parse_write_fields( WP_REST_Request $request ) {
 		$body = $request->get_json_params();
@@ -263,7 +325,16 @@ class Shaped_Dashboard_Seasons_Api {
 			return new WP_Error( 'invalid_data', 'repeat_period must be "none" or "year".', [ 'status' => 400 ] );
 		}
 
-		return compact( 'title', 'start_date', 'end_date', 'days', 'repeat_period' );
+		// minimum_stay_nights — optional, defaults to 1
+		$minimum_stay_nights = 1;
+		if ( array_key_exists( 'minimum_stay_nights', $body ) ) {
+			if ( ! Shaped_Min_Stay_Rules::validate( $body['minimum_stay_nights'] ) ) {
+				return new WP_Error( 'invalid_data', 'minimum_stay_nights must be an integer between 1 and 28.', [ 'status' => 400 ] );
+			}
+			$minimum_stay_nights = $body['minimum_stay_nights'];
+		}
+
+		return compact( 'title', 'start_date', 'end_date', 'days', 'repeat_period', 'minimum_stay_nights' );
 	}
 
 	/**
@@ -296,27 +367,35 @@ class Shaped_Dashboard_Seasons_Api {
 	/**
 	 * Normalize a season entity to the dashboard contract shape.
 	 *
-	 * @param object $season    MotoPress season entity.
-	 * @param array  $usage_map season_id => rate_count.
+	 * @param object   $season            MotoPress season entity.
+	 * @param array    $usage_map         season_id => rate_count.
+	 * @param array    $min_stay_map      season_id => minimum_stay_nights.
+	 * @param int|null $min_stay_override Direct value override (used for create/update responses
+	 *                                    where the entity id may not yet reflect the saved post id).
 	 * @return array<string, mixed>
 	 */
-	private static function build_season_payload( $season, array $usage_map ): array {
+	private static function build_season_payload( $season, array $usage_map, array $min_stay_map = [], ?int $min_stay_override = null ): array {
 		$repeat_until = $season->getRepeatUntilDate();
 		$season_id    = (int) $season->getId();
 
+		$minimum_stay_nights = $min_stay_override !== null
+			? $min_stay_override
+			: ( $min_stay_map[ $season_id ] ?? 1 );
+
 		return [
-			'id'                => $season_id,
-			'title'             => $season->getTitle(),
-			'description'       => $season->getDescription(),
-			'start_date'        => self::format_date( $season->getStartDate() ),
-			'end_date'          => self::format_date( $season->getEndDate() ),
-			'repeat_period'     => (string) $season->getRepeatPeriod(),
-			'repeat_until_date' => $repeat_until instanceof DateTimeInterface
+			'id'                   => $season_id,
+			'title'                => $season->getTitle(),
+			'description'          => $season->getDescription(),
+			'start_date'           => self::format_date( $season->getStartDate() ),
+			'end_date'             => self::format_date( $season->getEndDate() ),
+			'repeat_period'        => (string) $season->getRepeatPeriod(),
+			'repeat_until_date'    => $repeat_until instanceof DateTimeInterface
 				? $repeat_until->format( 'Y-m-d' )
 				: null,
-			'days'              => array_values( array_map( 'intval', $season->getDays() ) ),
-			'is_recurring'      => (bool) $season->isRecurring(),
-			'used_by_rates'     => $usage_map[ $season_id ] ?? 0,
+			'days'                 => array_values( array_map( 'intval', $season->getDays() ) ),
+			'is_recurring'         => (bool) $season->isRecurring(),
+			'used_by_rates'        => $usage_map[ $season_id ] ?? 0,
+			'minimum_stay_nights'  => $minimum_stay_nights,
 		];
 	}
 
