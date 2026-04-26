@@ -303,6 +303,104 @@ class Shaped_Payment_Processor
         return $payment_method_id;
     }
 
+    public static function infer_discount_percent_from_amounts(float $base_amount, float $final_amount): ?float
+    {
+        if ($base_amount <= 0 || $final_amount < 0 || $final_amount > ($base_amount + 0.01)) {
+            return null;
+        }
+
+        $discount = 100 - (($final_amount / $base_amount) * 100);
+        if (abs($discount) < 0.0001) {
+            $discount = 0.0;
+        }
+
+        return round(max(0, min(100, $discount)), 4);
+    }
+
+    private static function format_amount_meta(float $amount): string
+    {
+        return number_format(round($amount, 2), 2, '.', '');
+    }
+
+    public static function freeze_scheduled_charge_amount(
+        int $booking_id,
+        float $base_amount,
+        float $final_amount,
+        string $source,
+        bool $inferred_discount = false
+    ): void {
+        $base_amount = round($base_amount, 2);
+        $final_amount = round($final_amount, 2);
+
+        if ($base_amount > 0) {
+            update_post_meta($booking_id, '_shaped_price_base_amount', self::format_amount_meta($base_amount));
+        }
+
+        update_post_meta($booking_id, '_shaped_price_final_amount', self::format_amount_meta($final_amount));
+        update_post_meta($booking_id, '_shaped_payment_amount', self::format_amount_meta($final_amount));
+        update_post_meta($booking_id, '_stripe_pending_amount', self::format_amount_meta($final_amount));
+        update_post_meta($booking_id, '_shaped_amount_source', sanitize_key($source));
+
+        if (!get_post_meta($booking_id, '_shaped_amount_frozen_at', true)) {
+            update_post_meta($booking_id, '_shaped_amount_frozen_at', current_time('mysql', true));
+        }
+
+        $discount_percent = self::infer_discount_percent_from_amounts($base_amount, $final_amount);
+        if ($discount_percent !== null) {
+            update_post_meta($booking_id, '_shaped_discount_percent', (string) $discount_percent);
+            update_post_meta($booking_id, '_shaped_discount_inferred', $inferred_discount ? '1' : '0');
+        }
+    }
+
+    private static function get_setup_session_frozen_amount($session, $booking): float
+    {
+        $metadata = $session->metadata ?? null;
+
+        if ($metadata && isset($metadata->total_amount_decimal) && is_numeric((string) $metadata->total_amount_decimal)) {
+            $amount = (float) $metadata->total_amount_decimal;
+            if ($amount > 0) {
+                return round($amount, 2);
+            }
+        }
+
+        if ($metadata && isset($metadata->total_amount) && is_numeric((string) $metadata->total_amount)) {
+            $amount = (float) $metadata->total_amount;
+            if ($amount > 0) {
+                return round($amount >= 100 ? $amount / 100 : $amount, 2);
+            }
+        }
+
+        $booking_id = $booking && method_exists($booking, 'getId') ? (int) $booking->getId() : 0;
+        if ($booking_id > 0) {
+            foreach (['_shaped_price_final_amount', '_shaped_payment_amount', '_stripe_pending_amount'] as $meta_key) {
+                $stored = (float) get_post_meta($booking_id, $meta_key, true);
+                if ($stored > 0) {
+                    return round($stored, 2);
+                }
+            }
+        }
+
+        if (class_exists('Shaped_Pricing') && $booking) {
+            return round((float) Shaped_Pricing::calculate_final_amount($booking), 2);
+        }
+
+        return $booking && method_exists($booking, 'getTotalPrice')
+            ? round((float) $booking->getTotalPrice(), 2)
+            : 0.0;
+    }
+
+    public static function get_frozen_scheduled_charge_amount(int $booking_id): ?float
+    {
+        foreach (['_shaped_price_final_amount', '_shaped_payment_amount', '_stripe_pending_amount'] as $meta_key) {
+            $amount = (float) get_post_meta($booking_id, $meta_key, true);
+            if ($amount > 0) {
+                return round($amount, 2);
+            }
+        }
+
+        return null;
+    }
+
     private function handle_scheduled_charge_card_failure(int $booking_id, string $error_message = ''): void
     {
         $booking = MPHB()->getBookingRepository()->findById($booking_id, true);
@@ -838,10 +936,12 @@ class Shaped_Payment_Processor
 
             // === DELAYED MODE (save card, charge later) ===
             } else {
+                $base_total = (float) $booking->getTotalPrice();
                 $amount = (int) round($discounted_total * 100);
                 $charge_date_pretty = date_i18n('F j, Y', strtotime($charge_date));
                 $amount_pretty      = number_format($discounted_total, 2);
                 $currency_symbol    = html_entity_decode(MPHB()->settings()->currency()->getCurrencySymbol(), ENT_QUOTES, 'UTF-8');
+                $discount_percent   = self::infer_discount_percent_from_amounts($base_total, $discounted_total);
 
                 $session_params = [
                     'mode'                  => 'setup',
@@ -858,6 +958,9 @@ class Shaped_Payment_Processor
                         'booking_id'          => $booking_id,
                         'payment_id'          => $payment_id,
                         'total_amount'        => $amount,
+                        'total_amount_decimal'=> self::format_amount_meta($discounted_total),
+                        'base_amount'         => self::format_amount_meta($base_total),
+                        'discount_percent'    => $discount_percent === null ? '' : (string) $discount_percent,
                         'currency'            => $currency,
                         'product_description' => $product,
                         'payment_mode'        => 'delayed',
@@ -869,7 +972,13 @@ class Shaped_Payment_Processor
                 ];
 
                 update_post_meta($booking_id, '_shaped_payment_type', 'full');
-                update_post_meta($booking_id, '_shaped_payment_amount', $discounted_total);
+                self::freeze_scheduled_charge_amount(
+                    $booking_id,
+                    $base_total,
+                    $discounted_total,
+                    'checkout_session_created',
+                    false
+                );
                 update_post_meta($booking_id, '_shaped_charge_date', $charge_date);
             }
 
@@ -1153,9 +1262,8 @@ class Shaped_Payment_Processor
                             }
                         }
 
-                        $final_amount = class_exists('Shaped_Pricing')
-                            ? Shaped_Pricing::calculate_final_amount($booking)
-                            : (float) $booking->getTotalPrice();
+                        $base_amount = (float) $booking->getTotalPrice();
+                        $final_amount = self::get_setup_session_frozen_amount($session, $booking);
 
                         // Get configurable threshold (default 7 days)
                         $threshold_days = class_exists('Shaped_Pricing') ? Shaped_Pricing::get_scheduled_threshold_days() : 7;
@@ -1177,7 +1285,13 @@ class Shaped_Payment_Processor
                         update_post_meta($booking_id, '_stripe_customer_id', $session->customer);
                         update_post_meta($booking_id, '_stripe_payment_method_id', $payment_method_id);
                         update_post_meta($booking_id, '_stripe_currency', $session->metadata->currency ?? 'eur');
-                        update_post_meta($booking_id, '_stripe_pending_amount', $final_amount);
+                        self::freeze_scheduled_charge_amount(
+                            $booking_id,
+                            $base_amount,
+                            $final_amount,
+                            'checkout_session_completed',
+                            false
+                        );
                         update_post_meta($booking_id, '_shaped_payment_status', 'authorized');
                         update_post_meta($booking_id, '_stripe_setup_intent_id', $session->setup_intent);
                         update_post_meta($booking_id, '_shaped_charge_at', $charge_iso);
@@ -1329,9 +1443,12 @@ class Shaped_Payment_Processor
             return;
         }
 
-        $final_amount = class_exists('Shaped_Pricing')
-            ? Shaped_Pricing::calculate_final_amount($booking)
-            : (float) $booking->getTotalPrice();
+        $final_amount = self::get_frozen_scheduled_charge_amount($booking_id);
+        if ($final_amount === null || $final_amount <= 0) {
+            error_log('[Shaped Charge] Missing frozen amount for booking #' . $booking_id . '; manual review required');
+            update_post_meta($booking_id, '_shaped_payment_status', 'manual_review');
+            return;
+        }
 
         $amount_cents      = (int) round($final_amount * 100);
         $customer_id       = get_post_meta($booking_id, '_stripe_customer_id', true);
@@ -1369,6 +1486,8 @@ class Shaped_Payment_Processor
                     'booking_id'   => $booking_id,
                     'payment_mode' => 'delayed',
                     'payment_type' => 'full',
+                    'amount_source' => 'frozen_booking_amount',
+                    'frozen_amount' => self::format_amount_meta($final_amount),
                 ],
             ], [
                 'idempotency_key' => $idempotency_key,

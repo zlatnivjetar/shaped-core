@@ -168,6 +168,9 @@ add_action('plugins_loaded', function() {
     new Shaped_Payment_Processor();
     new Shaped_Booking_Manager();
     new Shaped_Book_Search_Form();
+    if (defined('WP_CLI') && WP_CLI) {
+        Shaped_Payment_Maintenance_CLI::register();
+    }
     Shaped_Pricing::init();
     Shaped_Admin::init();
 

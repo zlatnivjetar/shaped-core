@@ -20,6 +20,7 @@ class Shaped_Loader {
         // Core classes
         'Shaped_Pricing'            => 'core/class-pricing.php',
         'Shaped_Payment_Processor'  => 'core/class-payment-processor.php',
+        'Shaped_Payment_Maintenance_CLI' => 'core/class-payment-maintenance-cli.php',
         'Shaped_Booking_Manager'    => 'core/class-booking-manager.php',
 
         // Include classes
