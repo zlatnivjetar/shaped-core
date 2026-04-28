@@ -76,6 +76,25 @@ class Shaped_Payment_Processor
         }
     }
 
+    public static function record_payment_collected(int $booking_id, ?int $timestamp = null): void
+    {
+        if ($booking_id <= 0) {
+            return;
+        }
+
+        $timestamp = $timestamp && $timestamp > 0 ? $timestamp : current_time('timestamp', true);
+        $collected_at = gmdate('Y-m-d H:i:s', $timestamp);
+        $collected_date = wp_date('Y-m-d', $timestamp, wp_timezone());
+
+        if ((string) get_post_meta($booking_id, '_shaped_payment_collected_at', true) === '') {
+            update_post_meta($booking_id, '_shaped_payment_collected_at', $collected_at);
+        }
+
+        if ((string) get_post_meta($booking_id, '_shaped_payment_collected_date', true) === '') {
+            update_post_meta($booking_id, '_shaped_payment_collected_date', $collected_date);
+        }
+    }
+
     public static function clear_scheduled_charge(int $booking_id): void
     {
         $key = get_post_meta($booking_id, '_shaped_idempotency_key', true);
@@ -1186,6 +1205,7 @@ class Shaped_Payment_Processor
                         update_post_meta($booking_id, '_shaped_payment_status', 'deposit_paid');
                         update_post_meta($booking_id, '_stripe_payment_intent_id', $session->payment_intent);
                         update_post_meta($booking_id, '_stripe_checkout_session_id', $session->id);
+                        self::record_payment_collected($booking_id, isset($event->created) ? (int) $event->created : null);
 
                         do_action('shaped_deposit_paid', $booking_id, $deposit_amount, $balance_due);
                         do_action('shaped_payment_completed', $booking_id, 'deposit');
@@ -1203,6 +1223,7 @@ class Shaped_Payment_Processor
                         update_post_meta($booking_id, '_shaped_payment_status', 'completed');
                         update_post_meta($booking_id, '_stripe_payment_intent_id', $session->payment_intent);
                         update_post_meta($booking_id, '_stripe_checkout_session_id', $session->id);
+                        self::record_payment_collected($booking_id, isset($event->created) ? (int) $event->created : null);
 
                         do_action('shaped_payment_completed', $booking_id, 'immediate');
                     }
@@ -1368,13 +1389,30 @@ class Shaped_Payment_Processor
                     return new WP_REST_Response(['received' => true, 'note' => 'booking_missing'], 200);
                 }
 
+                $payment_mode = isset($pi->metadata->payment_mode) ? (string) $pi->metadata->payment_mode : '';
+                $stored_payment_mode = (string) get_post_meta($booking_id, '_shaped_payment_mode', true);
+                if ($payment_mode !== 'delayed' && $stored_payment_mode !== 'delayed') {
+                    self::mark_event_processed($event_id);
+                    return new WP_REST_Response(['received' => true, 'note' => 'non_delayed_payment_intent'], 200);
+                }
+
+                $current_status = (string) get_post_meta($booking_id, '_shaped_payment_status', true);
+                $charge_processed = (string) get_post_meta($booking_id, '_shaped_charge_processed', true);
+                if ($current_status === 'completed' && in_array($charge_processed, ['1', 'true', 'yes'], true)) {
+                    self::record_payment_collected($booking_id, isset($event->created) ? (int) $event->created : null);
+                    self::mark_event_processed($event_id);
+                    return new WP_REST_Response(['received' => true, 'note' => 'already_completed'], 200);
+                }
+
                 update_post_meta($booking_id, '_stripe_payment_charged', true);
                 update_post_meta($booking_id, '_mphb_paid_amount', $pi->amount / 100);
                 update_post_meta($booking_id, '_shaped_payment_status', 'completed');
+                self::record_payment_collected($booking_id, isset($event->created) ? (int) $event->created : null);
                 do_action('shaped_payment_completed', $booking_id, 'delayed');
 
-                if (isset($pi->metadata->payment_mode) && $pi->metadata->payment_mode === 'delayed') {
+                if ($payment_mode === 'delayed' || $stored_payment_mode === 'delayed') {
                     update_post_meta($booking_id, '_shaped_payment_mode', 'delayed');
+                    update_post_meta($booking_id, '_shaped_charge_processed', true);
                 }
 
                 self::mark_event_processed($event_id);
@@ -1498,6 +1536,7 @@ class Shaped_Payment_Processor
             update_post_meta($booking_id, '_mphb_paid_amount', $final_amount);
             update_post_meta($booking_id, '_shaped_payment_status', 'completed');
             update_post_meta($booking_id, '_shaped_charge_processed', true);
+            self::record_payment_collected($booking_id, isset($pi->created) ? (int) $pi->created : null);
         } catch (\Stripe\Exception\CardException $e) {
             error_log('[Shaped Charge] Payment failed: ' . $e->getMessage());
             $this->handle_scheduled_charge_card_failure($booking_id, $e->getMessage());

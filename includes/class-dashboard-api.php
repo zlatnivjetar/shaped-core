@@ -103,6 +103,12 @@ class Shaped_Dashboard_Api
             'permission_callback' => 'shaped_dashboard_auth',
         ]);
 
+        register_rest_route(self::NAMESPACE, '/dashboard/revenue/collected-trend', [
+            'methods'             => 'GET',
+            'callback'            => [__CLASS__, 'get_collected_revenue_trend'],
+            'permission_callback' => 'shaped_dashboard_auth',
+        ]);
+
         register_rest_route(self::NAMESPACE, '/dashboard/revenue/pending-trend', [
             'methods'             => 'GET',
             'callback'            => [__CLASS__, 'get_pending_revenue_trend'],
@@ -160,6 +166,17 @@ class Shaped_Dashboard_Api
     public static function get_revenue(): WP_REST_Response
     {
         return Shaped_Dashboard_Data_Service::get_revenue_response();
+    }
+
+    /**
+     * Dashboard collected-revenue trend endpoint.
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function get_collected_revenue_trend(WP_REST_Request $request)
+    {
+        return Shaped_Dashboard_Data_Service::get_collected_revenue_trend_response($request);
     }
 
     /**

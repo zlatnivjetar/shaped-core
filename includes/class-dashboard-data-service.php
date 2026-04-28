@@ -32,15 +32,44 @@ class Shaped_Dashboard_Data_Service
 
         return new WP_REST_Response([
             'currency'     => self::get_currency_code(),
-            'month_basis'  => 'booked_at',
+            'month_basis'  => 'payment_collected_date',
             'collected'    => [
                 'month'    => self::get_revenue_total('collected', $month_bounds['start'], $month_bounds['end']),
                 'all_time' => self::get_revenue_total('collected'),
+                'basis'    => 'payment_collected_date',
             ],
             'pending'      => [
                 'month'    => self::get_revenue_total('pending', $month_bounds['start'], $month_bounds['end']),
                 'all_time' => self::get_revenue_total('pending'),
+                'basis'    => 'charge_date',
             ],
+            'generated_at' => gmdate('c'),
+        ], 200);
+    }
+
+    /**
+     * Collected revenue trend response.
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return WP_REST_Response|WP_Error
+     */
+    public static function get_collected_revenue_trend_response(WP_REST_Request $request)
+    {
+        $args = self::get_collected_revenue_trend_query_args($request);
+        if (is_wp_error($args)) {
+            return $args;
+        }
+
+        $items = self::query_collected_revenue_trend($args);
+
+        return new WP_REST_Response([
+            'currency'     => self::get_currency_code(),
+            'date_basis'   => 'payment_collected_date',
+            'filters'      => [
+                'collected_from' => $args['collected_from'],
+                'collected_to'   => $args['collected_to'],
+            ],
+            'items'        => $items,
             'generated_at' => gmdate('c'),
         ], 200);
     }
@@ -247,10 +276,12 @@ class Shaped_Dashboard_Data_Service
             'collected' => [
                 'month'    => self::get_revenue_total('collected', $month_bounds['start'], $month_bounds['end']),
                 'all_time' => self::get_revenue_total('collected'),
+                'basis'    => 'payment_collected_date',
             ],
             'pending'   => [
                 'month'    => self::get_revenue_total('pending', $month_bounds['start'], $month_bounds['end']),
                 'all_time' => self::get_revenue_total('pending'),
+                'basis'    => 'charge_date',
             ],
         ];
 
@@ -427,10 +458,10 @@ class Shaped_Dashboard_Data_Service
      */
     private static function get_revenue_total(
         string $type,
-        ?string $booked_from = null,
-        ?string $booked_to = null
+        ?string $date_from = null,
+        ?string $date_to = null
     ): float {
-        $cache_key = 'shaped_rev_' . $type . '_' . ($booked_from ?: 'x') . '_' . ($booked_to ?: 'x');
+        $cache_key = 'shaped_rev_v2_' . $type . '_' . ($date_from ?: 'x') . '_' . ($date_to ?: 'x');
         $cached    = wp_cache_get($cache_key, 'shaped_dashboard');
         if (false !== $cached) {
             return (float) $cached;
@@ -438,95 +469,244 @@ class Shaped_Dashboard_Data_Service
 
         global $wpdb;
 
+        if ($type === 'collected') {
+            [$base_sql, $params] = self::get_collected_revenue_base_sql();
+            $amount_sql = self::get_collected_revenue_amount_sql('bookings');
+
+            $sql = "
+                SELECT COALESCE(SUM({$amount_sql}), 0)
+                FROM ({$base_sql}) AS bookings
+                WHERE bookings.payment_status IN ('completed', 'deposit_paid')
+                    AND ({$amount_sql}) > 0
+            ";
+
+            if ($date_from) {
+                $sql .= ' AND bookings.payment_collected_date >= %s';
+                $params[] = $date_from;
+            }
+
+            if ($date_to) {
+                $sql .= ' AND bookings.payment_collected_date <= %s';
+                $params[] = $date_to;
+            }
+
+            $result = self::round_amount($wpdb->get_var(self::prepare_query($sql, $params)));
+            wp_cache_set($cache_key, $result, 'shaped_dashboard', 60);
+
+            return $result;
+        }
+
         $confirmed_statuses = ['confirmed', 'publish', 'Confirmed'];
         $status_placeholders = implode(', ', array_fill(0, count($confirmed_statuses), '%s'));
         $params = $confirmed_statuses;
 
-        if ($type === 'collected') {
-            $sql = "
-                SELECT COALESCE(SUM(CAST(amount.meta_value AS DECIMAL(10,2))), 0)
-                FROM {$wpdb->posts} AS p
-                INNER JOIN {$wpdb->postmeta} AS amount
-                    ON p.ID = amount.post_id
-                    AND amount.meta_key = '_shaped_payment_amount'
-                INNER JOIN {$wpdb->postmeta} AS payment_status
-                    ON p.ID = payment_status.post_id
-                    AND payment_status.meta_key = '_shaped_payment_status'
-                    AND payment_status.meta_value = 'completed'
-                WHERE p.post_type = 'mphb_booking'
-                    AND p.post_status IN ({$status_placeholders})
-            ";
-        } else {
-            $sql = "
-                SELECT COALESCE(SUM(CAST(pending_amount.meta_value AS DECIMAL(10,2))), 0)
-                FROM {$wpdb->posts} AS p
-                INNER JOIN {$wpdb->postmeta} AS pending_amount
-                    ON p.ID = pending_amount.post_id
-                    AND pending_amount.meta_key = '_stripe_pending_amount'
-                LEFT JOIN {$wpdb->postmeta} AS scheduled
-                    ON p.ID = scheduled.post_id
-                    AND scheduled.meta_key = '_shaped_charge_scheduled'
-                LEFT JOIN {$wpdb->postmeta} AS payment_status
-                    ON p.ID = payment_status.post_id
-                    AND payment_status.meta_key = '_shaped_payment_status'
-                LEFT JOIN {$wpdb->postmeta} AS payment_mode
-                    ON p.ID = payment_mode.post_id
-                    AND payment_mode.meta_key = '_shaped_payment_mode'
-                LEFT JOIN {$wpdb->postmeta} AS charge_at
-                    ON p.ID = charge_at.post_id
-                    AND charge_at.meta_key = '_shaped_charge_at'
-                LEFT JOIN {$wpdb->postmeta} AS charge_date
-                    ON p.ID = charge_date.post_id
-                    AND charge_date.meta_key = '_shaped_charge_date'
-                LEFT JOIN {$wpdb->postmeta} AS charged
-                    ON p.ID = charged.post_id
-                    AND charged.meta_key = '_stripe_payment_charged'
-                LEFT JOIN {$wpdb->postmeta} AS charge_processed
-                    ON p.ID = charge_processed.post_id
-                    AND charge_processed.meta_key = '_shaped_charge_processed'
-                WHERE p.post_type = 'mphb_booking'
-                    AND p.post_status IN ({$status_placeholders})
-                    AND CAST(pending_amount.meta_value AS DECIMAL(10,2)) > 0
-                    AND (
-                        scheduled.meta_value IN ('1', 'true', 'yes')
-                        OR (
-                            (
-                                payment_status.meta_value = 'authorized'
-                                OR payment_mode.meta_value = 'delayed'
-                            )
-                            AND (
-                                (charge_at.meta_value IS NOT NULL AND charge_at.meta_value <> '')
-                                OR (charge_date.meta_value IS NOT NULL AND charge_date.meta_value <> '')
-                            )
+        $sql = "
+            SELECT COALESCE(SUM(CAST(pending_amount.meta_value AS DECIMAL(10,2))), 0)
+            FROM {$wpdb->posts} AS p
+            INNER JOIN {$wpdb->postmeta} AS pending_amount
+                ON p.ID = pending_amount.post_id
+                AND pending_amount.meta_key = '_stripe_pending_amount'
+            LEFT JOIN {$wpdb->postmeta} AS scheduled
+                ON p.ID = scheduled.post_id
+                AND scheduled.meta_key = '_shaped_charge_scheduled'
+            LEFT JOIN {$wpdb->postmeta} AS payment_status
+                ON p.ID = payment_status.post_id
+                AND payment_status.meta_key = '_shaped_payment_status'
+            LEFT JOIN {$wpdb->postmeta} AS payment_mode
+                ON p.ID = payment_mode.post_id
+                AND payment_mode.meta_key = '_shaped_payment_mode'
+            LEFT JOIN {$wpdb->postmeta} AS charge_at
+                ON p.ID = charge_at.post_id
+                AND charge_at.meta_key = '_shaped_charge_at'
+            LEFT JOIN {$wpdb->postmeta} AS charge_date
+                ON p.ID = charge_date.post_id
+                AND charge_date.meta_key = '_shaped_charge_date'
+            LEFT JOIN {$wpdb->postmeta} AS charged
+                ON p.ID = charged.post_id
+                AND charged.meta_key = '_stripe_payment_charged'
+            LEFT JOIN {$wpdb->postmeta} AS charge_processed
+                ON p.ID = charge_processed.post_id
+                AND charge_processed.meta_key = '_shaped_charge_processed'
+            WHERE p.post_type = 'mphb_booking'
+                AND p.post_status IN ({$status_placeholders})
+                AND CAST(pending_amount.meta_value AS DECIMAL(10,2)) > 0
+                AND (
+                    scheduled.meta_value IN ('1', 'true', 'yes')
+                    OR (
+                        (
+                            payment_status.meta_value = 'authorized'
+                            OR payment_mode.meta_value = 'delayed'
+                        )
+                        AND (
+                            (charge_at.meta_value IS NOT NULL AND charge_at.meta_value <> '')
+                            OR (charge_date.meta_value IS NOT NULL AND charge_date.meta_value <> '')
                         )
                     )
-                    AND (
-                        charged.meta_value IS NULL
-                        OR charged.meta_value = ''
-                        OR charged.meta_value IN ('0', 'false', 'no')
-                    )
-                    AND (
-                        charge_processed.meta_value IS NULL
-                        OR charge_processed.meta_value = ''
-                        OR charge_processed.meta_value IN ('0', 'false', 'no')
-                    )
-            ";
+                )
+                AND (
+                    charged.meta_value IS NULL
+                    OR charged.meta_value = ''
+                    OR charged.meta_value IN ('0', 'false', 'no')
+                )
+                AND (
+                    charge_processed.meta_value IS NULL
+                    OR charge_processed.meta_value = ''
+                    OR charge_processed.meta_value IN ('0', 'false', 'no')
+                )
+        ";
+
+        $pending_date_sql = "DATE(COALESCE(NULLIF(charge_date.meta_value, ''), charge_at.meta_value))";
+        if ($date_from) {
+            $sql .= " AND {$pending_date_sql} >= %s";
+            $params[] = $date_from;
         }
 
-        if ($booked_from) {
-            $sql .= ' AND DATE(p.post_date) >= %s';
-            $params[] = $booked_from;
-        }
-
-        if ($booked_to) {
-            $sql .= ' AND DATE(p.post_date) <= %s';
-            $params[] = $booked_to;
+        if ($date_to) {
+            $sql .= " AND {$pending_date_sql} <= %s";
+            $params[] = $date_to;
         }
 
         $result = self::round_amount($wpdb->get_var(self::prepare_query($sql, $params)));
         wp_cache_set($cache_key, $result, 'shaped_dashboard', 60);
 
         return $result;
+    }
+
+    /**
+     * Base aggregated rows for collected-revenue calculations.
+     */
+    private static function get_collected_revenue_base_sql(): array
+    {
+        global $wpdb;
+
+        $confirmed_statuses = ['confirmed', 'publish', 'Confirmed'];
+        $status_placeholders = implode(', ', array_fill(0, count($confirmed_statuses), '%s'));
+
+        $sql = "
+            SELECT
+                p.ID,
+                COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_payment_status' THEN pm.meta_value END), '') AS payment_status,
+                COALESCE(
+                    NULLIF(MAX(CASE WHEN pm.meta_key = '_shaped_payment_collected_date' THEN pm.meta_value END), ''),
+                    DATE(p.post_date)
+                ) AS payment_collected_date,
+                COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_payment_collected_at' THEN pm.meta_value END), '') AS payment_collected_at,
+                CAST(
+                    COALESCE(
+                        MAX(CASE WHEN pm.meta_key = '_shaped_payment_amount' THEN pm.meta_value END),
+                        MAX(CASE WHEN pm.meta_key = 'mphb_total_price' THEN pm.meta_value END),
+                        '0'
+                    ) AS DECIMAL(10,2)
+                ) AS total_amount,
+                CAST(COALESCE(MAX(CASE WHEN pm.meta_key = '_mphb_paid_amount' THEN pm.meta_value END), '0') AS DECIMAL(10,2)) AS paid_amount,
+                CAST(COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_deposit_amount' THEN pm.meta_value END), '0') AS DECIMAL(10,2)) AS deposit_amount
+            FROM {$wpdb->posts} AS p
+            LEFT JOIN {$wpdb->postmeta} AS pm
+                ON p.ID = pm.post_id
+            WHERE p.post_type = 'mphb_booking'
+                AND p.post_status IN ({$status_placeholders})
+            GROUP BY p.ID
+        ";
+
+        return [$sql, $confirmed_statuses];
+    }
+
+    /**
+     * SQL expression for the amount that was actually collected.
+     */
+    private static function get_collected_revenue_amount_sql(string $alias): string
+    {
+        return "
+            CASE
+                WHEN {$alias}.payment_status = 'deposit_paid' THEN
+                    CASE
+                        WHEN {$alias}.paid_amount > 0 THEN {$alias}.paid_amount
+                        WHEN {$alias}.deposit_amount > 0 THEN {$alias}.deposit_amount
+                        ELSE 0
+                    END
+                WHEN {$alias}.paid_amount > 0 THEN {$alias}.paid_amount
+                ELSE {$alias}.total_amount
+            END
+        ";
+    }
+
+    /**
+     * Parse and validate collected-revenue trend request args.
+     *
+     * @param WP_REST_Request $request Request object.
+     * @return array|WP_Error
+     */
+    private static function get_collected_revenue_trend_query_args(WP_REST_Request $request)
+    {
+        $collected_from_raw = (string) ($request->get_param('collected_from') ?: $request->get_param('date_from'));
+        $collected_to_raw = (string) ($request->get_param('collected_to') ?: $request->get_param('date_to'));
+
+        $collected_from = self::parse_date_parameter($collected_from_raw, 'collected_from');
+        if (is_wp_error($collected_from)) {
+            return $collected_from;
+        }
+
+        $collected_to = self::parse_date_parameter($collected_to_raw, 'collected_to');
+        if (is_wp_error($collected_to)) {
+            return $collected_to;
+        }
+
+        if ($collected_from === null || $collected_to === null) {
+            return new WP_Error(
+                'invalid_parameter',
+                'Both collected_from and collected_to are required. Expected YYYY-MM-DD.',
+                ['status' => 400]
+            );
+        }
+
+        if ($collected_from > $collected_to) {
+            [$collected_from, $collected_to] = [$collected_to, $collected_from];
+        }
+
+        return [
+            'collected_from' => $collected_from,
+            'collected_to'   => $collected_to,
+        ];
+    }
+
+    /**
+     * Query grouped collected revenue by collection date.
+     */
+    private static function query_collected_revenue_trend(array $args): array
+    {
+        global $wpdb;
+
+        [$base_sql, $params] = self::get_collected_revenue_base_sql();
+        $amount_sql = self::get_collected_revenue_amount_sql('bookings');
+        $params[] = $args['collected_from'];
+        $params[] = $args['collected_to'];
+
+        $sql = "
+            SELECT
+                bookings.payment_collected_date AS collected_date,
+                COUNT(*) AS bookings,
+                COALESCE(SUM({$amount_sql}), 0) AS collected_amount
+            FROM ({$base_sql}) AS bookings
+            WHERE bookings.payment_status IN ('completed', 'deposit_paid')
+                AND ({$amount_sql}) > 0
+                AND bookings.payment_collected_date >= %s
+                AND bookings.payment_collected_date <= %s
+            GROUP BY bookings.payment_collected_date
+            ORDER BY bookings.payment_collected_date ASC
+        ";
+
+        $rows = $wpdb->get_results(self::prepare_query($sql, $params), ARRAY_A);
+        if (!is_array($rows)) {
+            return [];
+        }
+
+        return array_map(static function (array $row): array {
+            return [
+                'date'             => (string) $row['collected_date'],
+                'bookings'         => (int) $row['bookings'],
+                'collected_amount' => self::round_amount($row['collected_amount']),
+            ];
+        }, $rows);
     }
 
     /**
@@ -1228,6 +1408,8 @@ class Shaped_Dashboard_Data_Service
                 COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_charge_at' THEN pm.meta_value END), '') AS charge_at,
                 COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_charge_processed' THEN pm.meta_value END), '') AS charge_processed,
                 COALESCE(MAX(CASE WHEN pm.meta_key = '_stripe_payment_charged' THEN pm.meta_value END), '') AS stripe_charged,
+                COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_payment_collected_at' THEN pm.meta_value END), '') AS payment_collected_at,
+                COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_payment_collected_date' THEN pm.meta_value END), '') AS payment_collected_date,
                 COALESCE(MAX(CASE WHEN pm.meta_key = '_stripe_currency' THEN pm.meta_value END), '') AS stripe_currency,
                 COALESCE(MAX(CASE WHEN pm.meta_key = '_stripe_payment_intent_id' THEN pm.meta_value END), '') AS stripe_payment_intent_id,
                 COALESCE(MAX(CASE WHEN pm.meta_key = '_stripe_checkout_session_id' THEN pm.meta_value END), '') AS stripe_checkout_session_id,
@@ -1368,6 +1550,8 @@ class Shaped_Dashboard_Data_Service
                 (string) $row['booked_at'],
                 (string) $row['booked_at_gmt']
             ),
+            'payment_collected_at'   => self::resolve_payment_collected_at($row),
+            'payment_collected_date' => self::resolve_payment_collected_date($row),
         ];
     }
 
@@ -1766,6 +1950,8 @@ class Shaped_Dashboard_Data_Service
             'charge_processed'  => $charge_processed,
             'charge_date'       => self::nullable_string($summary['charge_date']),
             'charge_at'         => self::normalize_datetime_value((string) $summary['charge_at']),
+            'collected_at'      => self::resolve_payment_collected_at($summary),
+            'collected_date'    => self::resolve_payment_collected_date($summary),
             'days_until_charge' => $payment_context && isset($payment_context['days_until_charge'])
                 ? (float) $payment_context['days_until_charge']
                 : null,
@@ -1849,6 +2035,7 @@ class Shaped_Dashboard_Data_Service
             'charge_date'        => $payment['charge_date'],
             'charge_at'          => $payment['charge_at'],
             'charge_processed'   => $payment['charge_processed'],
+            'payment_collected_at' => $payment['collected_at'],
             'abandoned_at'       => self::normalize_datetime_value((string) $summary['abandoned_at']),
         ];
     }
@@ -2045,6 +2232,50 @@ class Shaped_Dashboard_Data_Service
         }
 
         return 0.0;
+    }
+
+    /**
+     * Resolve the timestamp when money was actually collected.
+     */
+    private static function resolve_payment_collected_at(array $summary): ?string
+    {
+        $raw = self::nullable_string($summary['payment_collected_at'] ?? '');
+        if ($raw) {
+            return self::normalize_utc_datetime_value($raw);
+        }
+
+        $payment_status = self::resolve_payment_status($summary);
+        if (!in_array($payment_status, ['completed', 'deposit_paid'], true)) {
+            return null;
+        }
+
+        return self::format_post_datetime(
+            (string) ($summary['booked_at'] ?? ''),
+            (string) ($summary['booked_at_gmt'] ?? '')
+        );
+    }
+
+    /**
+     * Resolve the site-local date when money was actually collected.
+     */
+    private static function resolve_payment_collected_date(array $summary): ?string
+    {
+        $raw = self::nullable_string($summary['payment_collected_date'] ?? '');
+        if ($raw) {
+            return $raw;
+        }
+
+        $collected_at = self::resolve_payment_collected_at($summary);
+        if (!$collected_at) {
+            return null;
+        }
+
+        try {
+            $date = new DateTimeImmutable($collected_at);
+            return $date->setTimezone(wp_timezone())->format('Y-m-d');
+        } catch (Throwable $throwable) {
+            return null;
+        }
     }
 
     /**
@@ -2509,6 +2740,24 @@ class Shaped_Dashboard_Data_Service
             }
 
             return $date->setTimezone($timezone)->format(DATE_ATOM);
+        } catch (Throwable $throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * Normalize a UTC datetime stored without an offset.
+     */
+    private static function normalize_utc_datetime_value(string $value): ?string
+    {
+        $value = trim($value);
+        if ($value === '' || $value === '0000-00-00 00:00:00') {
+            return null;
+        }
+
+        try {
+            $date = new DateTimeImmutable($value, new DateTimeZone('UTC'));
+            return $date->setTimezone(wp_timezone())->format(DATE_ATOM);
         } catch (Throwable $throwable) {
             return null;
         }
