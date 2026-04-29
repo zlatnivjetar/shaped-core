@@ -133,6 +133,8 @@ assert_contains_fragment("bookings.payment_collected_date IS NOT NULL", $collect
 assert_contains_fragment("bookings.payment_status IN ('completed', 'deposit_paid')", $collected_query, 'collected revenue includes completed and deposit-paid statuses');
 assert_contains_fragment("_mphb_paid_amount", $collected_query, 'collected revenue can use actual paid amount');
 assert_contains_fragment("_shaped_deposit_amount", $collected_query, 'collected revenue can use deposit amount');
+assert_contains_fragment("_stripe_payment_charged", $collected_query, 'collected revenue can derive paid status from charged meta');
+assert_contains_fragment("THEN 'completed'", $collected_query, 'collected revenue can derive completed status from paid amount');
 assert_contains_fragment("ELSE DATE(p.post_date)", $collected_query, 'collected revenue can fall back to booked date for direct charges');
 assert_contains_fragment("= 'delayed'", $collected_query, 'collected revenue excludes missing collected dates for delayed charges');
 

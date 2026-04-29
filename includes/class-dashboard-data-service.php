@@ -586,7 +586,14 @@ class Shaped_Dashboard_Data_Service
         $sql = "
             SELECT
                 p.ID,
-                COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_payment_status' THEN pm.meta_value END), '') AS payment_status,
+                CASE
+                    WHEN COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_payment_status' THEN pm.meta_value END), '') IN ('completed', 'deposit_paid')
+                        THEN COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_payment_status' THEN pm.meta_value END), '')
+                    WHEN COALESCE(MAX(CASE WHEN pm.meta_key = '_stripe_payment_charged' THEN pm.meta_value END), '') IN ('1', 'true', 'yes')
+                        OR CAST(COALESCE(MAX(CASE WHEN pm.meta_key = '_mphb_paid_amount' THEN pm.meta_value END), '0') AS DECIMAL(10,2)) > 0
+                        THEN 'completed'
+                    ELSE COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_payment_status' THEN pm.meta_value END), '')
+                END AS payment_status,
                 COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_payment_mode' THEN pm.meta_value END), '') AS payment_mode,
                 COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_charge_scheduled' THEN pm.meta_value END), '') AS charge_scheduled,
                 CASE
