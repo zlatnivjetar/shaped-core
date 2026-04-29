@@ -587,7 +587,18 @@ class Shaped_Dashboard_Data_Service
             SELECT
                 p.ID,
                 COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_payment_status' THEN pm.meta_value END), '') AS payment_status,
-                NULLIF(MAX(CASE WHEN pm.meta_key = '_shaped_payment_collected_date' THEN pm.meta_value END), '') AS payment_collected_date,
+                COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_payment_mode' THEN pm.meta_value END), '') AS payment_mode,
+                COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_charge_scheduled' THEN pm.meta_value END), '') AS charge_scheduled,
+                CASE
+                    WHEN NULLIF(MAX(CASE WHEN pm.meta_key = '_shaped_payment_collected_date' THEN pm.meta_value END), '') IS NOT NULL
+                        THEN NULLIF(MAX(CASE WHEN pm.meta_key = '_shaped_payment_collected_date' THEN pm.meta_value END), '')
+                    WHEN COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_payment_mode' THEN pm.meta_value END), '') = 'delayed'
+                        OR COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_charge_scheduled' THEN pm.meta_value END), '') IN ('1', 'true', 'yes')
+                        OR NULLIF(MAX(CASE WHEN pm.meta_key = '_shaped_charge_at' THEN pm.meta_value END), '') IS NOT NULL
+                        OR NULLIF(MAX(CASE WHEN pm.meta_key = '_shaped_charge_date' THEN pm.meta_value END), '') IS NOT NULL
+                        THEN NULL
+                    ELSE DATE(p.post_date)
+                END AS payment_collected_date,
                 COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_payment_collected_at' THEN pm.meta_value END), '') AS payment_collected_at,
                 CAST(
                     COALESCE(
