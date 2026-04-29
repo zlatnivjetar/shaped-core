@@ -76,7 +76,7 @@ class Shaped_Payment_Processor
         }
     }
 
-    public static function record_payment_collected(int $booking_id, ?int $timestamp = null): void
+    public static function record_payment_collected(int $booking_id, ?int $timestamp = null, bool $overwrite = false): void
     {
         if ($booking_id <= 0) {
             return;
@@ -86,12 +86,70 @@ class Shaped_Payment_Processor
         $collected_at = gmdate('Y-m-d H:i:s', $timestamp);
         $collected_date = wp_date('Y-m-d', $timestamp, wp_timezone());
 
-        if ((string) get_post_meta($booking_id, '_shaped_payment_collected_at', true) === '') {
+        if ($overwrite || (string) get_post_meta($booking_id, '_shaped_payment_collected_at', true) === '') {
             update_post_meta($booking_id, '_shaped_payment_collected_at', $collected_at);
         }
 
-        if ((string) get_post_meta($booking_id, '_shaped_payment_collected_date', true) === '') {
+        if ($overwrite || (string) get_post_meta($booking_id, '_shaped_payment_collected_date', true) === '') {
             update_post_meta($booking_id, '_shaped_payment_collected_date', $collected_date);
+        }
+    }
+
+    private static function resolve_payment_intent_collected_timestamp($payment_intent, $stripe = null, ?int $fallback_timestamp = null): ?int
+    {
+        $timestamp = self::get_payment_intent_charge_timestamp($payment_intent, $stripe);
+        if ($timestamp !== null) {
+            return $timestamp;
+        }
+
+        return $fallback_timestamp && $fallback_timestamp > 0 ? $fallback_timestamp : null;
+    }
+
+    private static function get_payment_intent_charge_timestamp($payment_intent, $stripe = null): ?int
+    {
+        if (isset($payment_intent->latest_charge) && is_object($payment_intent->latest_charge) && !empty($payment_intent->latest_charge->created)) {
+            return (int) $payment_intent->latest_charge->created;
+        }
+
+        if (!empty($payment_intent->charges->data) && !empty($payment_intent->charges->data[0]->created)) {
+            return (int) $payment_intent->charges->data[0]->created;
+        }
+
+        if (isset($payment_intent->latest_charge) && is_string($payment_intent->latest_charge) && $payment_intent->latest_charge !== '') {
+            $stripe = self::resolve_stripe_client_for_lookup($stripe);
+            if (!$stripe) {
+                return null;
+            }
+
+            try {
+                $charge = $stripe->charges->retrieve($payment_intent->latest_charge);
+                if (!empty($charge->created)) {
+                    return (int) $charge->created;
+                }
+            } catch (\Throwable $throwable) {
+                error_log('[Shaped Payment] Could not resolve latest charge timestamp: ' . $throwable->getMessage());
+            }
+        }
+
+        return null;
+    }
+
+    private static function resolve_stripe_client_for_lookup($stripe = null)
+    {
+        if ($stripe) {
+            return $stripe;
+        }
+
+        if (!function_exists('shaped_load_stripe_sdk') || !function_exists('shaped_get_stripe_secret')) {
+            return null;
+        }
+
+        try {
+            shaped_load_stripe_sdk();
+            return new \Stripe\StripeClient(shaped_get_stripe_secret());
+        } catch (\Throwable $throwable) {
+            error_log('[Shaped Payment] Could not create Stripe lookup client: ' . $throwable->getMessage());
+            return null;
         }
     }
 
@@ -1398,8 +1456,13 @@ class Shaped_Payment_Processor
 
                 $current_status = (string) get_post_meta($booking_id, '_shaped_payment_status', true);
                 $charge_processed = (string) get_post_meta($booking_id, '_shaped_charge_processed', true);
+                $collected_timestamp = self::resolve_payment_intent_collected_timestamp(
+                    $pi,
+                    null,
+                    isset($event->created) ? (int) $event->created : null
+                );
                 if ($current_status === 'completed' && in_array($charge_processed, ['1', 'true', 'yes'], true)) {
-                    self::record_payment_collected($booking_id, isset($event->created) ? (int) $event->created : null);
+                    self::record_payment_collected($booking_id, $collected_timestamp, true);
                     self::mark_event_processed($event_id);
                     return new WP_REST_Response(['received' => true, 'note' => 'already_completed'], 200);
                 }
@@ -1407,7 +1470,7 @@ class Shaped_Payment_Processor
                 update_post_meta($booking_id, '_stripe_payment_charged', true);
                 update_post_meta($booking_id, '_mphb_paid_amount', $pi->amount / 100);
                 update_post_meta($booking_id, '_shaped_payment_status', 'completed');
-                self::record_payment_collected($booking_id, isset($event->created) ? (int) $event->created : null);
+                self::record_payment_collected($booking_id, $collected_timestamp, true);
                 do_action('shaped_payment_completed', $booking_id, 'delayed');
 
                 if ($payment_mode === 'delayed' || $stored_payment_mode === 'delayed') {
@@ -1536,7 +1599,11 @@ class Shaped_Payment_Processor
             update_post_meta($booking_id, '_mphb_paid_amount', $final_amount);
             update_post_meta($booking_id, '_shaped_payment_status', 'completed');
             update_post_meta($booking_id, '_shaped_charge_processed', true);
-            self::record_payment_collected($booking_id, isset($pi->created) ? (int) $pi->created : null);
+            self::record_payment_collected(
+                $booking_id,
+                self::resolve_payment_intent_collected_timestamp($pi, $stripe, isset($pi->created) ? (int) $pi->created : null),
+                true
+            );
         } catch (\Stripe\Exception\CardException $e) {
             error_log('[Shaped Charge] Payment failed: ' . $e->getMessage());
             $this->handle_scheduled_charge_card_failure($booking_id, $e->getMessage());

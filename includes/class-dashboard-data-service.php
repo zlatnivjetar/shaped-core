@@ -477,6 +477,7 @@ class Shaped_Dashboard_Data_Service
                 SELECT COALESCE(SUM({$amount_sql}), 0)
                 FROM ({$base_sql}) AS bookings
                 WHERE bookings.payment_status IN ('completed', 'deposit_paid')
+                    AND bookings.payment_collected_date IS NOT NULL
                     AND ({$amount_sql}) > 0
             ";
 
@@ -586,10 +587,7 @@ class Shaped_Dashboard_Data_Service
             SELECT
                 p.ID,
                 COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_payment_status' THEN pm.meta_value END), '') AS payment_status,
-                COALESCE(
-                    NULLIF(MAX(CASE WHEN pm.meta_key = '_shaped_payment_collected_date' THEN pm.meta_value END), ''),
-                    DATE(p.post_date)
-                ) AS payment_collected_date,
+                NULLIF(MAX(CASE WHEN pm.meta_key = '_shaped_payment_collected_date' THEN pm.meta_value END), '') AS payment_collected_date,
                 COALESCE(MAX(CASE WHEN pm.meta_key = '_shaped_payment_collected_at' THEN pm.meta_value END), '') AS payment_collected_at,
                 CAST(
                     COALESCE(
@@ -688,6 +686,7 @@ class Shaped_Dashboard_Data_Service
                 COALESCE(SUM({$amount_sql}), 0) AS collected_amount
             FROM ({$base_sql}) AS bookings
             WHERE bookings.payment_status IN ('completed', 'deposit_paid')
+                AND bookings.payment_collected_date IS NOT NULL
                 AND ({$amount_sql}) > 0
                 AND bookings.payment_collected_date >= %s
                 AND bookings.payment_collected_date <= %s
@@ -2246,6 +2245,10 @@ class Shaped_Dashboard_Data_Service
 
         $payment_status = self::resolve_payment_status($summary);
         if (!in_array($payment_status, ['completed', 'deposit_paid'], true)) {
+            return null;
+        }
+
+        if (self::resolve_payment_mode($summary, null) === 'delayed') {
             return null;
         }
 

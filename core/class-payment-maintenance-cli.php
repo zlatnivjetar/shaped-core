@@ -162,6 +162,9 @@ class Shaped_Payment_Maintenance_CLI
      * [--booking-id=<id>]
      * : Limit to one booking.
      *
+     * [--force]
+     * : Include bookings that already have collection metadata and overwrite it when applying.
+     *
      * [--limit=<n>]
      * : Maximum rows to scan. Default: 50.
      *
@@ -172,6 +175,7 @@ class Shaped_Payment_Maintenance_CLI
      *
      *     wp shaped payments backfill-collected-at --booking-id=12345
      *     wp shaped payments backfill-collected-at --booking-id=12345 --apply
+     *     wp shaped payments backfill-collected-at --booking-id=12345 --force --apply
      */
     public static function backfill_collected_at(array $args, array $assoc_args): void
     {
@@ -184,13 +188,17 @@ class Shaped_Payment_Maintenance_CLI
         }
 
         $apply = isset($assoc_args['apply']);
+        $force = isset($assoc_args['force']);
         $booking_id = isset($assoc_args['booking-id']) ? absint($assoc_args['booking-id']) : 0;
         $limit = isset($assoc_args['limit']) ? max(1, min(500, absint($assoc_args['limit']))) : 50;
         $format = isset($assoc_args['format']) ? (string) $assoc_args['format'] : 'table';
 
-        $rows = self::get_collected_at_backfill_rows($booking_id, $limit);
+        $rows = self::get_collected_at_backfill_rows($booking_id, $limit, $force);
         if (empty($rows)) {
-            \WP_CLI::success('No completed bookings with missing collection timestamps matched.');
+            \WP_CLI::success($force
+                ? 'No completed bookings with Stripe PaymentIntents matched.'
+                : 'No completed bookings with missing collection timestamps matched.'
+            );
             return;
         }
 
@@ -228,7 +236,7 @@ class Shaped_Payment_Maintenance_CLI
             if ($warning !== '') {
                 $warnings++;
             } elseif ($apply && $timestamp !== null) {
-                Shaped_Payment_Processor::record_payment_collected($row_booking_id, $timestamp);
+                Shaped_Payment_Processor::record_payment_collected($row_booking_id, $timestamp, $force);
                 $applied++;
             }
 
@@ -237,9 +245,10 @@ class Shaped_Payment_Maintenance_CLI
                 'payment_status' => (string) $row->shaped_payment_status,
                 'payment_intent' => $payment_intent_id,
                 'stripe_status' => $stripe_status,
+                'current_collected_at' => (string) $row->shaped_payment_collected_at,
                 'collected_at_utc' => $timestamp ? gmdate('Y-m-d H:i:s', $timestamp) : '',
                 'collected_date' => $timestamp ? wp_date('Y-m-d', $timestamp, wp_timezone()) : '',
-                'action' => $apply && $warning === '' ? 'applied' : 'dry-run',
+                'action' => $apply && $warning === '' ? ($force ? 'overwritten' : 'applied') : 'dry-run',
                 'warning' => $warning,
             ];
         }
@@ -249,6 +258,7 @@ class Shaped_Payment_Maintenance_CLI
             'payment_status',
             'payment_intent',
             'stripe_status',
+            'current_collected_at',
             'collected_at_utc',
             'collected_date',
             'action',
@@ -378,7 +388,7 @@ class Shaped_Payment_Maintenance_CLI
         return '';
     }
 
-    private static function get_collected_at_backfill_rows(int $booking_id, int $limit): array
+    private static function get_collected_at_backfill_rows(int $booking_id, int $limit, bool $force = false): array
     {
         global $wpdb;
 
@@ -389,6 +399,10 @@ class Shaped_Payment_Maintenance_CLI
             $where .= ' AND p.ID = %d';
             $params[] = $booking_id;
         }
+
+        $collected_clause = $force
+            ? ''
+            : "AND (shaped_payment_collected_at IS NULL OR shaped_payment_collected_at = '')";
 
         $sql = "
             SELECT
@@ -401,7 +415,7 @@ class Shaped_Payment_Maintenance_CLI
             {$where}
             GROUP BY p.ID
             HAVING shaped_payment_status IN ('completed', 'deposit_paid')
-                AND (shaped_payment_collected_at IS NULL OR shaped_payment_collected_at = '')
+                {$collected_clause}
                 AND stripe_payment_intent_id IS NOT NULL
                 AND stripe_payment_intent_id <> ''
             ORDER BY p.ID DESC

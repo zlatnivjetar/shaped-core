@@ -129,10 +129,11 @@ $collected_query = $wpdb->last_query;
 assert_contains_fragment("_shaped_payment_collected_date", $collected_query, 'collected revenue reads collection date meta');
 assert_contains_fragment("bookings.payment_collected_date >= %s", $collected_query, 'collected revenue lower bound uses collection date');
 assert_contains_fragment("bookings.payment_collected_date <= %s", $collected_query, 'collected revenue upper bound uses collection date');
+assert_contains_fragment("bookings.payment_collected_date IS NOT NULL", $collected_query, 'collected revenue requires known collection date');
 assert_contains_fragment("bookings.payment_status IN ('completed', 'deposit_paid')", $collected_query, 'collected revenue includes completed and deposit-paid statuses');
 assert_contains_fragment("_mphb_paid_amount", $collected_query, 'collected revenue can use actual paid amount');
 assert_contains_fragment("_shaped_deposit_amount", $collected_query, 'collected revenue can use deposit amount');
-assert_not_contains_fragment("DATE(p.post_date) >= %s", $collected_query, 'collected revenue does not filter by booked date');
+assert_not_contains_fragment("DATE(p.post_date)", $collected_query, 'collected revenue does not fall back to booked date');
 
 invoke_dashboard_private('get_revenue_total', ['pending', '2026-04-01', '2026-04-30']);
 $pending_query = $wpdb->last_query;
@@ -148,6 +149,8 @@ $trend_query = $wpdb->last_query;
 assert_contains_fragment("bookings.payment_collected_date AS collected_date", $trend_query, 'collected trend groups on collection date');
 assert_contains_fragment("COALESCE(SUM(", $trend_query, 'collected trend sums collected amount');
 assert_contains_fragment("GROUP BY bookings.payment_collected_date", $trend_query, 'collected trend group by collection date');
+assert_contains_fragment("bookings.payment_collected_date IS NOT NULL", $trend_query, 'collected trend requires known collection date');
+assert_not_contains_fragment("DATE(p.post_date)", $trend_query, 'collected trend does not fall back to booked date');
 
 $item = invoke_dashboard_private('build_booking_list_item', [[
     'ID' => 123,
@@ -178,5 +181,35 @@ $item = invoke_dashboard_private('build_booking_list_item', [[
 
 assert_same_value('2026-04-28', $item['payment_collected_date'], 'booking list exposes collection date');
 assert_same_value('2026-04-28T12:34:56+02:00', $item['payment_collected_at'], 'booking list exposes collection timestamp in site timezone');
+
+$missing_delayed_collection_item = invoke_dashboard_private('build_booking_list_item', [[
+    'ID' => 124,
+    'guest_first_name' => 'Bruce',
+    'guest_last_name' => 'Brightman',
+    'guest_email' => 'bruce@example.test',
+    'check_in' => '2026-05-02',
+    'check_out' => '2026-05-30',
+    'booking_status_raw' => 'confirmed',
+    'payment_status_raw' => 'completed',
+    'payment_type' => 'full',
+    'payment_mode_raw' => 'delayed',
+    'total_amount' => '3903.20',
+    'deposit_amount' => '0',
+    'balance_due' => '0',
+    'paid_amount' => '3903.20',
+    'stripe_pending_amount' => '3903.20',
+    'charge_scheduled' => '',
+    'charge_date' => '2026-04-25',
+    'charge_at' => '2026-04-25T14:00:00Z',
+    'charge_processed' => '1',
+    'stripe_charged' => '1',
+    'payment_collected_at' => '',
+    'payment_collected_date' => '',
+    'booked_at' => '2026-04-16 09:00:00',
+    'booked_at_gmt' => '2026-04-16 07:00:00',
+]]);
+
+assert_same_value(null, $missing_delayed_collection_item['payment_collected_date'], 'delayed booking without collection metadata does not fall back to booked date');
+assert_same_value(null, $missing_delayed_collection_item['payment_collected_at'], 'delayed booking without collection metadata does not expose booked time as collection time');
 
 echo "Dashboard revenue contract tests passed.\n";
